@@ -6,23 +6,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>导向滤波 - 森</title>
+    <title>章节：10 - 森</title>
     <meta name="author" content="CSEN">
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"","dateCreated":"2022-10-30T09:23:00+08:00","dateModified":"2022-10-30T09:23:37+08:00","datePublished":"2022-10-30T09:23:00+08:00","description":"","headline":"导向滤波","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/10/30/%E5%AF%BC%E5%90%91%E6%BB%A4%E6%B3%A2/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2022/10/30/%E5%AF%BC%E5%90%91%E6%BB%A4%E6%B3%A2/","keywords":"暗通道"}</script>
-    <meta name="description" content="潮起潮落，云卷云舒">
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"第十节我们可以从注解出发看项目。DBRouter注解写好后，肯定要配备切面类DBRouterJoinPoint（这里面包括了路由策略和路由配置几库几表），里面有一个@Around注解，表示包围一个函数，也就是可以在函数执行前做一些事情，也可以在函数执行后做一些事情。\n项目中是先拿到Key字段（uId），判断是不是空，是的话Runtime异常，不是的话就去拿uId这个字段对应的值，按照例子就是Uhdgkw766120d。\n拿到值之后，那么下面就是拿着这个值去做路由了（该怎么走），这部分内容被写在DBRouterStrategyHashCode的doRouter里面。其实就是hash的扰动函数，通过设定的算法得到去拿个库哪个表，把这两个信息交给DBContextHolder（一个标识类，用来存储当前数据源的key及状态判断），下面就要向数据集里面写东西了，jp.process(),接下去就是mybatis拦截器的任务了。\n自定义拦截器需要实现org.apache.ibatis.plugin.Interceptor接口, 并在接口上添加@Intercepts注解。@Intercepts注解是通过一个@Signature注解(拦截点),来指定拦截那个对象里面的某个方法。@Signature注解需要定义三个东西：\n定义拦截的类 Executor、ParameterHandler、StatementHandler、ResultSetHandler当中的一个Class&lt;?&gt; type();\n在定义拦截类的基础之上，在定义拦截的方法String method();\n在定义拦截方法的基础之上在定义拦截的方法对应的参数，因方法里面可能重载，不指定参数列表，不能确定是对应拦截的方法Class&lt;?&gt;[] args();\n我们查看代码，发现拦截的类选择的是StatementHandler，目前不太了解mybatis的源码，但是查询资料之后发现毫无疑问是四大对象最重要的一个，它的任务就是和数据库对话。在它这里会使用parameterHandler和ResultSetHandler对象为我们绑定SQL参数和组装最后的结果返回。\n拦截的方法是prepare，预编译阶段\n参数是{Connection.class, Integer.class}\n回到那个自定义拦截器类 继承了Interceptor。intercept里面就放着怎么把sql变成我们想要的那种动态分库分表的逻辑。首先几行代码拿到dbRouterStrategy注解，看他是不是true如果是，我们去拿sql语句，如下所示：\nINSERT INTO user_strategy_export        (u_id, activity_id, order_id, strategy_id, strategy_mode,         grant_type, grant_date, grant_state, award_id, award_type,         award_name, award_content, uuid, create_time, update_time)        VALUES        (?,?,?,?,?,         ?,?,?,?,?,         ?,?,?,now(),now())\n他利用一个matcher找到 INTO user_strategy_export这段语句。为什么？因为INTO后面跟着的就是表，至于是哪个表，在上面已经提到了，就是DBContextHolder。这里就实现了分表。\n至于分库，我们重写了determineCurrentLookupKey方法，这个方法被determineTargetDataSource调用，determineTargetDataSource被getConnection调用，getConection可以追溯到DataSource接口的getConnection抽象方法。但是我还不知道determineCurrentLookupKey什么时候被调用？？\n所以就去查了查多数据源的处理机制的一些文章，发现和自己想的有区别，我一直以为调用DAO层的方法，应该先切面再切换数据源最后才是DAO的逻辑（毕竟我看不到什么时候切换数据源，但是DBRouter注解就是直勾勾的放在DAO方法上面的），结果文章中提到其实是先切换数据源，然后切面方法，最后DAO逻辑。文章给出的原因是事务中不支持数据源切换。但是我打断点还是没找到调用determineCurrentLookupKey的那段代码，可惜。\n最后就是把这些配置到DataSourceAutoConfig，打包给我们的项目。\n","dateCreated":"2023-04-04T00:00:00+08:00","dateModified":"2023-04-12T12:30:48+08:00","datePublished":"2023-04-04T00:00:00+08:00","description":"","headline":"章节：10","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/","keywords":"lucky项目"}</script>
+    <meta name="description" content="第十节我们可以从注解出发看项目。DBRouter注解写好后，肯定要配备切面类DBRouterJoinPoint（这里面包括了路由策略和路由配置几库几表），里面有一个@Around注解，表示包围一个函数，也就是可以在函数执行前做一些事情，也可以在函数执行后做一些事情。 项目中是先拿到Key字段（uId），判断是不是空，是的话Runtime异常，不是的话就去拿uId这个字段对应的值，按照例子就是Uhd">
 <meta property="og:type" content="blog">
-<meta property="og:title" content="导向滤波">
-<meta property="og:url" content="http://example.com/2022/10/30/%E5%AF%BC%E5%90%91%E6%BB%A4%E6%B3%A2/index.html">
+<meta property="og:title" content="章节：10">
+<meta property="og:url" content="http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/index.html">
 <meta property="og:site_name" content="森">
-<meta property="og:description" content="潮起潮落，云卷云舒">
+<meta property="og:description" content="第十节我们可以从注解出发看项目。DBRouter注解写好后，肯定要配备切面类DBRouterJoinPoint（这里面包括了路由策略和路由配置几库几表），里面有一个@Around注解，表示包围一个函数，也就是可以在函数执行前做一些事情，也可以在函数执行后做一些事情。 项目中是先拿到Key字段（uId），判断是不是空，是的话Runtime异常，不是的话就去拿uId这个字段对应的值，按照例子就是Uhd">
 <meta property="og:locale" content="zh_CH">
-<meta property="article:published_time" content="2022-10-30T01:23:00.000Z">
-<meta property="article:modified_time" content="2022-10-30T01:23:37.133Z">
+<meta property="article:published_time" content="2023-04-03T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-04-12T04:30:48.912Z">
 <meta property="article:author" content="CSEN">
-<meta property="article:tag" content="暗通道">
+<meta property="article:tag" content="lucky项目">
 <meta name="twitter:card" content="summary">
     
     
@@ -233,20 +233,20 @@
         <div class="post-header main-content-wrap text-left">
     
         <h1 class="post-title">
-            导向滤波
+            章节：10
         </h1>
     
     
         <div class="post-meta">
-    <time datetime="2022-10-30T09:23:00+08:00">
+    <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    30 Oct 2022
+		    04 Apr 2023
     	
     </time>
     
         <span>in </span>
         
-    <a class="category-link" href="/categories/%E5%8E%BB%E9%9B%BE%E7%AE%97%E6%B3%95/">去雾算法</a>
+    <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
 
 
     
@@ -258,7 +258,23 @@
     
     <div class="post-content markdown">
         <div class="main-content-wrap">
-            
+            <p>第十节我们可以从注解出发看项目。<br>DBRouter注解写好后，肯定要配备切面类DBRouterJoinPoint（这里面包括了路由策略和路由配置几库几表），里面有一个@Around注解，表示包围一个函数，也就是可以在函数执行前做一些事情，也可以在函数执行后做一些事情。</p>
+<p>项目中是先拿到Key字段（uId），判断是不是空，是的话Runtime异常，不是的话就去拿uId这个字段对应的值，按照例子就是Uhdgkw766120d。</p>
+<p>拿到值之后，那么下面就是拿着这个值去做路由了（该怎么走），这部分内容被写在DBRouterStrategyHashCode的doRouter里面。其实就是hash的扰动函数，通过设定的算法得到去拿个库哪个表，把这两个信息交给DBContextHolder（一个标识类，用来存储当前数据源的key及状态判断），下面就要向数据集里面写东西了，jp.process(),接下去就是mybatis拦截器的任务了。</p>
+<p>自定义拦截器需要实现org.apache.ibatis.plugin.Interceptor接口, 并在接口上添加@Intercepts注解。<br>@Intercepts注解是通过一个@Signature注解(拦截点),来指定拦截那个对象里面的某个方法。<br>@Signature注解需要定义三个东西：</p>
+<p>定义拦截的类 Executor、ParameterHandler、StatementHandler、ResultSetHandler当中的一个<br>Class&lt;?&gt; type();</p>
+<p>在定义拦截类的基础之上，在定义拦截的方法<br>String method();</p>
+<p>在定义拦截方法的基础之上在定义拦截的方法对应的参数，<br>因方法里面可能重载，不指定参数列表，不能确定是对应拦截的方法<br>Class&lt;?&gt;[] args();</p>
+<p>我们查看代码，发现拦截的类选择的是StatementHandler，目前不太了解mybatis的源码，但是查询资料之后发现毫无疑问是四大对象最重要的一个，它的任务就是和数据库对话。在它这里会使用parameterHandler和ResultSetHandler对象为我们绑定SQL参数和组装最后的结果返回。</p>
+<p>拦截的方法是prepare，预编译阶段</p>
+<p>参数是{Connection.class, Integer.class}</p>
+<p>回到那个自定义拦截器类 继承了Interceptor。intercept里面就放着怎么把sql变成我们想要的那种动态分库分表的逻辑。<br>首先几行代码拿到dbRouterStrategy注解，看他是不是true<br>如果是，我们去拿sql语句，如下所示：</p>
+<p>INSERT INTO user_strategy_export<br>        (u_id, activity_id, order_id, strategy_id, strategy_mode,<br>         grant_type, grant_date, grant_state, award_id, award_type,<br>         award_name, award_content, uuid, create_time, update_time)<br>        VALUES<br>        (?,?,?,?,?,<br>         ?,?,?,?,?,<br>         ?,?,?,now(),now())</p>
+<p>他利用一个matcher找到 INTO user_strategy_export这段语句。为什么？因为INTO后面跟着的就是表，至于是哪个表，在上面已经提到了，就是DBContextHolder。这里就实现了分表。</p>
+<p>至于分库，我们重写了determineCurrentLookupKey方法，这个方法被determineTargetDataSource调用，determineTargetDataSource被getConnection调用，getConection可以追溯到DataSource接口的getConnection抽象方法。但是我还不知道determineCurrentLookupKey什么时候被调用？？</p>
+<p>所以就去查了查多数据源的处理机制的一些文章，发现和自己想的有区别，我一直以为调用DAO层的方法，应该先切面再切换数据源最后才是DAO的逻辑（毕竟我看不到什么时候切换数据源，但是DBRouter注解就是直勾勾的放在DAO方法上面的），结果文章中提到其实是先切换数据源，然后切面方法，最后DAO逻辑。文章给出的原因是事务中不支持数据源切换。<br>但是我打断点还是没找到调用determineCurrentLookupKey的那段代码，可惜。</p>
+<p>最后就是把这些配置到DataSourceAutoConfig，打包给我们的项目。</p>
+
             
 
 
@@ -269,7 +285,7 @@
             <div class="post-footer-tags">
                 <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
-    <a class="tag tag--primary tag--small t-none-link" href="/tags/%E6%9A%97%E9%80%9A%E9%81%93/" rel="tag">暗通道</a>
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/lucky%E9%A1%B9%E7%9B%AE/" rel="tag">lucky项目</a>
 
             </div>
         
@@ -282,9 +298,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
-                    data-tooltip="章节：小知识"
-                    aria-label="FRÜHER: 章节：小知识"
+                    href="/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
+                    data-tooltip="Spring ioc加载流程"
+                    aria-label="FRÜHER: Spring ioc加载流程"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
@@ -296,9 +312,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2022/10/23/%E6%9A%97%E9%80%9A%E9%81%93%E5%8E%BB%E9%9B%BE%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93/"
-                    data-tooltip="暗通道去雾算法总结"
-                    aria-label="NÄCHSTER: 暗通道去雾算法总结"
+                    href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+                    data-tooltip="章节：7-10，同时回顾一下4-6的内容"
+                    aria-label="NÄCHSTER: 章节：7-10，同时回顾一下4-6的内容"
                 >
                     
                         <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
@@ -323,7 +339,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/30/%E5%AF%BC%E5%90%91%E6%BB%A4%E6%B3%A2/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
                     title="Teilen auf Facebook"
                     aria-label="Teilen auf Facebook"
                 >
@@ -336,7 +352,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/30/%E5%AF%BC%E5%90%91%E6%BB%A4%E6%B3%A2/"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
                     title="Teilen auf Twitter"
                     aria-label="Teilen auf Twitter"
                 >
@@ -349,7 +365,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/30/%E5%AF%BC%E5%90%91%E6%BB%A4%E6%B3%A2/"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
                     title="Teilen auf Google Plus"
                     aria-label="Teilen auf Google Plus"
                 >
@@ -397,9 +413,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
-                    data-tooltip="章节：小知识"
-                    aria-label="FRÜHER: 章节：小知识"
+                    href="/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
+                    data-tooltip="Spring ioc加载流程"
+                    aria-label="FRÜHER: Spring ioc加载流程"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
@@ -411,9 +427,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2022/10/23/%E6%9A%97%E9%80%9A%E9%81%93%E5%8E%BB%E9%9B%BE%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93/"
-                    data-tooltip="暗通道去雾算法总结"
-                    aria-label="NÄCHSTER: 暗通道去雾算法总结"
+                    href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+                    data-tooltip="章节：7-10，同时回顾一下4-6的内容"
+                    aria-label="NÄCHSTER: 章节：7-10，同时回顾一下4-6的内容"
                 >
                     
                         <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
@@ -438,7 +454,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/30/%E5%AF%BC%E5%90%91%E6%BB%A4%E6%B3%A2/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
                     title="Teilen auf Facebook"
                     aria-label="Teilen auf Facebook"
                 >
@@ -451,7 +467,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/30/%E5%AF%BC%E5%90%91%E6%BB%A4%E6%B3%A2/"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
                     title="Teilen auf Twitter"
                     aria-label="Teilen auf Twitter"
                 >
@@ -464,7 +480,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/30/%E5%AF%BC%E5%90%91%E6%BB%A4%E6%B3%A2/"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
                     title="Teilen auf Google Plus"
                     aria-label="Teilen auf Google Plus"
                 >
@@ -498,7 +514,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/30/%E5%AF%BC%E5%90%91%E6%BB%A4%E6%B3%A2/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
                         aria-label="Teilen auf Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
@@ -511,7 +527,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/30/%E5%AF%BC%E5%90%91%E6%BB%A4%E6%B3%A2/"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
                         aria-label="Teilen auf Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
@@ -524,7 +540,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://example.com/2022/10/30/%E5%AF%BC%E5%90%91%E6%BB%A4%E6%B3%A2/"
+                        href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
                         aria-label="Teilen auf Google Plus"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>

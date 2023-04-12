@@ -1,0 +1,641 @@
+
+<!DOCTYPE html>
+<html lang="zh-CH">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="森">
+    <title>章节：小知识 - 森</title>
+    <meta name="author" content="CSEN">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"Maven的三种packaging方式(pom、jar、war)pom是maven依赖文件jar是java普通项目打包war是java web项目打包 \npom：打出来可以作为其他项目的maven依赖，在工程A中添加工程B的pom，A就可以使用B中的类。用在父级工程或聚合工程中。用来做jar包的版本控制。\njar包：通常是开发时要引用通用类，打成jar包便于存放管理。当你使用某些功能时就需要这些jar包的支持，需要导入jar包。\nwar包：是做好一个web网站后，打成war包部署到服务器。目的是节省资源，提供效率\nrelativePath搭建maven项目，子模块指定父模块试，经常会在parent下面出现relativePath类似下面：\n&lt;parent&gt;\t&lt;groupId&gt;net.itxw&lt;/groupId&gt;\t&lt;artifactId&gt;test&lt;/artifactId&gt;\t&lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;\t&lt;relativePath/&gt;&lt;/parent&gt;\n\n这个下面的属性是什么意思？\n其实很明显，就是parent的路径，具体来说就是你引用这个parent项目，那parent项目的pom在哪里\ndependencyManagement如果有多个子项目都引用同一样依赖，则可以避免在每个使用的子项目里都声明一个版本号。当想升级或切换到另一个版本时，只需要在顶层父容器里更新，而不需要逐个修改子项目；另外如果某个子项目需要另外的一个版本，只需要声明version即可。\ndependencyManagement中定义的只是依赖的声明，并不实现引入，因此子项目需要显式的声明需要用的依赖。\n在父项目的POM.xml中配置\n&lt;dependencyManagement&gt;        &lt;dependencies&gt;            &lt;dependency&gt;                &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;                &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;                &lt;version&gt;1.2.3.RELEASE&lt;/version&gt;            &lt;/dependency&gt;        &lt;/dependencies&gt;    &lt;/dependencyManagement&gt;\n\n在子项目中配置：\n&lt;dependency&gt;    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;    &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;&lt;/dependency&gt;\n\nbuild1 约定的目录结构build 标签的子标签大致包含三个主体部分：\n2.2.1 约定的目录结构参考附录中的如下部分：\n&lt;sourceDirectory&gt;D:\\idea\\maven-test\\src\\main\\java&lt;/sourceDirectory&gt;&lt;scriptSourceDirectory&gt;D:\\idea\\maven-test\\src\\main\\scripts&lt;/scriptSourceDirectory&gt;&lt;testSourceDirectory&gt;D:\\idea\\maven-test\\src\\test\\java&lt;/testSourceDirectory&gt;&lt;outputDirectory&gt;D:\\idea\\maven-test\\target\\classes&lt;/outputDirectory&gt;&lt;testOutputDirectory&gt;D:\\idea\\maven-test\\target\\test-classes&lt;/testOutputDirectory&gt;&lt;resources&gt;    &lt;resource&gt;        &lt;directory&gt;D:\\idea\\maven-test\\src\\main\\resources&lt;/directory&gt;    &lt;/resource&gt;&lt;/resources&gt;&lt;testResources&gt;    &lt;testResource&gt;        &lt;directory&gt;D:\\idea\\maven-test\\src\\test\\resources&lt;/directory&gt;    &lt;/testResource&gt;&lt;/testResources&gt;&lt;directory&gt;D:\\idea\\maven-test\\target&lt;/directory&gt;\n\n\n\n\n能看到各个目录的作用如下：\n目录名\t作用sourceDirectory\t主体源程序存放目录scriptSourceDirectory\t脚本源程序存放目录testSourceDirectory\t测试源程序存放目录outputDirectory\t主体源程序编译结果输出目录testOutputDirectory\t测试源程序编译结果输出目录resources\t主体资源文件存放目录testResources\t测试资源文件存放目录directory\t构建结果输出目录\n2备用插件管理pluginManagement 标签存放着几个极少用到的插件：\nmaven-antrun-pluginmaven-assembly-pluginmaven-dependency-pluginmaven-release-plugin通过 pluginManagement 标签管理起来的插件就像 dependencyManagement 一样，子工程使用时可以省略版本号，起到在父工程中统一管理版本的效果，看下面例子：\n被 spring-boot-dependencies 管理的插件信息：\n&lt;build&gt;    &lt;pluginManagement&gt;        &lt;plugin&gt;            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;            &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;            &lt;version&gt;2.6.2&lt;/version&gt;        &lt;/plugin&gt;    &lt;/pluginManagement&gt;&lt;/build&gt;子工程使用的插件信息：&lt;build&gt;    &lt;plugins&gt;        &lt;plugin&gt;            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;            &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;        &lt;/plugin&gt;    &lt;/plugins&gt;&lt;/build&gt;\n\n3 生命周期插件把cn.XXXX 改成自己的包名，发现也有蛮多地方需要修改，也能加深理解 比如application.xml，mybatis全局配置xml里的typeAliases，不过这个文件在第三章还没用到，configuration里面的注释里也能正常跑。\n第4节 策略 通常分库分表的几个常见方面；\n\n访问频率：对于高频访问的数据，可以将其存储在单独的数据库或表中，以提高读写性能。\n数据大小：对于大量的数据，可以将其拆分到多个表中，以减少单表的数据量，降低存储开销。\n数据类型：对于不同类型的数据，可以将其拆分到不同的数据库或表中，便于管理和查询。\n数据范围：对于不同范围的数据，可以将其拆分到不同的数据库或表中，便于数据的管理和查询。\n\n分库分表的主要目的在于；数据分摊、提高QPS&#x2F;TPS、分摊压力、提高可扩展性。比如；比如数据库的读写性能下降，或者单表数据量过大，这时候您就需要考虑进行分库分表操作了。通过拆分数据库，可以将单个数据库的压力分摊到多个数据库上，从而避免单个数据库的性能瓶颈，提高系统的性能和可扩展性。此外，分库分表还可以解决数据库存储容量的限制，提高数据库的存储能力。\n另外在分库分表之后，数据的一致性会受到影响，数据库的管理和维护成本也会增加。因此，在考虑分库分表时，需要仔细权衡利弊，确定是否真的需要进行分库分表操作。也就是你的开发成本问题。因为有分库分表就会相应的引入 canal binlog同步、es、mq、xxl-job等分布式技术栈。\n库表梳理1、感觉从抽奖流程出发比较好理解，用户-&gt;抽奖-&gt;有无得奖-&gt;结果抽奖单独提炼策略表，有无得奖提炼奖品表，策略表和奖品表可以联系成策略明细表（一个策略多个奖品1:n）。抽完后的结果肯定要弄出个结果表，包括奖品发放后续、抽奖明细，但是考虑到用户可以多抽几次，全放一张表肯定不行，那一个用户三个记录肯定不行，所以可以单独分出一个纯粹的参与活动记录表和用户活动抽奖次数表，至于发放奖品后续就可以一个用户一条记录，做成用户抽奖结果表，这样理解可以吗？2、从什么角度出发对需求进行初步的库表梳理比较好的，就像傅哥说的怎么打好地基。\n第5节原始mvc架构的一个服务可能对应多个实体类，多个服务可能对应一个实体类，那后面修改一个服务的时候可能造成牵一发而动全身的结果。ddd架构中model（聚合对象）里的对象类只服务于这个领域的repository（数据仓储） service（领域服务），从包的结构区分问题。dao则是仓储的具体实现，repository是接口。\n自增id\n疑惑：不是说model放聚合对象吗，为什么award strategy这些在基础设施层呢，不是应该在strategy领域里面吗？draw req res 这代表什么意思呢\n思考：default抽奖算法，能不能直接在single每次抽奖完的基础上加一个判断，如果有一个奖品抽完了，那就重新更新rateTuple，这样是不是也可以呢，反正原本的default抽奖算法每次抽奖也是要循环奖品？\nservice层结构很清晰,DrawExecImpl为什么不自己申明一个变量作为抽奖类型，初始化的时候给他赋值。这样就不用每次抽奖都去数据库请求了。还是说为了防止抽奖方式的改变而这么做呢？\n第06节","dateCreated":"2023-04-03T00:00:00+08:00","dateModified":"2023-04-12T12:31:40+08:00","datePublished":"2023-04-03T00:00:00+08:00","description":"","headline":"章节：小知识","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/","keywords":"lucky项目"}</script>
+    <meta name="description" content="Maven的三种packaging方式(pom、jar、war)pom是maven依赖文件jar是java普通项目打包war是java web项目打包  pom：打出来可以作为其他项目的maven依赖，在工程A中添加工程B的pom，A就可以使用B中的类。用在父级工程或聚合工程中。用来做jar包的版本控制。 jar包：通常是开发时要引用通用类，打成jar包便于存放管理。当你使用某些功能时就需要这些j">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="章节：小知识">
+<meta property="og:url" content="http://example.com/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/index.html">
+<meta property="og:site_name" content="森">
+<meta property="og:description" content="Maven的三种packaging方式(pom、jar、war)pom是maven依赖文件jar是java普通项目打包war是java web项目打包  pom：打出来可以作为其他项目的maven依赖，在工程A中添加工程B的pom，A就可以使用B中的类。用在父级工程或聚合工程中。用来做jar包的版本控制。 jar包：通常是开发时要引用通用类，打成jar包便于存放管理。当你使用某些功能时就需要这些j">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2023-04-02T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-04-12T04:31:40.311Z">
+<meta property="article:author" content="CSEN">
+<meta property="article:tag" content="lucky项目">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/head.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-w816scvuzwavitjylabixcb3ofuoklqul47j3rgwu1r0mxrxvbdehvp2jk5s.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            森
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Öffne den Link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Lesen Sie mehr über den Autor"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                </a>
+                <h4 class="sidebar-profile-name">CSEN</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archiv"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archiv</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Suche"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Suche</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="Über"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Über</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            章节：小知识
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2023-04-03T00:00:00+08:00">
+	
+		    03 Apr 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h1 id="Maven的三种packaging方式-pom、jar、war"><a href="#Maven的三种packaging方式-pom、jar、war" class="headerlink" title="Maven的三种packaging方式(pom、jar、war)"></a>Maven的三种packaging方式(pom、jar、war)</h1><p>pom是maven依赖文件<br>jar是java普通项目打包<br>war是java web项目打包 </p>
+<p>pom：打出来可以作为其他项目的maven依赖，在工程A中添加工程B的pom，A就可以使用B中的类。用在父级工程或聚合工程中。用来做jar包的版本控制。</p>
+<p>jar包：通常是开发时要引用通用类，打成jar包便于存放管理。当你使用某些功能时就需要这些jar包的支持，需要导入jar包。</p>
+<p>war包：是做好一个web网站后，打成war包部署到服务器。目的是节省资源，提供效率</p>
+<h1 id="relativePath"><a href="#relativePath" class="headerlink" title="relativePath"></a>relativePath</h1><p>搭建<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=maven&spm=1001.2101.3001.7020">maven</a>项目，子模块指定父模块试，经常会在parent下面出现relativePath类似下面：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;parent&gt;</span><br><span class="line">	&lt;groupId&gt;net.itxw&lt;/groupId&gt;</span><br><span class="line">	&lt;artifactId&gt;test&lt;/artifactId&gt;</span><br><span class="line">	&lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;</span><br><span class="line">	&lt;relativePath/&gt;</span><br><span class="line">&lt;/parent&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这个<parent>下面的<relativePath>属性是什么意思？</p>
+<p>其实很明显，就是parent的路径，具体来说就是你引用这个parent项目，那parent项目的pom在哪里</p>
+<h1 id="dependencyManagement"><a href="#dependencyManagement" class="headerlink" title="dependencyManagement"></a>dependencyManagement</h1><p>如果有多个子项目都引用同一样依赖，则可以避免在每个使用的子项目里都声明一个版本号。当想升级或切换到另一个版本时，只需要在顶层父容器里更新，而不需要逐个修改子项目；另外如果某个子项目需要另外的一个版本，只需要声明version即可。</p>
+<p>dependencyManagement中定义的只是依赖的声明，并不实现引入，因此子项目需要显式的声明需要用的依赖。</p>
+<p>在父项目的POM.xml中配置</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;dependencyManagement&gt;</span><br><span class="line">        &lt;dependencies&gt;</span><br><span class="line">            &lt;dependency&gt;</span><br><span class="line">                &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">                &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;</span><br><span class="line">                &lt;version&gt;1.2.3.RELEASE&lt;/version&gt;</span><br><span class="line">            &lt;/dependency&gt;</span><br><span class="line">        &lt;/dependencies&gt;</span><br><span class="line">    &lt;/dependencyManagement&gt;</span><br></pre></td></tr></table></figure>
+
+<p>在子项目中配置：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<h1 id="build"><a href="#build" class="headerlink" title="build"></a>build</h1><h3 id="1-约定的目录结构"><a href="#1-约定的目录结构" class="headerlink" title="1 约定的目录结构"></a>1 约定的目录结构</h3><p><code>build </code>标签的子标签大致包含三个主体部分：</p>
+<p>2.2.1 约定的目录结构<br>参考附录中的如下部分：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&lt;sourceDirectory&gt;D:\idea\maven-test\src\main\java&lt;/sourceDirectory&gt;</span><br><span class="line">&lt;scriptSourceDirectory&gt;D:\idea\maven-test\src\main\scripts&lt;/scriptSourceDirectory&gt;</span><br><span class="line">&lt;testSourceDirectory&gt;D:\idea\maven-test\src\test\java&lt;/testSourceDirectory&gt;</span><br><span class="line">&lt;outputDirectory&gt;D:\idea\maven-test\target\classes&lt;/outputDirectory&gt;</span><br><span class="line">&lt;testOutputDirectory&gt;D:\idea\maven-test\target\test-classes&lt;/testOutputDirectory&gt;</span><br><span class="line">&lt;resources&gt;</span><br><span class="line">    &lt;resource&gt;</span><br><span class="line">        &lt;directory&gt;D:\idea\maven-test\src\main\resources&lt;/directory&gt;</span><br><span class="line">    &lt;/resource&gt;</span><br><span class="line">&lt;/resources&gt;</span><br><span class="line">&lt;testResources&gt;</span><br><span class="line">    &lt;testResource&gt;</span><br><span class="line">        &lt;directory&gt;D:\idea\maven-test\src\test\resources&lt;/directory&gt;</span><br><span class="line">    &lt;/testResource&gt;</span><br><span class="line">&lt;/testResources&gt;</span><br><span class="line">&lt;directory&gt;D:\idea\maven-test\target&lt;/directory&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+
+<p>能看到各个目录的作用如下：</p>
+<p>目录名	作用<br>sourceDirectory	主体源程序存放目录<br>scriptSourceDirectory	脚本源程序存放目录<br>testSourceDirectory	测试源程序存放目录<br>outputDirectory	主体源程序编译结果输出目录<br>testOutputDirectory	测试源程序编译结果输出目录<br>resources	主体资源文件存放目录<br>testResources	测试资源文件存放目录<br>directory	构建结果输出目录</p>
+<h3 id="2备用插件管理"><a href="#2备用插件管理" class="headerlink" title="2备用插件管理"></a>2备用插件管理</h3><p>pluginManagement 标签存放着几个极少用到的插件：</p>
+<p>maven-antrun-plugin<br>maven-assembly-plugin<br>maven-dependency-plugin<br>maven-release-plugin<br>通过 pluginManagement 标签管理起来的插件就像 dependencyManagement 一样，子工程使用时可以省略版本号，起到在父工程中统一管理版本的效果，看下面例子：</p>
+<p>被 spring-boot-dependencies 管理的插件信息：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&lt;build&gt;</span><br><span class="line">    &lt;pluginManagement&gt;</span><br><span class="line">        &lt;plugin&gt;</span><br><span class="line">            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;<span class="number">2.6</span><span class="number">.2</span>&lt;/version&gt;</span><br><span class="line">        &lt;/plugin&gt;</span><br><span class="line">    &lt;/pluginManagement&gt;</span><br><span class="line">&lt;/build&gt;</span><br><span class="line">子工程使用的插件信息：</span><br><span class="line">&lt;build&gt;</span><br><span class="line">    &lt;plugins&gt;</span><br><span class="line">        &lt;plugin&gt;</span><br><span class="line">            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;</span><br><span class="line">        &lt;/plugin&gt;</span><br><span class="line">    &lt;/plugins&gt;</span><br><span class="line">&lt;/build&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-生命周期插件"><a href="#3-生命周期插件" class="headerlink" title="3 生命周期插件"></a>3 生命周期插件</h3><h1 id="把cn-XXXX-改成自己的包名，发现也有蛮多地方需要修改，也能加深理解"><a href="#把cn-XXXX-改成自己的包名，发现也有蛮多地方需要修改，也能加深理解" class="headerlink" title="把cn.XXXX 改成自己的包名，发现也有蛮多地方需要修改，也能加深理解"></a>把cn.XXXX 改成自己的包名，发现也有蛮多地方需要修改，也能加深理解</h1><p> 比如application.xml，mybatis全局配置xml里的typeAliases，不过这个文件在第三章还没用到，configuration里面的注释里也能正常跑。</p>
+<h1 id="第4节-策略"><a href="#第4节-策略" class="headerlink" title="第4节 策略"></a>第4节 策略</h1><p> 通常分库分表的几个常见方面；</p>
+<ol>
+<li>访问频率：对于高频访问的数据，可以将其存储在单独的数据库或表中，以提高读写性能。</li>
+<li>数据大小：对于大量的数据，可以将其拆分到多个表中，以减少单表的数据量，降低存储开销。</li>
+<li>数据类型：对于不同类型的数据，可以将其拆分到不同的数据库或表中，便于管理和查询。</li>
+<li>数据范围：对于不同范围的数据，可以将其拆分到不同的数据库或表中，便于数据的管理和查询。</li>
+</ol>
+<p>分库分表的主要目的在于；数据分摊、提高QPS&#x2F;TPS、分摊压力、提高可扩展性。比如；比如数据库的读写性能下降，或者单表数据量过大，这时候您就需要考虑进行分库分表操作了。通过拆分数据库，可以将单个数据库的压力分摊到多个数据库上，从而避免单个数据库的性能瓶颈，提高系统的性能和可扩展性。此外，分库分表还可以解决数据库存储容量的限制，提高数据库的存储能力。</p>
+<p>另外在分库分表之后，数据的一致性会受到影响，数据库的管理和维护成本也会增加。因此，在考虑分库分表时，需要仔细权衡利弊，确定是否真的需要进行分库分表操作。也就是你的开发成本问题。因为有分库分表就会相应的引入 canal binlog同步、es、mq、xxl-job等分布式技术栈。</p>
+<h2 id="库表梳理"><a href="#库表梳理" class="headerlink" title="库表梳理"></a>库表梳理</h2><p>1、感觉从抽奖流程出发比较好理解，用户-&gt;抽奖-&gt;有无得奖-&gt;结果<br>抽奖单独提炼策略表，有无得奖提炼奖品表，策略表和奖品表可以联系成策略明细表（一个策略多个奖品1:n）。抽完后的结果肯定要弄出个结果表，包括奖品发放后续、抽奖明细，但是考虑到用户可以多抽几次，全放一张表肯定不行，那一个用户三个记录肯定不行，所以可以单独分出一个纯粹的参与活动记录表和用户活动抽奖次数表，至于发放奖品后续就可以一个用户一条记录，做成用户抽奖结果表，这样理解可以吗？<br>2、从什么角度出发对需求进行初步的库表梳理比较好的，就像傅哥说的怎么打好地基。</p>
+<h1 id="第5节"><a href="#第5节" class="headerlink" title="第5节"></a>第5节</h1><p>原始mvc架构的一个服务可能对应多个实体类，多个服务可能对应一个实体类，那后面修改一个服务的时候可能造成牵一发而动全身的结果。<br>ddd架构中model（聚合对象）里的对象类只服务于这个领域的repository（数据仓储） service（领域服务），从包的结构区分问题。dao则是仓储的具体实现，repository是接口。</p>
+<p>自增id</p>
+<p>疑惑：不是说model放聚合对象吗，为什么award strategy这些在基础设施层呢，不是应该在strategy领域里面吗？<br>draw req res 这代表什么意思呢</p>
+<p>思考：default抽奖算法，能不能直接在single每次抽奖完的基础上加一个判断，如果有一个奖品抽完了，那就重新更新rateTuple，这样是不是也可以呢，反正原本的default抽奖算法每次抽奖也是要循环奖品？</p>
+<p>service层结构很清晰,DrawExecImpl为什么不自己申明一个变量作为抽奖类型，初始化的时候给他赋值。这样就不用每次抽奖都去数据库请求了。还是说为了防止抽奖方式的改变而这么做呢？</p>
+<h1 id="第06节"><a href="#第06节" class="headerlink" title="第06节"></a>第06节</h1>
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/lucky%E9%A1%B9%E7%9B%AE/" rel="tag">lucky项目</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A11-13/"
+                    data-tooltip="章节：11-13"
+                    aria-label="FRÜHER: 章节：11-13"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/30/%E5%AF%BC%E5%90%91%E6%BB%A4%E6%B3%A2/"
+                    data-tooltip="导向滤波"
+                    aria-label="NÄCHSTER: 导向滤波"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A11-13/"
+                    data-tooltip="章节：11-13"
+                    aria-label="FRÜHER: 章节：11-13"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/30/%E5%AF%BC%E5%90%91%E6%BB%A4%E6%B3%A2/"
+                    data-tooltip="导向滤波"
+                    aria-label="NÄCHSTER: 导向滤波"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
+                        aria-label="Teilen auf Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
+                        aria-label="Teilen auf Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
+                        aria-label="Teilen auf Google Plus"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+            <h4 id="about-card-name">CSEN</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                浙江温州
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-39paoi2hupf5wmw7ojejrxpco6edftjriz5ezbtp4grymrdceksftgan2adp.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+
+    </body>
+</html>
