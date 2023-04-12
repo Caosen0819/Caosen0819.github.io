@@ -232,6 +232,115 @@
                     
                         <a
                             class="link-unstyled"
+                            href="/2022/10/04/springboot-cloud%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
+                            aria-label=": springboot/cloud整合docker和中间件记录"
+                        >
+                            springboot/cloud整合docker和中间件记录
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2022-10-04T21:23:41+08:00">
+	
+		    04 Oct 2022
+    	
+    </time>
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>前言：<br>博主从win换成mac后，想试着自己配一下docker环境，花了足足3到4天的时间。<br>由于中土存在各种中间件的兼容问题，mac版和win版的不一致，中间件版本过新等问题，且大多数博客对于版本的描述不够清晰，很难帮到忙，故博主斗胆记录一下，希望对大家有帮助。</p>
+<p>环境：</p>
+<ul>
+<li>springboot: 2.7.0</li>
+<li>nacos: 2.1.0</li>
+<li>elasticsearch: 8.2.0</li>
+<li>kibana: 8.2.0</li>
+<li>springcloud: 2021.0.3</li>
+<li>springcloudalibaba: 2021.0.1</li>
+<li>mysql: 8.0.26</li>
+<li>redis: 7</li>
+<li>rabbitmq: 3.9.11</li>
+<li>jdk: 8</li>
+<li>kafka: 3.5.11</li>
+</ul>
+<h2 id="1、elasticsearch8-2-0"><a href="#1、elasticsearch8-2-0" class="headerlink" title="1、elasticsearch8.2.0"></a>1、elasticsearch8.2.0</h2><p>当es和kibana到达8版本后，出现了很多变化，而且兼容mac版本的镜像提示不够明确  </p>
+<p>可能出现的问题：</p>
+<p>1、装好es之后你打开9200端口，发现他要求你输入密码，但是你其实根本就没有告诉你初始账号密码和默认的账号密码</p>
+<p>解决方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">csen@CsendeMBA Sen-Blog % docker exec -it (容器名字) /bin/bash</span><br><span class="line">elasticsearch@52142308d267:~$ ls</span><br><span class="line">LICENSE.txt  README.asciidoc  config  jdk  logs     plugins</span><br><span class="line">NOTICE.txt   bin              data    lib  modules</span><br><span class="line">elasticsearch@52142308d267:~$ cd config</span><br><span class="line">elasticsearch@52142308d267:~/config$ ls</span><br><span class="line">certs                              jvm.options             role_mapping.yml</span><br><span class="line">elasticsearch-plugins.example.yml  jvm.options.d           roles.yml</span><br><span class="line">elasticsearch.keystore             log4j2.file.properties  users</span><br><span class="line">elasticsearch.yml                  log4j2.properties       users_roles</span><br><span class="line">elasticsearch@52142308d267:~/config$ </span><br></pre></td></tr></table></figure>
+<p>你会看到有一个文件叫做elasticsearch.yml,我们需要做的就是修改这个文件</p>
+<p>修改文件内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cluster.name: &quot;docker-cluster&quot;</span><br><span class="line">network.host: 0.0.0.0</span><br><span class="line">http.cors.enabled: true</span><br><span class="line">http.cors.allow-origin: &quot;*&quot;</span><br><span class="line"># Enable security features</span><br><span class="line">xpack.security.enabled: true</span><br><span class="line">xpack.security.enrollment.enabled: true（可以先不加，上面的必须加）</span><br></pre></td></tr></table></figure>
+
+<p>当你修改之后，重启容器：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker restart 容器名字</span><br></pre></td></tr></table></figure>
+<p>等重启之后，进入容器的es内部（可以直接docker desk客户端的cli那里，也可以像上面一样命令行）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/usr/share/elasticsearch/bin/x-pack/setup-passwords interactive</span><br></pre></td></tr></table></figure>
+
+<p>依此设置elastic、apm_system、kibana_system、logstash_system、beats_system、remote_monitoring_user6个用户的密码，每设置一个都要验证一次，所以要按12次，建议直接用一个密码就行，我用的是elastic</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Initiating the setup of passwords for reserved users elastic,apm_system,kibana,kibana_system,logstash_system,beats_system,remote_monitoring_user.</span><br><span class="line">You will be prompted to enter passwords as the process progresses.</span><br><span class="line">Please confirm that you would like to continue [y/N]y</span><br><span class="line">Enter password for [elastic]: </span><br><span class="line">Reenter password for [elastic]: </span><br><span class="line">Enter password for [apm_system]: </span><br><span class="line">Reenter password for [apm_system]: </span><br><span class="line">Enter password for [kibana_system]: </span><br><span class="line">Reenter password for [kibana_system]: </span><br><span class="line">Enter password for [logstash_system]: </span><br><span class="line">Reenter password for [logstash_system]: </span><br><span class="line">Enter password for [beats_system]: </span><br><span class="line">Reenter password for [beats_system]: </span><br><span class="line">Enter password for [remote_monitoring_user]: </span><br><span class="line">Reenter password for [remote_monitoring_user]: </span><br><span class="line">Changed password for user [apm_system]</span><br><span class="line">Changed password for user [kibana_system]</span><br><span class="line">Changed password for user [kibana]</span><br><span class="line">Changed password for user [logstash_system]</span><br><span class="line">Changed password for user [beats_system]</span><br><span class="line">Changed password for user [remote_monitoring_user]</span><br><span class="line">Changed password for user [elastic]</span><br></pre></td></tr></table></figure>
+<p>这时候登陆9200端口查看是否成功，如果成功他会返回一个json串，一看就知道成功的json串，有name clustername、version这些属性。</p>
+<h2 id="2、kibana8-2-0"><a href="#2、kibana8-2-0" class="headerlink" title="2、kibana8.2.0"></a>2、kibana8.2.0</h2><p>kibana安装完成后打开5601端口，他会在页面左上角显示一段英文串，意思就是没准备好，但实际是因为权限问题，人家进不去。</p>
+<p>这个问题大多数博主都没讲到。</p>
+<p>解决办法是：你告诉kibana，es的账号密码，我们会发现，在es设置密码的时候有6个用户，那我们到底用哪一个呢？这里有点歧义，我的选择是直接用kibana_system这个用户。因为我们就是kibana所以没什么问题，但是有一个博主用的elastic用户，而我使用这个用户会提示错误，所以大家可以先试试kibana_system然后elastic，具体操作如下：</p>
+<p>首先挂载config，把原本自带的挤掉，因为我们在docker修改起来也不方便，所以直接挂载是最简单的。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">volumes:</span><br><span class="line">     - /Users/csen/dockerProject/mydata/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml </span><br><span class="line">     - </span><br></pre></td></tr></table></figure>
+<p>挂载成功后，在我们的kibana.yml文件中修改内容</p>
+<p>1、要对应你们自己修改的密码。如果是elastic那就完全复制，如果不是，就自己改一下密码。<br>2、elasticseatch.hosts那一栏我写的是es：9200，因为我的elasticsearch容器跑通之后，在springboot项目中的别名叫做es，大家根据自己的改哦，别死抄。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#</span><br><span class="line"># ** THIS IS AN AUTO-GENERATED FILE **</span><br><span class="line">#</span><br><span class="line"></span><br><span class="line"># Default Kibana configuration for docker target</span><br><span class="line">server.host: &quot;0.0.0.0&quot;</span><br><span class="line">server.shutdownTimeout: &quot;5s&quot;</span><br><span class="line">elasticsearch.hosts: [ &quot;http://es:9200&quot; ]</span><br><span class="line">monitoring.ui.container.elasticsearch.enabled: true</span><br><span class="line"># 这里配置中文显示，默认为英文 【English - en (default)、Chinese - zh-CN、Japanese - ja-JP】</span><br><span class="line">i18n.locale: &quot;zh-CN&quot;</span><br><span class="line"># 此处设置elastic的用户名和密码</span><br><span class="line">elasticsearch.username: kibana_system</span><br><span class="line">elasticsearch.password: elastic</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="nacos"><a href="#nacos" class="headerlink" title="nacos"></a>nacos</h2><p>这个只说一点就可以了，当然这也是所有中间件的选择方案。版本选对，由于mac有芯片有两代，i5i7和m1m2，这两代的架构是不一样的，所以去hub里面找相应的版本大下载就可以了，举个例子：</p>
+<p>我们要下载2.1.0版本的nacos，我们打开hub.docker.com然后搜索nacos，去tag里面输入2.1.0，你会发现，有好多版本，这时候我们要看【os&#x2F;arch】这一栏，你去看看他到底是哪种架构的，有的是linux&#x2F;amd64，有的是linux&#x2F;arm64，有的是两者皆有。如果是i5i7的就去下带amd64的，如果是m1m2的就去下载带arm64的。</p>
+<p>不过这里提一嘴，m1m2芯片他自带了转译的功能，也就是说即使是amd64的他也有能力转成适合自己的，但是可能存在两代电脑环境配置的问题，大家还是下载各自适合的最好。</p>
+<h2 id="mysql8"><a href="#mysql8" class="headerlink" title="mysql8"></a>mysql8</h2><p>目前网上的博客大多都是mysql5.7版本之类的，8版本的较少，所以会出一些错误。</p>
+<p>特别是连接数据库的时候，大家发现明明我的账号密码都对的，为什么还是说连接错误呢？这其实很可能不是我们自己的问题。</p>
+<p>下面给出我的连接数据库的配置：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">datasource:</span><br><span class="line">  url: jdbc:mysql://db:3306/mall?useUnicode=true&amp;characterEncoding=utf-8&amp;serverTimezone=Asia/Shanghai&amp;useSSL=false&amp;allowPublicKeyRetrieval=true</span><br><span class="line">  username: root</span><br><span class="line">  password: XXXXXXXX</span><br><span class="line">  druid:</span><br><span class="line">    initial-size: 5 #连接池初始化大小</span><br><span class="line">    min-idle: 10 #最小空闲连接数</span><br><span class="line">    max-active: 20 #最大连接数</span><br><span class="line">    web-stat-filter:</span><br><span class="line">      exclusions: &quot;*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*&quot; #不统计这些请求数据</span><br><span class="line">    stat-view-servlet: #访问监控网页的登录用户名和密码</span><br><span class="line">      login-username: druid</span><br><span class="line">      login-password: druid</span><br></pre></td></tr></table></figure>
+
+<p>这里需要注意的是一下几点：</p>
+<p>1、如果你把项目放到docker里面，就不要用localhost了，要么你直接用ip地址，要么就和我一样用这种别名。<br>而这种别名的配置则放在docker-compose里面。<br>这个在文章最后会给大家放一个链接将docker-compose怎么写。</p>
+<p>2、由于版本升级和docker的原因，在连接数据库的时候最好加上这些后缀：</p>
+<p>2.1、useUnicode&#x3D;true&amp;characterEncoding&#x3D;utf-8：一旦设置了之后，不管数据库是什么编码，读取的时候都会转换成UTF-8，存取的时候还是会按数据库编码存</p>
+<p>2.2、serverTimezone&#x3D;Asia&#x2F;Shanghai：问题在 MySQL8.0的驱动包跟之前不一样了，默认时区是全球统一时间 (UTC)，北京时间是 UTC+8，这句话不加就导致了很多人就算不在docker里面都连不上数据库，mysql8就很烦。</p>
+<p>2.3、useSSL&#x3D;false：useSSL&#x3D;true是进行安全验证，一般通过证书或者令牌什么的，useSSL&#x3D;false就是通过账号密码进行连接，通常使用useSSL&#x3D;false，这个也是mysql8的问题，不过这个问题并不是到了8之后才有的，5.7之后就存在这个问题了。ssl会认证用户的服务器，然后加密数据，最后维护数据的完整性。但是我们用docker相当于把它部署到一个linux服务器上，所以用不到这个。</p>
+<p>2.4、allowPublicKeyRetrieval&#x3D;true。</p>
+<p>这个指令比较玄学，是由于报了下面错误才用的，Public Key Retrieval is not allowed（不允许检索公钥）。博主也去网上查了很多资料，大家的话大差不差，就是在第一次连接的时候会出问题，第二次连的时候貌似数据库就缓存的这个配置信息，既然加上能用，大家就加上。有一些朋友也说到，如果我们使用一些可视化工具比如navicat这类的也能解决。</p>
+<p>另一种法是：使用指令mysql -u root -p指令进入mysql，将验证方式修改为“mysql_native_password”</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">USE mysql; </span><br><span class="line">ALTER USER &#x27;root&#x27;@&#x27;%&#x27; IDENTIFIED WITH mysql_native_password BY &#x27;123456&#x27;;</span><br><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2022/10/04/springboot-cloud%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Kommentieren und teilen
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
                             href="/2022/10/04/springboot%E6%95%B4%E5%90%88elasticsearch8-2-0/"
                             aria-label=": springboot整合elasticsearch8.2.0"
                         >
