@@ -1,0 +1,620 @@
+
+<!DOCTYPE html>
+<html lang="zh-CH">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="森">
+    <title>mybatis组件的整合理解 - 森</title>
+    <meta name="author" content="CSEN">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"orm我们已经知道具体的做法了，那怎么把这个和我们的spring结合在一起呢？\n其实我们要做的就是让他参与到Spring的事务管理之中，然后创建映射器和sqlsession并注入到bean里面，再把异常转化成Spring到dataaccessexception。以上的种种就是要把我们自己的orm交给spring管理。\norm结合spring的核心内容就是对需要注册对象的扫描，代理类的实现，bean的注册。\n这里和orm框架一样，也有三个类非常重要：SqlSessionFactoryBean、MapperScannerConfigurer、MapperFactoryBean\n先说SqlSessionFactoryBean\n* 在基本的 MyBatis 中，session 工厂可以使用 SqlSessionFactoryBuilder 来创建。而在 MyBatis-Spring 中,则使用 SqlSessionFactoryBean 来替代。public class SqlSessionFactoryBean implements FactoryBean&lt;SqlSessionFactory&gt;, InitializingBean &#123;    private String resource;    private SqlSessionFactory sqlSessionFactory;    @Override    public void afterPropertiesSet() throws Exception &#123;        try (Reader reader = Resources.getResourceAsReader(resource)) &#123;            this.sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);        &#125; catch (Exception e) &#123;            e.printStackTrace();        &#125;    &#125;    @Override    public SqlSessionFactory getObject() throws Exception &#123;        return sqlSessionFactory;    &#125;    @Override    public Class&lt;?&gt; getObjectType() &#123;        return SqlSessionFactory.class;    &#125;    @Override    public boolean isSingleton() &#123;        return true;    &#125;    public void setResource(String resource) &#123;        this.resource = resource;    &#125;&#125;\n\nSqlSessionFactoryBean实现InitializingBean主要适用于加载mybatis相关内容；解析xml、构造sqlsession、链接数据库等等，这三步就是我们orm框架中的核心部分，这也是为什么你只要引入一些数据库的依赖，你如果没有配置数据库，他在项目启动的时候就会报错，因为这个需要一开始就配置好。\nMapperScannerConfigurer\npublic class MapperScannerConfigurer implements BeanDefinitionRegistryPostProcessor &#123;    private String basePackage;    private SqlSessionFactory sqlSessionFactory;    @Override    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException &#123;        try &#123;            String packageSearchPath = &quot;classpath*:&quot; + basePackage.replace(&#x27;.&#x27;, &#x27;/&#x27;) + &quot;/**/*.class&quot;;            ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();            Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);            for (Resource resource : resources) &#123;                MetadataReader metadataReader = new SimpleMetadataReader(resource, ClassUtils.getDefaultClassLoader());                ScannedGenericBeanDefinition beanDefinition = new ScannedGenericBeanDefinition(metadataReader);                String beanName = Introspector.decapitalize(ClassUtils.getShortName(beanDefinition.getBeanClassName()));                beanDefinition.setResource(resource);                beanDefinition.setSource(resource);                beanDefinition.setScope(&quot;singleton&quot;);                beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(beanDefinition.getBeanClassName());                beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(sqlSessionFactory);                beanDefinition.setBeanClass(MapperFactoryBean.class);                BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(beanDefinition, beanName);                registry.registerBeanDefinition(beanName, definitionHolder.getBeanDefinition());            &#125;        &#125; catch (IOException e) &#123;            e.printStackTrace();        &#125;    &#125;    @Override    public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException &#123;    &#125;    public void setBasePackage(String basePackage) &#123;        this.basePackage = basePackage;    &#125;    public void setSqlSessionFactory(SqlSessionFactory sqlSessionFactory) &#123;        this.sqlSessionFactory = sqlSessionFactory;    &#125;&#125;\n\n这个类要做的就是把Dao接口全部扫描出来（也就是所有的XXXdao），完成他们的代理，然后把他们注册到spring Bean容器\n打个锻炼看看：\npostProcessBeanDefinitionRegistry\n\n\n看这个packagesearchpath就明白了\n\n看resource，因为我们只有一个dao所以就扫描到了一个\n\n这里把他注册到容器中\nmapperfactory：\n这个类其实就是你所有dao接口类的\n日常调用的 dao 层接口就是 MapperFactoryBean 实例化的\n\n我们虽然配置的是MapperFactoryBean的实列，但是根据id拿到的是getObject方法里面返回的的对象。其实在容器中创建的对象仍然是MapperFactoryBean的实列，只是在获取的时候会判断这个结果对象是不是派生于FactoryBean，如果是的话则返回getObject方法创建的对象，并且这个对象并不是容器初始化时创建的，而是使用context.getBean()方法时才创建。当然了，如果你确实想要获取FactoryBean实例，你需要这样写: MapperFactoryBean mapper = context.getBean(&quot;&amp;mapper&quot;, MapperFactoryBean.class); 只需要在bean的名字ID前加上&amp;符号。\n所以究竟getObject获取的是什么呢？那就看他return了什么，后面的详细知识和加载流程，就涉及spring源码，所以可以看我的Spring ioc加载流程，保真有所收获！\n","dateCreated":"2023-04-27T00:00:00+08:00","dateModified":"2023-04-27T15:12:20+08:00","datePublished":"2023-04-27T00:00:00+08:00","description":"","headline":"mybatis组件的整合理解","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/","keywords":"spring勇攀高峰"}</script>
+    <meta name="description" content="orm我们已经知道具体的做法了，那怎么把这个和我们的spring结合在一起呢？ 其实我们要做的就是让他参与到Spring的事务管理之中，然后创建映射器和sqlsession并注入到bean里面，再把异常转化成Spring到dataaccessexception。以上的种种就是要把我们自己的orm交给spring管理。 orm结合spring的核心内容就是对需要注册对象的扫描，代理类的实现，bean">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="mybatis组件的整合理解">
+<meta property="og:url" content="http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/index.html">
+<meta property="og:site_name" content="森">
+<meta property="og:description" content="orm我们已经知道具体的做法了，那怎么把这个和我们的spring结合在一起呢？ 其实我们要做的就是让他参与到Spring的事务管理之中，然后创建映射器和sqlsession并注入到bean里面，再把异常转化成Spring到dataaccessexception。以上的种种就是要把我们自己的orm交给spring管理。 orm结合spring的核心内容就是对需要注册对象的扫描，代理类的实现，bean">
+<meta property="og:locale" content="zh_CH">
+<meta property="og:image" content="http://example.com/images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/image-20230427143800831.png">
+<meta property="og:image" content="http://example.com/images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/image-20230427145417700.png">
+<meta property="og:image" content="http://example.com/images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/image-20230427145506491.png">
+<meta property="og:image" content="http://example.com/images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/image-20230427145729295.png">
+<meta property="article:published_time" content="2023-04-26T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-04-27T07:12:20.549Z">
+<meta property="article:author" content="CSEN">
+<meta property="article:tag" content="spring勇攀高峰">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/image-20230427143800831.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/head.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-w816scvuzwavitjylabixcb3ofuoklqul47j3rgwu1r0mxrxvbdehvp2jk5s.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            森
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Öffne den Link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Lesen Sie mehr über den Autor"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                </a>
+                <h4 class="sidebar-profile-name">CSEN</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archiv"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archiv</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Suche"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Suche</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="Über"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Über</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            mybatis组件的整合理解
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2023-04-27T00:00:00+08:00">
+	
+		    27 Apr 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/java/">java</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>orm我们已经知道具体的做法了，那怎么把这个和我们的spring结合在一起呢？</p>
+<p>其实我们要做的就是让他参与到Spring的事务管理之中，然后创建映射器和sqlsession并注入到bean里面，再把异常转化成Spring到dataaccessexception。以上的种种就是要把我们自己的orm交给spring管理。<img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/image-20230427143800831.png" alt="image-20230427143800831"></p>
+<p>orm结合spring的核心内容就是对需要注册对象的扫描，代理类的实现，bean的注册。</p>
+<p>这里和orm框架一样，也有三个类非常重要：SqlSessionFactoryBean、MapperScannerConfigurer、MapperFactoryBean</p>
+<p>先说SqlSessionFactoryBean</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">* 在基本的 MyBatis 中，session 工厂可以使用 SqlSessionFactoryBuilder 来创建。而在 MyBatis-Spring 中,则使用 SqlSessionFactoryBean 来替代。</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SqlSessionFactoryBean</span> <span class="keyword">implements</span> <span class="title class_">FactoryBean</span>&lt;SqlSessionFactory&gt;, InitializingBean &#123;</span><br><span class="line">    <span class="keyword">private</span> String resource;</span><br><span class="line">    <span class="keyword">private</span> SqlSessionFactory sqlSessionFactory;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">afterPropertiesSet</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">try</span> (<span class="type">Reader</span> <span class="variable">reader</span> <span class="operator">=</span> Resources.getResourceAsReader(resource)) &#123;</span><br><span class="line">            <span class="built_in">this</span>.sqlSessionFactory = <span class="keyword">new</span> <span class="title class_">SqlSessionFactoryBuilder</span>().build(reader);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> SqlSessionFactory <span class="title function_">getObject</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">return</span> sqlSessionFactory;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Class&lt;?&gt; getObjectType() &#123;</span><br><span class="line">        <span class="keyword">return</span> SqlSessionFactory.class;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isSingleton</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setResource</span><span class="params">(String resource)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.resource = resource;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>SqlSessionFactoryBean实现InitializingBean主要适用于加载mybatis相关内容；解析xml、构造sqlsession、链接数据库等等，这三步就是我们orm框架中的核心部分，这也是为什么你只要引入一些数据库的依赖，你如果没有配置数据库，他在项目启动的时候就会报错，因为这个需要一开始就配置好。</p>
+<p>MapperScannerConfigurer</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MapperScannerConfigurer</span> <span class="keyword">implements</span> <span class="title class_">BeanDefinitionRegistryPostProcessor</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String basePackage;</span><br><span class="line">    <span class="keyword">private</span> SqlSessionFactory sqlSessionFactory;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">postProcessBeanDefinitionRegistry</span><span class="params">(BeanDefinitionRegistry registry)</span> <span class="keyword">throws</span> BeansException &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">packageSearchPath</span> <span class="operator">=</span> <span class="string">&quot;classpath*:&quot;</span> + basePackage.replace(<span class="string">&#x27;.&#x27;</span>, <span class="string">&#x27;/&#x27;</span>) + <span class="string">&quot;/**/*.class&quot;</span>;</span><br><span class="line"></span><br><span class="line">            <span class="type">ResourcePatternResolver</span> <span class="variable">resourcePatternResolver</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PathMatchingResourcePatternResolver</span>();</span><br><span class="line"></span><br><span class="line">            Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (Resource resource : resources) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="type">MetadataReader</span> <span class="variable">metadataReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SimpleMetadataReader</span>(resource, ClassUtils.getDefaultClassLoader());</span><br><span class="line"></span><br><span class="line">                <span class="type">ScannedGenericBeanDefinition</span> <span class="variable">beanDefinition</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ScannedGenericBeanDefinition</span>(metadataReader);</span><br><span class="line">                <span class="type">String</span> <span class="variable">beanName</span> <span class="operator">=</span> Introspector.decapitalize(ClassUtils.getShortName(beanDefinition.getBeanClassName()));</span><br><span class="line"></span><br><span class="line">                beanDefinition.setResource(resource);</span><br><span class="line">                beanDefinition.setSource(resource);</span><br><span class="line">                beanDefinition.setScope(<span class="string">&quot;singleton&quot;</span>);</span><br><span class="line">                beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(beanDefinition.getBeanClassName());</span><br><span class="line">                beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(sqlSessionFactory);</span><br><span class="line">                beanDefinition.setBeanClass(MapperFactoryBean.class);</span><br><span class="line"></span><br><span class="line">                <span class="type">BeanDefinitionHolder</span> <span class="variable">definitionHolder</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BeanDefinitionHolder</span>(beanDefinition, beanName);</span><br><span class="line">                registry.registerBeanDefinition(beanName, definitionHolder.getBeanDefinition());</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">postProcessBeanFactory</span><span class="params">(ConfigurableListableBeanFactory configurableListableBeanFactory)</span> <span class="keyword">throws</span> BeansException &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setBasePackage</span><span class="params">(String basePackage)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.basePackage = basePackage;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setSqlSessionFactory</span><span class="params">(SqlSessionFactory sqlSessionFactory)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.sqlSessionFactory = sqlSessionFactory;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这个类要做的就是把Dao接口全部扫描出来（也就是所有的XXXdao），完成他们的代理，然后把他们注册到spring Bean容器</p>
+<p>打个锻炼看看：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">postProcessBeanDefinitionRegistry</span><br></pre></td></tr></table></figure>
+
+<p><img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/image-20230427145417700.png" alt="image-20230427145417700"></p>
+<p>看这个packagesearchpath就明白了</p>
+<p><img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/image-20230427145506491.png" alt="image-20230427145506491"></p>
+<p>看resource，因为我们只有一个dao所以就扫描到了一个</p>
+<p><img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/image-20230427145729295.png" alt="image-20230427145729295"></p>
+<p>这里把他注册到容器中</p>
+<p>mapperfactory：</p>
+<p>这个类其实就是你所有dao接口类的</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">日常调用的 dao 层接口就是 MapperFactoryBean 实例化的</span><br></pre></td></tr></table></figure>
+
+<p>我们虽然配置的是<code>MapperFactoryBean</code>的实列，但是根据id拿到的是<code>getObject</code>方法里面返回的的对象。其实在容器中创建的对象仍然是<code>MapperFactoryBean</code>的实列，只是在获取的时候会判断这个结果对象是不是派生于<code>FactoryBean</code>，如果是的话则返回<code>getObject</code>方法创建的对象，并且这个对象并不是容器初始化时创建的，而是使用<code>context.getBean()</code>方法时才创建。当然了，如果你确实想要获取<code>FactoryBean</code>实例，你需要这样写: <em><code>MapperFactoryBean mapper = context.getBean(&quot;&amp;mapper&quot;, MapperFactoryBean.class);</code></em> 只需要在bean的名字ID前加上&amp;符号。</p>
+<p>所以究竟getObject获取的是什么呢？那就看他return了什么，后面的详细知识和加载流程，就涉及spring源码，所以可以看我的Spring ioc加载流程，保真有所收获！</p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/spring%E5%8B%87%E6%94%80%E9%AB%98%E5%B3%B0/" rel="tag">spring勇攀高峰</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/"
+                    data-tooltip="mybatis组件的整合理解"
+                    aria-label="NÄCHSTER: mybatis组件的整合理解"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/"
+                    data-tooltip="mybatis组件的整合理解"
+                    aria-label="NÄCHSTER: mybatis组件的整合理解"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+                        aria-label="Teilen auf Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+                        aria-label="Teilen auf Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+                        aria-label="Teilen auf Google Plus"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+            <h4 id="about-card-name">CSEN</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                浙江温州
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-39paoi2hupf5wmw7ojejrxpco6edftjriz5ezbtp4grymrdceksftgan2adp.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+
+    </body>
+</html>

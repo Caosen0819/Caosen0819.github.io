@@ -11,11 +11,11 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"其实这里最核心的还是做一个ORM对象关系映射，用于不同类型系统的数据之间的转换，也让我们更方便的使用数据库。\n主要做法其实就是通过：参数映射、SQL解析和执行以及结果封装的整体方式对数据库进行操作。这也是ORM框架的核心内容。\n这里我们注意三类 类，没错就是三个类的类\n分别是，sqlsession、sqlsessionfactory、sqlsessionfactorybuilder\nsqlseesion：定义了对数据库的操作，什么查询啊之类的。然后接口必须有一个实现类，这里我们用的是defaultsqlsession，实现了接口的方法，也包装了jdbc，这样就把数据库的jdbc包装起来了，我们敲代码也会方便。\nsqlsessionfactory：你每次有数据库操作都需要开启一个sqlsession那么从谁那里获取呢，就是factory。他也有一个实现类defaultsqlsession factory，他的唯一方法就是返回上面我们的defaultsqlsession，通过传进去的参数返回sqlsession，不过这个类的构造函数传递了configuration配置，包括connection connection，Map dataSource， Map mapperElement。\nsqlsessionfactorybuilder：这个类主要包括：build构建实例化元素，parseConfiguration解析构造，datasource获取数据库配置，connnection链接数据库，mapperElement解析sql语句。\nbuild，创建解析xml文件的类，然后初始化Defaultsqlsessionfactory工厂类，但是这个工厂类需要configuration，那这个configuration则需要parseconfiguration，所以往下看\nparseConfigtation：\nConfiguration configuration = new Configuration();        configuration.setDataSource(dataSource(root.selectNodes(&quot;//dataSource&quot;)));        configuration.setConnection(connection(configuration.dataSource));        configuration.setMapperElement(mapperElement(root.selectNodes(&quot;mappers&quot;)));\n\n首先，我们在build以及把xml文件扫描进来了，然后我们用扫描后的参数去设置数据库、链接、节点这三个关键。\ndatasource函数打断点看看：就是进去了这四个数据库的参数\n\nconnectin函数里面用这几个参数得到一个链接\nClass.forName(dataSource.get(&quot;driver&quot;));return DriverManager.getConnection(dataSource.get(&quot;url&quot;), dataSource.get(&quot;username&quot;), dataSource.get(&quot;password&quot;));\n\nmapperElement函数\n拿到build扫描的参数，做循环\n每次循环，先拿到resource，举个例子：\n\n先拿到mapper&#x2F;usermapper.xml，然后去读这个文件，拿到namespace\n也就是对应的dao类，这里就是iuserdao\n然后去读doc文件里面的各个操作，我们这个读取了select等等操作，反正就是把xnode放到map里面\n\n这个map就是我们的mapperelement，里面是一个namespace对应一个xnode。\n所以mapperelement函数就是去拿到\n对应到我们的具体的mapper.xml文件，然后读取这个文件，去解析我们的sql语句，然后得到一个名称和sql的映射关系的map\n","dateCreated":"2023-04-26T00:00:00+08:00","dateModified":"2023-04-26T15:59:56+08:00","datePublished":"2023-04-26T00:00:00+08:00","description":"","headline":"mybatis组件的整合理解","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/","keywords":"spring勇攀高峰"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"其实这里最核心的还是做一个ORM对象关系映射，用于不同类型系统的数据之间的转换，也让我们更方便的使用数据库。\n主要做法其实就是通过：参数映射、SQL解析和执行以及结果封装的整体方式对数据库进行操作。这也是ORM框架的核心内容。\n这里我们注意三类 类，没错就是三个类的类\n分别是，sqlsession、sqlsessionfactory、sqlsessionfactorybuilder\nsqlseesion：定义了对数据库的操作，什么查询啊之类的。然后接口必须有一个实现类，这里我们用的是defaultsqlsession，实现了接口的方法，也包装了jdbc，这样就把数据库的jdbc包装起来了，我们敲代码也会方便。\nsqlsessionfactory：你每次有数据库操作都需要开启一个sqlsession那么从谁那里获取呢，就是factory。他也有一个实现类defaultsqlsession factory，他的唯一方法就是返回上面我们的defaultsqlsession，通过传进去的参数返回sqlsession，不过这个类的构造函数传递了configuration配置，包括connection connection，Map dataSource， Map mapperElement。\nsqlsessionfactorybuilder：这个类主要包括：build构建实例化元素，parseConfiguration解析构造，datasource获取数据库配置，connnection链接数据库，mapperElement解析sql语句。\nbuild，创建解析xml文件的类，然后初始化Defaultsqlsessionfactory工厂类，但是这个工厂类需要configuration，那这个configuration则需要parseconfiguration，所以往下看\nparseConfigtation：\nConfiguration configuration = new Configuration();        configuration.setDataSource(dataSource(root.selectNodes(&quot;//dataSource&quot;)));        configuration.setConnection(connection(configuration.dataSource));        configuration.setMapperElement(mapperElement(root.selectNodes(&quot;mappers&quot;)));\n\n首先，我们在build以及把xml文件扫描进来了，然后我们用扫描后的参数去设置数据库、链接、节点这三个关键。\ndatasource函数打断点看看：就是进去了这四个数据库的参数\n\nconnectin函数里面用这几个参数得到一个链接\nClass.forName(dataSource.get(&quot;driver&quot;));return DriverManager.getConnection(dataSource.get(&quot;url&quot;), dataSource.get(&quot;username&quot;), dataSource.get(&quot;password&quot;));\n\nmapperElement函数\n拿到build扫描的参数，做循环\n每次循环，先拿到resource，举个例子：\n\n先拿到mapper&#x2F;usermapper.xml，然后去读这个文件，拿到namespace\n也就是对应的dao类，这里就是iuserdao\n然后去读doc文件里面的各个操作，我们这个读取了select等等操作，反正就是把xnode放到map里面\n\n这个map就是我们的mapperelement，里面是一个namespace对应一个xnode。\n所以mapperelement函数就是去拿到\n对应到我们的具体的mapper.xml文件，然后读取这个文件，去解析我们的sql语句，然后得到一个名称和sql的映射关系的map\n","dateCreated":"2023-04-26T00:00:00+08:00","dateModified":"2023-04-26T15:59:56+08:00","datePublished":"2023-04-26T00:00:00+08:00","description":"","headline":"mybatis组件的整合理解","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/","keywords":"spring勇攀高峰"}</script>
     <meta name="description" content="其实这里最核心的还是做一个ORM对象关系映射，用于不同类型系统的数据之间的转换，也让我们更方便的使用数据库。 主要做法其实就是通过：参数映射、SQL解析和执行以及结果封装的整体方式对数据库进行操作。这也是ORM框架的核心内容。 这里我们注意三类 类，没错就是三个类的类 分别是，sqlsession、sqlsessionfactory、sqlsessionfactorybuilder sqlsees">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="mybatis组件的整合理解">
-<meta property="og:url" content="http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/index.html">
+<meta property="og:url" content="http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/index.html">
 <meta property="og:site_name" content="森">
 <meta property="og:description" content="其实这里最核心的还是做一个ORM对象关系映射，用于不同类型系统的数据之间的转换，也让我们更方便的使用数据库。 主要做法其实就是通过：参数映射、SQL解析和执行以及结果封装的整体方式对数据库进行操作。这也是ORM框架的核心内容。 这里我们注意三类 类，没错就是三个类的类 分别是，sqlsession、sqlsessionfactory、sqlsessionfactorybuilder sqlsees">
 <meta property="og:locale" content="zh_CH">
@@ -81,11 +81,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Abre el enlace: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -104,9 +104,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Leer más sobre el autor."
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -125,10 +125,10 @@
                             href="/"
                             
                             rel="noopener"
-                            title="Inicio"
+                            title="Home"
                         >
                         <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Inicio</span>
+                        <span class="sidebar-button-desc">Home</span>
                     </a>
             </li>
             
@@ -153,10 +153,10 @@
                             href="/all-tags"
                             
                             rel="noopener"
-                            title="Etiquetas"
+                            title="Tags"
                         >
                         <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Etiquetas</span>
+                        <span class="sidebar-button-desc">Tags</span>
                     </a>
             </li>
             
@@ -167,10 +167,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archivos"
+                            title="Archiv"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archivos</span>
+                        <span class="sidebar-button-desc">Archiv</span>
                     </a>
             </li>
             
@@ -181,10 +181,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Buscar"
+                            title="Suche"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Buscar</span>
+                        <span class="sidebar-button-desc">Suche</span>
                     </a>
             </li>
             
@@ -195,10 +195,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="Acerca de"
+                            title="Über"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Acerca de</span>
+                        <span class="sidebar-button-desc">Über</span>
                     </a>
             </li>
             
@@ -250,7 +250,7 @@
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/java/">java</a>
 
@@ -301,7 +301,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">ETIQUETADO EN</span><br/>
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/spring%E5%8B%87%E6%94%80%E9%AB%98%E5%B3%B0/" rel="tag">spring勇攀高峰</a>
 
@@ -313,13 +313,16 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a
-                        class="post-action-btn btn btn--disabled"
-                        aria-hidden="true"
-                    >
-                        
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/"
+                    data-tooltip="mybatis组件的整合理解"
+                    aria-label="FRÜHER: mybatis组件的整合理解"
+                >
+                    
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">ANTERIOR</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -329,10 +332,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
                     data-tooltip="Spring整合mybatis"
-                    aria-label="SIGUIENTE: Spring整合mybatis"
+                    aria-label="NÄCHSTER: Spring整合mybatis"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">SIGUIENTE</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -343,7 +346,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -354,9 +357,9 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/"
-                    title="Compartir en Facebook"
-                    aria-label="Compartir en Facebook"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -367,9 +370,9 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/"
-                    title="Compartir en Twitter"
-                    aria-label="Compartir en Twitter"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -380,9 +383,9 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/"
-                    title="Compartir en Google+"
-                    aria-label="Compartir en Google+"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -393,7 +396,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -425,13 +428,16 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a
-                        class="post-action-btn btn btn--disabled"
-                        aria-hidden="true"
-                    >
-                        
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/"
+                    data-tooltip="mybatis组件的整合理解"
+                    aria-label="FRÜHER: mybatis组件的整合理解"
+                >
+                    
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">ANTERIOR</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -441,10 +447,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
                     data-tooltip="Spring整合mybatis"
-                    aria-label="SIGUIENTE: Spring整合mybatis"
+                    aria-label="NÄCHSTER: Spring整合mybatis"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">SIGUIENTE</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -455,7 +461,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -466,9 +472,9 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/"
-                    title="Compartir en Facebook"
-                    aria-label="Compartir en Facebook"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -479,9 +485,9 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/"
-                    title="Compartir en Twitter"
-                    aria-label="Compartir en Twitter"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -492,9 +498,9 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/"
-                    title="Compartir en Google+"
-                    aria-label="Compartir en Google+"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -505,7 +511,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -526,10 +532,10 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/"
-                        aria-label="Compartir en Facebook"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                        aria-label="Teilen auf Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Compartir en Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
                     </a>
                 </li>
             
@@ -539,10 +545,10 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/"
-                        aria-label="Compartir en Twitter"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                        aria-label="Teilen auf Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Compartir en Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
                     </a>
                 </li>
             
@@ -552,10 +558,10 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/"
-                        aria-label="Compartir en Google+"
+                        href="https://plus.google.com/share?url=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                        aria-label="Teilen auf Google Plus"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Compartir en Google+</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
                     </a>
                 </li>
             
@@ -578,7 +584,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
