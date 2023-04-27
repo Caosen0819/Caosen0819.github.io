@@ -346,6 +346,7 @@
 <p>那么在springboot的starter的开发过程中，主要的核心在于自动加载autoconfiguration的使用，我们需要加载yml或者其他的配置文件，并结合配置信息注册相关的bean，因为spring和springboot的注册方式可以不同。</p>
 <p>和myabtis组件的整合理解2中提到的mybatis-spring不同的在于，由于spring和springboot本身存在的区别所以加载配置和启动方式有所不同，所以这里我们需要修改的就是扫描方法，注册代码。</p>
 <p>这个工程也主要分成三块：autoconfigure、mybatis、spring</p>
+<p>●autoconfigure,读取自定义配置信息以及负责把相关mybatis、spring 中的Bean加载启动<br>●mybatis,这部分与我们之前实现的ORM框架源码几乎是一致的，只是对<br>SqlSessionFactoryBuilder做了符合yml配置方式的加载处理。<br>●spring,这一部分主要的变 动是MapperScannerConfigurer关于扫描定义Bean 信息时<br>addGenericArgumentValue入参信息的变更。</p>
 
                     
                         

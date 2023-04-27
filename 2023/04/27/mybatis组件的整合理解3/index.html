@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"现在我们来把我们的成果整合到springboot中，但是我们又不想另起一个模块放我们的整合模块，那怎么做呢？诶，没错，就是依赖组件，我们开发自己的依赖组件，在项目中引入即可。\n那么在springboot的starter的开发过程中，主要的核心在于自动加载autoconfiguration的使用，我们需要加载yml或者其他的配置文件，并结合配置信息注册相关的bean，因为spring和springboot的注册方式可以不同。\n和myabtis组件的整合理解2中提到的mybatis-spring不同的在于，由于spring和springboot本身存在的区别所以加载配置和启动方式有所不同，所以这里我们需要修改的就是扫描方法，注册代码。\n这个工程也主要分成三块：autoconfigure、mybatis、spring\n","dateCreated":"2023-04-27T00:00:00+08:00","dateModified":"2023-04-27T17:43:09+08:00","datePublished":"2023-04-27T00:00:00+08:00","description":"","headline":"mybatis组件的整合理解","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/","keywords":"spring勇攀高峰"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"现在我们来把我们的成果整合到springboot中，但是我们又不想另起一个模块放我们的整合模块，那怎么做呢？诶，没错，就是依赖组件，我们开发自己的依赖组件，在项目中引入即可。\n那么在springboot的starter的开发过程中，主要的核心在于自动加载autoconfiguration的使用，我们需要加载yml或者其他的配置文件，并结合配置信息注册相关的bean，因为spring和springboot的注册方式可以不同。\n和myabtis组件的整合理解2中提到的mybatis-spring不同的在于，由于spring和springboot本身存在的区别所以加载配置和启动方式有所不同，所以这里我们需要修改的就是扫描方法，注册代码。\n这个工程也主要分成三块：autoconfigure、mybatis、spring\n●autoconfigure,读取自定义配置信息以及负责把相关mybatis、spring 中的Bean加载启动●mybatis,这部分与我们之前实现的ORM框架源码几乎是一致的，只是对SqlSessionFactoryBuilder做了符合yml配置方式的加载处理。●spring,这一部分主要的变 动是MapperScannerConfigurer关于扫描定义Bean 信息时addGenericArgumentValue入参信息的变更。\n","dateCreated":"2023-04-27T00:00:00+08:00","dateModified":"2023-04-27T18:01:51+08:00","datePublished":"2023-04-27T00:00:00+08:00","description":"","headline":"mybatis组件的整合理解","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/","keywords":"spring勇攀高峰"}</script>
     <meta name="description" content="现在我们来把我们的成果整合到springboot中，但是我们又不想另起一个模块放我们的整合模块，那怎么做呢？诶，没错，就是依赖组件，我们开发自己的依赖组件，在项目中引入即可。 那么在springboot的starter的开发过程中，主要的核心在于自动加载autoconfiguration的使用，我们需要加载yml或者其他的配置文件，并结合配置信息注册相关的bean，因为spring和springb">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="mybatis组件的整合理解">
@@ -20,7 +20,7 @@
 <meta property="og:description" content="现在我们来把我们的成果整合到springboot中，但是我们又不想另起一个模块放我们的整合模块，那怎么做呢？诶，没错，就是依赖组件，我们开发自己的依赖组件，在项目中引入即可。 那么在springboot的starter的开发过程中，主要的核心在于自动加载autoconfiguration的使用，我们需要加载yml或者其他的配置文件，并结合配置信息注册相关的bean，因为spring和springb">
 <meta property="og:locale" content="zh_CH">
 <meta property="article:published_time" content="2023-04-26T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-04-27T09:43:09.452Z">
+<meta property="article:modified_time" content="2023-04-27T10:01:51.563Z">
 <meta property="article:author" content="CSEN">
 <meta property="article:tag" content="spring勇攀高峰">
 <meta name="twitter:card" content="summary">
@@ -262,6 +262,7 @@
 <p>那么在springboot的starter的开发过程中，主要的核心在于自动加载autoconfiguration的使用，我们需要加载yml或者其他的配置文件，并结合配置信息注册相关的bean，因为spring和springboot的注册方式可以不同。</p>
 <p>和myabtis组件的整合理解2中提到的mybatis-spring不同的在于，由于spring和springboot本身存在的区别所以加载配置和启动方式有所不同，所以这里我们需要修改的就是扫描方法，注册代码。</p>
 <p>这个工程也主要分成三块：autoconfigure、mybatis、spring</p>
+<p>●autoconfigure,读取自定义配置信息以及负责把相关mybatis、spring 中的Bean加载启动<br>●mybatis,这部分与我们之前实现的ORM框架源码几乎是一致的，只是对<br>SqlSessionFactoryBuilder做了符合yml配置方式的加载处理。<br>●spring,这一部分主要的变 动是MapperScannerConfigurer关于扫描定义Bean 信息时<br>addGenericArgumentValue入参信息的变更。</p>
 
             
 

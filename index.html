@@ -345,6 +345,7 @@
 <p>那么在springboot的starter的开发过程中，主要的核心在于自动加载autoconfiguration的使用，我们需要加载yml或者其他的配置文件，并结合配置信息注册相关的bean，因为spring和springboot的注册方式可以不同。</p>
 <p>和myabtis组件的整合理解2中提到的mybatis-spring不同的在于，由于spring和springboot本身存在的区别所以加载配置和启动方式有所不同，所以这里我们需要修改的就是扫描方法，注册代码。</p>
 <p>这个工程也主要分成三块：autoconfigure、mybatis、spring</p>
+<p>●autoconfigure,读取自定义配置信息以及负责把相关mybatis、spring 中的Bean加载启动<br>●mybatis,这部分与我们之前实现的ORM框架源码几乎是一致的，只是对<br>SqlSessionFactoryBuilder做了符合yml配置方式的加载处理。<br>●spring,这一部分主要的变 动是MapperScannerConfigurer关于扫描定义Bean 信息时<br>addGenericArgumentValue入参信息的变更。</p>
 
                     
                         
@@ -666,7 +667,10 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id=""><a href="#" class="headerlink" title=""></a></h1><p>总体分成两个阶段；</p>
+                    <p><strong>在功能上，SpringBoot的容器启动过程基本遵循了Spring的标准启动过程，但是在具体实现上，SpringBoot提供了一些特殊的机制来简化Spring容器的配置和启动。</strong></p>
+<p><strong>首先，SpringBoot自动配置了很多常用的第三方库和框架，使得在大多数情况下，开发者不需要手动配置就能够使用这些库和框架。其次，SpringBoot提供了一些基础设施和约定来简化Spring的配置，例如默认的目录结构、默认的配置文件名、默认的属性配置等，这些都能够减少开发者的配置工作。最后，SpringBoot提供了一些自定义扩展机制，例如通过@ConfigurationProperties注解来绑定配置文件属性到Java对象，通过SpringApplication类的addListeners()方法来添加自定义的启动监听器等等，这些扩展机制能够让开发者更加方便地自定义和扩展SpringBoot的功能。</strong></p>
+<p><strong>总的来说，SpringBoot并没有改变Spring的核心机制和启动过程，但是它在具体实现上提供了很多便利和简化，让开发者能够更加快速地开发和部署应用程序</strong></p>
+<p>总体分成两个阶段；</p>
 <ul>
 <li>一、refresh之前</li>
 <li>二、调用refresh()方法刷新容器</li>

@@ -364,7 +364,10 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id=""><a href="#" class="headerlink" title=""></a></h1><p>总体分成两个阶段；</p>
+                    <p><strong>在功能上，SpringBoot的容器启动过程基本遵循了Spring的标准启动过程，但是在具体实现上，SpringBoot提供了一些特殊的机制来简化Spring容器的配置和启动。</strong></p>
+<p><strong>首先，SpringBoot自动配置了很多常用的第三方库和框架，使得在大多数情况下，开发者不需要手动配置就能够使用这些库和框架。其次，SpringBoot提供了一些基础设施和约定来简化Spring的配置，例如默认的目录结构、默认的配置文件名、默认的属性配置等，这些都能够减少开发者的配置工作。最后，SpringBoot提供了一些自定义扩展机制，例如通过@ConfigurationProperties注解来绑定配置文件属性到Java对象，通过SpringApplication类的addListeners()方法来添加自定义的启动监听器等等，这些扩展机制能够让开发者更加方便地自定义和扩展SpringBoot的功能。</strong></p>
+<p><strong>总的来说，SpringBoot并没有改变Spring的核心机制和启动过程，但是它在具体实现上提供了很多便利和简化，让开发者能够更加快速地开发和部署应用程序</strong></p>
+<p>总体分成两个阶段；</p>
 <ul>
 <li>一、refresh之前</li>
 <li>二、调用refresh()方法刷新容器</li>
