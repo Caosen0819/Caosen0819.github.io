@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv: 2023 - 森</title>
+    <title>Archivos: 2023 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Abre el enlace: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Leer más sobre el autor."
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -114,10 +114,10 @@
                             href="/"
                             
                             rel="noopener"
-                            title="Home"
+                            title="Inicio"
                         >
                         <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Home</span>
+                        <span class="sidebar-button-desc">Inicio</span>
                     </a>
             </li>
             
@@ -142,10 +142,10 @@
                             href="/all-tags"
                             
                             rel="noopener"
-                            title="Tags"
+                            title="Etiquetas"
                         >
                         <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Tags</span>
+                        <span class="sidebar-button-desc">Etiquetas</span>
                     </a>
             </li>
             
@@ -156,10 +156,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archiv"
+                            title="Archivos"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archiv</span>
+                        <span class="sidebar-button-desc">Archivos</span>
                     </a>
             </li>
             
@@ -170,10 +170,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Suche"
+                            title="Buscar"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Suche</span>
+                        <span class="sidebar-button-desc">Buscar</span>
                     </a>
             </li>
             
@@ -184,10 +184,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="Über"
+                            title="Acerca de"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Über</span>
+                        <span class="sidebar-button-desc">Acerca de</span>
                     </a>
             </li>
             
@@ -233,6 +233,91 @@
                     
                         <a
                             class="link-unstyled"
+                            href="/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/"
+                            aria-label=": mybatis组件的整合理解"
+                        >
+                            mybatis组件的整合理解
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-04-26T00:00:00+08:00">
+	
+		    26 Apr 2023
+    	
+    </time>
+    
+        <span>en </span>
+        
+    <a class="category-link" href="/categories/java/">java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>其实这里最核心的还是做一个ORM对象关系映射，用于不同类型系统的数据之间的转换，也让我们更方便的使用数据库。</p>
+<p>主要做法其实就是通过：参数映射、SQL解析和执行以及结果封装的整体方式对数据库进行操作。这也是ORM框架的核心内容。</p>
+<p>这里我们注意三类 类，没错就是三个类的类</p>
+<p>分别是，sqlsession、sqlsessionfactory、sqlsessionfactorybuilder</p>
+<p>sqlseesion：定义了对数据库的操作，什么查询啊之类的。然后接口必须有一个实现类，这里我们用的是defaultsqlsession，实现了接口的方法，也包装了jdbc，这样就把数据库的jdbc包装起来了，我们敲代码也会方便。</p>
+<p>sqlsessionfactory：你每次有数据库操作都需要开启一个sqlsession那么从谁那里获取呢，就是factory。他也有一个实现类defaultsqlsession factory，他的唯一方法就是返回上面我们的defaultsqlsession，通过传进去的参数返回sqlsession，不过这个类的构造函数传递了configuration配置，包括connection connection，Map dataSource， Map mapperElement。</p>
+<p>sqlsessionfactorybuilder：这个类主要包括：build构建实例化元素，parseConfiguration解析构造，datasource获取数据库配置，connnection链接数据库，mapperElement解析sql语句。</p>
+<p>build，创建解析xml文件的类，然后初始化Defaultsqlsessionfactory工厂类，但是这个工厂类需要configuration，那这个configuration则需要parseconfiguration，所以往下看</p>
+<p>parseConfigtation：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">Configuration</span> <span class="variable">configuration</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Configuration</span>();</span><br><span class="line">        configuration.setDataSource(dataSource(root.selectNodes(<span class="string">&quot;//dataSource&quot;</span>)));</span><br><span class="line">        configuration.setConnection(connection(configuration.dataSource));</span><br><span class="line">        configuration.setMapperElement(mapperElement(root.selectNodes(<span class="string">&quot;mappers&quot;</span>)));</span><br></pre></td></tr></table></figure>
+
+<p>首先，我们在build以及把xml文件扫描进来了，然后我们用扫描后的参数去设置数据库、链接、节点这三个关键。</p>
+<p>datasource函数打断点看看：就是进去了这四个数据库的参数</p>
+<p><img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/E7B0BF9D-E780-405F-9FE7-85CECE47328F-2492888.png" alt="E7B0BF9D-E780-405F-9FE7-85CECE47328F"></p>
+<p>connectin函数里面用这几个参数得到一个链接</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Class.forName(dataSource.get(<span class="string">&quot;driver&quot;</span>));</span><br><span class="line"><span class="keyword">return</span> DriverManager.getConnection(dataSource.get(<span class="string">&quot;url&quot;</span>), dataSource.get(<span class="string">&quot;username&quot;</span>), dataSource.get(<span class="string">&quot;password&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<p>mapperElement函数<img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/image-20230426154547513.png" alt="image-20230426154547513"></p>
+<p>拿到build扫描的参数，做循环</p>
+<p>每次循环，先拿到resource，举个例子：</p>
+<p><img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/image-20230426154908196.png" alt="image-20230426154908196"></p>
+<p>先拿到mapper&#x2F;usermapper.xml，然后去读这个文件，拿到namespace</p>
+<p>也就是对应的dao类，这里就是iuserdao</p>
+<p>然后去读doc文件里面的各个操作，我们这个读取了select等等操作，反正就是把xnode放到map里面</p>
+<p><img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/image-20230426155555163.png" alt="image-20230426155555163"></p>
+<p>这个map就是我们的mapperelement，里面是一个namespace对应一个xnode。</p>
+<p>所以mapperelement函数就是去拿到</p>
+<p><img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/image-20230426155850578.png" alt="image-20230426155850578">对应到我们的具体的mapper.xml文件，然后读取这个文件，去解析我们的sql语句，然后得到一个名称和sql的映射关系的map</p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comentar y compartir
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
                             href="/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
                             aria-label=": Spring整合mybatis"
                         >
@@ -247,7 +332,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/java%E5%AD%A6%E4%B9%A0/">java学习</a>
 
@@ -320,7 +405,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -353,7 +438,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%96%99/">学习资料</a>
 
@@ -393,7 +478,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -426,7 +511,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/java%E5%AD%A6%E4%B9%A0/">java学习</a>
 
@@ -659,7 +744,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -692,7 +777,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
 
@@ -732,7 +817,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -765,7 +850,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
 
@@ -810,7 +895,64 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/04/04/new%20page/"
+                            aria-label=": 待定"
+                        >
+                            待定
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-04-04T00:00:00+08:00">
+	
+		    04 Apr 2023
+    	
+    </time>
+    
+        <span>en </span>
+        
+    <a class="category-link" href="/categories/new/">new</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/04/04/new%20page/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -843,7 +985,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
 
@@ -875,7 +1017,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -908,7 +1050,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
 
@@ -979,7 +1121,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -993,7 +1135,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">página 1 de 1</li>
     </ul>
 </div>
 
@@ -1023,7 +1165,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

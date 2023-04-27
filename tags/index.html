@@ -72,11 +72,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Abre el enlace: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
         
         </a>
     
@@ -95,9 +95,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Leer más sobre el autor."
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -116,10 +116,10 @@
                             href="/"
                             
                             rel="noopener"
-                            title="Home"
+                            title="Inicio"
                         >
                         <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Home</span>
+                        <span class="sidebar-button-desc">Inicio</span>
                     </a>
             </li>
             
@@ -144,10 +144,10 @@
                             href="/all-tags"
                             
                             rel="noopener"
-                            title="Tags"
+                            title="Etiquetas"
                         >
                         <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Tags</span>
+                        <span class="sidebar-button-desc">Etiquetas</span>
                     </a>
             </li>
             
@@ -158,10 +158,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archiv"
+                            title="Archivos"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archiv</span>
+                        <span class="sidebar-button-desc">Archivos</span>
                     </a>
             </li>
             
@@ -172,10 +172,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Suche"
+                            title="Buscar"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Suche</span>
+                        <span class="sidebar-button-desc">Buscar</span>
                     </a>
             </li>
             
@@ -186,10 +186,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="Über"
+                            title="Acerca de"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Über</span>
+                        <span class="sidebar-button-desc">Acerca de</span>
                     </a>
             </li>
             
@@ -225,12 +225,12 @@
                         ">
                 <div id="tags-archives" class="main-content-wrap">
     <form id="filter-form" action="#">
-        <input name="tag" type="text" class="form-control input--xlarge" placeholder="Suche nach Tags" autofocus="autofocus">
+        <input name="tag" type="text" class="form-control input--xlarge" placeholder="Buscar etiqueta" autofocus="autofocus">
     </form>
     <h4 class="archive-result text-color-base text-xlarge"
-        data-message-zero="keinen Tags gefunden"
-        data-message-one="1 Tag gefunden"
-        data-message-other="{n} Tags gefunden"></h4>
+        data-message-zero="no se encontraron etiquetas"
+        data-message-one="1 etiqueta encontrada"
+        data-message-other="{n} etiquetas encontradas"></h4>
 
         <section>
         
@@ -252,6 +252,10 @@
         
             <a class="tag tag--primary tag--small" href="#lucky项目-list" data-tag="lucky项目">
                 lucky项目
+            </a>
+        
+            <a class="tag tag--primary tag--small" href="#new-list" data-tag="new">
+                new
             </a>
         
             <a class="tag tag--primary tag--small" href="#springboot-list" data-tag="springboot">
@@ -404,6 +408,26 @@
                 </ul>
             </div>
         
+            <div id="new-list" class="archive box" data-tag="new">
+                <h4 class="archive-title">
+                    <a class="link-unstyled" href="/tags/new">
+                        new (1)
+                    </a>
+                </h4>
+                <ul class="archive-posts">
+                    
+                        <li class="archive-post">
+                            <a class="archive-post-title" href="/2023/04/04/new%20page/">
+                                待定
+                            </a>
+                            <span class="archive-post-date">
+                                 - 04 apr 2023
+                            </span>
+                        </li>
+                    
+                </ul>
+            </div>
+        
             <div id="springboot-list" class="archive box" data-tag="springboot">
                 <h4 class="archive-title">
                     <a class="link-unstyled" href="/tags/springboot">
@@ -463,10 +487,19 @@
             <div id="spring勇攀高峰-list" class="archive box" data-tag="spring勇攀高峰">
                 <h4 class="archive-title">
                     <a class="link-unstyled" href="/tags/spring%E5%8B%87%E6%94%80%E9%AB%98%E5%B3%B0">
-                        spring勇攀高峰 (2)
+                        spring勇攀高峰 (3)
                     </a>
                 </h4>
                 <ul class="archive-posts">
+                    
+                        <li class="archive-post">
+                            <a class="archive-post-title" href="/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/">
+                                mybatis组件的整合理解
+                            </a>
+                            <span class="archive-post-date">
+                                 - 26 apr 2023
+                            </span>
+                        </li>
                     
                         <li class="archive-post">
                             <a class="archive-post-title" href="/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/">
@@ -592,7 +625,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
