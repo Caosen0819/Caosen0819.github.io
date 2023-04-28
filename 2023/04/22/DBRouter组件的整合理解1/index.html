@@ -6,30 +6,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>mybatis组件的整合理解 - 森</title>
+    <title>DBRouter组件的整合理解 - 森</title>
     <meta name="author" content="CSEN">
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"其实这里最核心的还是做一个ORM对象关系映射，用于不同类型系统的数据之间的转换，也让我们更方便的使用数据库。\n主要做法其实就是通过：参数映射、SQL解析和执行以及结果封装的整体方式对数据库进行操作。这也是ORM框架的核心内容。\n这里我们注意三类 类，没错就是三个类的类\n分别是，sqlsession、sqlsessionfactory、sqlsessionfactorybuilder\nsqlseesion：定义了对数据库的操作，什么查询啊之类的。然后接口必须有一个实现类，这里我们用的是defaultsqlsession，实现了接口的方法，也包装了jdbc，这样就把数据库的jdbc包装起来了，我们敲代码也会方便。\nsqlsessionfactory：你每次有数据库操作都需要开启一个sqlsession那么从谁那里获取呢，就是factory。他也有一个实现类defaultsqlsession factory，他的唯一方法就是返回上面我们的defaultsqlsession，通过传进去的参数返回sqlsession，不过这个类的构造函数传递了configuration配置，包括connection connection，Map dataSource， Map mapperElement。\nsqlsessionfactorybuilder：这个类主要包括：build构建实例化元素，parseConfiguration解析构造，datasource获取数据库配置，connnection链接数据库，mapperElement解析sql语句。\nbuild，创建解析xml文件的类，然后初始化Defaultsqlsessionfactory工厂类，但是这个工厂类需要configuration，那这个configuration则需要parseconfiguration，所以往下看\nparseConfigtation：\nConfiguration configuration = new Configuration();        configuration.setDataSource(dataSource(root.selectNodes(&quot;//dataSource&quot;)));        configuration.setConnection(connection(configuration.dataSource));        configuration.setMapperElement(mapperElement(root.selectNodes(&quot;mappers&quot;)));\n\n首先，我们在build以及把xml文件扫描进来了，然后我们用扫描后的参数去设置数据库、链接、节点这三个关键。\ndatasource函数打断点看看：就是进去了这四个数据库的参数\n\nconnectin函数里面用这几个参数得到一个链接\nClass.forName(dataSource.get(&quot;driver&quot;));return DriverManager.getConnection(dataSource.get(&quot;url&quot;), dataSource.get(&quot;username&quot;), dataSource.get(&quot;password&quot;));\n\nmapperElement函数\n拿到build扫描的参数，做循环\n每次循环，先拿到resource，举个例子：\n\n先拿到mapper&#x2F;usermapper.xml，然后去读这个文件，拿到namespace\n也就是对应的dao类，这里就是iuserdao\n然后去读doc文件里面的各个操作，我们这个读取了select等等操作，反正就是把xnode放到map里面\n\n这个map就是我们的mapperelement，里面是一个namespace对应一个xnode。\n所以mapperelement函数就是去拿到\n对应到我们的具体的mapper.xml文件，然后读取这个文件，去解析我们的sql语句，然后得到一个名称和sql的映射关系的map\n","dateCreated":"2023-04-26T00:00:00+08:00","dateModified":"2023-04-26T15:59:56+08:00","datePublished":"2023-04-26T00:00:00+08:00","description":"","headline":"mybatis组件的整合理解","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/","keywords":"spring勇攀高峰"}</script>
-    <meta name="description" content="其实这里最核心的还是做一个ORM对象关系映射，用于不同类型系统的数据之间的转换，也让我们更方便的使用数据库。 主要做法其实就是通过：参数映射、SQL解析和执行以及结果封装的整体方式对数据库进行操作。这也是ORM框架的核心内容。 这里我们注意三类 类，没错就是三个类的类 分别是，sqlsession、sqlsessionfactory、sqlsessionfactorybuilder sqlsees">
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"这个项目我设计的初衷是考虑到业务体量的增加，为了避免原有的设计出现不能承载业务规模的情况发生，所以想设计分库分表， 因为想提高自己的理解，决定自己写一个小组件。\n\n主要考虑以下几个方面：\n一是配置，分库分表需要配置连接池，这个依赖于配置文件，配置连接池之后要二是：考虑动态切换，所以需要去实现AbstractRoutingDataSource的deteemingCurrentlookKey方法。\n三：数据库连接池和动态切换配置好了，就只剩下一个路由的计算模块了，从路由计算中获得分库分表的字段，通过哈希散列和扰动函数最终选择去哪个表，让数据均匀的散列到各个表。\n首先讲一下：DataSourceAutoConfig，借助springboot自动配置机制，读取配置以及数据源的创建，包括yml自定义配置，JoinPoint、路由策略、路由配置、数据源、transactionTemplate.\n举个例子：setEnvironment, 读取自定义配置，因为我们要设置的是一个在yml配置多组数据源，这个方法就是为了解析下面的配置信息。\nrouter :jdbc:datasource :dbCount: 2tbCount: 4list: db01 , db02db01 :dr iver-class-name: com . mysql. jdbc .Driverurl: jdbc :mysql://127.0.0.1:3306/bugstack_ 01?useUnicode-trueusername: rootpassword: 123456db02 :dr iver-class-name: com. mysql. jdbc . Driverurl: jdbc :mysql:/ /127.0.0.1:3306/bugstack_ 02?useUnicode-trueusername: rootpassword: 123456\n\n\n\n动态数据源的切换如下：\npublic class DynamicDataSource extends AbstractRoutingDataSource &#123;    @Override    protected Object determineCurrentLookupKey() &#123;        return &quot;db&quot; + DBContextHolder.getDBKey();    &#125;&#125;\n\n\n\n路由计算：\n路由结果会存储在DBConrtextHolder里面\n路由计算首先需要一些前提\n路由注解@DBRouter 路由的标识，目的是为了给切面提供切点，同时获取方法中入参属性点某个字段，这个字段会作为路由字段存在，比如某个dao接口的xxxdao方法上面就有这个\n分表标记@DBRouterStrategy：目的是告诉路由组件要不要分表，默认false\n最关键的，DBRouterJoinPoint切面类，进行路由选择\t\n","dateCreated":"2023-04-22T00:00:00+08:00","dateModified":"2023-04-28T15:52:51+08:00","datePublished":"2023-04-22T00:00:00+08:00","description":"","headline":"DBRouter组件的整合理解","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/","keywords":"spring勇攀高峰"}</script>
+    <meta name="description" content="这个项目我设计的初衷是考虑到业务体量的增加，为了避免原有的设计出现不能承载业务规模的情况发生，所以想设计分库分表， 因为想提高自己的理解，决定自己写一个小组件。  主要考虑以下几个方面： 一是配置，分库分表需要配置连接池，这个依赖于配置文件，配置连接池之后要二是：考虑动态切换，所以需要去实现AbstractRoutingDataSource的deteemingCurrentlookKey方法。 三">
 <meta property="og:type" content="blog">
-<meta property="og:title" content="mybatis组件的整合理解">
-<meta property="og:url" content="http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/index.html">
+<meta property="og:title" content="DBRouter组件的整合理解">
+<meta property="og:url" content="http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/index.html">
 <meta property="og:site_name" content="森">
-<meta property="og:description" content="其实这里最核心的还是做一个ORM对象关系映射，用于不同类型系统的数据之间的转换，也让我们更方便的使用数据库。 主要做法其实就是通过：参数映射、SQL解析和执行以及结果封装的整体方式对数据库进行操作。这也是ORM框架的核心内容。 这里我们注意三类 类，没错就是三个类的类 分别是，sqlsession、sqlsessionfactory、sqlsessionfactorybuilder sqlsees">
+<meta property="og:description" content="这个项目我设计的初衷是考虑到业务体量的增加，为了避免原有的设计出现不能承载业务规模的情况发生，所以想设计分库分表， 因为想提高自己的理解，决定自己写一个小组件。  主要考虑以下几个方面： 一是配置，分库分表需要配置连接池，这个依赖于配置文件，配置连接池之后要二是：考虑动态切换，所以需要去实现AbstractRoutingDataSource的deteemingCurrentlookKey方法。 三">
 <meta property="og:locale" content="zh_CH">
-<meta property="og:image" content="http://example.com/images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/E7B0BF9D-E780-405F-9FE7-85CECE47328F-2492888.png">
-<meta property="og:image" content="http://example.com/images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/image-20230426154547513.png">
-<meta property="og:image" content="http://example.com/images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/image-20230426154908196.png">
-<meta property="og:image" content="http://example.com/images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/image-20230426155555163.png">
-<meta property="og:image" content="http://example.com/images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/image-20230426155850578.png">
-<meta property="article:published_time" content="2023-04-25T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-04-26T07:59:56.848Z">
+<meta property="og:image" content="http://example.com/images/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/image-20230428132828992.png">
+<meta property="article:published_time" content="2023-04-21T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-04-28T07:52:51.195Z">
 <meta property="article:author" content="CSEN">
 <meta property="article:tag" content="spring勇攀高峰">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/E7B0BF9D-E780-405F-9FE7-85CECE47328F-2492888.png">
+<meta name="twitter:image" content="http://example.com/images/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/image-20230428132828992.png">
     
     
         
@@ -239,14 +235,14 @@
         <div class="post-header main-content-wrap text-left">
     
         <h1 class="post-title">
-            mybatis组件的整合理解
+            DBRouter组件的整合理解
         </h1>
     
     
         <div class="post-meta">
-    <time datetime="2023-04-26T00:00:00+08:00">
+    <time datetime="2023-04-22T00:00:00+08:00">
 	
-		    26 Apr 2023
+		    22 Apr 2023
     	
     </time>
     
@@ -264,34 +260,28 @@
     
     <div class="post-content markdown">
         <div class="main-content-wrap">
-            <p>其实这里最核心的还是做一个ORM对象关系映射，用于不同类型系统的数据之间的转换，也让我们更方便的使用数据库。</p>
-<p>主要做法其实就是通过：参数映射、SQL解析和执行以及结果封装的整体方式对数据库进行操作。这也是ORM框架的核心内容。</p>
-<p>这里我们注意三类 类，没错就是三个类的类</p>
-<p>分别是，sqlsession、sqlsessionfactory、sqlsessionfactorybuilder</p>
-<p>sqlseesion：定义了对数据库的操作，什么查询啊之类的。然后接口必须有一个实现类，这里我们用的是defaultsqlsession，实现了接口的方法，也包装了jdbc，这样就把数据库的jdbc包装起来了，我们敲代码也会方便。</p>
-<p>sqlsessionfactory：你每次有数据库操作都需要开启一个sqlsession那么从谁那里获取呢，就是factory。他也有一个实现类defaultsqlsession factory，他的唯一方法就是返回上面我们的defaultsqlsession，通过传进去的参数返回sqlsession，不过这个类的构造函数传递了configuration配置，包括connection connection，Map dataSource， Map mapperElement。</p>
-<p>sqlsessionfactorybuilder：这个类主要包括：build构建实例化元素，parseConfiguration解析构造，datasource获取数据库配置，connnection链接数据库，mapperElement解析sql语句。</p>
-<p>build，创建解析xml文件的类，然后初始化Defaultsqlsessionfactory工厂类，但是这个工厂类需要configuration，那这个configuration则需要parseconfiguration，所以往下看</p>
-<p>parseConfigtation：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">Configuration</span> <span class="variable">configuration</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Configuration</span>();</span><br><span class="line">        configuration.setDataSource(dataSource(root.selectNodes(<span class="string">&quot;//dataSource&quot;</span>)));</span><br><span class="line">        configuration.setConnection(connection(configuration.dataSource));</span><br><span class="line">        configuration.setMapperElement(mapperElement(root.selectNodes(<span class="string">&quot;mappers&quot;</span>)));</span><br></pre></td></tr></table></figure>
+            <p>这个项目我设计的初衷是考虑到业务体量的增加，为了避免原有的设计出现不能承载业务规模的情况发生，所以想设计分库分表， 因为想提高自己的理解，决定自己写一个小组件。</p>
+<p><img src="/../images/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/image-20230428132828992.png" alt="image-20230428132828992"></p>
+<p>主要考虑以下几个方面：</p>
+<p>一是配置，分库分表需要配置连接池，这个依赖于配置文件，配置连接池之后要二是：考虑动态切换，所以需要去实现AbstractRoutingDataSource的deteemingCurrentlookKey方法。</p>
+<p>三：数据库连接池和动态切换配置好了，就只剩下一个路由的计算模块了，从路由计算中获得分库分表的字段，通过哈希散列和扰动函数最终选择去哪个表，让数据均匀的散列到各个表。</p>
+<p>首先讲一下：DataSourceAutoConfig，借助springboot自动配置机制，读取配置以及数据源的创建，包括yml自定义配置，JoinPoint、路由策略、路由配置、数据源、transactionTemplate.</p>
+<p>举个例子：setEnvironment, 读取自定义配置，因为我们要设置的是一个在yml配置多组数据源，这个方法就是为了解析下面的配置信息。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">router :</span><br><span class="line">jdbc:</span><br><span class="line">datasource :</span><br><span class="line">dbCount: 2</span><br><span class="line">tbCount: 4</span><br><span class="line">list: db01 , db02</span><br><span class="line">db01 :</span><br><span class="line">dr iver-class-name: com . mysql. jdbc .Driver</span><br><span class="line">url: jdbc :mysql://127.0.0.1:3306/bugstack_ 01?</span><br><span class="line">useUnicode-true</span><br><span class="line">username: root</span><br><span class="line">password: 123456</span><br><span class="line">db02 :</span><br><span class="line">dr iver-class-name: com. mysql. jdbc . Driver</span><br><span class="line">url: jdbc :mysql:/ /127.0.0.1:3306/bugstack_ 02?</span><br><span class="line">useUnicode-true</span><br><span class="line">username: root</span><br><span class="line">password: 123456</span><br></pre></td></tr></table></figure>
 
-<p>首先，我们在build以及把xml文件扫描进来了，然后我们用扫描后的参数去设置数据库、链接、节点这三个关键。</p>
-<p>datasource函数打断点看看：就是进去了这四个数据库的参数</p>
-<p><img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/E7B0BF9D-E780-405F-9FE7-85CECE47328F-2492888.png" alt="E7B0BF9D-E780-405F-9FE7-85CECE47328F"></p>
-<p>connectin函数里面用这几个参数得到一个链接</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Class.forName(dataSource.get(<span class="string">&quot;driver&quot;</span>));</span><br><span class="line"><span class="keyword">return</span> DriverManager.getConnection(dataSource.get(<span class="string">&quot;url&quot;</span>), dataSource.get(<span class="string">&quot;username&quot;</span>), dataSource.get(<span class="string">&quot;password&quot;</span>));</span><br></pre></td></tr></table></figure>
 
-<p>mapperElement函数<img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/image-20230426154547513.png" alt="image-20230426154547513"></p>
-<p>拿到build扫描的参数，做循环</p>
-<p>每次循环，先拿到resource，举个例子：</p>
-<p><img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/image-20230426154908196.png" alt="image-20230426154908196"></p>
-<p>先拿到mapper&#x2F;usermapper.xml，然后去读这个文件，拿到namespace</p>
-<p>也就是对应的dao类，这里就是iuserdao</p>
-<p>然后去读doc文件里面的各个操作，我们这个读取了select等等操作，反正就是把xnode放到map里面</p>
-<p><img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/image-20230426155555163.png" alt="image-20230426155555163"></p>
-<p>这个map就是我们的mapperelement，里面是一个namespace对应一个xnode。</p>
-<p>所以mapperelement函数就是去拿到</p>
-<p><img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A3/image-20230426155850578.png" alt="image-20230426155850578">对应到我们的具体的mapper.xml文件，然后读取这个文件，去解析我们的sql语句，然后得到一个名称和sql的映射关系的map</p>
+
+<p>动态数据源的切换如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DynamicDataSource</span> <span class="keyword">extends</span> <span class="title class_">AbstractRoutingDataSource</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Object <span class="title function_">determineCurrentLookupKey</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;db&quot;</span> + DBContextHolder.getDBKey();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>路由计算：</p>
+<p>路由结果会存储在DBConrtextHolder里面</p>
+<p>路由计算首先需要一些前提</p>
+<p>路由注解@DBRouter 路由的标识，目的是为了给切面提供切点，同时获取方法中入参属性点某个字段，这个字段会作为路由字段存在，比如某个dao接口的xxxdao方法上面就有这个</p>
+<p>分表标记@DBRouterStrategy：目的是告诉路由组件要不要分表，默认false</p>
+<p>最关键的，DBRouterJoinPoint切面类，进行路由选择	</p>
 
             
 
@@ -316,7 +306,7 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/"
+                    href="/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                     data-tooltip="mybatis组件的整合理解"
                     aria-label="FRÜHER: mybatis组件的整合理解"
                 >
@@ -330,9 +320,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
-                    data-tooltip="DBRouter组件的整合理解"
-                    aria-label="NÄCHSTER: DBRouter组件的整合理解"
+                    href="/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
+                    data-tooltip="Spring整合mybatis"
+                    aria-label="NÄCHSTER: Spring整合mybatis"
                 >
                     
                         <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
@@ -357,7 +347,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                     title="Teilen auf Facebook"
                     aria-label="Teilen auf Facebook"
                 >
@@ -370,7 +360,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                     title="Teilen auf Twitter"
                     aria-label="Teilen auf Twitter"
                 >
@@ -383,7 +373,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                     title="Teilen auf Google Plus"
                     aria-label="Teilen auf Google Plus"
                 >
@@ -431,7 +421,7 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/"
+                    href="/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                     data-tooltip="mybatis组件的整合理解"
                     aria-label="FRÜHER: mybatis组件的整合理解"
                 >
@@ -445,9 +435,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
-                    data-tooltip="DBRouter组件的整合理解"
-                    aria-label="NÄCHSTER: DBRouter组件的整合理解"
+                    href="/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
+                    data-tooltip="Spring整合mybatis"
+                    aria-label="NÄCHSTER: Spring整合mybatis"
                 >
                     
                         <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
@@ -472,7 +462,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                     title="Teilen auf Facebook"
                     aria-label="Teilen auf Facebook"
                 >
@@ -485,7 +475,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                     title="Teilen auf Twitter"
                     aria-label="Teilen auf Twitter"
                 >
@@ -498,7 +488,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                     title="Teilen auf Google Plus"
                     aria-label="Teilen auf Google Plus"
                 >
@@ -532,7 +522,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                         aria-label="Teilen auf Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
@@ -545,7 +535,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                         aria-label="Teilen auf Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
@@ -558,7 +548,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://example.com/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+                        href="https://plus.google.com/share?url=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                         aria-label="Teilen auf Google Plus"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
