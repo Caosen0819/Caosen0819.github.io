@@ -1,0 +1,653 @@
+
+<!DOCTYPE html>
+<html lang="zh-CH">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="森">
+    <title> - 森</title>
+    <meta name="author" content="CSEN">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？1、解析url首先，就是对我们输入的url进行解析，一般可以得到三个信息：协议，web服务器，文件的路径\n拿到这三个信息之后我们就可以包装成一个http请求信息\n![image-20230728193306158](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193306158.png)\n如图所示，一个是请求一个是响应报文\n那我们生产出一个消息之后就要开始发送？那应该怎么发？往哪里发？\n这就需要下面的知识。\n地址查询 —— DNS基于我们已经拿到的web服务器域名，我们可以先去浏览器缓存里面找有没有，如果有，就直接返回，如果没有那就问操作系统的缓存再去看hosts文件，如果都没有，那就看走下面\n客户端首先会发出一个 DNS 请求，问 www.xx.com 的 IP 是啥，并发给本地 DNS 服务器（也就是客户端的 TCP&#x2F;IP 设置中填写的 DNS 服务器地址）。\n本地域名服务器收到客户端的请求后，如果缓存里的表格能找到 www.xx.com，则它直接返回 IP 地址。如果没有，本地 DNS 会去问它的根域名服务器：“老大， 能告诉我 www.xx.com 的 IP 地址吗？” 根域名服务器是最高层次的，它不直接用于域名解析，但能指明一条道路。\n根 DNS 收到来自本地 DNS 的请求后，发现后置是 .com，说：“www.xx.com 这个域名归 .com 区域管理”，我给你 .com 顶级域名服务器地址给你，你去问问它吧。”\n本地 DNS 收到顶级域名服务器的地址后，发起请求问“老二， 你能告诉我 www.xx.com 的 IP 地址吗？”\n顶级域名服务器说：“我给你负责 www.xx.com 区域的权威 DNS 服务器的地址，你去问它应该能问到”。\n本地 DNS 于是转向问权威 DNS 服务器：“老三，www.xx.com对应的IP是啥呀？” server.com 的权威 DNS 服务器，它是域名解析结果的原出处。为啥叫权威呢？就是我的域名我做主。\n权威 DNS 服务器查询后将对应的 IP 地址 X.X.X.X 告诉本地 DNS。\n本地 DNS 再将 IP 地址返回客户端，客户端和目标建立连接\n![image-20230728193808617](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193808617.png)\n通过dns或者缓存获取到ip地址之后，我们就要为发送做一些准备，首先浏览器通过调用 Socket 库，来委托协议栈工作。\n![image-20230728193955912](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193955912.png)\n说是协议栈，其实就是中间tcp udp ip这些协议。那下面我们就来仔细的看看\nTCPtcp段的头如下所示：\n![image-20230728194108402](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728194108402.png)\nTCP 传输数据之前，要先三次握手建立连接\n前提：客户端 为closed状态，服务端变成listen状态\n连接：\n1、客户端向服务端发送连接syn，之后客户端处于syn-sent状态；\n2、服务端接收到这个消息之后，会返回一个syn+ack，之后服务端处于syn-rcvd状态\n3、客户端收到这个之后，再给服务端发送一个对syn的ack，之后客户端处于establish状态\n服务端收到ack也变成了establish状态\n所以三次握手目的是保证双方都有发送和接收的能力。\n假设我们已经建立了连接，我们要发送消息，但是消息要遵循tcp协议，他的消息大小是有限制的，不是每一次都可以发送全部消息。具体要求如下：\n![image-20230728195857751](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728195857751.png)\n\nMTU：一个网络包的最大长度，以太网中一般为 1500 字节。\nMSS：除去 IP 和 TCP 头部之后，一个网络包所能容纳的 TCP 数据的最大长度\n\n所以如果http请求消息超过mss，那么就要分段发送。\n到这里我们得到了一个tcp的报文段或者说包，下面我们就要把这个包发送给网络层，因为在传输层我们就是服务应用层，然后对好端口，确定好协议，之后的事情就不归传输层管控了。\n到这里，我们的数据包的格式如下所示：\n![image-20230728200405680](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728200405680.png)\n定位IPip协议的最重要的功能就是寻址和路由，他要做到这两点就需要你遵循ip协议，那么遵循的要求就是你加一个ip头![image-20230728200452235](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728200452235.png)\n加上ip头之后我们就知道了我们的源ip和目的ip地址，那么起点站和终点站就已经知道了\n可以现在又有一个小问题，那就是路径怎么规划呢？这时候就需要用到Mac地址\nmac地址![image-20230728202408619](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728202408619.png)\n\n先查询 ARP 缓存，如果其中已经保存了对方的 MAC 地址，就不需要发送 ARP 查询，直接使用 ARP 缓存中的地址。\n而当 ARP 缓存中不存在对方 MAC 地址时，则发送 ARP 广播查询\n\n也就是说到了网络接口层，要发了，结果不知道往哪里发，这时候就按照上面两步得到mac地址\n因为上面已经得到了ip地址，所以直接喊话：这个 IP 地址是谁的？请把你的 MAC 地址告诉我，就得到mac地址了。\n到这里数据包还差最后一层包装\n出口–网卡![image-20230728204942674](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728204942674.png)\n最后一层包装就是上面图片提到的报头和起始帧分界符和fcs帧校验序列\n网卡驱动获取网络包之后，会将其复制到网卡内的缓存区中，接着会在其开头加上报头和起始帧分界符，在末尾加上用于检测错误的帧校验序列。\n到这里数据包就真正的包装结束了，最后网卡会将包转为电信号，通过网线发送出去。！！\n送别者—交换机交换机的设计是将网络包原样转发到目的地。交换机工作在 MAC 层，也称为二层网络设备。\n一般在网线接口啊这些地方，其实路由器也可以作为交换机。\n交换机的包接收操作交换机里的模块将电信号转换为数字信号。\n然后通过包末尾的fcs校验错误，没问题就放到缓存区，这部分操作基本和计算机的网卡相同，但交换机的工作方式和网卡不同。\n计算机的网卡本身具有 MAC 地址，并通过核对收到的包的接收方 MAC 地址判断是不是发给自己的，如果不是发给自己的则丢弃；相对地，交换机的端口不核对接收方 MAC 地址，而是直接接收所有的包并存放到缓冲区中。因此，和网卡不同，交换机的端口不具有 MAC 地址。\n查询MAC 地址表如果找到，就发送到相应的端口，如果找不到，那说明该mac地址的设备还没有向我们交换机发送过包，那这时候我们主动的向除了源端口的所有端口都发送一遍，因为后面的设备他自己都有检测功能，所以不需要担心\n这时候要么就发送到位，要么就可能离开子网了，离开子网需要用到路由器\n出境大门–路由器路由器的包接收操作首先，电信号到达网线接口部分，路由器中的模块会将电信号转成数字信号，然后通过包末尾的 FCS 进行错误校验。\n如果没问题则检查 MAC 头部中的接收方 MAC 地址，看看是不是发给自己的包，如果是就放到接收缓冲区中，否则就丢弃这个包。\n完成包接收操作之后，路由器就会去掉包开头的 MAC 头部。\nMAC 头部的作用就是将包送达路由器，其中的接收方 MAC 地址就是路由器端口的 MAC 地址。因此，当包到达路由器之后，MAC 头部的任务就完成了，于是 MAC 头部就会被丢弃。\n接下来，路由器会根据 MAC 头部后方的 IP 头部中的内容进行包的转发操作。\n路由器的发送操作首先，我们需要根据路由表的网关列判断对方的地址。\n\n如果网关是一个 IP 地址，则这个IP 地址就是我们要转发到的目标地址，还未抵达终点，还需继续需要路由器转发。\n如果网关为空，则 IP 头部中的接收方 IP 地址就是要转发到的目标地址，也是就终于找到 IP 包头里的目标地址了，说明已抵达终点。\n\n反正我们从路由表知道了ip地址，那么我们同样用这个地址去查mac地址\n接下来是发送方 MAC 地址字段，这里填写输出端口的 MAC 地址。还有一个以太类型字段，填写 0800 （十六进制）表示 IP 协议。\n网络包完成后，接下来会将其转换成电信号并通过端口发送出去。这一步的工作过程和计算机也是相同的。\n发送出去的网络包会通过交换机到达下一个路由器。由于接收方 MAC 地址就是下一个路由器的地址，所以交换机会根据这一地址将包传输到下一个路由器。\n例子这边举个例子![image-20230729000740012](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230729000740012.png)\n子网1某个设备想要发送数据给子网2的某个设备\n首先源ip和目的ip是知道的，如果只是简单的arp群发这个ip问是谁的ip地址，其实是找不到的，所以判断是否为同一子网，如果不是，就把目的mac改成网关的mac，然后数据发送到网关，这时候官网一查mac地址，发现属于子网2的设备，这时候修改源mac为自己的mac，修改目的mac为设备的地址，从子网2的网卡发出。\n大多数情况下一个子网的默认网关就是一个，就基本代表着出口。复杂情况就需要某种选择算法了\n","dateCreated":"2023-07-29T00:29:39+08:00","dateModified":"2023-07-29T00:29:39+08:00","datePublished":"2023-07-29T00:29:39+08:00","description":"","headline":"","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/07/29/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/07/29/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/"}</script>
+    <meta name="description" content="输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？1、解析url首先，就是对我们输入的url进行解析，一般可以得到三个信息：协议，web服务器，文件的路径 拿到这三个信息之后我们就可以包装成一个http请求信息 ![image-20230728193306158](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&amp;#x2">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="森">
+<meta property="og:url" content="http://example.com/2023/07/29/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/index.html">
+<meta property="og:site_name" content="森">
+<meta property="og:description" content="输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？1、解析url首先，就是对我们输入的url进行解析，一般可以得到三个信息：协议，web服务器，文件的路径 拿到这三个信息之后我们就可以包装成一个http请求信息 ![image-20230728193306158](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&amp;#x2">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2023-07-28T16:29:39.905Z">
+<meta property="article:modified_time" content="2023-07-28T16:29:39.905Z">
+<meta property="article:author" content="CSEN">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/head.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-w816scvuzwavitjylabixcb3ofuoklqul47j3rgwu1r0mxrxvbdehvp2jk5s.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            森
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Öffne den Link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Lesen Sie mehr über den Autor"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                </a>
+                <h4 class="sidebar-profile-name">CSEN</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archiv"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archiv</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Suche"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Suche</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="Über"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Über</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            (kein Titel)
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2023-07-29T00:29:39+08:00">
+	
+		    29 Jul 2023
+    	
+    </time>
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h1 id="输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？"><a href="#输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？" class="headerlink" title="输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？"></a>输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？</h1><h2 id="1、解析url"><a href="#1、解析url" class="headerlink" title="1、解析url"></a>1、解析url</h2><p>首先，就是对我们输入的url进行解析，一般可以得到三个信息：协议，web服务器，文件的路径</p>
+<p>拿到这三个信息之后我们就可以包装成一个http请求信息</p>
+<p>![image-20230728193306158](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193306158.png)</p>
+<p>如图所示，一个是请求一个是响应报文</p>
+<p>那我们生产出一个消息之后就要开始发送？那应该怎么发？往哪里发？</p>
+<p>这就需要下面的知识。</p>
+<h2 id="地址查询-——-DNS"><a href="#地址查询-——-DNS" class="headerlink" title="地址查询 —— DNS"></a>地址查询 —— DNS</h2><p>基于我们已经拿到的web服务器域名，我们可以先去浏览器缓存里面找有没有，如果有，就直接返回，如果没有那就问操作系统的缓存再去看hosts文件，如果都没有，那就看走下面</p>
+<p>客户端首先会发出一个 DNS 请求，问 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 是啥，并发给本地 DNS 服务器（也就是客户端的 TCP&#x2F;IP 设置中填写的 DNS 服务器地址）。</p>
+<p>本地域名服务器收到客户端的请求后，如果缓存里的表格能找到 <a target="_blank" rel="noopener" href="http://www.xx.com,则它直接返回/">www.xx.com，则它直接返回</a> IP 地址。如果没有，本地 DNS 会去问它的根域名服务器：“老大， 能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？” 根域名服务器是最高层次的，它不直接用于域名解析，但能指明一条道路。</p>
+<p>根 DNS 收到来自本地 DNS 的请求后，发现后置是 .com，说：“<a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 这个域名归 .com 区域管理”，我给你 .com 顶级域名服务器地址给你，你去问问它吧。”</p>
+<p>本地 DNS 收到顶级域名服务器的地址后，发起请求问“老二， 你能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？”</p>
+<p>顶级域名服务器说：“我给你负责 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 区域的权威 DNS 服务器的地址，你去问它应该能问到”。</p>
+<p>本地 DNS 于是转向问权威 DNS 服务器：“老三，<a href="http://www.xx.com对应的IP是啥呀？”">www.xx.com对应的IP是啥呀？”</a> server.com 的权威 DNS 服务器，它是域名解析结果的原出处。为啥叫权威呢？就是我的域名我做主。</p>
+<p>权威 DNS 服务器查询后将对应的 IP 地址 X.X.X.X 告诉本地 DNS。</p>
+<p>本地 DNS 再将 IP 地址返回客户端，客户端和目标建立连接</p>
+<p>![image-20230728193808617](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193808617.png)</p>
+<p>通过dns或者缓存获取到ip地址之后，我们就要为发送做一些准备，首先浏览器通过调用 Socket 库，来委托协议栈工作。</p>
+<p>![image-20230728193955912](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193955912.png)</p>
+<p>说是协议栈，其实就是中间tcp udp ip这些协议。那下面我们就来仔细的看看</p>
+<h2 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h2><p>tcp段的头如下所示：</p>
+<p>![image-20230728194108402](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728194108402.png)</p>
+<p>TCP 传输数据之前，要先三次握手建立连接</p>
+<p>前提：客户端 为closed状态，服务端变成listen状态</p>
+<p>连接：</p>
+<p>1、客户端向服务端发送连接syn，之后客户端处于syn-sent状态；</p>
+<p>2、服务端接收到这个消息之后，会返回一个syn+ack，之后服务端处于syn-rcvd状态</p>
+<p>3、客户端收到这个之后，再给服务端发送一个对syn的ack，之后客户端处于establish状态</p>
+<p>服务端收到ack也变成了establish状态</p>
+<p>所以三次握手目的是<strong>保证双方都有发送和接收的能力</strong>。</p>
+<p>假设我们已经建立了连接，我们要发送消息，但是消息要遵循tcp协议，他的消息大小是有限制的，不是每一次都可以发送全部消息。具体要求如下：</p>
+<p>![image-20230728195857751](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728195857751.png)</p>
+<ul>
+<li><code>MTU</code>：一个网络包的最大长度，以太网中一般为 <code>1500</code> 字节。</li>
+<li><code>MSS</code>：除去 IP 和 TCP 头部之后，一个网络包所能容纳的 TCP 数据的最大长度</li>
+</ul>
+<p>所以如果http请求消息超过mss，那么就要分段发送。</p>
+<p>到这里我们得到了一个tcp的报文段或者说包，下面我们就要把这个包发送给网络层，因为在传输层我们就是服务应用层，然后对好端口，确定好协议，之后的事情就不归传输层管控了。</p>
+<p>到这里，我们的数据包的格式如下所示：</p>
+<p>![image-20230728200405680](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728200405680.png)</p>
+<h2 id="定位IP"><a href="#定位IP" class="headerlink" title="定位IP"></a>定位IP</h2><p>ip协议的最重要的功能就是寻址和路由，他要做到这两点就需要你遵循ip协议，那么遵循的要求就是你加一个ip头![image-20230728200452235](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728200452235.png)</p>
+<p>加上ip头之后我们就知道了我们的源ip和目的ip地址，那么起点站和终点站就已经知道了</p>
+<p>可以现在又有一个小问题，那就是路径怎么规划呢？这时候就需要用到Mac地址</p>
+<h2 id="mac地址"><a href="#mac地址" class="headerlink" title="mac地址"></a>mac地址</h2><p>![image-20230728202408619](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728202408619.png)</p>
+<ul>
+<li>先查询 ARP 缓存，如果其中已经保存了对方的 MAC 地址，就不需要发送 ARP 查询，直接使用 ARP 缓存中的地址。</li>
+<li>而当 ARP 缓存中不存在对方 MAC 地址时，则发送 ARP 广播查询</li>
+</ul>
+<p>也就是说到了网络接口层，要发了，结果不知道往哪里发，这时候就按照上面两步得到mac地址</p>
+<p>因为上面已经得到了ip地址，所以直接喊话：这个 IP 地址是谁的？请把你的 MAC 地址告诉我，就得到mac地址了。</p>
+<p>到这里数据包还差最后一层包装</p>
+<h2 id="出口–网卡"><a href="#出口–网卡" class="headerlink" title="出口–网卡"></a>出口–网卡</h2><p>![image-20230728204942674](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728204942674.png)</p>
+<p>最后一层包装就是上面图片提到的报头和起始帧分界符和fcs帧校验序列</p>
+<p>网卡驱动获取网络包之后，会将其<strong>复制</strong>到网卡内的缓存区中，接着会在其<strong>开头加上报头和起始帧分界符，在末尾加上用于检测错误的帧校验序列</strong>。</p>
+<p>到这里数据包就真正的包装结束了，最后网卡会将包转为电信号，通过网线发送出去。！！</p>
+<h2 id="送别者—交换机"><a href="#送别者—交换机" class="headerlink" title="送别者—交换机"></a>送别者—交换机</h2><p>交换机的设计是将网络包<strong>原样</strong>转发到目的地。交换机工作在 MAC 层，也称为<strong>二层网络设备</strong>。</p>
+<p>一般在网线接口啊这些地方，其实路由器也可以作为交换机。</p>
+<h3 id="交换机的包接收操作"><a href="#交换机的包接收操作" class="headerlink" title="交换机的包接收操作"></a>交换机的包接收操作</h3><p>交换机里的模块将电信号转换为数字信号。</p>
+<p>然后通过包末尾的fcs校验错误，没问题就放到缓存区，这部分操作基本和计算机的网卡相同，但交换机的工作方式和网卡不同。</p>
+<p>计算机的网卡本身具有 MAC 地址，并通过核对收到的包的接收方 MAC 地址判断是不是发给自己的，如果不是发给自己的则丢弃；相对地，交换机的端口不核对接收方 MAC 地址，而是直接接收所有的包并存放到缓冲区中。因此，和网卡不同，<strong>交换机的端口不具有 MAC 地址</strong>。</p>
+<h3 id="查询MAC-地址表"><a href="#查询MAC-地址表" class="headerlink" title="查询MAC 地址表"></a>查询<strong>MAC 地址表</strong></h3><p>如果找到，就发送到相应的端口，如果找不到，那说明该mac地址的设备还没有向我们交换机发送过包，那这时候我们主动的向除了源端口的所有端口都发送一遍，因为后面的设备他自己都有检测功能，所以不需要担心</p>
+<p>这时候要么就发送到位，要么就可能离开子网了，离开子网需要用到路由器</p>
+<h2 id="出境大门–路由器"><a href="#出境大门–路由器" class="headerlink" title="出境大门–路由器"></a>出境大门–路由器</h2><h3 id="路由器的包接收操作"><a href="#路由器的包接收操作" class="headerlink" title="路由器的包接收操作"></a>路由器的包接收操作</h3><p>首先，电信号到达网线接口部分，路由器中的模块会将电信号转成数字信号，然后通过包末尾的 <code>FCS</code> 进行错误校验。</p>
+<p>如果没问题则检查 MAC 头部中的<strong>接收方 MAC 地址</strong>，看看是不是发给自己的包，如果是就放到接收缓冲区中，否则就丢弃这个包。</p>
+<p>完成包接收操作之后，路由器就会<strong>去掉</strong>包开头的 MAC 头部。</p>
+<p><strong>MAC 头部的作用就是将包送达路由器</strong>，其中的接收方 MAC 地址就是路由器端口的 MAC 地址。因此，当包到达路由器之后，MAC 头部的任务就完成了，于是 MAC 头部就会<strong>被丢弃</strong>。</p>
+<p>接下来，路由器会根据 MAC 头部后方的 <code>IP</code> 头部中的内容进行包的转发操作。</p>
+<h3 id="路由器的发送操作"><a href="#路由器的发送操作" class="headerlink" title="路由器的发送操作"></a>路由器的发送操作</h3><p>首先，我们需要根据<strong>路由表的网关列</strong>判断对方的地址。</p>
+<ul>
+<li>如果网关是一个 IP 地址，则这个IP 地址就是我们要转发到的目标地址，<strong>还未抵达终点</strong>，还需继续需要路由器转发。</li>
+<li>如果网关为空，则 IP 头部中的接收方 IP 地址就是要转发到的目标地址，也是就终于找到 IP 包头里的目标地址了，说明<strong>已抵达终点</strong>。</li>
+</ul>
+<p>反正我们从路由表知道了ip地址，那么我们同样用这个地址去查mac地址</p>
+<p>接下来是发送方 MAC 地址字段，这里填写输出端口的 MAC 地址。还有一个以太类型字段，填写 <code>0800</code> （十六进制）表示 IP 协议。</p>
+<p>网络包完成后，接下来会将其转换成电信号并通过端口发送出去。这一步的工作过程和计算机也是相同的。</p>
+<p>发送出去的网络包会通过<strong>交换机</strong>到达下一个路由器。由于接收方 MAC 地址就是下一个路由器的地址，所以交换机会根据这一地址将包传输到下一个路由器。</p>
+<h1 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h1><p>这边举个例子![image-20230729000740012](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230729000740012.png)</p>
+<p>子网1某个设备想要发送数据给子网2的某个设备</p>
+<p>首先源ip和目的ip是知道的，如果只是简单的arp群发这个ip问是谁的ip地址，其实是找不到的，所以判断是否为同一子网，如果不是，就把目的mac改成网关的mac，然后数据发送到网关，这时候官网一查mac地址，发现属于子网2的设备，这时候修改源mac为自己的mac，修改目的mac为设备的地址，从子网2的网卡发出。</p>
+<p>大多数情况下一个子网的默认网关就是一个，就基本代表着出口。复杂情况就需要某种选择算法了</p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+                    data-tooltip="mybatis组件的整合理解2"
+                    aria-label="NÄCHSTER: mybatis组件的整合理解2"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/07/29/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/07/29/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/07/29/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+                    data-tooltip="mybatis组件的整合理解2"
+                    aria-label="NÄCHSTER: mybatis组件的整合理解2"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/07/29/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/07/29/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/07/29/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/07/29/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/"
+                        aria-label="Teilen auf Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/07/29/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/"
+                        aria-label="Teilen auf Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2023/07/29/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/"
+                        aria-label="Teilen auf Google Plus"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+            <h4 id="about-card-name">CSEN</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                浙江温州
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-39paoi2hupf5wmw7ojejrxpco6edftjriz5ezbtp4grymrdceksftgan2adp.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+
+    </body>
+</html>
