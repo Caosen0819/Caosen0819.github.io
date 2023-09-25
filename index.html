@@ -296,7 +296,7 @@
 <p><strong>锁内存语义的实现</strong></p>
 <p>分为公平锁和非公平锁</p>
 <p>ReentrantLock的实现依赖于AbstractQueuedSynchronizer（AQS），AQS使用一个整形的volatile变量（state）来维护同步状态。这个volatile变量是ReentrantLock实现的关键。</p>
-<p>　　编译器<strong>不会对volatile读与其后的任意内存操作重排序</strong>，<strong>不会对volatile写与其前的任意操作重排序</strong>。CAS同时具有volatile读和写的内存语义，编译器<strong>不会对CAS前和后的任意内存操作重排序</strong>，其是通过底层处理器缓存锁定实现原子性的。</p>
+<p>　　编译器<strong>不会对volatile读与其后的任意内存操作重排序</strong>，<strong>不会对volatile写与其前的任意操作重排序</strong>。AQS提供了compareAndSetState()方法来对state进行原子操作。CAS同时具有volatile读和写的内存语义，编译器<strong>不会对CAS前和后的任意内存操作重排序</strong>，其是通过底层处理器缓存锁定实现原子性的。</p>
 <p>CAS同时具有volatile读和写的内存语义，故Java线程之间的通信存在4种方式：</p>
 <p>　　① A线程写volatile变量，随后B线程读该变量；</p>
 <p>　　② A线程写volatile变量，随后B线程使用CAS更新该变量；</p>
@@ -304,21 +304,19 @@
 <p>　　④ A线程使用CAS更新volatile变量，随后B线程读该变量。</p>
 <p>公平锁在释放锁的最后写volatile变量state，在获取锁的时候先读volatile变量，根据先行发生原则释放锁的线程对volatile变量的写，必须对volatile变量的读可见，也就是上节讲的volatile的可见性，所以公平锁本质是通过volatile变量和AQS（这里暂时不对AbstractQueuedSynchronizer讲解）来实现同步的；</p>
 <h2 id="AQS"><a href="#AQS" class="headerlink" title="AQS"></a>AQS</h2><p>本质是一个抽象类，用来构造锁或其他同步组件的基础框架</p>
-<p>用state表示同步状态，state&#x3D;0表示初始状态可以占有锁，state&#x3D;1表示已有线程占有，大于1是重入锁，</p>
+<p>用state表示同步状态（volatile）	</p>
 <p>用一个同步队列来管理同步状态fifo双向队列，当线程获取同步状态失败，那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</p>
 <p>独占式，线程调用tryacquire获取同步状态，如果获取同步状态失败的话构造同步节点将该节点通过CAS加入到同步队列尾部，并处于死循环。</p>
 <p>共享式和独占式最大的区别就局势同一时刻能够多个线程获取到同步状态</p>
-<h2 id="ReentrantLock原理"><a href="#ReentrantLock原理" class="headerlink" title="ReentrantLock原理"></a>ReentrantLock原理</h2><ul>
-<li>加锁：lock</li>
-<li>释放锁：unlock</li>
-</ul>
+<h2 id="ReentrantLock原理"><a href="#ReentrantLock原理" class="headerlink" title="ReentrantLock原理"></a>ReentrantLock原理</h2><p>用这个之前需要先创建 ReentrantLock 对象，然后使用 lock 方法进行加锁，使用完之后再调用 unlock 方法释放锁</p>
+<p><strong>synchronized 是 JVM 层面通过监视器（Monitor）实现的，而 ReentrantLock 是通过 AQS（AbstractQueuedSynchronizer）程序级别的 API 实现</strong></p>
 <p>用state表示同步状态，state&#x3D;0表示初始状态可以占有锁，state&#x3D;1表示已有线程占有，大于1是重入锁。</p>
-<p>用一个同步队列来管理同步状态fifo双向队列，当线程尝试获取同步状态时候，这里公平锁和非公平锁有一点，非公平锁会先尝试CAS将当前的State从0置为1，公平锁不会。然后获取当前state，如果是0说明现在没人拿，我可以去直接去拿。但是公平锁这里会多一个判断，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。非公平锁不管<strong>我都去CAS一把，看看能不能拿到</strong>。如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</p>
+<p>用一个同步队列来管理同步状态fifo双向队列，当线程尝试获取同步状态时候，如果是0说明现在没人拿，我可以去直接去拿。但是如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</p>
 <p>解锁的时候将state减一，看其是否为0，如果是的话将空闲标志置为true，将持有锁的线程设置为null。然后设置state。当这个线程已经没有持有state的时候就要唤醒下一个节点。</p>
+<h2 id="公平锁和非公平锁"><a href="#公平锁和非公平锁" class="headerlink" title="公平锁和非公平锁"></a>公平锁和非公平锁</h2><p><strong>锁 synchronized 和 ReentrantLock 默认都是非公平锁，当然我们在创建 ReentrantLock 时，可以手动指定其为公平锁</strong></p>
+<p><strong>每个线程获取锁的顺序是按照线程访问锁的先后顺序获取的，最前面的线程总是最先获取到锁。</strong> <strong>非公平锁：每个线程获取锁的顺序是随机的，并不会遵循先来先得的规则，所有线程会竞争获取锁。</strong>公平锁这里会多一个判断，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。非公平锁不管<strong>我都去CAS一把，看看能不能拿到</strong>。</p>
 <h2 id="synchronized"><a href="#synchronized" class="headerlink" title="synchronized"></a>synchronized</h2><p><strong>特性</strong></p>
 <p>原子性</p>
-<p>依靠ACC_SYNCHRONIZED 这是一个同步标识</p>
-<p> monitorenter，在判断拥有同步标识 ACC_SYNCHRONIZED 抢先进入此方法<br>的线程会优先拥有 Monitor 的 owner ，此时计数器 +1。<br> monitorexit，当执行完退出后，计数器 -1，归 0 后被其他进入的线程获得。</p>
 <p><strong>可见性</strong>	</p>
 <ol>
 <li>线程解锁前，必须把共享变量的最新值刷新到主内存中。</li>
@@ -330,17 +328,17 @@
 <blockquote>
 <p>jvm基于进入和退出Monitor对象来实现方法同步和代码块同步</p>
 </blockquote>
-<p>方法级的同步是隐式，即无需通过字节码指令来控制的，它实现在方法调用和返回操作之中。JVM可以从方法常量池中的方法表结构(method_info Structure) 中的 ACC_SYNCHRONIZED 访问标志区分一个方法是否同步方法。当方法调用时，调用指令将会 检查方法的 ACC_SYNCHRONIZED 访问标志是否被设置，如果设置了，执行线程将先持有monitor（虚拟机规范中用的是管程一词）， 然后再执行方法，最后再方法完成(无论是正常完成还是非正常完成)时释放monitor。</p>
+<p>方法级的同步是隐式，即无需通过字节码指令来控制的，它实现在方法调用和返回操作之中。JVM可以从方法常量池中的方法表结构中的 ACC_SYNCHRONIZED 访问标志区分一个方法是否同步方法。当方法调用时，调用指令将会常量池里面检查方法的 ACC_SYNCHRONIZED 访问标志是否被设置，如果设置了，执行线程将先持有monitor（虚拟机规范中用的是管程一词）， 然后再执行方法，方法完成释放monitor。</p>
 <p>代码块的同步是利用monitorenter和monitorexit这两个字节码指令。它们分别位于同步代码块的开始和结束位置。当jvm执行到monitorenter指令时，当前线程试图获取monitor对象的所有权，如果未加锁或者已经被当前线程所持有，就把锁的计数器+1；当执行monitorexit指令时，锁计数器-1；当锁计数器为0时，该锁就被释放了。如果获取monitor对象失败，该线程则会进入阻塞状态，直到其他线程释放锁。</p>
 <p><strong>synchronized的底层实现</strong></p>
 <p>是完全依赖JVM虚拟机的,所以谈synchronized的底层实现，就不得不谈数据在JVM内存的存储：Java对象头，以及Monitor对象监视器。</p>
 <p>HotSpot 虚拟机中，对象在内存中存储的布局可以分为三块区域：对象头（Header）、<br>实例数据（Instance Data）和对齐填充（Padding）。</p>
 <p>对象头一般有两部分：Mark Word和对象类型数据的指针</p>
 <p>Mark Word如哈希码（HashCode）、GC分代年龄、锁状态标志、线程持有的锁、偏向线程 ID、偏向时间戳等等,它是实现轻量级锁和偏向锁的关键.</p>
-<p>所以，很明显synchronized使用的锁对象是存储在Java对象头里的标记字段里。</p>
-<p>monitor由ObjectMonitor实现，他有两个队列，一个是waitset一个是entrylist，用来保存 等待锁的线程</p>
+<p>我们发现当对象头中<code>锁状态</code>为<strong>重量级锁</strong>时，<strong>对象头的MarkWord存储了指向堆中的Monitor对象的指针</strong></p>
+<p>monitor由ObjectMonitor实现，他有两个队列，一个是waitset一个是entrylist，用来保存 等待锁的线程	</p>
 <p>_owner指向持有ObjectMonitor对象的线程，当多个线程同时访问一段同步代码时，首先会进入 _EntryList 集合，当线程获取到对象的monitor 后把monitor中的owner变量设置为当前线程同时monitor中的计数器count加1，若线程调用 wait() 方法，将释放当前持有的monitor，owner变量恢复为null，count自减1，同时该线程进入 WaitSe t集合中等待被唤醒。若当前线程执行完毕也将释放monitor(锁)并复位变量的值，以便其他线程进入获取monitor(锁)。</p>
-<p>前面已经分析了Monitor的机制，那么在Java中是如何实现的呢？<br><strong>即通过synchronized关键字实现线程同步来获取对象的Monitor。</strong><br>实现方式为：<strong>ACC_SYNCHRONIZED和monitorenter&#x2F;monitorexit</strong> <em>前面已讲过</em></p>
+<p>前面已经分析了Monitor的机制，那么在Java中是如何实现的呢？<br><strong>即通过synchronized关键字实现线程同步来获取对象的Monitor。</strong><br>实现方式为：<strong>ACC_SYNCHRONIZED和monitorenter&#x2F;monitorexit</strong> *ACC_SYNCHRONIZED标识符会去隐式调用这两个指令：monitorenter和monitorexit</p>
 
                     
                         
