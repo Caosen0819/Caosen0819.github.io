@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv - 森</title>
+    <title>Archives - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -156,10 +156,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archiv"
+                            title="Archives"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archiv</span>
+                        <span class="sidebar-button-desc">Archives</span>
                     </a>
             </li>
             
@@ -170,10 +170,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Suche"
+                            title="Search"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Suche</span>
+                        <span class="sidebar-button-desc">Search</span>
                     </a>
             </li>
             
@@ -184,10 +184,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="Über"
+                            title="About"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Über</span>
+                        <span class="sidebar-button-desc">About</span>
                     </a>
             </li>
             
@@ -233,7 +233,398 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2022/10/04/springboot%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
+                            href="/2022/10/20/%E5%AF%B9%E6%9D%83%E9%99%90%E6%A0%A1%E9%AA%8C%E7%9A%84%E6%96%B0%E7%90%86%E8%A7%A3/"
+                            aria-label=": 对权限校验和token的新理解"
+                        >
+                            对权限校验和token的新理解
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2022-10-20T14:43:00+08:00">
+	
+		    Oct 20, 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/java/">java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h1 id="对权限校验和token的新理解"><a href="#对权限校验和token的新理解" class="headerlink" title="对权限校验和token的新理解"></a>对权限校验和token的新理解</h1><p>在我们前端页面发出请求的时候，会先发出一个预检请求，看看这个接口是否好用，但不会去检验这个接口是否正确。比如说：发出get请求，对info这个接口进行校验，所以他会先发一个get的预检验去看看你这个接口能不能收到我这个get。如果可以，get请求返回之后会告诉我们前端可以发送，这时候前端发出真正的请求（带着参数的那种）。</p>
+<p>下面简单讲一下权限校验的流程，以防止自己忘记和供大家参考（勿喷）。</p>
+<p>首先我们前端服务启动之后，假设端口是8090，我们输入账号密码点击登陆，这时候前端服务会<br>将其发送到另一个端口，这里涉及跨域了，一般前端会有个简单的处理，然后后端也会有一个允许跨域什么的配置（有可能是在security里面设置或者是自己configuration一个配置文件）。</p>
+<p>假设我们转发到了8201接口，那么请问这个接口是什么服务的接口呢？答案揭晓，一般是网关服务这边借鉴我自己的项目，用的是gateway的。</p>
+<p>然而我们知道gateway服务一般会进行拦截访问校验权限这类工作。那么这个gateway服务，对于这种登陆的接口访问，又会做出什么样子的判断呢？其实对于这类我们会把他列入白名单，所以举个login例子，我在8090端口发出&#x2F;admin&#x2F;login命令，然后遇到gateway网关，网关直接放行，那么我们假设admin端口是8080端口，那这时候request是不是通过转发变成了：8080&#x2F;admin&#x2F;login，然后带一些账号密码这类参数什么的。</p>
+<p>下面很关键。</p>
+<p>一般我们的login命令是不是首先要取得授权啊，你不授权你登陆各寂寞呢。那么这时候就要请出我们的授权服务了，Auth服务。我们可以直接在login的controller里面写调用获取授权的服务。</p>
+<p>那用什么授权呢，举个例子token或者是token的变体。下面用spring security oauth2讲一下这个token怎么获取，又怎么调教。</p>
+<p>其实大家不用吧授权服务想的很难，无非就是自己写了一些接口，你去调用，然后判断，如果对就通过，如果错误就失败。</p>
+<p>那么这边我们举个例子<br>在login函数里面调用这个</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CommonResult restResult = authService.getAccessToken(params);</span><br></pre></td></tr></table></figure>
+<p>然后authService如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@FeignClient(&quot;auth-server&quot;)</span><br><span class="line">public interface AuthService &#123;</span><br><span class="line"></span><br><span class="line">    @PostMapping(value = &quot;/oauth/token&quot;)</span><br><span class="line">    CommonResult getAccessToken(@RequestParam Map&lt;String, String&gt; parameters);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这时候通过注解直接跑掉另一个端口服务了。</p>
+<h1 id="Auth服务"><a href="#Auth服务" class="headerlink" title="Auth服务"></a>Auth服务</h1><h2 id="token的生成"><a href="#token的生成" class="headerlink" title="token的生成"></a>token的生成</h2><p>我们需要配置令牌访问的端点</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public void configure(AuthorizationServerEndpointsConfigurer endpoints)</span><br></pre></td></tr></table></figure>
+<p>在这里我们可以自定义授权方式，比如说微信授权、手机号授权等等。当时我们先讲token的生成</p>
+<p>1、用户发起获取token的请求，请求&#x2F;oauth&#x2F;token接口</p>
+<p>2、首先要过一道关卡是ClientCredentialsTokenEndpointFilter</p>
+<ol>
+<li>通过clientId查询生成一个Authentication对象</li>
+<li>将clientId和clientSecret构造成UsernamePasswordAuthenticationToken,交给ProviderManager，然后ProviderManager代理AuthenticationProvider去认证，最后真正执行的是DaoAuthenticationProvider，通过UserDetailsService.loadUserByUsername向表oauth_client_details查询clientDetails信息</li>
+</ol>
+<p>3、 以上认证客户端信息的逻辑全部通过后，会进入地址&#x2F;oauth&#x2F;token，即TokenEndpoint的postAccessToken方法(当然这个方法我们可以自定义)中。</p>
+<p>4、 postAccessToken方法中会验证Scope，然后验证是否是refreshToken请求等</p>
+<p>5、 AbstractTokenGranter(此时的实现类是ResourceOwnerPasswordTokenGranter)中的grant方法</p>
+<p>6、 之后调用AbstractTokenGranter(此时的实现类ResourceOwnerPasswordTokenGranter)中的grant方法</p>
+<p>7、 grant方法中调用getAccessToken方法，在这个方法中又逐步调用到WebSecurityConfigurerAdapter的AbstractUserDetailsAuthenticationProvider的authenticate方法（<br>非常关键的一点</p>
+<ul>
+<li>先看缓存有没有</li>
+<li>看数据库UserDetails loadedUser &#x3D; this.getUserDetailsService().loadUserByUsername(username);</li>
+</ul>
+<p>），对username与password进行认证</p>
+<p>8、 验证通过后，把得到Authentication认证结果对象包装成OAuth2Authentication认证对象。然后传给DefaultTokenServices类的tokenStore的getAccessToken方法，利用OAuth2Authentication对象中的信息查找tokenStore中是否已经存在token，存在则返回OAuth2AccessToken对象。如果不存在DefaultTokenServices则调用createAccessToken（增强方法就在这里实现，这个方法主要做了五件事情，</p>
+<ul>
+<li>使用UUID生成Token</li>
+<li>判断Token是否过期，如果没过期，就把过期时间设为当前时间加1000s</li>
+<li>设置刷新令牌</li>
+<li>设置权限</li>
+<li>判断是否有增强器，如果有就调用它的enhance方法）</li>
+</ul>
+<p>方法创建OAuth2AccessToken对象。</p>
+<p>9、 然后将OAuth2AccessToken对象包装进响应流返回。</p>
+<h2 id="token刷新"><a href="#token刷新" class="headerlink" title="token刷新"></a>token刷新</h2><p>刷新token（refresh token）的流程与获取token的流程只有8有所区别：</p>
+<p>1.获取token调用的是AbstractTokenGranter中的getAccessToken方法，然后调用tokenStore中的getAccessToken方法获取token。</p>
+<p>2.刷新token调用的是RefreshTokenGranter中的getAccessToken方法，然后使用tokenStore中的refreshAccessToken方法获取token。</p>
+<h2 id="权限校验"><a href="#权限校验" class="headerlink" title="权限校验"></a>权限校验</h2><p>当我们拿到token之后我们会拿着这个token去访问其他的接口，比如说我们login接口成功返回之后，你马上紧接着就访问info接口，你直接8080&#x2F;admin&#x2F;info这么发过去，首先找到gateway，gateway首先要鉴定一下你这个是不是有权限是不是啊？那么这里就涉及了鉴权服务。<br>这个鉴权服务分为两个部分：</p>
+<p>1、token 检验<br>首先调用下面这个代码，不过readaccesstoken具体的实现我们可以自定义。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">OAuth2AccessToken oAuth2AccessToken = this.tokenStore.readAccessToken(accessToken);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>总之就去去查你这个token有没有，没有的话，就返回没有token的信息错误。<br>如果有，继续判断是不是过期了，如果过期了，就返回过期的错误信息<br>然后通过这个token去缓存或者数据库里面找到OAuth2Authentication对象，如果没有再次返回无效异常，如果有，那我们就通过token的校验，进入到权限的校验。</p>
+<p>OAuth2AccessToken和OAuth2Authentication是好基友，TokenStore同时存储OAuth2AccessToken和OAuth2Authentication</p>
+<p>2、权限检验</p>
+<p>进来之后如果是白名单，我们就放行，毕竟有些东西确实不需要什么权限。</p>
+<p>跨域的预检也放行，这一点在上面也提到过，预检验，你要是把他拦下来，那就没必要了。</p>
+<p>下面进入真正的检验从request获取token，提取信息组装成一个对象（dto）</p>
+<p>非管理端直接放行，这个意思是，我们的后台服务不是所有人都能进来的，要是你一个用户能进我们的后台那就完蛋了。</p>
+<p>去缓存里面拿到资源规则，然后对比两者的访问路径，要是匹配得上就把相应的权限加到一个集合里面。</p>
+<p>这时候我们就得到访问这个路径需要的权限，那我们就用自己的权限去对比，要是比他高，那就通过，要是不如，那就拒绝。</p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2022/10/20/%E5%AF%B9%E6%9D%83%E9%99%90%E6%A0%A1%E9%AA%8C%E7%9A%84%E6%96%B0%E7%90%86%E8%A7%A3/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2022/10/04/spring%E6%95%B4%E5%90%88docker-compose/"
+                            aria-label=": springboot/cloud整合docker-compose"
+                        >
+                            springboot/cloud整合docker-compose
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2022-10-04T21:25:08+08:00">
+	
+		    Oct 04, 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/java/">java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>docker-compose是一个定义复杂应用的工具，我们平时使用docker，一般是docker run ….</p>
+<p>然而这样每次只能运行一个镜像，而且不能保证各个容器之间是能够正常通信的，如果想要用docker做到这种容器之间相互通信，要么你每次的命令加上一大串的参数，比如说同一个网络名字啊，link啊，dependon啊，如此之类的，然而单单跑一个容器的命令的够长了，这个容器要是和4、5个其他的容器通信，那怎么写？</p>
+<p>这就引出了我们的第二种方法：docker-compose，<br>关于这个工具我们需要下载，如果我们使用的是docker-desktop这种可视化客户端，那么他已经安装好了：怎么判断自己是不是已经完成了docker-compose的下载？</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker-compose -v   即可</span><br></pre></td></tr></table></figure>
+<p>博主跑一个微服务的项目一般喜欢先把环境搭好，然后在测试我么的项目正确性。<br>所以这里就分成了两个docker-compose文件，一个是env，一个是我们的项目app。</p>
+<p>这里先介绍一下docker-compse的用法。<br>我们写好一个yml文件，然后docker-compose命令去执行，而这个文件就相当于pom配置文件。<br>具体举个例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker-compose -f XXXX.yml up 要是路径上面只有一个docker-compose.yml文件那么</span><br><span class="line">-f也可以不加上去，反正就是寻找的意思。</span><br></pre></td></tr></table></figure>
+<p>先介绍docker-compose-env.yml, 这里截取一部分，来讲一讲都是什么含义</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">services:</span><br><span class="line">  mysql:</span><br><span class="line">    image: mysql:8.0.26</span><br><span class="line">    container_name: mysql</span><br><span class="line">    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci</span><br><span class="line">    restart: always</span><br><span class="line">    environment:</span><br><span class="line">      MYSQL_ROOT_PASSWORD: 185450844 #设置root帐号密码</span><br><span class="line">    ports:</span><br><span class="line">      - 3307:3306</span><br><span class="line">    volumes:</span><br><span class="line">      - /Users/csen/dockerProject/mydata/mysql/data/db:/var/lib/mysql #数据文件挂载</span><br><span class="line">      - /Users/csen/dockerProject/mydata/mysql/data/conf:/etc/mysql/conf.d #配置文件挂载</span><br><span class="line">      - /Users/csen/dockerProject/mydata/mysql/log:/var/log/mysql #日志文件挂载</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li>command：声明启动参数</li>
+<li>image：你docker里面的镜像名字</li>
+<li>container_name：启动后的容器名字</li>
+<li>environment：设置容器中的环境变量</li>
+<li>privileged：用来给容器root权限，不安全的</li>
+<li>network_mode： 设置容器的网络模式</li>
+<li>ports：端口</li>
+<li>volumes：挂载，这个大家都没说清楚，就是用冒号前面的路径代替后面，这样一些数据啊配置啊就可以跟着你的要求走。前面的是自己的，后面的是容器的。</li>
+</ul>
+<p>下面介绍docker-compose-app.yml</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">version: &#x27;3&#x27;</span><br><span class="line">services:</span><br><span class="line">  XXXX:</span><br><span class="line">    image: XXXX:latest</span><br><span class="line">    container_name: XXXX</span><br><span class="line">    ports:</span><br><span class="line">      - 8081:8081</span><br><span class="line">    volumes:</span><br><span class="line">      - /Users/csen/dockerProject/XXXX/logs:/var/logs</span><br><span class="line">      - /etc/localtime:/etc/localtime</span><br><span class="line">    environment:</span><br><span class="line">      - &#x27;TZ=&quot;Asia/Shanghai&quot;&#x27;</span><br><span class="line">    external_links:</span><br><span class="line">      - elasticsearch:es #可以用es这个域名访问elasticsearch服务</span><br><span class="line">      - mysql:db #可以用db这个域名访问mysql服务</span><br><span class="line">      - nacos-registry:nacos</span><br></pre></td></tr></table></figure>
+<p>和docker-compose-env很像，不过我只是用来启动我们的微服务项目，这里面关键就是external_links，我们在项目中使用的很多localhost要替换成这些域名。</p>
+<p>这里的image是我们build好的项目镜像，这里就要提一嘴了。这个是我们build的镜像<br>Dockerfile 是一个文本文件，其内包含了一条条的指令(Instruction)，用于构建镜像。每一条指令构建一层镜像，因此每一条指令的内容，就是描述该层镜像应当如何构建<br>具体的可见这篇大佬的博客：  <a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_46090675/article/details/121846718?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522166489555716782417065884%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=166489555716782417065884&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-1-121846718-null-null.142%5Ev51%5Econtrol,201%5Ev3%5Econtrol&utm_term=dockerfile&spm=1018.2226.3001.4187">Dockerfile</a>。</p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2022/10/04/spring%E6%95%B4%E5%90%88docker-compose/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
+                            aria-label=": 整合docker和中间件记录"
+                        >
+                            整合docker和中间件记录
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2022-10-04T21:23:41+08:00">
+	
+		    Oct 04, 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/java/">java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>前言：<br>博主从win换成mac后，想试着自己配一下docker环境，花了足足3到4天的时间。<br>由于中土存在各种中间件的兼容问题，mac版和win版的不一致，中间件版本过新等问题，且大多数博客对于版本的描述不够清晰，很难帮到忙，故博主斗胆记录一下，希望对大家有帮助。</p>
+<p>环境：</p>
+<ul>
+<li>springboot: 2.7.0</li>
+<li>nacos: 2.1.0</li>
+<li>elasticsearch: 8.2.0</li>
+<li>kibana: 8.2.0</li>
+<li>springcloud: 2021.0.3</li>
+<li>springcloudalibaba: 2021.0.1</li>
+<li>mysql: 8.0.26</li>
+<li>redis: 7</li>
+<li>rabbitmq: 3.9.11</li>
+<li>jdk: 8</li>
+<li>kafka: 3.5.11</li>
+</ul>
+<h2 id="1、elasticsearch8-2-0"><a href="#1、elasticsearch8-2-0" class="headerlink" title="1、elasticsearch8.2.0"></a>1、elasticsearch8.2.0</h2><p>当es和kibana到达8版本后，出现了很多变化，而且兼容mac版本的镜像提示不够明确  </p>
+<p>可能出现的问题：</p>
+<p>1、装好es之后你打开9200端口，发现他要求你输入密码，但是你其实根本就没有告诉你初始账号密码和默认的账号密码</p>
+<p>解决方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">csen@CsendeMBA Sen-Blog % docker exec -it (容器名字) /bin/bash</span><br><span class="line">elasticsearch@52142308d267:~$ ls</span><br><span class="line">LICENSE.txt  README.asciidoc  config  jdk  logs     plugins</span><br><span class="line">NOTICE.txt   bin              data    lib  modules</span><br><span class="line">elasticsearch@52142308d267:~$ cd config</span><br><span class="line">elasticsearch@52142308d267:~/config$ ls</span><br><span class="line">certs                              jvm.options             role_mapping.yml</span><br><span class="line">elasticsearch-plugins.example.yml  jvm.options.d           roles.yml</span><br><span class="line">elasticsearch.keystore             log4j2.file.properties  users</span><br><span class="line">elasticsearch.yml                  log4j2.properties       users_roles</span><br><span class="line">elasticsearch@52142308d267:~/config$ </span><br></pre></td></tr></table></figure>
+<p>你会看到有一个文件叫做elasticsearch.yml,我们需要做的就是修改这个文件</p>
+<p>修改文件内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cluster.name: &quot;docker-cluster&quot;</span><br><span class="line">network.host: 0.0.0.0</span><br><span class="line">http.cors.enabled: true</span><br><span class="line">http.cors.allow-origin: &quot;*&quot;</span><br><span class="line"># Enable security features</span><br><span class="line">xpack.security.enabled: true</span><br><span class="line">xpack.security.enrollment.enabled: true（可以先不加，上面的必须加）</span><br></pre></td></tr></table></figure>
+
+<p>当你修改之后，重启容器：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">docker restart 容器名字</span><br></pre></td></tr></table></figure>
+<p>等重启之后，进入容器的es内部（可以直接docker desk客户端的cli那里，也可以像上面一样命令行）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/usr/share/elasticsearch/bin/x-pack/setup-passwords interactive</span><br></pre></td></tr></table></figure>
+
+<p>依此设置elastic、apm_system、kibana_system、logstash_system、beats_system、remote_monitoring_user6个用户的密码，每设置一个都要验证一次，所以要按12次，建议直接用一个密码就行，我用的是elastic</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Initiating the setup of passwords for reserved users elastic,apm_system,kibana,kibana_system,logstash_system,beats_system,remote_monitoring_user.</span><br><span class="line">You will be prompted to enter passwords as the process progresses.</span><br><span class="line">Please confirm that you would like to continue [y/N]y</span><br><span class="line">Enter password for [elastic]: </span><br><span class="line">Reenter password for [elastic]: </span><br><span class="line">Enter password for [apm_system]: </span><br><span class="line">Reenter password for [apm_system]: </span><br><span class="line">Enter password for [kibana_system]: </span><br><span class="line">Reenter password for [kibana_system]: </span><br><span class="line">Enter password for [logstash_system]: </span><br><span class="line">Reenter password for [logstash_system]: </span><br><span class="line">Enter password for [beats_system]: </span><br><span class="line">Reenter password for [beats_system]: </span><br><span class="line">Enter password for [remote_monitoring_user]: </span><br><span class="line">Reenter password for [remote_monitoring_user]: </span><br><span class="line">Changed password for user [apm_system]</span><br><span class="line">Changed password for user [kibana_system]</span><br><span class="line">Changed password for user [kibana]</span><br><span class="line">Changed password for user [logstash_system]</span><br><span class="line">Changed password for user [beats_system]</span><br><span class="line">Changed password for user [remote_monitoring_user]</span><br><span class="line">Changed password for user [elastic]</span><br></pre></td></tr></table></figure>
+<p>这时候登陆9200端口查看是否成功，如果成功他会返回一个json串，一看就知道成功的json串，有name clustername、version这些属性。</p>
+<h2 id="2、kibana8-2-0"><a href="#2、kibana8-2-0" class="headerlink" title="2、kibana8.2.0"></a>2、kibana8.2.0</h2><p>kibana安装完成后打开5601端口，他会在页面左上角显示一段英文串，意思就是没准备好，但实际是因为权限问题，人家进不去。</p>
+<p>这个问题大多数博主都没讲到。</p>
+<p>解决办法是：你告诉kibana，es的账号密码，我们会发现，在es设置密码的时候有6个用户，那我们到底用哪一个呢？这里有点歧义，我的选择是直接用kibana_system这个用户。因为我们就是kibana所以没什么问题，但是有一个博主用的elastic用户，而我使用这个用户会提示错误，所以大家可以先试试kibana_system然后elastic，具体操作如下：</p>
+<p>首先挂载config，把原本自带的挤掉，因为我们在docker修改起来也不方便，所以直接挂载是最简单的。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">volumes:</span><br><span class="line">     - /Users/csen/dockerProject/mydata/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml </span><br><span class="line">     - </span><br></pre></td></tr></table></figure>
+<p>挂载成功后，在我们的kibana.yml文件中修改内容</p>
+<p>1、要对应你们自己修改的密码。如果是elastic那就完全复制，如果不是，就自己改一下密码。<br>2、elasticseatch.hosts那一栏我写的是es：9200，因为我的elasticsearch容器跑通之后，在springboot项目中的别名叫做es，大家根据自己的改哦，别死抄。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#</span><br><span class="line"># ** THIS IS AN AUTO-GENERATED FILE **</span><br><span class="line">#</span><br><span class="line"></span><br><span class="line"># Default Kibana configuration for docker target</span><br><span class="line">server.host: &quot;0.0.0.0&quot;</span><br><span class="line">server.shutdownTimeout: &quot;5s&quot;</span><br><span class="line">elasticsearch.hosts: [ &quot;http://es:9200&quot; ]</span><br><span class="line">monitoring.ui.container.elasticsearch.enabled: true</span><br><span class="line"># 这里配置中文显示，默认为英文 【English - en (default)、Chinese - zh-CN、Japanese - ja-JP】</span><br><span class="line">i18n.locale: &quot;zh-CN&quot;</span><br><span class="line"># 此处设置elastic的用户名和密码</span><br><span class="line">elasticsearch.username: kibana_system</span><br><span class="line">elasticsearch.password: elastic</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="nacos"><a href="#nacos" class="headerlink" title="nacos"></a>nacos</h2><p>这个只说一点就可以了，当然这也是所有中间件的选择方案。版本选对，由于mac有芯片有两代，i5i7和m1m2，这两代的架构是不一样的，所以去hub里面找相应的版本大下载就可以了，举个例子：</p>
+<p>我们要下载2.1.0版本的nacos，我们打开hub.docker.com然后搜索nacos，去tag里面输入2.1.0，你会发现，有好多版本，这时候我们要看【os&#x2F;arch】这一栏，你去看看他到底是哪种架构的，有的是linux&#x2F;amd64，有的是linux&#x2F;arm64，有的是两者皆有。如果是i5i7的就去下带amd64的，如果是m1m2的就去下载带arm64的。</p>
+<p>不过这里提一嘴，m1m2芯片他自带了转译的功能，也就是说即使是amd64的他也有能力转成适合自己的，但是可能存在两代电脑环境配置的问题，大家还是下载各自适合的最好。</p>
+<h2 id="mysql8"><a href="#mysql8" class="headerlink" title="mysql8"></a>mysql8</h2><p>目前网上的博客大多都是mysql5.7版本之类的，8版本的较少，所以会出一些错误。</p>
+<p>特别是连接数据库的时候，大家发现明明我的账号密码都对的，为什么还是说连接错误呢？这其实很可能不是我们自己的问题。</p>
+<p>下面给出我的连接数据库的配置：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">datasource:</span><br><span class="line">  url: jdbc:mysql://db:3306/mall?useUnicode=true&amp;characterEncoding=utf-8&amp;serverTimezone=Asia/Shanghai&amp;useSSL=false&amp;allowPublicKeyRetrieval=true</span><br><span class="line">  username: root</span><br><span class="line">  password: XXXXXXXX</span><br><span class="line">  druid:</span><br><span class="line">    initial-size: 5 #连接池初始化大小</span><br><span class="line">    min-idle: 10 #最小空闲连接数</span><br><span class="line">    max-active: 20 #最大连接数</span><br><span class="line">    web-stat-filter:</span><br><span class="line">      exclusions: &quot;*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*&quot; #不统计这些请求数据</span><br><span class="line">    stat-view-servlet: #访问监控网页的登录用户名和密码</span><br><span class="line">      login-username: druid</span><br><span class="line">      login-password: druid</span><br></pre></td></tr></table></figure>
+
+<p>这里需要注意的是一下几点：</p>
+<p>1、如果你把项目放到docker里面，就不要用localhost了，要么你直接用ip地址，要么就和我一样用这种别名。<br>而这种别名的配置则放在docker-compose里面。<br>这个在文章最后会给大家放一个链接将docker-compose怎么写。</p>
+<p>2、由于版本升级和docker的原因，在连接数据库的时候最好加上这些后缀：</p>
+<p>2.1、useUnicode&#x3D;true&amp;characterEncoding&#x3D;utf-8：一旦设置了之后，不管数据库是什么编码，读取的时候都会转换成UTF-8，存取的时候还是会按数据库编码存</p>
+<p>2.2、serverTimezone&#x3D;Asia&#x2F;Shanghai：问题在 MySQL8.0的驱动包跟之前不一样了，默认时区是全球统一时间 (UTC)，北京时间是 UTC+8，这句话不加就导致了很多人就算不在docker里面都连不上数据库，mysql8就很烦。</p>
+<p>2.3、useSSL&#x3D;false：useSSL&#x3D;true是进行安全验证，一般通过证书或者令牌什么的，useSSL&#x3D;false就是通过账号密码进行连接，通常使用useSSL&#x3D;false，这个也是mysql8的问题，不过这个问题并不是到了8之后才有的，5.7之后就存在这个问题了。ssl会认证用户的服务器，然后加密数据，最后维护数据的完整性。但是我们用docker相当于把它部署到一个linux服务器上，所以用不到这个。</p>
+<p>2.4、allowPublicKeyRetrieval&#x3D;true。</p>
+<p>这个指令比较玄学，是由于报了下面错误才用的，Public Key Retrieval is not allowed（不允许检索公钥）。博主也去网上查了很多资料，大家的话大差不差，就是在第一次连接的时候会出问题，第二次连的时候貌似数据库就缓存的这个配置信息，既然加上能用，大家就加上。有一些朋友也说到，如果我们使用一些可视化工具比如navicat这类的也能解决。</p>
+<p>另一种法是：使用指令mysql -u root -p指令进入mysql，将验证方式修改为“mysql_native_password”</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">USE mysql; </span><br><span class="line">ALTER USER &#x27;root&#x27;@&#x27;%&#x27; IDENTIFIED WITH mysql_native_password BY &#x27;123456&#x27;;</span><br><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
+                            aria-label=": springboot整合elasticsearch8.2.0"
+                        >
+                            springboot整合elasticsearch8.2.0
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2022-10-04T13:40:04+08:00">
+	
+		    Oct 04, 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/java/">java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h1 id="java-整合elasticsearch8-2-0"><a href="#java-整合elasticsearch8-2-0" class="headerlink" title="java 整合elasticsearch8.2.0"></a>java 整合elasticsearch8.2.0</h1><p>[TOC]</p>
+<h3 id="一、application-yml或者其他的配置文件皆可"><a href="#一、application-yml或者其他的配置文件皆可" class="headerlink" title="一、application.yml或者其他的配置文件皆可"></a>一、application.yml或者其他的配置文件皆可</h3><p>两种方式：【1】</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">elasticsearch:</span><br><span class="line">  hosts: <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">9200</span>     # 如果有多个IP就自己加逗号吧</span><br></pre></td></tr></table></figure>
+
+<p>【2】</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">spring：</span><br><span class="line">	elasticsearch:</span><br><span class="line">    	uris: localhost:<span class="number">9200</span>   #这样子自动配置了</span><br></pre></td></tr></table></figure>
+
+<h3 id="二、config类"><a href="#二、config类" class="headerlink" title="二、config类"></a>二、config类</h3><p>不同的版本会有不同的config类要求，这里只提供es8.2.0的，对应着上面两种application文件，此处也提供两种对应的config类，至于之后和springboot整合就不会出现分类了。</p>
+<h5 id="【1】自定义属性"><a href="#【1】自定义属性" class="headerlink" title="【1】自定义属性"></a>【1】自定义属性</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span> Caosen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span> 2022/9/22 10:34</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Version</span> 1.0</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EsUtilConfigClint2</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;elasticsearch.hosts&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String hosts;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> HttpHost[] getHttpHost()&#123;</span><br><span class="line">        <span class="keyword">if</span> (hosts.length() &gt; <span class="number">0</span>)&#123;</span><br><span class="line">            System.out.println(hosts);</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;invalid&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        String[] hosts_array = hosts.split(<span class="string">&quot;,&quot;</span>);</span><br><span class="line">        <span class="comment">//用string类型创建host的集合</span></span><br><span class="line"></span><br><span class="line">        HttpHost[] httpHosts = <span class="keyword">new</span> <span class="title class_">HttpHost</span>[hosts_array.length];</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (String s : hosts_array) &#123;</span><br><span class="line">            <span class="comment">//这里解析端口</span></span><br><span class="line">            String[] hosts_array_in = s.split(<span class="string">&quot;:&quot;</span>);</span><br><span class="line">            <span class="comment">//到这里就有了id和端口两个东西</span></span><br><span class="line">            <span class="type">HttpHost</span> <span class="variable">http</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HttpHost</span>(hosts_array_in[<span class="number">0</span>], Integer.parseInt(hosts_array_in[<span class="number">1</span>]), <span class="string">&quot;http&quot;</span>);</span><br><span class="line">            httpHosts[i++] = http;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;目前的配置加入了&quot;</span> + i + <span class="string">&quot;个id及其端口&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> httpHosts;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IOException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> ElasticsearchClient <span class="title function_">configClint</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">// Create the low-level client</span></span><br><span class="line">        HttpHost[] httpHosts = getHttpHost();</span><br><span class="line">        <span class="type">RestClient</span> <span class="variable">restClient</span> <span class="operator">=</span> RestClient.builder(httpHosts).build();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Create the transport with a Jackson mapper</span></span><br><span class="line">        <span class="type">ElasticsearchTransport</span> <span class="variable">transport</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RestClientTransport</span>(</span><br><span class="line">                restClient, <span class="keyword">new</span> <span class="title class_">JacksonJsonpMapper</span>());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 客户端</span></span><br><span class="line">        <span class="type">ElasticsearchClient</span> <span class="variable">client</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ElasticsearchClient</span>(transport);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> client;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="【2】使用自带的属性"><a href="#【2】使用自带的属性" class="headerlink" title="【2】使用自带的属性"></a>【2】使用自带的属性</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span> Caosen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span> 2022/9/18 15:01</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Version</span> 1.0</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EsUtilConfigClint</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IOException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> ElasticsearchClient <span class="title function_">configClint</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">// Create the low-level client</span></span><br><span class="line">        <span class="type">RestClient</span> <span class="variable">restClient</span> <span class="operator">=</span> RestClient.builder(</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">HttpHost</span>(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">9200</span>)).build();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Create the transport with a Jackson mapper</span></span><br><span class="line">        <span class="type">ElasticsearchTransport</span> <span class="variable">transport</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RestClientTransport</span>(</span><br><span class="line">                restClient, <span class="keyword">new</span> <span class="title class_">JacksonJsonpMapper</span>());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 客户端</span></span><br><span class="line">        <span class="type">ElasticsearchClient</span> <span class="variable">client</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ElasticsearchClient</span>(transport);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> client;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="三、测试"><a href="#三、测试" class="headerlink" title="三、测试"></a>三、测试</h3><h5 id="【1】service接口"><a href="#【1】service接口" class="headerlink" title="【1】service接口"></a>【1】service接口</h5><p>由于作者是直接在项目里面加内容的，可能会出现一些不相关的东西，我尽量截取相关代码</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/**</span><br><span class="line">     * 从数据库中导入所有商品到ES</span><br><span class="line">     */</span><br><span class="line">    int importAll();</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 新建指定名称的索引</span><br><span class="line">     * @param name</span><br><span class="line">     * @throws IOException</span><br><span class="line">     */</span><br><span class="line">    void addIndex(String name) throws IOException;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 检查指定名称的索引是否存在</span><br><span class="line">     * @param name</span><br><span class="line">     * @return</span><br><span class="line">     * @throws IOException</span><br><span class="line">     */</span><br><span class="line">    boolean indexExists(String name) throws IOException;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 删除指定索引</span><br><span class="line">     * @param name</span><br><span class="line">     * @throws IOException</span><br><span class="line">     */</span><br><span class="line">    void delIndex(String name) throws IOException;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 创建索引，指定setting和mapping</span><br><span class="line">     * @param name 索引名称</span><br><span class="line">     * @param settingFn 索引参数</span><br><span class="line">     * @param mappingFn 索引结构</span><br><span class="line">     * @throws IOException</span><br><span class="line">     */</span><br><span class="line">    void create(String name,</span><br><span class="line">                Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; settingFn,</span><br><span class="line">                Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mappingFn) throws IOException;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h5 id="【2】serviceImpl，主要看create-，add，exsits-delete"><a href="#【2】serviceImpl，主要看create-，add，exsits-delete" class="headerlink" title="【2】serviceImpl，主要看create ，add，exsits, delete"></a>【2】serviceImpl，主要看create ，add，exsits, delete</h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">    private EsProductDao esProductDao;</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    private EsProductRepository esProductRepository;</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    private ElasticsearchClient elasticsearchClient;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public int importAll() &#123;</span><br><span class="line">        List&lt;EsProduct&gt; allEsProductList = esProductDao.getAllEsProductList(null);</span><br><span class="line">        Iterable&lt;EsProduct&gt; esProducts = esProductRepository.saveAll(allEsProductList);</span><br><span class="line">        Iterator&lt;EsProduct&gt; iterator = esProducts.iterator();</span><br><span class="line">        int result = 0;</span><br><span class="line">        while (iterator.hasNext()) &#123;</span><br><span class="line">            result++;</span><br><span class="line">            iterator.next();</span><br><span class="line">        &#125;</span><br><span class="line">        return result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void addIndex(String name) throws IOException &#123;</span><br><span class="line">        elasticsearchClient.indices().create(b -&gt; b.index(name));</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public boolean indexExists(String name) throws IOException &#123;</span><br><span class="line">        return elasticsearchClient.indices().exists(b -&gt; b.index(name)).value();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void delIndex(String name) throws IOException &#123;</span><br><span class="line">        elasticsearchClient.indices().delete(b -&gt; b.index(name));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void create(String name, Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; setting, Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mapping) throws IOException &#123;</span><br><span class="line">        elasticsearchClient.indices()</span><br><span class="line">                .create(b -&gt; b</span><br><span class="line">                        .index(name)</span><br><span class="line">                        .settings(setting)</span><br><span class="line">                        .mappings(mapping));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="【3】测试"><a href="#【3】测试" class="headerlink" title="【3】测试"></a>【3】测试</h5><p>测试可以用controller 或者 用test伪装controller，自己测试的时候还是用postman接口比较合适。这里测试两种创建index，一种简单，一种稍微复杂，结果都是通过，见图。其他的删除啊，导入数据库的数据（repository）都是可以查到的。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Test</span><br><span class="line">    void addIndexSimple() throws IOException &#123;</span><br><span class="line">        String s = &quot;simple&quot;;</span><br><span class="line"></span><br><span class="line">        esProductService.addIndex(s);</span><br><span class="line">        System.out.println(&quot;创建success&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    @Test</span><br><span class="line">    void addIndexComplicated() throws IOException &#123;</span><br><span class="line"></span><br><span class="line">        String s = &quot;complicated&quot;;</span><br><span class="line">        Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; setting = builder -&gt; builder</span><br><span class="line">                .index(i -&gt; i.numberOfShards(&quot;3&quot;).numberOfReplicas(&quot;1&quot;));</span><br><span class="line">        Property keywordproperty = Property.of(p -&gt; p.keyword(k -&gt; k.ignoreAbove(256)));</span><br><span class="line">        Property testproperty = Property.of(p -&gt; p.text(builder -&gt; builder));</span><br><span class="line">        Property integerproperty = Property.of(builder -&gt; builder.integer(i -&gt; i));</span><br><span class="line"></span><br><span class="line">        Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mapping = builder -&gt; builder</span><br><span class="line">                .properties(&quot;name&quot;, keywordproperty)</span><br><span class="line">                .properties(&quot;description&quot;, testproperty)</span><br><span class="line">                .properties(&quot;price&quot;, integerproperty);</span><br><span class="line">        esProductService.create(s, setting, mapping);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220922113434674.png" alt="image-20220922113434674"></p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2022/10/04/%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
                             aria-label=": springboot整合kafka3.1-基本配置和操作"
                         >
                             springboot整合kafka3.1-基本配置和操作
@@ -243,13 +634,13 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:38:01+08:00">
 	
-		    04 Oct 2022
+		    Oct 04, 2022
     	
     </time>
     
         <span>in </span>
         
-    <a class="category-link" href="/categories/java%E5%AD%A6%E4%B9%A0/">java学习</a>
+    <a class="category-link" href="/categories/java/">java</a>
 
 
     
@@ -379,11 +770,11 @@
                     
                         <p>
                             <a
-                                href="/2022/10/04/springboot%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/#post-footer"
+                                href="/2022/10/04/%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -402,7 +793,7 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2022/10/04/springboot%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1/"
+                            href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1/"
                             aria-label=": springboot整合OAuth2认证服务"
                         >
                             springboot整合OAuth2认证服务
@@ -412,13 +803,13 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:35:52+08:00">
 	
-		    04 Oct 2022
+		    Oct 04, 2022
     	
     </time>
     
         <span>in </span>
         
-    <a class="category-link" href="/categories/java%E5%AD%A6%E4%B9%A0/">java学习</a>
+    <a class="category-link" href="/categories/java/">java</a>
 
 
     
@@ -673,11 +1064,11 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                     
                         <p>
                             <a
-                                href="/2022/10/04/springboot%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1/#post-footer"
+                                href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -706,7 +1097,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:33:19+08:00">
 	
-		    04 Oct 2022
+		    Oct 04, 2022
     	
     </time>
     
@@ -737,7 +1128,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                             class="postShorten-excerpt_link link"
                             aria-label=": 数据结构-线性表"
                         >
-                            Weiterlesen
+                            Continue reading
                         </a>
                         
                     
@@ -766,7 +1157,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:28:49+08:00">
 	
-		    04 Oct 2022
+		    Oct 04, 2022
     	
     </time>
     
@@ -790,7 +1181,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                             class="postShorten-excerpt_link link"
                             aria-label=": 数据结构的基本概念"
                         >
-                            Weiterlesen
+                            Continue reading
                         </a>
                         
                     
@@ -807,15 +1198,15 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
             <a
                 class="btn btn--default btn--small"
                 href="/archives/page/2/"
-                aria-label="NEUERE BEITRÄGE"
+                aria-label="NEWER POSTS"
             >
               <i class="fa fa-angle-left text-base icon-mr"></i>
-              <span>NEUERE BEITRÄGE</span>
+              <span>NEWER POSTS</span>
             </a>
           </li>
         
         
-        <li class="pagination-number">Seite 3 von 3</li>
+        <li class="pagination-number">page 3 of 3</li>
     </ul>
 </div>
 
@@ -845,7 +1236,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

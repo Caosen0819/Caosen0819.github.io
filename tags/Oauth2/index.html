@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -156,10 +156,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archiv"
+                            title="Archives"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archiv</span>
+                        <span class="sidebar-button-desc">Archives</span>
                     </a>
             </li>
             
@@ -170,10 +170,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Suche"
+                            title="Search"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Suche</span>
+                        <span class="sidebar-button-desc">Search</span>
                     </a>
             </li>
             
@@ -184,10 +184,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="Über"
+                            title="About"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Über</span>
+                        <span class="sidebar-button-desc">About</span>
                     </a>
             </li>
             
@@ -233,7 +233,123 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2022/10/04/springboot%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1/"
+                            href="/2022/10/20/%E5%AF%B9%E6%9D%83%E9%99%90%E6%A0%A1%E9%AA%8C%E7%9A%84%E6%96%B0%E7%90%86%E8%A7%A3/"
+                            aria-label=": 对权限校验和token的新理解"
+                        >
+                            对权限校验和token的新理解
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2022-10-20T14:43:00+08:00">
+	
+		    Oct 20, 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/java/">java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h1 id="对权限校验和token的新理解"><a href="#对权限校验和token的新理解" class="headerlink" title="对权限校验和token的新理解"></a>对权限校验和token的新理解</h1><p>在我们前端页面发出请求的时候，会先发出一个预检请求，看看这个接口是否好用，但不会去检验这个接口是否正确。比如说：发出get请求，对info这个接口进行校验，所以他会先发一个get的预检验去看看你这个接口能不能收到我这个get。如果可以，get请求返回之后会告诉我们前端可以发送，这时候前端发出真正的请求（带着参数的那种）。</p>
+<p>下面简单讲一下权限校验的流程，以防止自己忘记和供大家参考（勿喷）。</p>
+<p>首先我们前端服务启动之后，假设端口是8090，我们输入账号密码点击登陆，这时候前端服务会<br>将其发送到另一个端口，这里涉及跨域了，一般前端会有个简单的处理，然后后端也会有一个允许跨域什么的配置（有可能是在security里面设置或者是自己configuration一个配置文件）。</p>
+<p>假设我们转发到了8201接口，那么请问这个接口是什么服务的接口呢？答案揭晓，一般是网关服务这边借鉴我自己的项目，用的是gateway的。</p>
+<p>然而我们知道gateway服务一般会进行拦截访问校验权限这类工作。那么这个gateway服务，对于这种登陆的接口访问，又会做出什么样子的判断呢？其实对于这类我们会把他列入白名单，所以举个login例子，我在8090端口发出&#x2F;admin&#x2F;login命令，然后遇到gateway网关，网关直接放行，那么我们假设admin端口是8080端口，那这时候request是不是通过转发变成了：8080&#x2F;admin&#x2F;login，然后带一些账号密码这类参数什么的。</p>
+<p>下面很关键。</p>
+<p>一般我们的login命令是不是首先要取得授权啊，你不授权你登陆各寂寞呢。那么这时候就要请出我们的授权服务了，Auth服务。我们可以直接在login的controller里面写调用获取授权的服务。</p>
+<p>那用什么授权呢，举个例子token或者是token的变体。下面用spring security oauth2讲一下这个token怎么获取，又怎么调教。</p>
+<p>其实大家不用吧授权服务想的很难，无非就是自己写了一些接口，你去调用，然后判断，如果对就通过，如果错误就失败。</p>
+<p>那么这边我们举个例子<br>在login函数里面调用这个</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CommonResult restResult = authService.getAccessToken(params);</span><br></pre></td></tr></table></figure>
+<p>然后authService如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@FeignClient(&quot;auth-server&quot;)</span><br><span class="line">public interface AuthService &#123;</span><br><span class="line"></span><br><span class="line">    @PostMapping(value = &quot;/oauth/token&quot;)</span><br><span class="line">    CommonResult getAccessToken(@RequestParam Map&lt;String, String&gt; parameters);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这时候通过注解直接跑掉另一个端口服务了。</p>
+<h1 id="Auth服务"><a href="#Auth服务" class="headerlink" title="Auth服务"></a>Auth服务</h1><h2 id="token的生成"><a href="#token的生成" class="headerlink" title="token的生成"></a>token的生成</h2><p>我们需要配置令牌访问的端点</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public void configure(AuthorizationServerEndpointsConfigurer endpoints)</span><br></pre></td></tr></table></figure>
+<p>在这里我们可以自定义授权方式，比如说微信授权、手机号授权等等。当时我们先讲token的生成</p>
+<p>1、用户发起获取token的请求，请求&#x2F;oauth&#x2F;token接口</p>
+<p>2、首先要过一道关卡是ClientCredentialsTokenEndpointFilter</p>
+<ol>
+<li>通过clientId查询生成一个Authentication对象</li>
+<li>将clientId和clientSecret构造成UsernamePasswordAuthenticationToken,交给ProviderManager，然后ProviderManager代理AuthenticationProvider去认证，最后真正执行的是DaoAuthenticationProvider，通过UserDetailsService.loadUserByUsername向表oauth_client_details查询clientDetails信息</li>
+</ol>
+<p>3、 以上认证客户端信息的逻辑全部通过后，会进入地址&#x2F;oauth&#x2F;token，即TokenEndpoint的postAccessToken方法(当然这个方法我们可以自定义)中。</p>
+<p>4、 postAccessToken方法中会验证Scope，然后验证是否是refreshToken请求等</p>
+<p>5、 AbstractTokenGranter(此时的实现类是ResourceOwnerPasswordTokenGranter)中的grant方法</p>
+<p>6、 之后调用AbstractTokenGranter(此时的实现类ResourceOwnerPasswordTokenGranter)中的grant方法</p>
+<p>7、 grant方法中调用getAccessToken方法，在这个方法中又逐步调用到WebSecurityConfigurerAdapter的AbstractUserDetailsAuthenticationProvider的authenticate方法（<br>非常关键的一点</p>
+<ul>
+<li>先看缓存有没有</li>
+<li>看数据库UserDetails loadedUser &#x3D; this.getUserDetailsService().loadUserByUsername(username);</li>
+</ul>
+<p>），对username与password进行认证</p>
+<p>8、 验证通过后，把得到Authentication认证结果对象包装成OAuth2Authentication认证对象。然后传给DefaultTokenServices类的tokenStore的getAccessToken方法，利用OAuth2Authentication对象中的信息查找tokenStore中是否已经存在token，存在则返回OAuth2AccessToken对象。如果不存在DefaultTokenServices则调用createAccessToken（增强方法就在这里实现，这个方法主要做了五件事情，</p>
+<ul>
+<li>使用UUID生成Token</li>
+<li>判断Token是否过期，如果没过期，就把过期时间设为当前时间加1000s</li>
+<li>设置刷新令牌</li>
+<li>设置权限</li>
+<li>判断是否有增强器，如果有就调用它的enhance方法）</li>
+</ul>
+<p>方法创建OAuth2AccessToken对象。</p>
+<p>9、 然后将OAuth2AccessToken对象包装进响应流返回。</p>
+<h2 id="token刷新"><a href="#token刷新" class="headerlink" title="token刷新"></a>token刷新</h2><p>刷新token（refresh token）的流程与获取token的流程只有8有所区别：</p>
+<p>1.获取token调用的是AbstractTokenGranter中的getAccessToken方法，然后调用tokenStore中的getAccessToken方法获取token。</p>
+<p>2.刷新token调用的是RefreshTokenGranter中的getAccessToken方法，然后使用tokenStore中的refreshAccessToken方法获取token。</p>
+<h2 id="权限校验"><a href="#权限校验" class="headerlink" title="权限校验"></a>权限校验</h2><p>当我们拿到token之后我们会拿着这个token去访问其他的接口，比如说我们login接口成功返回之后，你马上紧接着就访问info接口，你直接8080&#x2F;admin&#x2F;info这么发过去，首先找到gateway，gateway首先要鉴定一下你这个是不是有权限是不是啊？那么这里就涉及了鉴权服务。<br>这个鉴权服务分为两个部分：</p>
+<p>1、token 检验<br>首先调用下面这个代码，不过readaccesstoken具体的实现我们可以自定义。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">OAuth2AccessToken oAuth2AccessToken = this.tokenStore.readAccessToken(accessToken);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>总之就去去查你这个token有没有，没有的话，就返回没有token的信息错误。<br>如果有，继续判断是不是过期了，如果过期了，就返回过期的错误信息<br>然后通过这个token去缓存或者数据库里面找到OAuth2Authentication对象，如果没有再次返回无效异常，如果有，那我们就通过token的校验，进入到权限的校验。</p>
+<p>OAuth2AccessToken和OAuth2Authentication是好基友，TokenStore同时存储OAuth2AccessToken和OAuth2Authentication</p>
+<p>2、权限检验</p>
+<p>进来之后如果是白名单，我们就放行，毕竟有些东西确实不需要什么权限。</p>
+<p>跨域的预检也放行，这一点在上面也提到过，预检验，你要是把他拦下来，那就没必要了。</p>
+<p>下面进入真正的检验从request获取token，提取信息组装成一个对象（dto）</p>
+<p>非管理端直接放行，这个意思是，我们的后台服务不是所有人都能进来的，要是你一个用户能进我们的后台那就完蛋了。</p>
+<p>去缓存里面拿到资源规则，然后对比两者的访问路径，要是匹配得上就把相应的权限加到一个集合里面。</p>
+<p>这时候我们就得到访问这个路径需要的权限，那我们就用自己的权限去对比，要是比他高，那就通过，要是不如，那就拒绝。</p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2022/10/20/%E5%AF%B9%E6%9D%83%E9%99%90%E6%A0%A1%E9%AA%8C%E7%9A%84%E6%96%B0%E7%90%86%E8%A7%A3/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1/"
                             aria-label=": springboot整合OAuth2认证服务"
                         >
                             springboot整合OAuth2认证服务
@@ -243,13 +359,13 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:35:52+08:00">
 	
-		    04 Oct 2022
+		    Oct 04, 2022
     	
     </time>
     
         <span>in </span>
         
-    <a class="category-link" href="/categories/java%E5%AD%A6%E4%B9%A0/">java学习</a>
+    <a class="category-link" href="/categories/java/">java</a>
 
 
     
@@ -504,11 +620,11 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                     
                         <p>
                             <a
-                                href="/2022/10/04/springboot%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1/#post-footer"
+                                href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -522,7 +638,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -551,7 +667,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

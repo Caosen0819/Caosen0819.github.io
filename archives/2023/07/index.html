@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv: 2023/7 - 森</title>
+    <title>Archives: 2023/7 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -156,10 +156,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archiv"
+                            title="Archives"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archiv</span>
+                        <span class="sidebar-button-desc">Archives</span>
                     </a>
             </li>
             
@@ -170,10 +170,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Suche"
+                            title="Search"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Suche</span>
+                        <span class="sidebar-button-desc">Search</span>
                     </a>
             </li>
             
@@ -184,10 +184,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="Über"
+                            title="About"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Über</span>
+                        <span class="sidebar-button-desc">About</span>
                     </a>
             </li>
             
@@ -233,19 +233,565 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/07/29/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/"
-                            aria-label=": "
+                            href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
+                            aria-label=": 计算机网络复习1"
                         >
-                            (kein Titel)
+                            计算机网络复习1
                         </a>
                     
                 </h1>
                 <div class="postShorten-meta">
-    <time datetime="2023-07-29T00:29:39+08:00">
+    <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    29 Jul 2023
+		    Jul 08, 2023
     	
     </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>计算机网络整体的学习可以按照tcpip网络模型进行学习。我们的总结也是这样的</p>
+<p>Tcp&#x2F;ip网络模型分别是应用层、传输层、网络层、数据链路层</p>
+<p>这里面前三层比较重要，数据链路层复杂的方面涉及实际的物理知识所以我们只对逻辑思想上做一个学习，</p>
+<p>那每一层分别学的是什么呢？</p>
+<p>应用层：http  https tls</p>
+<p>传输层：tcp udp </p>
+<p>网络层：ipv4 v6</p>
+<p>基本上就是这样子</p>
+<p>TCP 连接传输协议，这是传输层的，很多应用层的协议在传输层都是使用这个的，比如http</p>
+<p>那tcp和udp的差距是，tcp相比udp多了很多为了可靠的连接所增加的特性，比如流量控制，超时重传，拥塞控制，就是为了数据能可靠的传到对方，但是过程中究竟是请求-应答模式还是什么模式，那就是后面的不同版本做出的更新。</p>
+<p>udp他不在乎这个数据究竟有没有到对面，只负责发送，所以实时性号，效率高。但是他并不是不能做到可靠传输，因为udp只是传输层，我们还可以在应用层做出一定的限制来保证传输是可靠的，比如quic协议，当然这是困难的。</p>
+<p>除此之外，还有一个很大的不同就是tcp是会分片的，但是udp是不会分片。在这里我们还要知道的一点是在网络层，也就是ip协议中还是会分片的，MTU。但是对于tcp来说因为你要是在ip层才分片，我为了保证可靠，我假设12345 丢了一个2，那我就要12345全部重新发，这样不好，所以我们就在tcp层也分片，大小是mss。而udp不用可靠，所以他不用分片。</p>
+<p>网络层，主要的作用其实就是路由和寻址，加上ip头，规定好源ip，目的ip等信息，</p>
+<p>网络接口层，是提供链路级别的传输服务，因为源ip和目的ip知道了，但是在以太网中实际上是不行的，IP会变，我们需要一个确切的信息，这个就是mac地址，</p>
+<p>那我们这里用输入网址到显示，来串联一下整体的流程：</p>
+<h4 id="1、解析url"><a href="#1、解析url" class="headerlink" title="1、解析url"></a>1、解析url</h4><p>解析之后得到三个信息，一个协议，一个是web服务器地址，一个是请求文件的路径（可选）</p>
+<p>那对于我们前两个是最重要的，</p>
+<p>这时候我们客户端生产自己的http请求报文，格式如下，方法get，url没有默认index什么的，版本http1.1，字段名就很多，然后是数据，这个数据也是后面一种包装的根数据。</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193306158.png" alt="image-20230728193306158">	</p>
+<p>如图所示，一个是请求一个是响应报文</p>
+<p>到这里消息成功生产，那我们生产出一个消息之后就要开始发送？那应该怎么发？往哪里发？</p>
+<p>这就需要下面的知识。</p>
+<h2 id="地址查询-——-DNS"><a href="#地址查询-——-DNS" class="headerlink" title="地址查询 —— DNS"></a>地址查询 —— DNS</h2><p>基于我们已经拿到的web服务器域名，我们可以先去浏览器缓存里面找有没有，如果有，就直接返回，如果没有那就问操作系统的缓存再去看hosts文件，如果都没有，那就看走下面</p>
+<p>客户端首先会发出一个 DNS 请求，问 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 是啥，发给本地 DNS 服务器（也就是客户端的 TCP&#x2F;IP 设置中填写的 DNS 服务器地址）。</p>
+<p>本地域名服务器收到客户端的请求后，如果缓存里的表格能找到 <a target="_blank" rel="noopener" href="http://www.xx.com,则它直接返回/">www.xx.com，则它直接返回</a> IP 地址。如果没有，本地 DNS 会去问它的根域名服务器：“老大， 能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？” 根域名服务器是最高层次的，它不直接用于域名解析，但能指明一条道路。</p>
+<p>根 DNS 收到来自本地 DNS 的请求后，发现后置是 .com，说：“<a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 这个域名归 .com 区域管理”，我给你 .com 顶级域名服务器地址给你，你去问问它吧。”</p>
+<p>本地 DNS 收到顶级域名服务器的地址后，发起请求问“老二， 你能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？”</p>
+<p>顶级域名服务器说：“我给你负责 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 区域的权威 DNS 服务器的地址，你去问它应该能问到”。</p>
+<p>本地 DNS 于是转向问权威 DNS 服务器：“老三，<a href="http://www.xx.com对应的IP是啥呀？”">www.xx.com对应的IP是啥呀？”</a> server.com 的权威 DNS 服务器，它是域名解析结果的原出处。为啥叫权威呢？就是我的域名我做主。</p>
+<p>权威 DNS 服务器查询后将对应的 IP 地址 X.X.X.X 告诉本地 DNS。</p>
+<p>本地 DNS 再将 IP 地址返回客户端，客户端和目标建立连接</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193808617.png" alt="image-20230728193808617"></p>
+<p>通过dns或者缓存获取到ip地址之后，我们就要为发送做一些准备，首先浏览器通过调用 Socket 库，来委托协议栈工作。</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193955912.png" alt="image-20230728193955912"></p>
+<p>说是协议栈，其实就是中间tcp udp ip这些协议。那下面我们就来仔细的看看</p>
+<h2 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h2><p>tcp段的头如下所示：</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728194108402.png" alt="image-20230728194108402"></p>
+<p>TCP 传输数据之前，要先三次握手建立连接</p>
+<p>前提：客户端 为closed状态，服务端变成listen状态</p>
+<p>连接：</p>
+<p>1、客户端向服务端发送连接syn，之后客户端处于syn-sent状态；</p>
+<p>2、服务端接收到这个消息之后，会返回一个syn+ack，之后服务端处于syn-rcvd状态</p>
+<p>3、客户端收到这个之后，再给服务端发送一个对syn的ack，之后客户端处于establish状态</p>
+<p>服务端收到ack也变成了establish状态</p>
+<p>所以三次握手目的是<strong>保证双方都有发送和接收的能力</strong>。</p>
+<p>假设我们已经建立了连接，我们要发送消息，但是消息要遵循tcp协议，他的消息大小是有限制的，不是每一次都可以发送全部消息。具体要求如下：</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728195857751.png" alt="image-20230728195857751"></p>
+<ul>
+<li><code>MTU</code>：一个网络包的最大长度，以太网中一般为 <code>1500</code> 字节。</li>
+<li><code>MSS</code>：除去 IP 和 TCP 头部之后，一个网络包所能容纳的 TCP 数据的最大长度</li>
+</ul>
+<p>所以如果http请求消息超过mss，那么就要分段发送。</p>
+<p>到这里我们得到了一个tcp的报文段或者说包，下面我们就要把这个包发送给网络层，因为在传输层我们就是服务应用层，然后对好端口，确定好协议，之后的事情就不归传输层管控了。</p>
+<p>到这里，我们的数据包的格式如下所示：</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728200405680.png" alt="image-20230728200405680"></p>
+<h2 id="定位IP"><a href="#定位IP" class="headerlink" title="定位IP"></a>定位IP</h2><p>ip协议的最重要的功能就是寻址和路由，他要做到这两点就需要你遵循ip协议，那么遵循的要求就是你加一个ip头<img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728200452235.png" alt="image-20230728200452235"></p>
+<p>加上ip头之后我们就知道了我们的源ip和目的ip地址，那么起点站和终点站就已经知道了</p>
+<p>可以现在又有一个小问题，那就是路径怎么规划呢？这时候就需要用到Mac地址</p>
+<h2 id="mac地址"><a href="#mac地址" class="headerlink" title="mac地址"></a>mac地址</h2><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728202408619.png" alt="image-20230728202408619"></p>
+<ul>
+<li>先查询 ARP 缓存，如果其中已经保存了对方的 MAC 地址，就不需要发送 ARP 查询，直接使用 ARP 缓存中的地址。</li>
+<li>而当 ARP 缓存中不存在对方 MAC 地址时，则发送 ARP 广播查询</li>
+</ul>
+<p>也就是说到了网络接口层，要发了，结果不知道往哪里发，这时候就按照上面两步得到mac地址</p>
+<p>因为上面已经得到了ip地址，所以直接喊话：这个 IP 地址是谁的？请把你的 MAC 地址告诉我，就得到mac地址了。</p>
+<p>到这里数据包还差最后一层包装</p>
+<h2 id="出口–网卡"><a href="#出口–网卡" class="headerlink" title="出口–网卡"></a>出口–网卡</h2><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728204942674.png" alt="image-20230728204942674"></p>
+<p>最后一层包装就是上面图片提到的报头和起始帧分界符和fcs帧校验序列</p>
+<p>网卡驱动获取网络包之后，会将其<strong>复制</strong>到网卡内的缓存区中，接着会在其<strong>开头加上报头和起始帧分界符，在末尾加上用于检测错误的帧校验序列</strong>。</p>
+<p>到这里数据包就真正的包装结束了，最后网卡会将包转为电信号，通过网线发送出去。！！</p>
+<h2 id="送别者—交换机"><a href="#送别者—交换机" class="headerlink" title="送别者—交换机"></a>送别者—交换机</h2><p>交换机的设计是将网络包<strong>原样</strong>转发到目的地。交换机工作在 MAC 层，也称为<strong>二层网络设备</strong>。</p>
+<p>一般在网线接口啊这些地方，其实路由器也可以作为交换机。</p>
+<h3 id="交换机的包接收操作"><a href="#交换机的包接收操作" class="headerlink" title="交换机的包接收操作"></a>交换机的包接收操作</h3><p>交换机里的模块将电信号转换为数字信号。</p>
+<p>然后通过包末尾的fcs校验错误，没问题就放到缓存区，这部分操作基本和计算机的网卡相同，但交换机的工作方式和网卡不同。</p>
+<p>计算机的网卡本身具有 MAC 地址，并通过核对收到的包的接收方 MAC 地址判断是不是发给自己的，如果不是发给自己的则丢弃；相对地，交换机的端口不核对接收方 MAC 地址，而是直接接收所有的包并存放到缓冲区中。因此，和网卡不同，<strong>交换机的端口不具有 MAC 地址</strong>。</p>
+<h3 id="查询MAC-地址表"><a href="#查询MAC-地址表" class="headerlink" title="查询MAC 地址表"></a>查询<strong>MAC 地址表</strong></h3><p>如果找到，就发送到相应的端口，如果找不到，那说明该mac地址的设备还没有向我们交换机发送过包，那这时候我们主动的向除了源端口的所有端口都发送一遍，因为后面的设备他自己都有检测功能，所以不需要担心</p>
+<p>这时候要么就发送到位，要么就可能离开子网了，离开子网需要用到路由器</p>
+<h2 id="出境大门–路由器"><a href="#出境大门–路由器" class="headerlink" title="出境大门–路由器"></a>出境大门–路由器</h2><h3 id="路由器的包接收操作"><a href="#路由器的包接收操作" class="headerlink" title="路由器的包接收操作"></a>路由器的包接收操作</h3><p>首先，电信号到达网线接口部分，路由器中的模块会将电信号转成数字信号，然后通过包末尾的 <code>FCS</code> 进行错误校验。</p>
+<p>如果没问题则检查 MAC 头部中的<strong>接收方 MAC 地址</strong>，看看是不是发给自己的包，如果是就放到接收缓冲区中，否则就丢弃这个包。</p>
+<p>完成包接收操作之后，路由器就会<strong>去掉</strong>包开头的 MAC 头部。</p>
+<p><strong>MAC 头部的作用就是将包送达路由器</strong>，其中的接收方 MAC 地址就是路由器端口的 MAC 地址。因此，当包到达路由器之后，MAC 头部的任务就完成了，于是 MAC 头部就会<strong>被丢弃</strong>。</p>
+<p>接下来，路由器会根据 MAC 头部后方的 <code>IP</code> 头部中的内容进行包的转发操作。</p>
+<h3 id="路由器的发送操作"><a href="#路由器的发送操作" class="headerlink" title="路由器的发送操作"></a>路由器的发送操作</h3><p>首先，我们需要根据<strong>路由表的网关列</strong>判断对方的地址。</p>
+<ul>
+<li>如果网关是一个 IP 地址，则这个IP 地址就是我们要转发到的目标地址，<strong>还未抵达终点</strong>，还需继续需要路由器转发。</li>
+<li>如果网关为空，则 IP 头部中的接收方 IP 地址就是要转发到的目标地址，也是就终于找到 IP 包头里的目标地址了，说明<strong>已抵达终点</strong>。</li>
+</ul>
+<p>反正我们从路由表知道了ip地址，那么我们同样用这个地址去查mac地址</p>
+<p>接下来是发送方 MAC 地址字段，这里填写输出端口的 MAC 地址。还有一个以太类型字段，填写 <code>0800</code> （十六进制）表示 IP 协议。</p>
+<p>网络包完成后，接下来会将其转换成电信号并通过端口发送出去。这一步的工作过程和计算机也是相同的。</p>
+<p>发送出去的网络包会通过<strong>交换机</strong>到达下一个路由器。由于接收方 MAC 地址就是下一个路由器的地址，所以交换机会根据这一地址将包传输到下一个路由器。</p>
+<h1 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h1><p>这边举个例子<img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230729000740012.png" alt="image-20230729000740012"></p>
+<p>子网1某个设备想要发送数据给子网2的某个设备</p>
+<p>首先源ip和目的ip是知道的，如果只是简单的arp群发这个ip问是谁的ip地址，其实是找不到的，所以判断是否为同一子网，如果不是，就把目的mac改成网关的mac，然后数据发送到网关，这时候官网一查mac地址，发现属于子网2的设备，这时候修改源mac为自己的mac，修改目的mac为设备的地址，从子网2的网卡发出。</p>
+<p>大多数情况下一个子网的默认网关就是一个，就基本代表着出口。复杂情况就需要某种选择算法了</p>
+<h2 id="Http"><a href="#Http" class="headerlink" title="Http"></a>Http</h2><p>下面我们来讲一下http 也叫超文本传输协议，就是两点之间超越普通文本范畴的文本（包括文本视频图片等等）的一种协议</p>
+<h4 id="http常见状态码"><a href="#http常见状态码" class="headerlink" title="http常见状态码"></a>http常见状态码</h4><p>1XX 代表提示信息，表示这是处理的中间状体，后续还有操作</p>
+<p>2XX 这个就是成功的状态吗</p>
+<p>​	200 普通的正常的成功</p>
+<p>​	204 没有body的成功，就是响应头里面没有body数据的意思</p>
+<p>​	206 用于分快下载，断点续传，</p>
+<p>3XX 代表重定向</p>
+<p>​	 301 永久重定向</p>
+<p>​	302 临时重定向</p>
+<p>​	304缓存重定向，也就是配合协商缓存那一块</p>
+<p>4XX 带表客户端的报文错误</p>
+<p>​	400 比较笼统的</p>
+<p>​	403 禁止范围</p>
+<p>​	404 没找到</p>
+<p>5XX 代表服务器端端报文错误</p>
+<p>​	500 同样比较笼统</p>
+<p>​	501 目前不支持</p>
+<p>​	502 自身服务器没问题，后续转发的服务器有问题</p>
+<p>​	503 请稍后再访问</p>
+<h4 id="常见的字段"><a href="#常见的字段" class="headerlink" title="常见的字段"></a>常见的字段</h4><p>host</p>
+<p>content-length</p>
+<p>content-type</p>
+<p>connection </p>
+<p>content-encodeing</p>
+<h4 id="Http缓存"><a href="#Http缓存" class="headerlink" title="Http缓存"></a>Http缓存</h4><p>包括强制缓存和协商缓存</p>
+<p>强制缓存就是浏览器判断缓存没有过期，那我就直接使用浏览器的缓存</p>
+<p>实现可以用两个响应头部的字段表示Cache-control和Expires，前者相对时间，后者绝对时间，前者优先级更高，更加精细</p>
+<p>协商缓存也是有两种方法</p>
+<p>1、请求头部里面的if modified since 和响应头部last- modified</p>
+<p>先问浏览器缓存，如果没过期那就是强制缓存，如果过期了，响应信息的头部会有last modified，然后我们会带这个ifmodifiedsince：时间，去访问服务器，服务器看到之后，就拿自己的Last modified去对比 如果没改，返回304，如果改了，返回200</p>
+<p>2、Etag 唯一标识</p>
+<p>流程一样，但是etag优先级更高，因为 if modified since还是基于时间，而时间本身可能有一些限制。</p>
+<p>1、有可能没有修改文件，但是文件的最后修改时间会变化</p>
+<p>2、秒级以内的操作也许不能充分做出响应</p>
+<h4 id="Http优缺点"><a href="#Http优缺点" class="headerlink" title="Http优缺点"></a>Http优缺点</h4><p>优点：简单，灵活易扩充，应用广泛跨平台</p>
+<p>缺点：</p>
+<p>1、http无状态的，所以导致一系列相联的操作可能每一次都要反问数据库，那就非常的繁琐</p>
+<p>在此基础上出现了cookie技术，他就是通过在请求和响应报文里面增加cookie信息，来控制客户端的状态</p>
+<p>2、明文传输。毫无隐私</p>
+<p>3、不安全 也是最重要的原因</p>
+<p>账号信息不安全</p>
+<p>不验证对方的身份</p>
+<p>无法证明报文的完整性</p>
+<p>对于1.0改进：</p>
+<p>1、http1.1在http1.0的基础上提出了长连接，之前是《请求-应答》模式就是你发完应答完，关闭连接，想要进行下一次通信，那就得重新建立连接，现在可以建立一次连接之后，就可以 发收发收发收 只要一方没有明确提出断开连接，那么就一直连着</p>
+<p>2、管道通信，http1.1支持管道，就是所有请求都处于管道内部，我们可以发发发，而不需要等他先回复再发第二个，你可以发发发，减少了时间</p>
+<p>但是这里有一个问题，http是基于tcp的所以服务端会按照顺序接收请求。</p>
+<p>所以说，http1.1可以解决发送端的对头阻塞，但是无法解决接受端的对头阻塞</p>
+<p>然而！然而！http1.1默认不开启管道，</p>
+<h2 id="HTTPS"><a href="#HTTPS" class="headerlink" title="HTTPS"></a>HTTPS</h2><p>但是安全性的那三个缺点依旧无法得到改善，所以提出了https &#x3D; http + tls</p>
+<p>https完美的解决了：窃听风险、篡改风险、冒充风险，其实就是（防止号不会没，内容数据不会被插入一些垃圾广告，访问的网站不是冒充）</p>
+<p>所以给予上面这句话，我们可以知道tls他其实做了三件事情：信息加密，校验机制，身份证书</p>
+<h3 id="TLS"><a href="#TLS" class="headerlink" title="TLS"></a>TLS</h3><h4 id="1、信息加密"><a href="#1、信息加密" class="headerlink" title="1、信息加密"></a>1、信息加密</h4><p>使用的是混合加密，采用对称加密和非对称加密的结合体，混合加密，就是两种都用到了，非对称加密是在tls握手的时候，对称加密是在传输数据的时候。</p>
+<p>非对成加密安全，非对称加密速度更快。</p>
+<h4 id="2、校验机制，身份证书，这两个可以一起讲"><a href="#2、校验机制，身份证书，这两个可以一起讲" class="headerlink" title="2、校验机制，身份证书，这两个可以一起讲"></a>2、校验机制，身份证书，这两个可以一起讲</h4><p>对内容先哈希算法，然后用私钥加密哈希结果得到的结果叫数字签名，把数字签名和原本的内容和在一起就相当于认证了</p>
+<p>然后现在还是缺一个身份验证的问题，就是这个私钥到底对不对？</p>
+<p>这时候需要一个权威机关，就叫CA</p>
+<p>整体流程：服务器发送公钥和数字签名发到CA里面，CA用自己的私钥加密服务器的公钥和数字签名，这个就是证书！然后客户端发来请求的时候，服务器就把自己的证书发过去，客户端收到证书，用CA的公钥解密，得到了服务器的公钥和服务器的数字证签名，这个签名我们上面讲了一个是原始内容一个是私钥对于哈希值的加密，那我们怎么验证呢？就是用公钥去解密加密项得到一个哈希值，再对原始内容做同样的哈希操作，判断两个哈希值到底一不一样，一样代表认证成功，否则，认证失败。</p>
+<h4 id="TLS的连接"><a href="#TLS的连接" class="headerlink" title="TLS的连接"></a>TLS的连接</h4><p>tls的密钥交换算法不同，那么连接步骤也不同，我们会介绍两种</p>
+<h4 id="RSA"><a href="#RSA" class="headerlink" title="RSA"></a>RSA</h4><h5 id="1、客户端-gt-服务端。client-随机数-tls版本好-密码套件，密码套件可以说是一组配置的整合信息罢了"><a href="#1、客户端-gt-服务端。client-随机数-tls版本好-密码套件，密码套件可以说是一组配置的整合信息罢了" class="headerlink" title="1、客户端 &gt; 服务端。client 随机数 + tls版本好+密码套件，密码套件可以说是一组配置的整合信息罢了"></a>1、客户端 &gt; 服务端。client 随机数 + tls版本好+密码套件，密码套件可以说是一组配置的整合信息罢了</h5><h5 id="2、客户端-lt-服务端。server随机数-确认版本号-确认密码套件-自己的数字证书Done"><a href="#2、客户端-lt-服务端。server随机数-确认版本号-确认密码套件-自己的数字证书Done" class="headerlink" title="2、客户端 &lt; 服务端。server随机数+确认版本号+确认密码套件+自己的数字证书Done"></a>2、客户端 &lt; 服务端。server随机数+确认版本号+确认密码套件+自己的数字证书Done</h5><p>当然这里收到之后，先校验，校验流程如下：</p>
+<p>首先我们知道了数字签名有原始内容和对于哈希值加密的数字签名，我们对原始内容加密（签名算法），对数字签名解密（CA公钥）</p>
+<p>当然，其中有一个问题就是证书的信任问题？为什么？</p>
+<p>因为我们得到的证书不一定是CA签发的，假如是中间机构签发的百度证书，那么我们就不能用内置的本地CA证书中的公钥去认证，所以我们先找签发机构，发现是一个中间机构，我们向中间机构请求证书，收到证书后发现这个机构的签发者是CA，那么我们可以用CA去认证中间的这个证书，这个证书被认证了 ，那么百度的也没认证了。</p>
+<h4 id="3、客户端-gt-服务端-使用服务器的公钥加密pre-master随机数发给服务端"><a href="#3、客户端-gt-服务端-使用服务器的公钥加密pre-master随机数发给服务端" class="headerlink" title="3、客户端 &gt; 服务端 使用服务器的公钥加密pre-master随机数发给服务端"></a>3、客户端 &gt; 服务端 使用服务器的公钥加密pre-master随机数发给服务端</h4><h5 id="4、客户端-lt-服务端-服务端发送-加密算法改变通知，和握手结束通知"><a href="#4、客户端-lt-服务端-服务端发送-加密算法改变通知，和握手结束通知" class="headerlink" title="4、客户端 &lt; 服务端 服务端发送 加密算法改变通知，和握手结束通知"></a>4、客户端 &lt; 服务端 服务端发送 加密算法改变通知，和握手结束通知</h5><p>这样，两边就都有了三个随机数，算出会话密钥</p>
+<p>之后的通信就用会话密钥了</p>
+<p>上面这个就是RSA的基本流程，但是基于RSA的https依旧存在《前向安全》的问题，如果服务端私钥泄密，那么所有的tls通讯就将被破解</p>
+<h4 id="ECDHE"><a href="#ECDHE" class="headerlink" title="ECDHE"></a>ECDHE</h4><p>1、客户端 &gt; 服务端。client Hello消息。随机数+tls版本好+密码套件。</p>
+<p>2、客户端 &lt; 服务端。serverhello消息，随机数+确认版本号+确认密码套件。certificate消息（证书）。ServerKeyExchange消息（选择名为25519的椭圆曲线基点G，生成随机数作为私钥保留本地，用G点和私钥算出公钥，对公钥做签名）。Server Hello Done。</p>
+<p>3、客户端 &gt; 服务端 校验证书，用服务端给的信息生成自己的公钥，发送client key exchange发给服务端</p>
+<p>至此，双方都有各自的公钥，自己的私钥，曲线基点，所以能算出x</p>
+<p>最终的会话密钥（客户端随机数，服务端随机数，x）</p>
+<p>算好后，客户端会发一个change cipher spec，开始使用对成算法加密通信</p>
+<p>接着，客户端再发一个excryted handshake message消息，把之前的摘要加密，让服务端做个验证。</p>
+<p>4、最后，服务端也会有一个同样的操作，发「<strong>Change Cipher Spec</strong>」和「<strong>Encrypted Handshake Message</strong>」消息，如果双方都验证加密和解密没问题，那么握手正式完成。于是，就可以正常收发加密的 HTTP 请求和响应了。</p>
+<p>RSA和ECDHE的区别</p>
+<ul>
+<li>RSA 密钥协商算法「不支持」前向保密，ECDHE 密钥协商算法「支持」前向保密；</li>
+<li>使用了 RSA 密钥协商算法，TLS 完成四次握手后，才能进行应用数据传输，而对于 ECDHE 算法，客户端可以不用等服务端的最后一次 TLS 握手，就可以提前发出加密的 HTTP 数据，节省了一个消息的往返时间（这个是 RFC 文档规定的，具体原因文档没有说明，所以这点我也不太明白）；</li>
+<li>使用 ECDHE， 在 TLS 第 2 次握手中，会出现服务器端发出的「Server Key Exchange」消息，而 RSA 握手过程没有该消息</li>
+</ul>
+<h4 id="https怎么实现数据的完整性？"><a href="#https怎么实现数据的完整性？" class="headerlink" title="https怎么实现数据的完整性？"></a>https怎么实现数据的完整性？</h4><p>刚才我们提到了TLS可以解决三个问题，包括完整性，</p>
+<p>其实TLS在实现上包括了握手协议和记录协议</p>
+<p>​	握手协议就是四次握手+后续加密来保护应用程序</p>
+<p>​	记录协议负责保护数据的完整性和来源</p>
+<p>所以我们来看记录协议：，他的实现就是负责对消息（http数据）的压缩，加密和数据认证<img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230802185945107.png" alt="	"></p>
+<p>这里还是应用层，消息被分割后进行压缩，加上消息验证码，加密，加密后加上一个报头，后面就是交给tcp层，传输层</p>
+<h4 id="HTTPS一定安全吗"><a href="#HTTPS一定安全吗" class="headerlink" title="HTTPS一定安全吗"></a>HTTPS一定安全吗</h4><p>理论上这个协议是安全的，https其实就是加了个tls协议，那就是问这个tls是不是安全的</p>
+<p>而tls就是按四次握手</p>
+<p>1、第一种方法：返回的证书，他大概率是伪造的，但是我们如果叫接受了，那就不一样了，你接受了服务器的证书，相当于信任了，那后面的通信就会被监听</p>
+<p>2、直接植入根证书也会导致这种情况</p>
+<p>所以关键就是对于证书的认证</p>
+<h3 id="http1-1-gt-http-2-gt-http3"><a href="#http1-1-gt-http-2-gt-http3" class="headerlink" title="http1.1  -&gt; http 2 -&gt; http3"></a>http1.1  -&gt; http 2 -&gt; http3</h3><h5 id="http1-1在http1-0的基础上增了长连接和管道，解决了发送方的对头阻塞"><a href="#http1-1在http1-0的基础上增了长连接和管道，解决了发送方的对头阻塞" class="headerlink" title="http1.1在http1.0的基础上增了长连接和管道，解决了发送方的对头阻塞"></a>http1.1在http1.0的基础上增了长连接和管道，解决了发送方的对头阻塞</h5><p>缺点：header是没有压缩的，只压缩了body部分，接收方会有对头阻塞，服务端智能被动响应</p>
+<h5 id="http2在是基于https的，所以安全性肯定有保障"><a href="#http2在是基于https的，所以安全性肯定有保障" class="headerlink" title="http2在是基于https的，所以安全性肯定有保障"></a>http2在是基于https的，所以安全性肯定有保障</h5><p>1、头部压缩</p>
+<p>http1.1报文是【header+body】对于body部分可以通过content- encoding指定比如gzip，但是http1.1对Header不做出处理</p>
+<p>http2会压缩头部，如果同时发送多个请求，头是一样的化，协议就会帮你压缩消除重复的部分</p>
+<p>这就是HPACK算法，HPACK包括三个部分（静态字典、动态字典、huffman编码）</p>
+<p>2、二进制格式</p>
+<p>http2不像是http1是纯文本的报文，而是全部改成了二进制，头部和数据题都是二进制，统称帧</p>
+<p>3、并发传输，引入了流的机制</p>
+<p>一条tcp连接有多个流，每个流可以包含一个或者多个message，这个message就是请求或者响应，message里面有一个或者多个frame帧，不同的http请求有独一无二的帧，所以可以乱序发送，后面会按照streamid组装，<strong>同一 Stream 内部的帧必须是严格有序的</strong></p>
+<p>4、服务器主动推送</p>
+<p>缺点：</p>
+<p>他是基于tcp协议的，tcp是字节流，所以必须保证收到的数据是完整连续的，才会把数据交给应用，如果有一个数据卡住了，那么后面的流都要卡住，那就会触发超时重传，一个tcp连接的http请求都要等待的这个重传成功。</p>
+<h5 id="http3，就把tcp换成了udp，但是为了可靠，推出了QUIC"><a href="#http3，就把tcp换成了udp，但是为了可靠，推出了QUIC" class="headerlink" title="http3，就把tcp换成了udp，但是为了可靠，推出了QUIC"></a>http3，就把tcp换成了udp，但是为了可靠，推出了QUIC</h5><p>1、没有对头阻塞</p>
+<p>借鉴了http2的流，就是每一个流都有一个自己的滑动窗口，某个流内部的确还是会阻塞，但是各个流之间是相互独立的，一个流阻塞了，另外的流不会阻塞，这样就保证了没有对头阻塞</p>
+<p>2、更快连接</p>
+<p>因为http2里面tcp和tls是分层的先三次握手然后四次握手，这样需要3个rtt</p>
+<p>然后在http3厘米quic内部适合tls一起的，而且只需要一个rtt就可以完成密钥的协商，用的是tls1.3，1.3版本有话了过程，就是说，第一次发送的时候就已经把签名算法、随机数都发给服务端了。</p>
+<p>，甚至在第二次可以达到0rtt</p>
+<p>3、连接迁移</p>
+<p>tcp是四元组，而quic是基于dcp的，他是考连接id来标记通信，所以ip换了也没事</p>
+<p>4、头部压缩变成了QPACK，静态表变成91项，动态编码方式换了，</p>
+<h4 id="http1-1请求怎么优化"><a href="#http1-1请求怎么优化" class="headerlink" title="http1.1请求怎么优化"></a>http1.1请求怎么优化</h4><p>一方面是http发送的问题，一方面是他本身数据的问题</p>
+<p>1、首先肯定是避免http请求：缓存技术</p>
+<p>2、减少重定向，这个就是把重定向请求交给代理服务器</p>
+<p>3、合并请求，就是把多个访问小文件的请求合并成一个大的</p>
+<p>4、延迟发送，只访问看得到的资源</p>
+<p>5、无损压缩，accept- encoding：gzip br </p>
+<p>6、有损压缩，webP png</p>
+<h4 id="https怎么优化"><a href="#https怎么优化" class="headerlink" title="https怎么优化"></a>https怎么优化</h4><p>https对于http多了一个tls，关键就是通过非对成加密握手得到对成加密的会话密钥</p>
+<ul>
+<li>提高cpu</li>
+<li>升级linux </li>
+<li>对密钥交换过程进行优化</li>
+<li>RSA要四次握手，慢，安全性不高，我们可以缓存eche密钥交换算法，曲线选择x25519，对成加密算法，也可以换aes128</li>
+<li>tls升级1.3，升级的地方在于hello和公钥交换两个消息合并成一个消息</li>
+<li>证书优化，分为传输优化和验证优化。</li>
+</ul>
+<p>传输：服务器证书选择椭圆曲线</p>
+<p>验证：验证的过程中不仅需要ca还需要是否被ca吊销；crl是吊销列表，ca定期更新，但是实时性不好，ocsp，向ca fan song请求，返回状态，这个增加了请求开销，万一网络不好或者ca繁忙就会出现延迟；oscp stapling，服务器向ca定期查证书状态，然后在握手阶段就直接发给客户端，这样客户端就不用再去请求了。</p>
+<ul>
+<li>会话复用：session id 和session ticket</li>
+</ul>
+<p>session id：首次连接后，在内存缓存会话密钥，用session id标识，再次连接的时候，会在hello消息中带上这个，服务器收到这个就从缓存里面找，直接回复会话状态，跳过中间流程</p>
+<p>缺点是，内存压力大</p>
+<p>session ticket：类似于cookie，把缓存的工作交给客户端，首次连接，会加密这个发给客户端缓存起来，第二次连接，客户端会发送ticket，服务器解密后验证日期是否有效，没问题就恢复会话。</p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/07/08/MYSQL%E5%A4%8D%E4%B9%A01/"
+                            aria-label=": Mysql复习1"
+                        >
+                            Mysql复习1
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-07-08T00:00:00+08:00">
+	
+		    Jul 08, 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>执行一个mysql语句会发生什么？</p>
+<h3 id="连接器"><a href="#连接器" class="headerlink" title="连接器"></a>连接器</h3><p>你要有一个和数据库的连接，这时候，接待你的就是连接器</p>
+<p>mysql -h ip -P port -u user -p</p>
+<p>然后这个连接是tcp连接，所以会比较麻烦，那这样子的话，我就们尽量使用长连接</p>
+<p>然而在mysql在执行过程中临时使用的内内存是管理在连接对象里面的，这些资源只有在连接断开的时候才会释放，如果长连接一直进行，可能导致内存占用过大，被系统强行杀掉OOM，可以考虑两种方式解决：</p>
+<p>1、定期的断开长连接，比如在程序中加一个判断内存是否占用过大的查询</p>
+<p>2、如果你用的是 MySQL 5.7 或更新版本，可以在每次执行一个比较大的操作后，通过执行 mysql_reset_connection 来重新初始化连接资源。这个过程不需要重连和重新做权限验证，但是会将连接恢复到刚刚创建完时的状态。</p>
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3><h3 id="查询缓存"><a href="#查询缓存" class="headerlink" title="查询缓存"></a>查询缓存</h3><p>8.0以后不用了，因为缓存命中率很低的，比如一条更新语句会使得缓存里面的所有相关的表全部失效，</p>
+<h3 id="分析器"><a href="#分析器" class="headerlink" title="分析器"></a>分析器</h3><p>包括词法分析和语法分析</p>
+<p>词法分析就是分析是什么，代表什么意思</p>
+<p>语法分析就是分析符不符合语法要求</p>
+<h3 id="优化器"><a href="#优化器" class="headerlink" title="优化器"></a>优化器</h3><p>优化器就是确定一个执行效率高的执行方案，比如选择索引、连接表的顺序等等</p>
+<h3 id="执行器"><a href="#执行器" class="headerlink" title="执行器"></a>执行器</h3><p>真正的执行</p>
+<p>但是更新操作还会涉及两个表的操作，一个是redo log 一个是binlog</p>
+<p>这两种日志有以下三点不同。</p>
+<ol>
+<li>redo log 是 InnoDB 引擎特有的；binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。</li>
+<li>redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如“给 ID&#x3D;2 这一行的 c 字段加 1 ”。</li>
+<li>redo log 是循环写的，空间固定会用完；binlog 是可以追加写入的。“追加写”是指 binlog 文件写到一定大小后会切换到下一个，并不会覆盖以前的日志。</li>
+</ol>
+<p>这两个日志的配合是使用两阶段提交</p>
+<p><img src="/Users/csen/Documents/Amusement/Sen-Blog/source/images/MYSQL1/image-20230805142953314.png" alt="image-20230805142953314"></p>
+<p>可以发现将redo log的写入分成了两个阶段，一个是prepare 一个commit</p>
+<p>在两阶段提交的情况下，是怎么实现崩溃恢复的呢？<br>首先比较重要的一点是，在写入redo log时，会顺便记录XID，即当前事务id。在写入binlog时，也会写入XID。</p>
+<p>如果在写入redo log之前崩溃，那么此时redo log与binlog中都没有，是一致的情况，崩溃也无所谓。</p>
+<p>如果在写入redo log prepare阶段后立马崩溃，之后会在崩恢复时，由于redo log没有被标记为commit。于是拿着redo log中的XID去binlog中查找，此时肯定是找不到的，那么执行回滚操作。</p>
+<p>如果在写入binlog后立马崩溃，在恢复时，由redo log中的XID可以找到对应的binlog，这个时候直接提交即可。</p>
+<p>总的来说，在崩溃恢复后，只要redo log不是处于commit阶段，那么就拿着redo log中的XID去binlog中寻找，找得到就提交，否则就回滚。</p>
+<p>在这样的机制下，两阶段提交能在崩溃恢复时，能够对提交中断的事务进行补偿，来确保redo log与binlog的数据一致性。</p>
+<h3 id="binlog-记录内容"><a href="#binlog-记录内容" class="headerlink" title="binlog 记录内容"></a>binlog <strong>记录内容</strong></h3><p>binlog应该说是Mysql里最核心的日志， 它记录了除了查询语句(select、show)之外的所有的 <code>DDL</code> 和 <code>DML</code> 语句,也就意味着我们基本上所有对数据库的操作变更都会记录到binlog里面。binlog以事件形式记录，不仅记录了操作的语句，同时还记录了语句所执行的消耗的时间。 binlog 有三种记录格式，分别是ROW、STATEMENT、MIXED。</p>
+<p><strong>1、ROW：</strong> 基于变更的数据行进行记录，如果一个update语句修改一百行数据，那么这种模式下就会记录100行对应的记录日志。</p>
+<p><strong>2、STATEMENT：</strong>基于SQL语句级别的记录日志，相对于ROW模式，STATEMENT模式下只会记录这个update 的语句。所以此模式下会非常节省日志空间，也避免着大量的IO操作。</p>
+<p><strong>3、MIXED：</strong> 混合模式，此模式是ROW模式和STATEMENT模式的混合体，一般的语句修改使用statment格式保存binlog，如一些函数，statement无法完成主从复制的操作，则采用row格式保存binlog。</p>
+<p>这三种模式需要注意的是：使用 row 格式的 binlog 时，在进行数据同步或恢复的时候不一致的问题更容易被发现，因为它是基于数据行记录的。而使用 mixed 或者 statement 格式的 binlog 时，很多事务操作都是基于SQL逻辑记录，我们都知道一个SQL在不同的时间点执行它们产生的数据变化和影响是不一样的，所以这种情况下，数据同步或恢复的时候就容易出现不一致的情况。</p>
+<h2 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h2><h4 id="全局锁"><a href="#全局锁" class="headerlink" title="全局锁"></a>全局锁</h4><p>典型的使用场景就是做全库的逻辑备份，对所有的表进行 行锁定，从而获取一致性视图，保证数据的完整性。加了全局锁就是只能读</p>
+<ul>
+<li><p>一旦加了全局锁之后，其他的DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句，也就是处于只读状态，而数据备份就是查询操作。 那么数据在进行逻辑备份的过程中，数据库中的数据就是不会发生变化的，这样就保证了数据的一致性 和完整性 .</p>
+</li>
+<li><p>语法</p>
+<p>1、加全局锁</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">flush tables <span class="keyword">with</span> read lock;</span><br></pre></td></tr></table></figure>
+
+<p>2、数据备份</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>pxxx db_name <span class="operator">-</span><span class="operator">&gt;</span> xxx.sql;</span><br></pre></td></tr></table></figure>
+
+<p>3、释放锁</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">unlock tables;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="数据库中加全局锁，是一个比较重的操作，存在的问题有："><a href="#数据库中加全局锁，是一个比较重的操作，存在的问题有：" class="headerlink" title="数据库中加全局锁，是一个比较重的操作，存在的问题有："></a>数据库中加全局锁，是一个比较重的操作，存在的问题有：</h3><ul>
+<li>如果在主库上备份，那么在备份期间都不能执行更新，业务基本上就得停摆。</li>
+<li>如果在从库上备份，那么在备份期间从库不能执行主库同步过来的二进制日志（binlog），会导致主从延迟。</li>
+</ul>
+<p>在InnoDB引擎中，我们可以在备份时加上参数 –single-transaction 参数来完成不加锁的一致 性数据备份。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysqldump --single-transaction -uroot -pxxx db_name -&gt; xxx.sql;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="表级锁"><a href="#表级锁" class="headerlink" title="表级锁"></a>表级锁</h4><p>表级锁，主要分为3类：</p>
+<ul>
+<li>表锁</li>
+<li>元数据锁（meta data lock，MDL）</li>
+<li>意向锁</li>
+</ul>
+<p>表锁</p>
+<p>对于表锁，又可以分为2类：</p>
+<ul>
+<li>表共享读锁（read lock）</li>
+<li>表独占写锁（write lock）</li>
+</ul>
+<p>结论: 读锁不会阻塞其他客户端的读，但是会阻塞写。写锁既会阻塞其他客户端的读，又会阻塞 其他客户端的写。</p>
+<p>元数据锁：当对一张表进行增删改查的时候，加MDL读锁（共享）；当对表结构进行变更操作的时候，加MDL写锁（排他）。</p>
+<p>MDL 加锁过程是系统自动控制，无需显式使用，在访问一张表的时候会自动加上。MDL 锁主要作用是维 护表元数据的数据一致性，在表上有活动事务的时候，不可以对元数据进行写入操作。为了避免DML与 DDL冲突，保证读写的正确性。</p>
+<p>元数据锁是<strong>server层</strong>的锁，表级锁，每执行一条DML、DDL语句时都会申请metadata锁，DML操作需要<strong>metadata读锁</strong>锁，DDL操作需要<strong>metadata写锁</strong>，<strong>metadata</strong>加锁过程是系统自动控制，无法直接干预</p>
+<p>行锁</p>
+<p>InnoDB实现了以下两种类型的行锁：</p>
+<ul>
+<li>共享锁（S）：允许一个事务去读一行，阻止其他事务获得相同数据集的排它锁。</li>
+<li>排他锁（X）：允许获取排他锁的事务更新数据，阻止其他事务获得相同数据集的共享锁和排他 锁</li>
+</ul>
+<p><img src="/Users/csen/Documents/Amusement/Sen-Blog/source/images/MYSQL1/image-20230805221422216.png" alt="image-20230805221422216"></p>
+<h1 id="隔离性与隔离级别"><a href="#隔离性与隔离级别" class="headerlink" title="隔离性与隔离级别"></a>隔离性与隔离级别</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_35794878/article/details/125741468">https://blog.csdn.net/weixin_35794878/article/details/125741468</a></p>
+<p>事务就是要保证一组数据库操作，要么全部成功，要么全部失败。在 MySQL 中，事务支持是在引擎层实现的。你现在知道，MySQL 是一个支持多引擎的系统，但并不是所有的引擎都支持事务。比如 MySQL 原生的 MyISAM 引擎就不支持事务，这也是 MyISAM 被 InnoDB 取代的重要原因之一</p>
+<p>在谈隔离级别之前，你首先要知道，你隔离得越严实，效率就会越低。因此很多时候，我们都要在二者之间寻找一个平衡点。SQL 标准的事务隔离级别包括：读未提交（read uncommitted）、读提交（read committed）、可重复读（repeatable read）和串行化（serializable ）。下面我逐一为你解释：</p>
+<ul>
+<li>读未提交是指，一个事务还没提交时，它做的变更就能被别的事务看到。</li>
+<li>读提交是指，一个事务提交之后，它做的变更才会被其他事务看到。</li>
+<li>可重复读是指，一个事务执行过程中看到的数据，总是跟这个事务在启动时看到的数据是一致的。当然在可重复读隔离级别下，未提交变更对其他事务也是不可见的。</li>
+<li>串行化，顾名思义是对于同一行记录，“写”会加“写锁”，“读”会加“读锁”。当出现读写锁冲突的时候，后访问的事务必须等前一个事务执行完成，才能继续执行。</li>
+</ul>
+<h1 id="事务隔离的实现"><a href="#事务隔离的实现" class="headerlink" title="事务隔离的实现"></a>事务隔离的实现</h1><h2 id="实现隔离级别的方式："><a href="#实现隔离级别的方式：" class="headerlink" title="实现隔离级别的方式："></a>实现隔离级别的方式：</h2><p>事务有四个隔离级别</p>
+<p><strong>一级封锁协议 (对应 read uncommited)</strong> 　<br>一级封锁协议是：事务在对需要修改的数据上面（就是在发生修改的瞬间）对其加共享锁（其他事务不能更改，但是可以读取-导致“脏读”），直到事务结束才释放。事务结束包括正常结束（COMMIT）和非正常结束（ROLLBACK）。</p>
+<p><strong>二级封锁协议 （对应read commited)</strong>　<br>二级封锁协议是：1）事务在对需要更新的数据上（就是发生更新的瞬间）加排他锁（直到事务结束），防止其他事务读取未提交的数据，这样，也就避免了“脏读”的情况。2）事务对当前被读取的数据上面加共享锁（当读到时加上共享锁），一旦读完该行，立即释放该该行的共享锁-从数据库的底层实现更深入的来理解，既是，数据库会对游标当前的数据上加共享锁，但是当游标离开当前行的时候，立即释放该行的共享锁。</p>
+<p><strong>三级封锁协议 （对应reapetable read ）</strong>（默认）<br>三级封锁协议是：二级封锁协议加上事务在读取数据的瞬间必须先对其加共享锁，但是直到事务结束才释放，这样保证了可重复读（既是其他的事务职能读取该数据，但是不能更新该数据）。</p>
+<p><strong>最强封锁协议（对应Serialization)</strong><br>四级封锁协议是对三级封锁协议的增强，其实现机制也最为简单，直接对事务中所读取或者更改的数据所在的表加表锁，也就是说，其他事务不能读写该表中的任何数据。这样所有的脏读，不可重复读，幻读，都得以避免</p>
+<h3 id="MVCC。"><a href="#MVCC。" class="headerlink" title="MVCC。"></a>MVCC。</h3><p><strong>MVCC</strong> 在 <strong>MySQL InnoDB</strong> 中的实现主要是为了提高数据库并发性能，用更好的方式去处理读-写冲突，做到即使有读写冲突时，也能做到不加锁，非阻塞并发读。可认为MVCC是行级锁的一个变种，但是它在很多情况下避免了加锁操作，因此额外开销更低。</p>
+<p>什么是当前读和快照读？<br>在学习 MVCC 多版本并发控制之前，我们必须先了解一下，什么是 MySQL InnoDB 下的当前读和快照读?</p>
+<p>当前读<br>像 select lock in share mode (共享锁), select for update; update; insert; delete (排他锁)这些操作都是一种当前读，为什么叫当前读？就是它读取的是记录的最新版本，读取时还要保证其他并发事务不能修改当前记录，会对读取的记录进行加锁</p>
+<p>快照读<br>像不加锁的 select 操作就是快照读，即不加锁的非阻塞读；快照读的前提是隔离级别不是串行级别，串行级别下的快照读会退化成当前读；之所以出现快照读的情况，是基于提高并发性能的考虑，快照读的实现是基于多版本并发控制，即 MVCC ,可以认为 MVCC 是行锁的一个变种，但它在很多情况下，避免了加锁操作，降低了开销；既然是基于多版本，即快照读可能读到的并不一定是数据的最新版本，而有可能是之前的历史版本</p>
+<p>说白了 MVCC 就是为了实现读-写冲突不加锁，而这个读指的就是快照读, 而非当前读，当前读实际上是一种加锁的操作，是悲观锁的实现<br>当前读，快照读和MVCC的关系</p>
+<p>MVCC 多版本并发控制是 「维持一个数据的多个版本，使得读写操作没有冲突」 的概念，只是一个抽象概念，并非实现</p>
+<p>因为 MVCC 只是一个抽象概念，要实现这么一个概念，MySQL 就需要提供具体的功能去实现它，「快照读就是 MySQL 实现 MVCC 理想模型的其中一个非阻塞读功能」。而相对而言，当前读就是悲观锁的具体功能实现</p>
+<p>要说的再细致一些，快照读本身也是一个抽象概念，再深入研究。MVCC 模型在 MySQL 中的具体实现则是由 3 个隐式字段，undo 日志 ， Read View 等去完成的，具体可以看下面的 MVCC 实现原理</p>
+<p>MVCC 能解决什么问题，好处是？<br>数据库并发场景有三种，分别为：</p>
+<p>读-读：不存在任何问题，也不需要并发控制<br>读-写：有线程安全问题，可能会造成事务隔离性问题，可能遇到脏读，幻读，不可重复读<br>写-写：有线程安全问题，可能会存在更新丢失问题，比如第一类更新丢失，第二类更新丢失<br>MVCC 带来的好处是？<br>多版本并发控制（MVCC）是一种用来解决读-写冲突的无锁并发控制，也就是为事务分配单向增长的时间戳，为每个修改保存一个版本，版本与事务时间戳关联，读操作只读该事务开始前的数据库的快照。 所以 MVCC 可以为数据库解决以下问题</p>
+<p>在并发读写数据库时，可以做到在读操作时不用阻塞写操作，写操作也不用阻塞读操作，提高了数据库并发读写的性能<br>同时还可以解决脏读，幻读，不可重复读等事务隔离问题，但不能解决更新丢失问题<br>小结一下咯<br>简而言之，MVCC 就是因为大佬们，不满意只让数据库采用悲观锁这样性能不佳的形式去解决读-写冲突问题，而提出的解决方案，所以在数据库中，因为有了 MVCC，所以我们可以形成两个组合：</p>
+<ul>
+<li><code>MVCC + 悲观锁</code><br>MVCC解决读写冲突，悲观锁解决写写冲突</li>
+<li><code>MVCC + 乐观锁</code><br>MVCC 解决读写冲突，乐观锁解决写写冲突</li>
+</ul>
+<p>这种组合的方式就可以最大程度的提高数据库并发性能，并解决读写冲突，和写写冲突导致的问题</p>
+<p>MVCC只在repeatable read和read committed两个隔离级别下工作。其他两个隔离级别都和MVCC不兼容，因为read uncommitted总是读取最新的数据行，而不是符合当前事务版本的数据行。而serializable则会对所有读取的行都加锁。</p>
+<p><strong>READ COMMITTED —— 每次读取数据前都生成一个ReadView</strong></p>
+<p><strong>REPEATABLE READ —— 在第一次读取数据时生成一个ReadView</strong></p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/07/08/MYSQL%E5%A4%8D%E4%B9%A01/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A03/"
+                            aria-label=": 计算机网络复习3"
+                        >
+                            计算机网络复习3
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-07-08T00:00:00+08:00">
+	
+		    Jul 08, 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h3 id="这一章节就来学习IP协议"><a href="#这一章节就来学习IP协议" class="headerlink" title="这一章节就来学习IP协议"></a>这一章节就来学习IP协议</h3><p>我们知道两个不相连的网络之间的传输其实靠的是ip地址，两个直连的设备之间的用的协议MAC头，</p>
+<p>ipv4是32位</p>
+<p>我们把这些分成了5类，包括a类，b类，c类，d类，e类</p>
+<p>a类是0开头，b类是10开头，c类是11开头，d类是1110开头，然后e类是1111开头</p>
+<p>d类用于多播，多播是可以穿透网段的，e类用于留存</p>
+<p>然后每个网络号对应的主机号的数量其实是2的主机号次幂-2，因为，主机号全为0指定某个网络，主机号全为1指代某个网络下的所有主机，用于广播</p>
+<p>广播是用于对链路中相互连接的主机发送消息</p>
+<p>在本网络中的广播叫做本地广播，不同网络之间的叫直接广播、</p>
+<p>这种分类方式的好处就是简单，清晰</p>
+<p>但是有缺点：</p>
+<p>首先同一层次下，没有分类</p>
+<p>第二，不能和现实网络很好的适配</p>
+<p>所以提出了无分类地址cidr</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A03/image-20230804145043580.png" alt="image-20230804145043580"></p>
+<p>我们知道可以通过子网掩码划分出网络号和主机号，那实际上子网掩码还有一个作用，那就是<strong>划分子网</strong>。</p>
+<p><strong>子网划分实际上是将主机地址分为两个部分：子网网络地址和子网主机地址</strong></p>
+<p>其实就是在a类b类上再分而已</p>
+<p>dhcp</p>
+<p>先说明一点，DHCP 客户端进程监听的是 68 端口号，DHCP 服务端进程监听的是 67 端口号。</p>
+<p>这 4 个步骤：</p>
+<ul>
+<li>客户端首先发起 <strong>DHCP 发现报文（DHCP DISCOVER）</strong> 的 IP 数据报，由于客户端没有 IP 地址，也不知道 DHCP 服务器的地址，所以使用的是 UDP <strong>广播</strong>通信，其使用的广播目的地址是 255.255.255.255（端口 67） 并且使用 0.0.0.0（端口 68） 作为源 IP 地址。DHCP 客户端将该 IP 数据报传递给链路层，链路层然后将帧广播到所有的网络中设备。</li>
+<li>DHCP 服务器收到 DHCP 发现报文时，用 <strong>DHCP 提供报文（DHCP OFFER）</strong> 向客户端做出响应。该报文仍然使用 IP 广播地址 255.255.255.255，该报文信息携带服务器提供可租约的 IP 地址、子网掩码、默认网关、DNS 服务器以及 <strong>IP 地址租用期</strong>。</li>
+<li>客户端收到一个或多个服务器的 DHCP 提供报文后，从中选择一个服务器，并向选中的服务器发送 <strong>DHCP 请求报文（DHCP REQUEST</strong>进行响应，回显配置的参数。</li>
+<li>最后，服务端用 <strong>DHCP ACK 报文</strong>对 DHCP 请求报文进行响应，应答所要求的参数。</li>
+</ul>
+<p>一旦客户端收到 DHCP ACK 后，交互便完成了，并且客户端能够在租用期内使用 DHCP 服务器分配的 IP 地址。</p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A03/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/07/08/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/"
+                            aria-label=": 输入网络，期间发生了什么？"
+                        >
+                            输入网络，期间发生了什么？
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-07-08T00:00:00+08:00">
+	
+		    Jul 08, 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
     
 </div>
 
@@ -340,11 +886,241 @@
                     
                         <p>
                             <a
-                                href="/2023/07/29/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F/#post-footer"
+                                href="/2023/07/08/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/"
+                            aria-label=": 计算机网络复习2"
+                        >
+                            计算机网络复习2
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-07-08T00:00:00+08:00">
+	
+		    Jul 08, 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h2 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h2><p>tcp头的格式</p>
+<p>源端口目的端口</p>
+<p>序列号</p>
+<p>确认应答号（也是希望你在一个发送的号）</p>
+<p>首部长度 保留 六个控制位 窗口大小（用于流量控制那边的）</p>
+<p>校验和 紧急指针</p>
+<p>选项</p>
+<p>数据</p>
+<p>一个tcp连接是由四元组确定的</p>
+<p>最大的tcp连接数&#x3D;客户端ip*客户端端口 </p>
+<h4 id="UDP只有64位，源端口目的端口包长度校验和数据"><a href="#UDP只有64位，源端口目的端口包长度校验和数据" class="headerlink" title="UDP只有64位，源端口目的端口包长度校验和数据"></a>UDP只有64位，源端口目的端口包长度校验和数据</h4><p>区别：</p>
+<p>tcp	udp</p>
+<p>一个需要连接 不需要连接</p>
+<p>点对点 一对多&#x2F;多对多&#x2F;一对一</p>
+<p>tcp有拥塞控制流量控制	udp没有无所谓</p>
+<p>首部长	首部短</p>
+<p>流式传输无边界	包传输有边界</p>
+<p>分片msstcp	ucp在ip分片</p>
+<h4 id="UDP和TCP可以共用一个端口，因为是完全独立的两个软件模块"><a href="#UDP和TCP可以共用一个端口，因为是完全独立的两个软件模块" class="headerlink" title="UDP和TCP可以共用一个端口，因为是完全独立的两个软件模块"></a>UDP和TCP可以共用一个端口，因为是完全独立的两个软件模块</h4><h4 id="为什么不能两次握手？"><a href="#为什么不能两次握手？" class="headerlink" title="为什么不能两次握手？"></a>为什么不能两次握手？</h4><h4 id="1、在两次握手的时候，服务端没有中间状态给客户端来阻止历史连接，也就是服务端会多建立一个历史连接浪费资源，因为收到syn就变成established"><a href="#1、在两次握手的时候，服务端没有中间状态给客户端来阻止历史连接，也就是服务端会多建立一个历史连接浪费资源，因为收到syn就变成established" class="headerlink" title="1、在两次握手的时候，服务端没有中间状态给客户端来阻止历史连接，也就是服务端会多建立一个历史连接浪费资源，因为收到syn就变成established"></a>1、在两次握手的时候，服务端没有中间状态给客户端来阻止历史连接，也就是服务端会多建立一个历史连接浪费资源，因为收到syn就变成established</h4><h4 id="2、同步序列号"><a href="#2、同步序列号" class="headerlink" title="2、同步序列号"></a>2、同步序列号</h4><h4 id="3、避免资源浪费，因为万一第一个syn报文阻塞了，那么就要重复发送多次syn报文，如果是两次握手，那就需要建立多个连接"><a href="#3、避免资源浪费，因为万一第一个syn报文阻塞了，那么就要重复发送多次syn报文，如果是两次握手，那就需要建立多个连接" class="headerlink" title="3、避免资源浪费，因为万一第一个syn报文阻塞了，那么就要重复发送多次syn报文，如果是两次握手，那就需要建立多个连接"></a>3、避免资源浪费，因为万一第一个syn报文阻塞了，那么就要重复发送多次syn报文，如果是两次握手，那就需要建立多个连接</h4><h4 id="为什么，每次建立连接序列号都要求不一样？"><a href="#为什么，每次建立连接序列号都要求不一样？" class="headerlink" title="为什么，每次建立连接序列号都要求不一样？"></a>为什么，每次建立连接序列号都要求不一样？</h4><p>1、防止历史报文被下一个相同四元组的连接接受（主要原因）</p>
+<p>2、防止黑客伪造的相同序列号被接受</p>
+<h4 id="那这个序列号是怎么随机产生的？"><a href="#那这个序列号是怎么随机产生的？" class="headerlink" title="那这个序列号是怎么随机产生的？"></a>那这个序列号是怎么随机产生的？</h4><p>rfc提高了序列号ISN随机生成算法：ISN &#x3D; M + F</p>
+<p>m是计时器，四微秒+1</p>
+<p>F是哈希算法根据四元组推出来的</p>
+<h4 id="为什么ip会分片tcp还分片，"><a href="#为什么ip会分片tcp还分片，" class="headerlink" title="为什么ip会分片tcp还分片，"></a>为什么ip会分片tcp还分片，</h4><p>因为ip不能超时重传，所以只能靠tcp，而万一ip层丢了一部分，那么ip层就不能组装成一个完整的tcp报文（头部+数据），也就不可能发给接收方tcp层，所以发送方的tcp层就会重发整个tcp报文，所以我们最好就是自己分片，然后缺什么发什么，直接以MSS为单位就可以了</p>
+<p>第一次握手丢失，会发生什么？</p>
+<p>其实就是重传，重传的序列号还是要一样的，然后重传的机制需要学习</p>
+<p>就是靠tcp_syn_retries决定，假设是3，就要重传三次，<strong>每次超时的时间是上一次的 2 倍</strong>。</p>
+<p>第二次握手丢失，会发生什么？</p>
+<p>客户端和服务端就会认为自己的没发到，客户端和服务端都触发重传机制，tcp_synack_retries</p>
+<p>第三次握手没收到，会发生什么</p>
+<p>这里有一点很关键，就是ack报文是不会重传的，所以服务端会认为自己的syn+ack没发到，触发重传机制</p>
+<h4 id="半连接状态和全连接状态"><a href="#半连接状态和全连接状态" class="headerlink" title="半连接状态和全连接状态"></a>半连接状态和全连接状态</h4><ul>
+<li>半连接队列，也称 SYN 队列；</li>
+<li>全连接队列，也称 accept 队列；</li>
+</ul>
+<p>正常流程：</p>
+<ul>
+<li>当服务端接收到客户端的 SYN 报文时，会创建一个半连接的对象，然后将其加入到内核的「 SYN 队列」；</li>
+<li>接着发送 SYN + ACK 给客户端，等待客户端回应 ACK 报文；</li>
+<li>服务端接收到 ACK 报文后，从「 SYN 队列」取出一个半连接对象，然后创建一个新的连接对象放入到「 Accept 队列」；</li>
+<li>应用通过调用 <code>accpet()</code> socket 接口，从「 Accept 队列」取出连接对象。</li>
+</ul>
+<p>所以这样子就出会先一些问题</p>
+<p>受到SYN攻击怎么办？就是说半连接状态很多怎么办？</p>
+<ul>
+<li>调大 netdev_max_backlog；缓冲队列</li>
+<li>增大 TCP 半连接队列；</li>
+<li>开启 tcp_syncookies；不用建立半连接</li>
+<li>减少 SYN+ACK 重传次数</li>
+</ul>
+<h3 id="TCP四次挥手"><a href="#TCP四次挥手" class="headerlink" title="TCP四次挥手"></a>TCP四次挥手</h3><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803130523828.png" alt="image-20230803130523828"></p>
+<p>为什么4次？关键是客户端给服务端发fin报文，说我已经没有数据要发个服务端了，但是这时候服务端可能还有数据要发给客户端，所以需要先处理自己的最后流程，然后给客户端发送一个fin报文，也就是说，第二次握手和第三次握手大概率是不同步的。</p>
+<p>特定情况下，可以变成三次</p>
+<p>第一次挥手丢失，会发生什么？</p>
+<p>客户端收不到来自服务端的ack报文，那么就会触发超时重传，这个次数是由</p>
+<p>tcp_orphan_retries决定的</p>
+<p>第二次挥手丢失，会发生什么？</p>
+<p>首先客户端还是会触发超时重传，这时候因为是单方向的，服务端不会触发超时重传</p>
+<p>第三次丢失，会发生什么？</p>
+<p>第三次丢失，相当于服务端一直收不到来自客户端的ack，那么服务端会触发超时重传，而客户端已经进入了wait2状态，一直等，如果超过设定的时间，自动关闭</p>
+<p>第四次丢失，会发生什么？</p>
+<p>服务端一直收不到，那么触发超时重传，这时候因为客户端已经是timewait状态，所以每一次重传都会重置2msl定时器，超过时间就close，而服务端同样的重传几次之后close</p>
+<p>msl是报文最大生存时间，ip头有一个ttl字段，这个字段代表可以经历的最大路由数</p>
+<p>msl大于等于ttl消耗为0的时间，默认60</p>
+<h4 id="为什么需要这个timewait状态"><a href="#为什么需要这个timewait状态" class="headerlink" title="为什么需要这个timewait状态"></a>为什么需要这个timewait状态</h4><p>1、为了防止历史连接中的数据，被后面相同四元组的连接错误的接收，因此 TCP 设计了 TIME_WAIT 状态，状态会持续 <code>2MSL</code> 时长，这个时间<strong>足以让两个方向上的数据包都被丢弃，使得原来连接的数据包在网络中都自然消失，再出现的数据包一定都是新建立连接所产生的</strong></p>
+<p>2、也就是说，TIME-WAIT 作用是<strong>等待足够的时间以确保最后的 ACK 能让被动关闭方接收，从而帮助其正常关闭。</strong></p>
+<h4 id="出现大量超连接的原因"><a href="#出现大量超连接的原因" class="headerlink" title="出现大量超连接的原因"></a>出现大量超连接的原因</h4><p>没有用长链接</p>
+<p>长连接超时（keepalive）</p>
+<h4 id="如果建立了连接，结果客户端故障了，不发送消息，但是服务端一直establish"><a href="#如果建立了连接，结果客户端故障了，不发送消息，但是服务端一直establish" class="headerlink" title="如果建立了连接，结果客户端故障了，不发送消息，但是服务端一直establish"></a>如果建立了连接，结果客户端故障了，不发送消息，但是服务端一直establish</h4><p>tcp搞了个保活机制，隔一段时间发送探测报文，没有得到相应则认为tcp死亡，</p>
+<p>但是，这个保活机制时间太长了，我们自己在应用层实现一个心跳机制</p>
+<p>一般web服务软件都会提供keepalive-timeout状态</p>
+<h4 id="如果服务器的进程崩溃了，那发生什么"><a href="#如果服务器的进程崩溃了，那发生什么" class="headerlink" title="如果服务器的进程崩溃了，那发生什么"></a>如果服务器的进程崩溃了，那发生什么</h4><p>其实连接信息是由内核维护的，所以服务端的内核还是会发送fin报文进行四次挥手</p>
+<h3 id="超时重传、快速重传、"><a href="#超时重传、快速重传、" class="headerlink" title="超时重传、快速重传、"></a>超时重传、快速重传、</h3><p>超时重传很正常，时间RTO，两倍两倍+</p>
+<p>快速重传的问题在于传一个还是传所有，这里引入了SACK机制</p>
+<p>SACK就是把收到的数据信息驾到tcp头部的选项里面，告诉发送发我收到了哪些</p>
+<p>后面又出现了D-SACK，这是用来告诉发送方哪些被重复接受了了</p>
+<h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h3><p>窗口的实现实际上是操作系统开辟的一个缓存空间，发送方主机在等到确认应答返回之前，必须在缓冲区中保留已发送的数据。如果按期收到确认应答，此时数据就可以从缓存区清除</p>
+<p>tcp头部里面既有一个字段叫窗口大小，就是用来告诉发送端自己还有多少缓冲区可以使用，所以窗口大小一般由接收方决定</p>
+<h3 id="流量控制"><a href="#流量控制" class="headerlink" title="流量控制"></a>流量控制</h3><p>避免发送方的数据填满接收方</p>
+<h3 id="拥塞控制"><a href="#拥塞控制" class="headerlink" title="拥塞控制"></a>拥塞控制</h3><p>避免发送方的网络填满整个网络，所以这个协议是很无私的，只要网络发生拥塞，那么tcp就会降低自己的发送量</p>
+<p>慢启动 一开始是1，就是可以传1个mss，然后收到应答变成2，4，8，16…..</p>
+<p>拥塞避免 触碰到慢启动门限就是用拥塞避免，变成线性的，收到一个ack cwnd增加1&#x2F;cwnd</p>
+<p>超时重传，慢启动门限变成cwnd&#x2F;2，cwnd&#x3D;1重新开始慢启动</p>
+<p>快速恢复，，cwnd &#x3D; cwnd&#x2F;2，慢启动门限&#x3D; cwnd</p>
+<p>cwnd &#x3D; ssthresh + 3</p>
+<p>收到重复的数据包 cwnd++</p>
+<p>收到新的数据包说明重传成功，cwnd &#x3D; 慢启动门限，进入拥塞避免</p>
+<p>如果优化tcp？</p>
+<p>从三个方向，三次握手，四次挥手，还有中途的数据传输</p>
+<p>三次握手，</p>
+<p>客户端，减少重传次数</p>
+<p>服务端，增大半连接队列的大小和全连接队列的大小，开启syncookie技术</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803161404210.png" alt="image-20230803161404210"></p>
+<p>四次挥手</p>
+<p>关闭连接的方式通常有两种，分别是 RST 报文关闭和 FIN 报文关闭。</p>
+<p>如果进程收到 RST 报文，就直接关闭连接了，不需要走四次挥手流程，是一个暴力关闭连接的方式。</p>
+<p>安全关闭连接的方式必须通过四次挥手，它由进程调用 <code>close</code> 和 <code>shutdown</code> 函数发起 FIN 报文（shutdown 参数须传入 SHUT_WR 或者 SHUT_RDWR 才会发送 FIN）。</p>
+<blockquote>
+<p>调用了 close 函数意味着完全断开连接，<strong>完全断开不仅指无法传输数据，而且也不能发送数据。 此时，调用了 close 函数的一方的连接叫做「孤儿连接」，如果你用 netstat -p 命令，会发现连接对应的进程名为空。</strong></p>
+<p>使用 close 函数关闭连接是不优雅的。于是，就出现了一种优雅关闭连接的 <code>shutdown</code> 函数，<strong>它可以控制只关闭一个方向的连接</strong></p>
+</blockquote>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803163142196.png" alt="image-20230803163142196"></p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803163236556.png" alt="image-20230803163236556"></p>
+<h4 id="如何理解字节流"><a href="#如何理解字节流" class="headerlink" title="如何理解字节流"></a>如何理解字节流</h4><p>udp操作系统不会对齐拆分，所以每一个udp就是一个消息的边界，操作系统收到udp之后会把他查到队列里面，每一个队列他都是一个udp</p>
+<p>然而tcp是会分片的，这时候，接收方如果不知道消息的长度或者边界，是无法读取消息的，</p>
+<p>在发送端，当我们调用 send 函数完成数据“发送”以后，数据并没有被真正从网络上发送出去，只是从应用程序拷贝到了操作系统内核协议栈中。</p>
+<p>至于什么时候真正被发送，<strong>取决于发送窗口、拥塞窗口以及当前发送缓冲区的大小等条件</strong>。也就是说，我们不能认为每次 send 调用发送的数据，都会作为一个整体完整地消息被发送出去</p>
+<p>一般用特殊字符作为边界</p>
+<p>自定义消息结构</p>
+<h4 id="已经建立的tcp，收到syn会发生什么"><a href="#已经建立的tcp，收到syn会发生什么" class="headerlink" title="已经建立的tcp，收到syn会发生什么"></a>已经建立的tcp，收到syn会发生什么</h4><p>新的syn首先看看端口是不是一样，如果不一样的话，就建立新的连接，老的那个如果一直不发消息就会触发tcp保活机制</p>
+<p>如果相同（可能就是宕机重传），其实会返回一个challenge ack，携带正确的序列号的确认号的ack报文，这时候客户端确认号收到这个，发现不是自己期望收到的，就会返回rst，这样，服务器就释放了连接</p>
+<h3 id="如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗"><a href="#如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗" class="headerlink" title="如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗"></a>如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗</h3><p>先到的fin包其实是乱序的，所以会进入乱序队列，等数据真正的到了，才会回头检查这个fin，然后给服务端发这个。</p>
+<h3 id="如果timewait状态收到syn？会怎么样？"><a href="#如果timewait状态收到syn？会怎么样？" class="headerlink" title="如果timewait状态收到syn？会怎么样？"></a>如果timewait状态收到syn？会怎么样？</h3><p>还是先看序列号时间戳吧，如果确实合法，那应该会重新进入三次握手阶段，</p>
+<p>如果不合法，就会返回一个和第四次挥手一样的ack，这时候服务端收到发现不是自己的，就回复一个rst报文</p>
+<h3 id="Tcp连接，断电和进程崩溃有什么区别？没有保活机制"><a href="#Tcp连接，断电和进程崩溃有什么区别？没有保活机制" class="headerlink" title="Tcp连接，断电和进程崩溃有什么区别？没有保活机制"></a>Tcp连接，断电和进程崩溃有什么区别？没有保活机制</h3><p>客户端主机崩溃，没有保活机制，那就无法感知到，一直处于establish</p>
+<p>进程崩溃，内核还是会发送fin完成4次挥手</p>
+<h4 id="客户端主机宕机，又迅速重启"><a href="#客户端主机宕机，又迅速重启" class="headerlink" title="客户端主机宕机，又迅速重启"></a>客户端主机宕机，又迅速重启</h4><p>在客户端主机宕机后，服务端向客户端发送的报文会得不到任何的响应，在一定时长后，服务端就会触发<strong>超时重传</strong>机制，重传未得到响应的报文。</p>
+<p>服务端重传报文的过程中，客户端主机重启完成后，客户端的内核就会接收重传的报文，然后根据报文的信息传递给对应的进程：</p>
+<ul>
+<li>如果客户端主机上<strong>没有</strong>进程绑定该 TCP 报文的目标端口号，那么客户端内核就会<strong>回复 RST 报文，重置该 TCP 连接</strong>；</li>
+<li>如果客户端主机上<strong>有</strong>进程绑定该 TCP 报文的目标端口号，由于客户端主机重启后，之前的 TCP 连接的数据结构已经丢失了，客户端内核里协议栈会发现找不到该 TCP 连接的 socket 结构体，于是就会<strong>回复 RST 报文，重置该 TCP 连接</strong>。</li>
+</ul>
+<p>所以，<strong>只要有一方重启完成后，收到之前 TCP 连接的报文，都会回复 RST 报文，以断开连接</strong></p>
+<h4 id="拔掉网线tcp连接还在吗"><a href="#拔掉网线tcp连接还在吗" class="headerlink" title="拔掉网线tcp连接还在吗"></a>拔掉网线tcp连接还在吗</h4><p>在的，tcp连接信息是存储于内核的一个结构体，网线断了，但是结构体不会改变</p>
+<ul>
+<li>拔掉网线后，有数据传输；<ul>
+<li>如果在重传前网线插回去了，那我觉得应该什么事情都没发生</li>
+<li>如果没插回去，那么就超时重传几次之后，认为此连接死亡，就断开连接，即使后面插回来了，客户端向服务端发送请求，也不是连接的状态，那么服务端就会返回rst</li>
+</ul>
+</li>
+<li>拔掉网线后，没有数据传输<ul>
+<li>如果开启了保活机制，那就探测几次，如果有工作就重制保活时间，如果客户端没有正常工作，就断开连接</li>
+<li>如果没有开启保活机制，就一直连着</li>
+</ul>
+</li>
+</ul>
+<h4 id="HTTPS-中-TLS-和-TCP-能同时握手吗？"><a href="#HTTPS-中-TLS-和-TCP-能同时握手吗？" class="headerlink" title="HTTPS 中 TLS 和 TCP 能同时握手吗？"></a>HTTPS 中 TLS 和 TCP 能同时握手吗？</h4><p>可能，但是有条件</p>
+<ul>
+<li><strong>客户端和服务端都开启了 TCP Fast Open 功能，且 TLS 版本是 1.3；</strong></li>
+<li><strong>客户端和服务端已经完成过一次通信。</strong></li>
+</ul>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803205908513.png" alt="image-20230803205908513"></p>
+<p>TCP Fast Open定义<br>TCP Fast Open（TFO）是用来加速连续TCP连接的数据交互的TCP协议扩展，原理如下：在TCP三次握手的过程中，当用户首次访问Server时，发送SYN包，Server根据用户IP生成Cookie（已加密），并与SYN-ACK一同发回Client；当Client随后重连时，在SYN包携带TCP Cookie；如果Server校验合法，则在用户回复ACK前就可以直接发送数据；否则按照正常三次握手进行<br><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803210533146.png" alt="image-20230803210533146"></p>
+<p>所以就是在第二次以后的通信过程中，tcp open fast在ack发回来之前直接进行tls1.3</p>
+<h4 id="没有accept，能建立tcp连接吗"><a href="#没有accept，能建立tcp连接吗" class="headerlink" title="没有accept，能建立tcp连接吗"></a>没有accept，能建立tcp连接吗</h4><ul>
+<li><strong>每一个</strong><code>socket</code>执行<code>listen</code>时，内核都会自动创建一个半连接队列和全连接队列。</li>
+<li>第三次握手前，TCP连接会放在半连接队列中，直到第三次握手到来，才会被放到全连接队列中。</li>
+<li><code>accept方法</code>只是为了从全连接队列中拿出一条连接，本身跟三次握手几乎<strong>毫无关系</strong>。</li>
+<li>出于效率考虑，虽然都叫队列，但半连接队列其实被设计成了<strong>哈希表</strong>，而全连接队列本质是链表。</li>
+<li>全连接队列满了，再来第三次握手也会丢弃，此时如果<code>tcp_abort_on_overflow=1</code>，还会直接发<code>RST</code>给客户端。</li>
+<li>半连接队列满了，可能是因为受到了<code>SYN Flood</code>攻击，可以设置<code>tcp_syncookies</code>，绕开半连接队列。</li>
+<li>客户端没有半连接队列和全连接队列，但有一个<strong>全局hash</strong>，可以通过它实现自连接或TCP同时打开。</li>
+</ul>
+<h4 id="服务端没有-listen，客户端发起连接建立，会发生什么？"><a href="#服务端没有-listen，客户端发起连接建立，会发生什么？" class="headerlink" title="服务端没有 listen，客户端发起连接建立，会发生什么？"></a>服务端没有 listen，客户端发起连接建立，会发生什么？</h4><p><strong>服务端如果只 bind 了 IP 地址和端口，而没有调用 listen 的话，然后客户端对服务端发起了连接建立，服务端会回 RST 报文</strong></p>
+<h4 id="quic怎么实现可靠传输"><a href="#quic怎么实现可靠传输" class="headerlink" title="quic怎么实现可靠传输"></a>quic怎么实现可靠传输</h4><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803212833705.png" alt="image-20230803212833705"></p>
+<p>packetheader分为两种</p>
+<p>Packet Header 细分这两种：</p>
+<ul>
+<li>Long Packet Header 用于首次建立连接。</li>
+<li>Short Packet Header 用于日常传输数据。</li>
+</ul>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803213009597.png" alt="image-20230803213009597"></p>
+<p>这里packet Number是递增的，即使重传也是递增，这样就可以分清是重传的还是延迟的，比较能清晰的计算出rtt，以及rto</p>
+<p>![在前面介绍 Packet Header 时，说到 Packet Number 是严格递增，即使重传报文的 Packet Number 也是递增的，既然重传数据包的 Packet N+M 与丢失数据包的 Packet N 编号并不一致，我们怎么确定这两个数据包的内容一样呢？</p>
+<p>所以引入 Frame Header 这一层，<strong>通过 Stream ID + Offset 字段信息实现数据的有序性</strong>，通过比较两个数据包的 Stream ID 与 Stream Offset ，如果都是一致，就说明这两个数据包的内容一致。</p>
+<h4 id="QUIC-是如何解决-TCP-队头阻塞问题的？"><a href="#QUIC-是如何解决-TCP-队头阻塞问题的？" class="headerlink" title="QUIC 是如何解决 TCP 队头阻塞问题的？"></a>QUIC 是如何解决 TCP 队头阻塞问题的？</h4><p><strong>QUIC 给每一个 Stream 都分配了一个独立的滑动窗口，这样使得一个连接上的多个 Stream 之间没有依赖关系，都是相互独立的，各自控制的滑动窗口</strong>。</p>
+<h3 id="QUIC-是如何做流量控制的？"><a href="#QUIC-是如何做流量控制的？" class="headerlink" title="QUIC 是如何做流量控制的？"></a>QUIC 是如何做流量控制的？</h3><p>TCP 流量控制是通过让「接收方」告诉「发送方」，它（接收方）的接收窗口有多大，从而让「发送方」根据「接收方」的实际接收能力控制发送的数据量。</p>
+<p>但是quic是基于udp的，所以他本身没有流量控制，因此需要实现自己的流量控制</p>
+<p>QUIC 实现流量控制的方式：</p>
+<ul>
+<li>通过 window_update 帧告诉对端自己可以接收的字节数，这样发送方就不会发送超过这个数量的数据。 如果消耗数据的长度大于了最大接收窗口的一半发送</li>
+<li>通过 BlockFrame 告诉对端由于流量控制被阻塞了，无法发送数据。</li>
+</ul>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
                             </a>
                         </p>
                     
@@ -358,7 +1134,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -388,7 +1164,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

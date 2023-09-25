@@ -1,0 +1,619 @@
+
+<!DOCTYPE html>
+<html lang="zh-CH">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="森">
+    <title>springboot整合elasticsearch8.2.0 - 森</title>
+    <meta name="author" content="CSEN">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"java 整合elasticsearch8.2.0[TOC]\n一、application.yml或者其他的配置文件皆可两种方式：【1】\nelasticsearch:  hosts: 127.0.0.1:9200     # 如果有多个IP就自己加逗号吧\n\n【2】\nspring：\telasticsearch:    \turis: localhost:9200   #这样子自动配置了\n\n二、config类不同的版本会有不同的config类要求，这里只提供es8.2.0的，对应着上面两种application文件，此处也提供两种对应的config类，至于之后和springboot整合就不会出现分类了。\n【1】自定义属性/** * @Author Caosen * @Date 2022/9/22 10:34 * @Version 1.0 */@Configurationpublic class EsUtilConfigClint2 &#123;    @Value(&quot;elasticsearch.hosts&quot;)    private String hosts;    private HttpHost[] getHttpHost()&#123;        if (hosts.length() &gt; 0)&#123;            System.out.println(hosts);        &#125;        else &#123;            throw new RuntimeException(&quot;invalid&quot;);        &#125;        String[] hosts_array = hosts.split(&quot;,&quot;);        //用string类型创建host的集合        HttpHost[] httpHosts = new HttpHost[hosts_array.length];        int i = 0;        for (String s : hosts_array) &#123;            //这里解析端口            String[] hosts_array_in = s.split(&quot;:&quot;);            //到这里就有了id和端口两个东西            HttpHost http = new HttpHost(hosts_array_in[0], Integer.parseInt(hosts_array_in[1]), &quot;http&quot;);            httpHosts[i++] = http;        &#125;        System.out.println(&quot;目前的配置加入了&quot; + i + &quot;个id及其端口&quot;);        return httpHosts;    &#125;    /**     * 客户端     * @return     * @throws IOException     */    @Bean    public ElasticsearchClient configClint() throws IOException &#123;        // Create the low-level client        HttpHost[] httpHosts = getHttpHost();        RestClient restClient = RestClient.builder(httpHosts).build();        // Create the transport with a Jackson mapper        ElasticsearchTransport transport = new RestClientTransport(                restClient, new JacksonJsonpMapper());        // 客户端        ElasticsearchClient client = new ElasticsearchClient(transport);        return client;    &#125;&#125;\n\n\n\n【2】使用自带的属性/** * @Author Caosen * @Date 2022/9/18 15:01 * @Version 1.0 */@Configurationpublic class EsUtilConfigClint &#123;    /**     * 客户端     * @return     * @throws IOException     */    public ElasticsearchClient configClint() throws IOException &#123;        // Create the low-level client        RestClient restClient = RestClient.builder(                new HttpHost(&quot;127.0.0.1&quot;, 9200)).build();        // Create the transport with a Jackson mapper        ElasticsearchTransport transport = new RestClientTransport(                restClient, new JacksonJsonpMapper());        // 客户端        ElasticsearchClient client = new ElasticsearchClient(transport);        return client;    &#125;&#125;\n\n三、测试【1】service接口由于作者是直接在项目里面加内容的，可能会出现一些不相关的东西，我尽量截取相关代码\n/**     * 从数据库中导入所有商品到ES     */    int importAll();    /**     * 新建指定名称的索引     * @param name     * @throws IOException     */    void addIndex(String name) throws IOException;    /**     * 检查指定名称的索引是否存在     * @param name     * @return     * @throws IOException     */    boolean indexExists(String name) throws IOException;    /**     * 删除指定索引     * @param name     * @throws IOException     */    void delIndex(String name) throws IOException;    /**     * 创建索引，指定setting和mapping     * @param name 索引名称     * @param settingFn 索引参数     * @param mappingFn 索引结构     * @throws IOException     */    void create(String name,                Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; settingFn,                Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mappingFn) throws IOException;\n\n【2】serviceImpl，主要看create ，add，exsits, delete@Autowired    private EsProductDao esProductDao;    @Autowired    private EsProductRepository esProductRepository;    @Autowired    private ElasticsearchClient elasticsearchClient;    @Override    public int importAll() &#123;        List&lt;EsProduct&gt; allEsProductList = esProductDao.getAllEsProductList(null);        Iterable&lt;EsProduct&gt; esProducts = esProductRepository.saveAll(allEsProductList);        Iterator&lt;EsProduct&gt; iterator = esProducts.iterator();        int result = 0;        while (iterator.hasNext()) &#123;            result++;            iterator.next();        &#125;        return result;    &#125;    @Override    public void addIndex(String name) throws IOException &#123;        elasticsearchClient.indices().create(b -&gt; b.index(name));    &#125;    @Override    public boolean indexExists(String name) throws IOException &#123;        return elasticsearchClient.indices().exists(b -&gt; b.index(name)).value();    &#125;    @Override    public void delIndex(String name) throws IOException &#123;        elasticsearchClient.indices().delete(b -&gt; b.index(name));    &#125;    @Override    public void create(String name, Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; setting, Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mapping) throws IOException &#123;        elasticsearchClient.indices()                .create(b -&gt; b                        .index(name)                        .settings(setting)                        .mappings(mapping));    &#125;\n\n【3】测试测试可以用controller 或者 用test伪装controller，自己测试的时候还是用postman接口比较合适。这里测试两种创建index，一种简单，一种稍微复杂，结果都是通过，见图。其他的删除啊，导入数据库的数据（repository）都是可以查到的。\n@Test    void addIndexSimple() throws IOException &#123;        String s = &quot;simple&quot;;        esProductService.addIndex(s);        System.out.println(&quot;创建success&quot;);    &#125;    @Test    void addIndexComplicated() throws IOException &#123;        String s = &quot;complicated&quot;;        Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; setting = builder -&gt; builder                .index(i -&gt; i.numberOfShards(&quot;3&quot;).numberOfReplicas(&quot;1&quot;));        Property keywordproperty = Property.of(p -&gt; p.keyword(k -&gt; k.ignoreAbove(256)));        Property testproperty = Property.of(p -&gt; p.text(builder -&gt; builder));        Property integerproperty = Property.of(builder -&gt; builder.integer(i -&gt; i));        Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mapping = builder -&gt; builder                .properties(&quot;name&quot;, keywordproperty)                .properties(&quot;description&quot;, testproperty)                .properties(&quot;price&quot;, integerproperty);        esProductService.create(s, setting, mapping);    &#125;\n\n\n","dateCreated":"2022-10-04T13:40:04+08:00","dateModified":"2023-09-25T13:22:04+08:00","datePublished":"2022-10-04T13:40:04+08:00","description":"","headline":"springboot整合elasticsearch8.2.0","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/","keywords":"整合中间件"}</script>
+    <meta name="description" content="java 整合elasticsearch8.2.0[TOC] 一、application.yml或者其他的配置文件皆可两种方式：【1】 elasticsearch:  hosts: 127.0.0.1:9200     # 如果有多个IP就自己加逗号吧  【2】 spring：	elasticsearch:    	uris: localhost:9200   #这样子自动配置了  二、confi">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="springboot整合elasticsearch8.2.0">
+<meta property="og:url" content="http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/index.html">
+<meta property="og:site_name" content="森">
+<meta property="og:description" content="java 整合elasticsearch8.2.0[TOC] 一、application.yml或者其他的配置文件皆可两种方式：【1】 elasticsearch:  hosts: 127.0.0.1:9200     # 如果有多个IP就自己加逗号吧  【2】 spring：	elasticsearch:    	uris: localhost:9200   #这样子自动配置了  二、confi">
+<meta property="og:locale" content="zh_CH">
+<meta property="og:image" content="c:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220922113434674.png">
+<meta property="article:published_time" content="2022-10-04T05:40:04.000Z">
+<meta property="article:modified_time" content="2023-09-25T05:22:04.257Z">
+<meta property="article:author" content="CSEN">
+<meta property="article:tag" content="整合中间件">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="c:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220922113434674.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/head.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-w816scvuzwavitjylabixcb3ofuoklqul47j3rgwu1r0mxrxvbdehvp2jk5s.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            森
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Open the link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Read more about the author"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                </a>
+                <h4 class="sidebar-profile-name">CSEN</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archives"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archives</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Search"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Search</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="About"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">About</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            springboot整合elasticsearch8.2.0
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2022-10-04T13:40:04+08:00">
+	
+		    Oct 04, 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/java/">java</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h1 id="java-整合elasticsearch8-2-0"><a href="#java-整合elasticsearch8-2-0" class="headerlink" title="java 整合elasticsearch8.2.0"></a>java 整合elasticsearch8.2.0</h1><p>[TOC]</p>
+<h3 id="一、application-yml或者其他的配置文件皆可"><a href="#一、application-yml或者其他的配置文件皆可" class="headerlink" title="一、application.yml或者其他的配置文件皆可"></a>一、application.yml或者其他的配置文件皆可</h3><p>两种方式：【1】</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">elasticsearch:</span><br><span class="line">  hosts: <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">9200</span>     # 如果有多个IP就自己加逗号吧</span><br></pre></td></tr></table></figure>
+
+<p>【2】</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">spring：</span><br><span class="line">	elasticsearch:</span><br><span class="line">    	uris: localhost:<span class="number">9200</span>   #这样子自动配置了</span><br></pre></td></tr></table></figure>
+
+<h3 id="二、config类"><a href="#二、config类" class="headerlink" title="二、config类"></a>二、config类</h3><p>不同的版本会有不同的config类要求，这里只提供es8.2.0的，对应着上面两种application文件，此处也提供两种对应的config类，至于之后和springboot整合就不会出现分类了。</p>
+<h5 id="【1】自定义属性"><a href="#【1】自定义属性" class="headerlink" title="【1】自定义属性"></a>【1】自定义属性</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span> Caosen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span> 2022/9/22 10:34</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Version</span> 1.0</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EsUtilConfigClint2</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;elasticsearch.hosts&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String hosts;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> HttpHost[] getHttpHost()&#123;</span><br><span class="line">        <span class="keyword">if</span> (hosts.length() &gt; <span class="number">0</span>)&#123;</span><br><span class="line">            System.out.println(hosts);</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;invalid&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        String[] hosts_array = hosts.split(<span class="string">&quot;,&quot;</span>);</span><br><span class="line">        <span class="comment">//用string类型创建host的集合</span></span><br><span class="line"></span><br><span class="line">        HttpHost[] httpHosts = <span class="keyword">new</span> <span class="title class_">HttpHost</span>[hosts_array.length];</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (String s : hosts_array) &#123;</span><br><span class="line">            <span class="comment">//这里解析端口</span></span><br><span class="line">            String[] hosts_array_in = s.split(<span class="string">&quot;:&quot;</span>);</span><br><span class="line">            <span class="comment">//到这里就有了id和端口两个东西</span></span><br><span class="line">            <span class="type">HttpHost</span> <span class="variable">http</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HttpHost</span>(hosts_array_in[<span class="number">0</span>], Integer.parseInt(hosts_array_in[<span class="number">1</span>]), <span class="string">&quot;http&quot;</span>);</span><br><span class="line">            httpHosts[i++] = http;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;目前的配置加入了&quot;</span> + i + <span class="string">&quot;个id及其端口&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> httpHosts;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IOException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> ElasticsearchClient <span class="title function_">configClint</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">// Create the low-level client</span></span><br><span class="line">        HttpHost[] httpHosts = getHttpHost();</span><br><span class="line">        <span class="type">RestClient</span> <span class="variable">restClient</span> <span class="operator">=</span> RestClient.builder(httpHosts).build();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Create the transport with a Jackson mapper</span></span><br><span class="line">        <span class="type">ElasticsearchTransport</span> <span class="variable">transport</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RestClientTransport</span>(</span><br><span class="line">                restClient, <span class="keyword">new</span> <span class="title class_">JacksonJsonpMapper</span>());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 客户端</span></span><br><span class="line">        <span class="type">ElasticsearchClient</span> <span class="variable">client</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ElasticsearchClient</span>(transport);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> client;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="【2】使用自带的属性"><a href="#【2】使用自带的属性" class="headerlink" title="【2】使用自带的属性"></a>【2】使用自带的属性</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span> Caosen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span> 2022/9/18 15:01</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Version</span> 1.0</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EsUtilConfigClint</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IOException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> ElasticsearchClient <span class="title function_">configClint</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">// Create the low-level client</span></span><br><span class="line">        <span class="type">RestClient</span> <span class="variable">restClient</span> <span class="operator">=</span> RestClient.builder(</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">HttpHost</span>(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">9200</span>)).build();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Create the transport with a Jackson mapper</span></span><br><span class="line">        <span class="type">ElasticsearchTransport</span> <span class="variable">transport</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RestClientTransport</span>(</span><br><span class="line">                restClient, <span class="keyword">new</span> <span class="title class_">JacksonJsonpMapper</span>());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 客户端</span></span><br><span class="line">        <span class="type">ElasticsearchClient</span> <span class="variable">client</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ElasticsearchClient</span>(transport);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> client;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="三、测试"><a href="#三、测试" class="headerlink" title="三、测试"></a>三、测试</h3><h5 id="【1】service接口"><a href="#【1】service接口" class="headerlink" title="【1】service接口"></a>【1】service接口</h5><p>由于作者是直接在项目里面加内容的，可能会出现一些不相关的东西，我尽量截取相关代码</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/**</span><br><span class="line">     * 从数据库中导入所有商品到ES</span><br><span class="line">     */</span><br><span class="line">    int importAll();</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 新建指定名称的索引</span><br><span class="line">     * @param name</span><br><span class="line">     * @throws IOException</span><br><span class="line">     */</span><br><span class="line">    void addIndex(String name) throws IOException;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 检查指定名称的索引是否存在</span><br><span class="line">     * @param name</span><br><span class="line">     * @return</span><br><span class="line">     * @throws IOException</span><br><span class="line">     */</span><br><span class="line">    boolean indexExists(String name) throws IOException;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 删除指定索引</span><br><span class="line">     * @param name</span><br><span class="line">     * @throws IOException</span><br><span class="line">     */</span><br><span class="line">    void delIndex(String name) throws IOException;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 创建索引，指定setting和mapping</span><br><span class="line">     * @param name 索引名称</span><br><span class="line">     * @param settingFn 索引参数</span><br><span class="line">     * @param mappingFn 索引结构</span><br><span class="line">     * @throws IOException</span><br><span class="line">     */</span><br><span class="line">    void create(String name,</span><br><span class="line">                Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; settingFn,</span><br><span class="line">                Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mappingFn) throws IOException;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h5 id="【2】serviceImpl，主要看create-，add，exsits-delete"><a href="#【2】serviceImpl，主要看create-，add，exsits-delete" class="headerlink" title="【2】serviceImpl，主要看create ，add，exsits, delete"></a>【2】serviceImpl，主要看create ，add，exsits, delete</h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">    private EsProductDao esProductDao;</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    private EsProductRepository esProductRepository;</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    private ElasticsearchClient elasticsearchClient;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public int importAll() &#123;</span><br><span class="line">        List&lt;EsProduct&gt; allEsProductList = esProductDao.getAllEsProductList(null);</span><br><span class="line">        Iterable&lt;EsProduct&gt; esProducts = esProductRepository.saveAll(allEsProductList);</span><br><span class="line">        Iterator&lt;EsProduct&gt; iterator = esProducts.iterator();</span><br><span class="line">        int result = 0;</span><br><span class="line">        while (iterator.hasNext()) &#123;</span><br><span class="line">            result++;</span><br><span class="line">            iterator.next();</span><br><span class="line">        &#125;</span><br><span class="line">        return result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void addIndex(String name) throws IOException &#123;</span><br><span class="line">        elasticsearchClient.indices().create(b -&gt; b.index(name));</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public boolean indexExists(String name) throws IOException &#123;</span><br><span class="line">        return elasticsearchClient.indices().exists(b -&gt; b.index(name)).value();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void delIndex(String name) throws IOException &#123;</span><br><span class="line">        elasticsearchClient.indices().delete(b -&gt; b.index(name));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void create(String name, Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; setting, Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mapping) throws IOException &#123;</span><br><span class="line">        elasticsearchClient.indices()</span><br><span class="line">                .create(b -&gt; b</span><br><span class="line">                        .index(name)</span><br><span class="line">                        .settings(setting)</span><br><span class="line">                        .mappings(mapping));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="【3】测试"><a href="#【3】测试" class="headerlink" title="【3】测试"></a>【3】测试</h5><p>测试可以用controller 或者 用test伪装controller，自己测试的时候还是用postman接口比较合适。这里测试两种创建index，一种简单，一种稍微复杂，结果都是通过，见图。其他的删除啊，导入数据库的数据（repository）都是可以查到的。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Test</span><br><span class="line">    void addIndexSimple() throws IOException &#123;</span><br><span class="line">        String s = &quot;simple&quot;;</span><br><span class="line"></span><br><span class="line">        esProductService.addIndex(s);</span><br><span class="line">        System.out.println(&quot;创建success&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    @Test</span><br><span class="line">    void addIndexComplicated() throws IOException &#123;</span><br><span class="line"></span><br><span class="line">        String s = &quot;complicated&quot;;</span><br><span class="line">        Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; setting = builder -&gt; builder</span><br><span class="line">                .index(i -&gt; i.numberOfShards(&quot;3&quot;).numberOfReplicas(&quot;1&quot;));</span><br><span class="line">        Property keywordproperty = Property.of(p -&gt; p.keyword(k -&gt; k.ignoreAbove(256)));</span><br><span class="line">        Property testproperty = Property.of(p -&gt; p.text(builder -&gt; builder));</span><br><span class="line">        Property integerproperty = Property.of(builder -&gt; builder.integer(i -&gt; i));</span><br><span class="line"></span><br><span class="line">        Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mapping = builder -&gt; builder</span><br><span class="line">                .properties(&quot;name&quot;, keywordproperty)</span><br><span class="line">                .properties(&quot;description&quot;, testproperty)</span><br><span class="line">                .properties(&quot;price&quot;, integerproperty);</span><br><span class="line">        esProductService.create(s, setting, mapping);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220922113434674.png" alt="image-20220922113434674"></p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/%E6%95%B4%E5%90%88%E4%B8%AD%E9%97%B4%E4%BB%B6/" rel="tag">整合中间件</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
+                    data-tooltip="整合docker和中间件记录"
+                    aria-label="PREVIOUS: 整合docker和中间件记录"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
+                    data-tooltip="springboot整合kafka3.1-基本配置和操作"
+                    aria-label="NEXT: springboot整合kafka3.1-基本配置和操作"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
+                    data-tooltip="整合docker和中间件记录"
+                    aria-label="PREVIOUS: 整合docker和中间件记录"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
+                    data-tooltip="springboot整合kafka3.1-基本配置和操作"
+                    aria-label="NEXT: springboot整合kafka3.1-基本配置和操作"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
+                        aria-label="Share on Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
+                        aria-label="Share on Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
+                        aria-label="Share on Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+        
+            <h4 id="about-card-name">CSEN</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                浙江温州
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-39paoi2hupf5wmw7ojejrxpco6edftjriz5ezbtp4grymrdceksftgan2adp.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+
+    </body>
+</html>

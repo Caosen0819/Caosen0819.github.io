@@ -1,0 +1,837 @@
+
+<!DOCTYPE html>
+<html lang="zh-CH">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="森">
+    <title>计算机网络复习1 - 森</title>
+    <meta name="author" content="CSEN">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"计算机网络整体的学习可以按照tcpip网络模型进行学习。我们的总结也是这样的\nTcp&#x2F;ip网络模型分别是应用层、传输层、网络层、数据链路层\n这里面前三层比较重要，数据链路层复杂的方面涉及实际的物理知识所以我们只对逻辑思想上做一个学习，\n那每一层分别学的是什么呢？\n应用层：http  https tls\n传输层：tcp udp \n网络层：ipv4 v6\n基本上就是这样子\nTCP 连接传输协议，这是传输层的，很多应用层的协议在传输层都是使用这个的，比如http\n那tcp和udp的差距是，tcp相比udp多了很多为了可靠的连接所增加的特性，比如流量控制，超时重传，拥塞控制，就是为了数据能可靠的传到对方，但是过程中究竟是请求-应答模式还是什么模式，那就是后面的不同版本做出的更新。\nudp他不在乎这个数据究竟有没有到对面，只负责发送，所以实时性号，效率高。但是他并不是不能做到可靠传输，因为udp只是传输层，我们还可以在应用层做出一定的限制来保证传输是可靠的，比如quic协议，当然这是困难的。\n除此之外，还有一个很大的不同就是tcp是会分片的，但是udp是不会分片。在这里我们还要知道的一点是在网络层，也就是ip协议中还是会分片的，MTU。但是对于tcp来说因为你要是在ip层才分片，我为了保证可靠，我假设12345 丢了一个2，那我就要12345全部重新发，这样不好，所以我们就在tcp层也分片，大小是mss。而udp不用可靠，所以他不用分片。\n网络层，主要的作用其实就是路由和寻址，加上ip头，规定好源ip，目的ip等信息，\n网络接口层，是提供链路级别的传输服务，因为源ip和目的ip知道了，但是在以太网中实际上是不行的，IP会变，我们需要一个确切的信息，这个就是mac地址，\n那我们这里用输入网址到显示，来串联一下整体的流程：\n1、解析url解析之后得到三个信息，一个协议，一个是web服务器地址，一个是请求文件的路径（可选）\n那对于我们前两个是最重要的，\n这时候我们客户端生产自己的http请求报文，格式如下，方法get，url没有默认index什么的，版本http1.1，字段名就很多，然后是数据，这个数据也是后面一种包装的根数据。\n\t\n如图所示，一个是请求一个是响应报文\n到这里消息成功生产，那我们生产出一个消息之后就要开始发送？那应该怎么发？往哪里发？\n这就需要下面的知识。\n地址查询 —— DNS基于我们已经拿到的web服务器域名，我们可以先去浏览器缓存里面找有没有，如果有，就直接返回，如果没有那就问操作系统的缓存再去看hosts文件，如果都没有，那就看走下面\n客户端首先会发出一个 DNS 请求，问 www.xx.com 的 IP 是啥，发给本地 DNS 服务器（也就是客户端的 TCP&#x2F;IP 设置中填写的 DNS 服务器地址）。\n本地域名服务器收到客户端的请求后，如果缓存里的表格能找到 www.xx.com，则它直接返回 IP 地址。如果没有，本地 DNS 会去问它的根域名服务器：“老大， 能告诉我 www.xx.com 的 IP 地址吗？” 根域名服务器是最高层次的，它不直接用于域名解析，但能指明一条道路。\n根 DNS 收到来自本地 DNS 的请求后，发现后置是 .com，说：“www.xx.com 这个域名归 .com 区域管理”，我给你 .com 顶级域名服务器地址给你，你去问问它吧。”\n本地 DNS 收到顶级域名服务器的地址后，发起请求问“老二， 你能告诉我 www.xx.com 的 IP 地址吗？”\n顶级域名服务器说：“我给你负责 www.xx.com 区域的权威 DNS 服务器的地址，你去问它应该能问到”。\n本地 DNS 于是转向问权威 DNS 服务器：“老三，www.xx.com对应的IP是啥呀？” server.com 的权威 DNS 服务器，它是域名解析结果的原出处。为啥叫权威呢？就是我的域名我做主。\n权威 DNS 服务器查询后将对应的 IP 地址 X.X.X.X 告诉本地 DNS。\n本地 DNS 再将 IP 地址返回客户端，客户端和目标建立连接\n\n通过dns或者缓存获取到ip地址之后，我们就要为发送做一些准备，首先浏览器通过调用 Socket 库，来委托协议栈工作。\n\n说是协议栈，其实就是中间tcp udp ip这些协议。那下面我们就来仔细的看看\nTCPtcp段的头如下所示：\n\nTCP 传输数据之前，要先三次握手建立连接\n前提：客户端 为closed状态，服务端变成listen状态\n连接：\n1、客户端向服务端发送连接syn，之后客户端处于syn-sent状态；\n2、服务端接收到这个消息之后，会返回一个syn+ack，之后服务端处于syn-rcvd状态\n3、客户端收到这个之后，再给服务端发送一个对syn的ack，之后客户端处于establish状态\n服务端收到ack也变成了establish状态\n所以三次握手目的是保证双方都有发送和接收的能力。\n假设我们已经建立了连接，我们要发送消息，但是消息要遵循tcp协议，他的消息大小是有限制的，不是每一次都可以发送全部消息。具体要求如下：\n\n\nMTU：一个网络包的最大长度，以太网中一般为 1500 字节。\nMSS：除去 IP 和 TCP 头部之后，一个网络包所能容纳的 TCP 数据的最大长度\n\n所以如果http请求消息超过mss，那么就要分段发送。\n到这里我们得到了一个tcp的报文段或者说包，下面我们就要把这个包发送给网络层，因为在传输层我们就是服务应用层，然后对好端口，确定好协议，之后的事情就不归传输层管控了。\n到这里，我们的数据包的格式如下所示：\n\n定位IPip协议的最重要的功能就是寻址和路由，他要做到这两点就需要你遵循ip协议，那么遵循的要求就是你加一个ip头\n加上ip头之后我们就知道了我们的源ip和目的ip地址，那么起点站和终点站就已经知道了\n可以现在又有一个小问题，那就是路径怎么规划呢？这时候就需要用到Mac地址\nmac地址\n\n先查询 ARP 缓存，如果其中已经保存了对方的 MAC 地址，就不需要发送 ARP 查询，直接使用 ARP 缓存中的地址。\n而当 ARP 缓存中不存在对方 MAC 地址时，则发送 ARP 广播查询\n\n也就是说到了网络接口层，要发了，结果不知道往哪里发，这时候就按照上面两步得到mac地址\n因为上面已经得到了ip地址，所以直接喊话：这个 IP 地址是谁的？请把你的 MAC 地址告诉我，就得到mac地址了。\n到这里数据包还差最后一层包装\n出口–网卡\n最后一层包装就是上面图片提到的报头和起始帧分界符和fcs帧校验序列\n网卡驱动获取网络包之后，会将其复制到网卡内的缓存区中，接着会在其开头加上报头和起始帧分界符，在末尾加上用于检测错误的帧校验序列。\n到这里数据包就真正的包装结束了，最后网卡会将包转为电信号，通过网线发送出去。！！\n送别者—交换机交换机的设计是将网络包原样转发到目的地。交换机工作在 MAC 层，也称为二层网络设备。\n一般在网线接口啊这些地方，其实路由器也可以作为交换机。\n交换机的包接收操作交换机里的模块将电信号转换为数字信号。\n然后通过包末尾的fcs校验错误，没问题就放到缓存区，这部分操作基本和计算机的网卡相同，但交换机的工作方式和网卡不同。\n计算机的网卡本身具有 MAC 地址，并通过核对收到的包的接收方 MAC 地址判断是不是发给自己的，如果不是发给自己的则丢弃；相对地，交换机的端口不核对接收方 MAC 地址，而是直接接收所有的包并存放到缓冲区中。因此，和网卡不同，交换机的端口不具有 MAC 地址。\n查询MAC 地址表如果找到，就发送到相应的端口，如果找不到，那说明该mac地址的设备还没有向我们交换机发送过包，那这时候我们主动的向除了源端口的所有端口都发送一遍，因为后面的设备他自己都有检测功能，所以不需要担心\n这时候要么就发送到位，要么就可能离开子网了，离开子网需要用到路由器\n出境大门–路由器路由器的包接收操作首先，电信号到达网线接口部分，路由器中的模块会将电信号转成数字信号，然后通过包末尾的 FCS 进行错误校验。\n如果没问题则检查 MAC 头部中的接收方 MAC 地址，看看是不是发给自己的包，如果是就放到接收缓冲区中，否则就丢弃这个包。\n完成包接收操作之后，路由器就会去掉包开头的 MAC 头部。\nMAC 头部的作用就是将包送达路由器，其中的接收方 MAC 地址就是路由器端口的 MAC 地址。因此，当包到达路由器之后，MAC 头部的任务就完成了，于是 MAC 头部就会被丢弃。\n接下来，路由器会根据 MAC 头部后方的 IP 头部中的内容进行包的转发操作。\n路由器的发送操作首先，我们需要根据路由表的网关列判断对方的地址。\n\n如果网关是一个 IP 地址，则这个IP 地址就是我们要转发到的目标地址，还未抵达终点，还需继续需要路由器转发。\n如果网关为空，则 IP 头部中的接收方 IP 地址就是要转发到的目标地址，也是就终于找到 IP 包头里的目标地址了，说明已抵达终点。\n\n反正我们从路由表知道了ip地址，那么我们同样用这个地址去查mac地址\n接下来是发送方 MAC 地址字段，这里填写输出端口的 MAC 地址。还有一个以太类型字段，填写 0800 （十六进制）表示 IP 协议。\n网络包完成后，接下来会将其转换成电信号并通过端口发送出去。这一步的工作过程和计算机也是相同的。\n发送出去的网络包会通过交换机到达下一个路由器。由于接收方 MAC 地址就是下一个路由器的地址，所以交换机会根据这一地址将包传输到下一个路由器。\n例子这边举个例子\n子网1某个设备想要发送数据给子网2的某个设备\n首先源ip和目的ip是知道的，如果只是简单的arp群发这个ip问是谁的ip地址，其实是找不到的，所以判断是否为同一子网，如果不是，就把目的mac改成网关的mac，然后数据发送到网关，这时候官网一查mac地址，发现属于子网2的设备，这时候修改源mac为自己的mac，修改目的mac为设备的地址，从子网2的网卡发出。\n大多数情况下一个子网的默认网关就是一个，就基本代表着出口。复杂情况就需要某种选择算法了\nHttp下面我们来讲一下http 也叫超文本传输协议，就是两点之间超越普通文本范畴的文本（包括文本视频图片等等）的一种协议\nhttp常见状态码1XX 代表提示信息，表示这是处理的中间状体，后续还有操作\n2XX 这个就是成功的状态吗\n​\t200 普通的正常的成功\n​\t204 没有body的成功，就是响应头里面没有body数据的意思\n​\t206 用于分快下载，断点续传，\n3XX 代表重定向\n​\t 301 永久重定向\n​\t302 临时重定向\n​\t304缓存重定向，也就是配合协商缓存那一块\n4XX 带表客户端的报文错误\n​\t400 比较笼统的\n​\t403 禁止范围\n​\t404 没找到\n5XX 代表服务器端端报文错误\n​\t500 同样比较笼统\n​\t501 目前不支持\n​\t502 自身服务器没问题，后续转发的服务器有问题\n​\t503 请稍后再访问\n常见的字段host\ncontent-length\ncontent-type\nconnection \ncontent-encodeing\nHttp缓存包括强制缓存和协商缓存\n强制缓存就是浏览器判断缓存没有过期，那我就直接使用浏览器的缓存\n实现可以用两个响应头部的字段表示Cache-control和Expires，前者相对时间，后者绝对时间，前者优先级更高，更加精细\n协商缓存也是有两种方法\n1、请求头部里面的if modified since 和响应头部last- modified\n先问浏览器缓存，如果没过期那就是强制缓存，如果过期了，响应信息的头部会有last modified，然后我们会带这个ifmodifiedsince：时间，去访问服务器，服务器看到之后，就拿自己的Last modified去对比 如果没改，返回304，如果改了，返回200\n2、Etag 唯一标识\n流程一样，但是etag优先级更高，因为 if modified since还是基于时间，而时间本身可能有一些限制。\n1、有可能没有修改文件，但是文件的最后修改时间会变化\n2、秒级以内的操作也许不能充分做出响应\nHttp优缺点优点：简单，灵活易扩充，应用广泛跨平台\n缺点：\n1、http无状态的，所以导致一系列相联的操作可能每一次都要反问数据库，那就非常的繁琐\n在此基础上出现了cookie技术，他就是通过在请求和响应报文里面增加cookie信息，来控制客户端的状态\n2、明文传输。毫无隐私\n3、不安全 也是最重要的原因\n账号信息不安全\n不验证对方的身份\n无法证明报文的完整性\n对于1.0改进：\n1、http1.1在http1.0的基础上提出了长连接，之前是《请求-应答》模式就是你发完应答完，关闭连接，想要进行下一次通信，那就得重新建立连接，现在可以建立一次连接之后，就可以 发收发收发收 只要一方没有明确提出断开连接，那么就一直连着\n2、管道通信，http1.1支持管道，就是所有请求都处于管道内部，我们可以发发发，而不需要等他先回复再发第二个，你可以发发发，减少了时间\n但是这里有一个问题，http是基于tcp的所以服务端会按照顺序接收请求。\n所以说，http1.1可以解决发送端的对头阻塞，但是无法解决接受端的对头阻塞\n然而！然而！http1.1默认不开启管道，\nHTTPS但是安全性的那三个缺点依旧无法得到改善，所以提出了https &#x3D; http + tls\nhttps完美的解决了：窃听风险、篡改风险、冒充风险，其实就是（防止号不会没，内容数据不会被插入一些垃圾广告，访问的网站不是冒充）\n所以给予上面这句话，我们可以知道tls他其实做了三件事情：信息加密，校验机制，身份证书\nTLS1、信息加密使用的是混合加密，采用对称加密和非对称加密的结合体，混合加密，就是两种都用到了，非对称加密是在tls握手的时候，对称加密是在传输数据的时候。\n非对成加密安全，非对称加密速度更快。\n2、校验机制，身份证书，这两个可以一起讲对内容先哈希算法，然后用私钥加密哈希结果得到的结果叫数字签名，把数字签名和原本的内容和在一起就相当于认证了\n然后现在还是缺一个身份验证的问题，就是这个私钥到底对不对？\n这时候需要一个权威机关，就叫CA\n整体流程：服务器发送公钥和数字签名发到CA里面，CA用自己的私钥加密服务器的公钥和数字签名，这个就是证书！然后客户端发来请求的时候，服务器就把自己的证书发过去，客户端收到证书，用CA的公钥解密，得到了服务器的公钥和服务器的数字证签名，这个签名我们上面讲了一个是原始内容一个是私钥对于哈希值的加密，那我们怎么验证呢？就是用公钥去解密加密项得到一个哈希值，再对原始内容做同样的哈希操作，判断两个哈希值到底一不一样，一样代表认证成功，否则，认证失败。\nTLS的连接tls的密钥交换算法不同，那么连接步骤也不同，我们会介绍两种\nRSA1、客户端 &gt; 服务端。client 随机数 + tls版本好+密码套件，密码套件可以说是一组配置的整合信息罢了2、客户端 &lt; 服务端。server随机数+确认版本号+确认密码套件+自己的数字证书Done当然这里收到之后，先校验，校验流程如下：\n首先我们知道了数字签名有原始内容和对于哈希值加密的数字签名，我们对原始内容加密（签名算法），对数字签名解密（CA公钥）\n当然，其中有一个问题就是证书的信任问题？为什么？\n因为我们得到的证书不一定是CA签发的，假如是中间机构签发的百度证书，那么我们就不能用内置的本地CA证书中的公钥去认证，所以我们先找签发机构，发现是一个中间机构，我们向中间机构请求证书，收到证书后发现这个机构的签发者是CA，那么我们可以用CA去认证中间的这个证书，这个证书被认证了 ，那么百度的也没认证了。\n3、客户端 &gt; 服务端 使用服务器的公钥加密pre-master随机数发给服务端4、客户端 &lt; 服务端 服务端发送 加密算法改变通知，和握手结束通知这样，两边就都有了三个随机数，算出会话密钥\n之后的通信就用会话密钥了\n上面这个就是RSA的基本流程，但是基于RSA的https依旧存在《前向安全》的问题，如果服务端私钥泄密，那么所有的tls通讯就将被破解\nECDHE1、客户端 &gt; 服务端。client Hello消息。随机数+tls版本好+密码套件。\n2、客户端 &lt; 服务端。serverhello消息，随机数+确认版本号+确认密码套件。certificate消息（证书）。ServerKeyExchange消息（选择名为25519的椭圆曲线基点G，生成随机数作为私钥保留本地，用G点和私钥算出公钥，对公钥做签名）。Server Hello Done。\n3、客户端 &gt; 服务端 校验证书，用服务端给的信息生成自己的公钥，发送client key exchange发给服务端\n至此，双方都有各自的公钥，自己的私钥，曲线基点，所以能算出x\n最终的会话密钥（客户端随机数，服务端随机数，x）\n算好后，客户端会发一个change cipher spec，开始使用对成算法加密通信\n接着，客户端再发一个excryted handshake message消息，把之前的摘要加密，让服务端做个验证。\n4、最后，服务端也会有一个同样的操作，发「Change Cipher Spec」和「Encrypted Handshake Message」消息，如果双方都验证加密和解密没问题，那么握手正式完成。于是，就可以正常收发加密的 HTTP 请求和响应了。\nRSA和ECDHE的区别\n\nRSA 密钥协商算法「不支持」前向保密，ECDHE 密钥协商算法「支持」前向保密；\n使用了 RSA 密钥协商算法，TLS 完成四次握手后，才能进行应用数据传输，而对于 ECDHE 算法，客户端可以不用等服务端的最后一次 TLS 握手，就可以提前发出加密的 HTTP 数据，节省了一个消息的往返时间（这个是 RFC 文档规定的，具体原因文档没有说明，所以这点我也不太明白）；\n使用 ECDHE， 在 TLS 第 2 次握手中，会出现服务器端发出的「Server Key Exchange」消息，而 RSA 握手过程没有该消息\n\nhttps怎么实现数据的完整性？刚才我们提到了TLS可以解决三个问题，包括完整性，\n其实TLS在实现上包括了握手协议和记录协议\n​\t握手协议就是四次握手+后续加密来保护应用程序\n​\t记录协议负责保护数据的完整性和来源\n所以我们来看记录协议：，他的实现就是负责对消息（http数据）的压缩，加密和数据认证\n这里还是应用层，消息被分割后进行压缩，加上消息验证码，加密，加密后加上一个报头，后面就是交给tcp层，传输层\nHTTPS一定安全吗理论上这个协议是安全的，https其实就是加了个tls协议，那就是问这个tls是不是安全的\n而tls就是按四次握手\n1、第一种方法：返回的证书，他大概率是伪造的，但是我们如果叫接受了，那就不一样了，你接受了服务器的证书，相当于信任了，那后面的通信就会被监听\n2、直接植入根证书也会导致这种情况\n所以关键就是对于证书的认证\nhttp1.1  -&gt; http 2 -&gt; http3http1.1在http1.0的基础上增了长连接和管道，解决了发送方的对头阻塞缺点：header是没有压缩的，只压缩了body部分，接收方会有对头阻塞，服务端智能被动响应\nhttp2在是基于https的，所以安全性肯定有保障1、头部压缩\nhttp1.1报文是【header+body】对于body部分可以通过content- encoding指定比如gzip，但是http1.1对Header不做出处理\nhttp2会压缩头部，如果同时发送多个请求，头是一样的化，协议就会帮你压缩消除重复的部分\n这就是HPACK算法，HPACK包括三个部分（静态字典、动态字典、huffman编码）\n2、二进制格式\nhttp2不像是http1是纯文本的报文，而是全部改成了二进制，头部和数据题都是二进制，统称帧\n3、并发传输，引入了流的机制\n一条tcp连接有多个流，每个流可以包含一个或者多个message，这个message就是请求或者响应，message里面有一个或者多个frame帧，不同的http请求有独一无二的帧，所以可以乱序发送，后面会按照streamid组装，同一 Stream 内部的帧必须是严格有序的\n4、服务器主动推送\n缺点：\n他是基于tcp协议的，tcp是字节流，所以必须保证收到的数据是完整连续的，才会把数据交给应用，如果有一个数据卡住了，那么后面的流都要卡住，那就会触发超时重传，一个tcp连接的http请求都要等待的这个重传成功。\nhttp3，就把tcp换成了udp，但是为了可靠，推出了QUIC1、没有对头阻塞\n借鉴了http2的流，就是每一个流都有一个自己的滑动窗口，某个流内部的确还是会阻塞，但是各个流之间是相互独立的，一个流阻塞了，另外的流不会阻塞，这样就保证了没有对头阻塞\n2、更快连接\n因为http2里面tcp和tls是分层的先三次握手然后四次握手，这样需要3个rtt\n然后在http3厘米quic内部适合tls一起的，而且只需要一个rtt就可以完成密钥的协商，用的是tls1.3，1.3版本有话了过程，就是说，第一次发送的时候就已经把签名算法、随机数都发给服务端了。\n，甚至在第二次可以达到0rtt\n3、连接迁移\ntcp是四元组，而quic是基于dcp的，他是考连接id来标记通信，所以ip换了也没事\n4、头部压缩变成了QPACK，静态表变成91项，动态编码方式换了，\nhttp1.1请求怎么优化一方面是http发送的问题，一方面是他本身数据的问题\n1、首先肯定是避免http请求：缓存技术\n2、减少重定向，这个就是把重定向请求交给代理服务器\n3、合并请求，就是把多个访问小文件的请求合并成一个大的\n4、延迟发送，只访问看得到的资源\n5、无损压缩，accept- encoding：gzip br \n6、有损压缩，webP png\nhttps怎么优化https对于http多了一个tls，关键就是通过非对成加密握手得到对成加密的会话密钥\n\n提高cpu\n升级linux \n对密钥交换过程进行优化\nRSA要四次握手，慢，安全性不高，我们可以缓存eche密钥交换算法，曲线选择x25519，对成加密算法，也可以换aes128\ntls升级1.3，升级的地方在于hello和公钥交换两个消息合并成一个消息\n证书优化，分为传输优化和验证优化。\n\n传输：服务器证书选择椭圆曲线\n验证：验证的过程中不仅需要ca还需要是否被ca吊销；crl是吊销列表，ca定期更新，但是实时性不好，ocsp，向ca fan song请求，返回状态，这个增加了请求开销，万一网络不好或者ca繁忙就会出现延迟；oscp stapling，服务器向ca定期查证书状态，然后在握手阶段就直接发给客户端，这样客户端就不用再去请求了。\n\n会话复用：session id 和session ticket\n\nsession id：首次连接后，在内存缓存会话密钥，用session id标识，再次连接的时候，会在hello消息中带上这个，服务器收到这个就从缓存里面找，直接回复会话状态，跳过中间流程\n缺点是，内存压力大\nsession ticket：类似于cookie，把缓存的工作交给客户端，首次连接，会加密这个发给客户端缓存起来，第二次连接，客户端会发送ticket，服务器解密后验证日期是否有效，没问题就恢复会话。\n","dateCreated":"2023-07-08T00:00:00+08:00","dateModified":"2023-09-25T13:18:16+08:00","datePublished":"2023-07-08T00:00:00+08:00","description":"","headline":"计算机网络复习1","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/","keywords":"计算机网络"}</script>
+    <meta name="description" content="计算机网络整体的学习可以按照tcpip网络模型进行学习。我们的总结也是这样的 Tcp&#x2F;ip网络模型分别是应用层、传输层、网络层、数据链路层 这里面前三层比较重要，数据链路层复杂的方面涉及实际的物理知识所以我们只对逻辑思想上做一个学习， 那每一层分别学的是什么呢？ 应用层：http  https tls 传输层：tcp udp  网络层：ipv4 v6 基本上就是这样子 TCP 连接传输协">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="计算机网络复习1">
+<meta property="og:url" content="http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/index.html">
+<meta property="og:site_name" content="森">
+<meta property="og:description" content="计算机网络整体的学习可以按照tcpip网络模型进行学习。我们的总结也是这样的 Tcp&#x2F;ip网络模型分别是应用层、传输层、网络层、数据链路层 这里面前三层比较重要，数据链路层复杂的方面涉及实际的物理知识所以我们只对逻辑思想上做一个学习， 那每一层分别学的是什么呢？ 应用层：http  https tls 传输层：tcp udp  网络层：ipv4 v6 基本上就是这样子 TCP 连接传输协">
+<meta property="og:locale" content="zh_CH">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193306158.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193808617.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193955912.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728194108402.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728195857751.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728200405680.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728200452235.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728202408619.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728204942674.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230729000740012.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230802185945107.png">
+<meta property="article:published_time" content="2023-07-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-09-25T05:18:16.125Z">
+<meta property="article:author" content="CSEN">
+<meta property="article:tag" content="计算机网络">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193306158.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/head.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-w816scvuzwavitjylabixcb3ofuoklqul47j3rgwu1r0mxrxvbdehvp2jk5s.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            森
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Open the link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Read more about the author"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                </a>
+                <h4 class="sidebar-profile-name">CSEN</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archives"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archives</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Search"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Search</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="About"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">About</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            计算机网络复习1
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2023-07-08T00:00:00+08:00">
+	
+		    Jul 08, 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>计算机网络整体的学习可以按照tcpip网络模型进行学习。我们的总结也是这样的</p>
+<p>Tcp&#x2F;ip网络模型分别是应用层、传输层、网络层、数据链路层</p>
+<p>这里面前三层比较重要，数据链路层复杂的方面涉及实际的物理知识所以我们只对逻辑思想上做一个学习，</p>
+<p>那每一层分别学的是什么呢？</p>
+<p>应用层：http  https tls</p>
+<p>传输层：tcp udp </p>
+<p>网络层：ipv4 v6</p>
+<p>基本上就是这样子</p>
+<p>TCP 连接传输协议，这是传输层的，很多应用层的协议在传输层都是使用这个的，比如http</p>
+<p>那tcp和udp的差距是，tcp相比udp多了很多为了可靠的连接所增加的特性，比如流量控制，超时重传，拥塞控制，就是为了数据能可靠的传到对方，但是过程中究竟是请求-应答模式还是什么模式，那就是后面的不同版本做出的更新。</p>
+<p>udp他不在乎这个数据究竟有没有到对面，只负责发送，所以实时性号，效率高。但是他并不是不能做到可靠传输，因为udp只是传输层，我们还可以在应用层做出一定的限制来保证传输是可靠的，比如quic协议，当然这是困难的。</p>
+<p>除此之外，还有一个很大的不同就是tcp是会分片的，但是udp是不会分片。在这里我们还要知道的一点是在网络层，也就是ip协议中还是会分片的，MTU。但是对于tcp来说因为你要是在ip层才分片，我为了保证可靠，我假设12345 丢了一个2，那我就要12345全部重新发，这样不好，所以我们就在tcp层也分片，大小是mss。而udp不用可靠，所以他不用分片。</p>
+<p>网络层，主要的作用其实就是路由和寻址，加上ip头，规定好源ip，目的ip等信息，</p>
+<p>网络接口层，是提供链路级别的传输服务，因为源ip和目的ip知道了，但是在以太网中实际上是不行的，IP会变，我们需要一个确切的信息，这个就是mac地址，</p>
+<p>那我们这里用输入网址到显示，来串联一下整体的流程：</p>
+<h4 id="1、解析url"><a href="#1、解析url" class="headerlink" title="1、解析url"></a>1、解析url</h4><p>解析之后得到三个信息，一个协议，一个是web服务器地址，一个是请求文件的路径（可选）</p>
+<p>那对于我们前两个是最重要的，</p>
+<p>这时候我们客户端生产自己的http请求报文，格式如下，方法get，url没有默认index什么的，版本http1.1，字段名就很多，然后是数据，这个数据也是后面一种包装的根数据。</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193306158.png" alt="image-20230728193306158">	</p>
+<p>如图所示，一个是请求一个是响应报文</p>
+<p>到这里消息成功生产，那我们生产出一个消息之后就要开始发送？那应该怎么发？往哪里发？</p>
+<p>这就需要下面的知识。</p>
+<h2 id="地址查询-——-DNS"><a href="#地址查询-——-DNS" class="headerlink" title="地址查询 —— DNS"></a>地址查询 —— DNS</h2><p>基于我们已经拿到的web服务器域名，我们可以先去浏览器缓存里面找有没有，如果有，就直接返回，如果没有那就问操作系统的缓存再去看hosts文件，如果都没有，那就看走下面</p>
+<p>客户端首先会发出一个 DNS 请求，问 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 是啥，发给本地 DNS 服务器（也就是客户端的 TCP&#x2F;IP 设置中填写的 DNS 服务器地址）。</p>
+<p>本地域名服务器收到客户端的请求后，如果缓存里的表格能找到 <a target="_blank" rel="noopener" href="http://www.xx.com,则它直接返回/">www.xx.com，则它直接返回</a> IP 地址。如果没有，本地 DNS 会去问它的根域名服务器：“老大， 能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？” 根域名服务器是最高层次的，它不直接用于域名解析，但能指明一条道路。</p>
+<p>根 DNS 收到来自本地 DNS 的请求后，发现后置是 .com，说：“<a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 这个域名归 .com 区域管理”，我给你 .com 顶级域名服务器地址给你，你去问问它吧。”</p>
+<p>本地 DNS 收到顶级域名服务器的地址后，发起请求问“老二， 你能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？”</p>
+<p>顶级域名服务器说：“我给你负责 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 区域的权威 DNS 服务器的地址，你去问它应该能问到”。</p>
+<p>本地 DNS 于是转向问权威 DNS 服务器：“老三，<a href="http://www.xx.com对应的IP是啥呀？”">www.xx.com对应的IP是啥呀？”</a> server.com 的权威 DNS 服务器，它是域名解析结果的原出处。为啥叫权威呢？就是我的域名我做主。</p>
+<p>权威 DNS 服务器查询后将对应的 IP 地址 X.X.X.X 告诉本地 DNS。</p>
+<p>本地 DNS 再将 IP 地址返回客户端，客户端和目标建立连接</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193808617.png" alt="image-20230728193808617"></p>
+<p>通过dns或者缓存获取到ip地址之后，我们就要为发送做一些准备，首先浏览器通过调用 Socket 库，来委托协议栈工作。</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193955912.png" alt="image-20230728193955912"></p>
+<p>说是协议栈，其实就是中间tcp udp ip这些协议。那下面我们就来仔细的看看</p>
+<h2 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h2><p>tcp段的头如下所示：</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728194108402.png" alt="image-20230728194108402"></p>
+<p>TCP 传输数据之前，要先三次握手建立连接</p>
+<p>前提：客户端 为closed状态，服务端变成listen状态</p>
+<p>连接：</p>
+<p>1、客户端向服务端发送连接syn，之后客户端处于syn-sent状态；</p>
+<p>2、服务端接收到这个消息之后，会返回一个syn+ack，之后服务端处于syn-rcvd状态</p>
+<p>3、客户端收到这个之后，再给服务端发送一个对syn的ack，之后客户端处于establish状态</p>
+<p>服务端收到ack也变成了establish状态</p>
+<p>所以三次握手目的是<strong>保证双方都有发送和接收的能力</strong>。</p>
+<p>假设我们已经建立了连接，我们要发送消息，但是消息要遵循tcp协议，他的消息大小是有限制的，不是每一次都可以发送全部消息。具体要求如下：</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728195857751.png" alt="image-20230728195857751"></p>
+<ul>
+<li><code>MTU</code>：一个网络包的最大长度，以太网中一般为 <code>1500</code> 字节。</li>
+<li><code>MSS</code>：除去 IP 和 TCP 头部之后，一个网络包所能容纳的 TCP 数据的最大长度</li>
+</ul>
+<p>所以如果http请求消息超过mss，那么就要分段发送。</p>
+<p>到这里我们得到了一个tcp的报文段或者说包，下面我们就要把这个包发送给网络层，因为在传输层我们就是服务应用层，然后对好端口，确定好协议，之后的事情就不归传输层管控了。</p>
+<p>到这里，我们的数据包的格式如下所示：</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728200405680.png" alt="image-20230728200405680"></p>
+<h2 id="定位IP"><a href="#定位IP" class="headerlink" title="定位IP"></a>定位IP</h2><p>ip协议的最重要的功能就是寻址和路由，他要做到这两点就需要你遵循ip协议，那么遵循的要求就是你加一个ip头<img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728200452235.png" alt="image-20230728200452235"></p>
+<p>加上ip头之后我们就知道了我们的源ip和目的ip地址，那么起点站和终点站就已经知道了</p>
+<p>可以现在又有一个小问题，那就是路径怎么规划呢？这时候就需要用到Mac地址</p>
+<h2 id="mac地址"><a href="#mac地址" class="headerlink" title="mac地址"></a>mac地址</h2><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728202408619.png" alt="image-20230728202408619"></p>
+<ul>
+<li>先查询 ARP 缓存，如果其中已经保存了对方的 MAC 地址，就不需要发送 ARP 查询，直接使用 ARP 缓存中的地址。</li>
+<li>而当 ARP 缓存中不存在对方 MAC 地址时，则发送 ARP 广播查询</li>
+</ul>
+<p>也就是说到了网络接口层，要发了，结果不知道往哪里发，这时候就按照上面两步得到mac地址</p>
+<p>因为上面已经得到了ip地址，所以直接喊话：这个 IP 地址是谁的？请把你的 MAC 地址告诉我，就得到mac地址了。</p>
+<p>到这里数据包还差最后一层包装</p>
+<h2 id="出口–网卡"><a href="#出口–网卡" class="headerlink" title="出口–网卡"></a>出口–网卡</h2><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728204942674.png" alt="image-20230728204942674"></p>
+<p>最后一层包装就是上面图片提到的报头和起始帧分界符和fcs帧校验序列</p>
+<p>网卡驱动获取网络包之后，会将其<strong>复制</strong>到网卡内的缓存区中，接着会在其<strong>开头加上报头和起始帧分界符，在末尾加上用于检测错误的帧校验序列</strong>。</p>
+<p>到这里数据包就真正的包装结束了，最后网卡会将包转为电信号，通过网线发送出去。！！</p>
+<h2 id="送别者—交换机"><a href="#送别者—交换机" class="headerlink" title="送别者—交换机"></a>送别者—交换机</h2><p>交换机的设计是将网络包<strong>原样</strong>转发到目的地。交换机工作在 MAC 层，也称为<strong>二层网络设备</strong>。</p>
+<p>一般在网线接口啊这些地方，其实路由器也可以作为交换机。</p>
+<h3 id="交换机的包接收操作"><a href="#交换机的包接收操作" class="headerlink" title="交换机的包接收操作"></a>交换机的包接收操作</h3><p>交换机里的模块将电信号转换为数字信号。</p>
+<p>然后通过包末尾的fcs校验错误，没问题就放到缓存区，这部分操作基本和计算机的网卡相同，但交换机的工作方式和网卡不同。</p>
+<p>计算机的网卡本身具有 MAC 地址，并通过核对收到的包的接收方 MAC 地址判断是不是发给自己的，如果不是发给自己的则丢弃；相对地，交换机的端口不核对接收方 MAC 地址，而是直接接收所有的包并存放到缓冲区中。因此，和网卡不同，<strong>交换机的端口不具有 MAC 地址</strong>。</p>
+<h3 id="查询MAC-地址表"><a href="#查询MAC-地址表" class="headerlink" title="查询MAC 地址表"></a>查询<strong>MAC 地址表</strong></h3><p>如果找到，就发送到相应的端口，如果找不到，那说明该mac地址的设备还没有向我们交换机发送过包，那这时候我们主动的向除了源端口的所有端口都发送一遍，因为后面的设备他自己都有检测功能，所以不需要担心</p>
+<p>这时候要么就发送到位，要么就可能离开子网了，离开子网需要用到路由器</p>
+<h2 id="出境大门–路由器"><a href="#出境大门–路由器" class="headerlink" title="出境大门–路由器"></a>出境大门–路由器</h2><h3 id="路由器的包接收操作"><a href="#路由器的包接收操作" class="headerlink" title="路由器的包接收操作"></a>路由器的包接收操作</h3><p>首先，电信号到达网线接口部分，路由器中的模块会将电信号转成数字信号，然后通过包末尾的 <code>FCS</code> 进行错误校验。</p>
+<p>如果没问题则检查 MAC 头部中的<strong>接收方 MAC 地址</strong>，看看是不是发给自己的包，如果是就放到接收缓冲区中，否则就丢弃这个包。</p>
+<p>完成包接收操作之后，路由器就会<strong>去掉</strong>包开头的 MAC 头部。</p>
+<p><strong>MAC 头部的作用就是将包送达路由器</strong>，其中的接收方 MAC 地址就是路由器端口的 MAC 地址。因此，当包到达路由器之后，MAC 头部的任务就完成了，于是 MAC 头部就会<strong>被丢弃</strong>。</p>
+<p>接下来，路由器会根据 MAC 头部后方的 <code>IP</code> 头部中的内容进行包的转发操作。</p>
+<h3 id="路由器的发送操作"><a href="#路由器的发送操作" class="headerlink" title="路由器的发送操作"></a>路由器的发送操作</h3><p>首先，我们需要根据<strong>路由表的网关列</strong>判断对方的地址。</p>
+<ul>
+<li>如果网关是一个 IP 地址，则这个IP 地址就是我们要转发到的目标地址，<strong>还未抵达终点</strong>，还需继续需要路由器转发。</li>
+<li>如果网关为空，则 IP 头部中的接收方 IP 地址就是要转发到的目标地址，也是就终于找到 IP 包头里的目标地址了，说明<strong>已抵达终点</strong>。</li>
+</ul>
+<p>反正我们从路由表知道了ip地址，那么我们同样用这个地址去查mac地址</p>
+<p>接下来是发送方 MAC 地址字段，这里填写输出端口的 MAC 地址。还有一个以太类型字段，填写 <code>0800</code> （十六进制）表示 IP 协议。</p>
+<p>网络包完成后，接下来会将其转换成电信号并通过端口发送出去。这一步的工作过程和计算机也是相同的。</p>
+<p>发送出去的网络包会通过<strong>交换机</strong>到达下一个路由器。由于接收方 MAC 地址就是下一个路由器的地址，所以交换机会根据这一地址将包传输到下一个路由器。</p>
+<h1 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h1><p>这边举个例子<img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230729000740012.png" alt="image-20230729000740012"></p>
+<p>子网1某个设备想要发送数据给子网2的某个设备</p>
+<p>首先源ip和目的ip是知道的，如果只是简单的arp群发这个ip问是谁的ip地址，其实是找不到的，所以判断是否为同一子网，如果不是，就把目的mac改成网关的mac，然后数据发送到网关，这时候官网一查mac地址，发现属于子网2的设备，这时候修改源mac为自己的mac，修改目的mac为设备的地址，从子网2的网卡发出。</p>
+<p>大多数情况下一个子网的默认网关就是一个，就基本代表着出口。复杂情况就需要某种选择算法了</p>
+<h2 id="Http"><a href="#Http" class="headerlink" title="Http"></a>Http</h2><p>下面我们来讲一下http 也叫超文本传输协议，就是两点之间超越普通文本范畴的文本（包括文本视频图片等等）的一种协议</p>
+<h4 id="http常见状态码"><a href="#http常见状态码" class="headerlink" title="http常见状态码"></a>http常见状态码</h4><p>1XX 代表提示信息，表示这是处理的中间状体，后续还有操作</p>
+<p>2XX 这个就是成功的状态吗</p>
+<p>​	200 普通的正常的成功</p>
+<p>​	204 没有body的成功，就是响应头里面没有body数据的意思</p>
+<p>​	206 用于分快下载，断点续传，</p>
+<p>3XX 代表重定向</p>
+<p>​	 301 永久重定向</p>
+<p>​	302 临时重定向</p>
+<p>​	304缓存重定向，也就是配合协商缓存那一块</p>
+<p>4XX 带表客户端的报文错误</p>
+<p>​	400 比较笼统的</p>
+<p>​	403 禁止范围</p>
+<p>​	404 没找到</p>
+<p>5XX 代表服务器端端报文错误</p>
+<p>​	500 同样比较笼统</p>
+<p>​	501 目前不支持</p>
+<p>​	502 自身服务器没问题，后续转发的服务器有问题</p>
+<p>​	503 请稍后再访问</p>
+<h4 id="常见的字段"><a href="#常见的字段" class="headerlink" title="常见的字段"></a>常见的字段</h4><p>host</p>
+<p>content-length</p>
+<p>content-type</p>
+<p>connection </p>
+<p>content-encodeing</p>
+<h4 id="Http缓存"><a href="#Http缓存" class="headerlink" title="Http缓存"></a>Http缓存</h4><p>包括强制缓存和协商缓存</p>
+<p>强制缓存就是浏览器判断缓存没有过期，那我就直接使用浏览器的缓存</p>
+<p>实现可以用两个响应头部的字段表示Cache-control和Expires，前者相对时间，后者绝对时间，前者优先级更高，更加精细</p>
+<p>协商缓存也是有两种方法</p>
+<p>1、请求头部里面的if modified since 和响应头部last- modified</p>
+<p>先问浏览器缓存，如果没过期那就是强制缓存，如果过期了，响应信息的头部会有last modified，然后我们会带这个ifmodifiedsince：时间，去访问服务器，服务器看到之后，就拿自己的Last modified去对比 如果没改，返回304，如果改了，返回200</p>
+<p>2、Etag 唯一标识</p>
+<p>流程一样，但是etag优先级更高，因为 if modified since还是基于时间，而时间本身可能有一些限制。</p>
+<p>1、有可能没有修改文件，但是文件的最后修改时间会变化</p>
+<p>2、秒级以内的操作也许不能充分做出响应</p>
+<h4 id="Http优缺点"><a href="#Http优缺点" class="headerlink" title="Http优缺点"></a>Http优缺点</h4><p>优点：简单，灵活易扩充，应用广泛跨平台</p>
+<p>缺点：</p>
+<p>1、http无状态的，所以导致一系列相联的操作可能每一次都要反问数据库，那就非常的繁琐</p>
+<p>在此基础上出现了cookie技术，他就是通过在请求和响应报文里面增加cookie信息，来控制客户端的状态</p>
+<p>2、明文传输。毫无隐私</p>
+<p>3、不安全 也是最重要的原因</p>
+<p>账号信息不安全</p>
+<p>不验证对方的身份</p>
+<p>无法证明报文的完整性</p>
+<p>对于1.0改进：</p>
+<p>1、http1.1在http1.0的基础上提出了长连接，之前是《请求-应答》模式就是你发完应答完，关闭连接，想要进行下一次通信，那就得重新建立连接，现在可以建立一次连接之后，就可以 发收发收发收 只要一方没有明确提出断开连接，那么就一直连着</p>
+<p>2、管道通信，http1.1支持管道，就是所有请求都处于管道内部，我们可以发发发，而不需要等他先回复再发第二个，你可以发发发，减少了时间</p>
+<p>但是这里有一个问题，http是基于tcp的所以服务端会按照顺序接收请求。</p>
+<p>所以说，http1.1可以解决发送端的对头阻塞，但是无法解决接受端的对头阻塞</p>
+<p>然而！然而！http1.1默认不开启管道，</p>
+<h2 id="HTTPS"><a href="#HTTPS" class="headerlink" title="HTTPS"></a>HTTPS</h2><p>但是安全性的那三个缺点依旧无法得到改善，所以提出了https &#x3D; http + tls</p>
+<p>https完美的解决了：窃听风险、篡改风险、冒充风险，其实就是（防止号不会没，内容数据不会被插入一些垃圾广告，访问的网站不是冒充）</p>
+<p>所以给予上面这句话，我们可以知道tls他其实做了三件事情：信息加密，校验机制，身份证书</p>
+<h3 id="TLS"><a href="#TLS" class="headerlink" title="TLS"></a>TLS</h3><h4 id="1、信息加密"><a href="#1、信息加密" class="headerlink" title="1、信息加密"></a>1、信息加密</h4><p>使用的是混合加密，采用对称加密和非对称加密的结合体，混合加密，就是两种都用到了，非对称加密是在tls握手的时候，对称加密是在传输数据的时候。</p>
+<p>非对成加密安全，非对称加密速度更快。</p>
+<h4 id="2、校验机制，身份证书，这两个可以一起讲"><a href="#2、校验机制，身份证书，这两个可以一起讲" class="headerlink" title="2、校验机制，身份证书，这两个可以一起讲"></a>2、校验机制，身份证书，这两个可以一起讲</h4><p>对内容先哈希算法，然后用私钥加密哈希结果得到的结果叫数字签名，把数字签名和原本的内容和在一起就相当于认证了</p>
+<p>然后现在还是缺一个身份验证的问题，就是这个私钥到底对不对？</p>
+<p>这时候需要一个权威机关，就叫CA</p>
+<p>整体流程：服务器发送公钥和数字签名发到CA里面，CA用自己的私钥加密服务器的公钥和数字签名，这个就是证书！然后客户端发来请求的时候，服务器就把自己的证书发过去，客户端收到证书，用CA的公钥解密，得到了服务器的公钥和服务器的数字证签名，这个签名我们上面讲了一个是原始内容一个是私钥对于哈希值的加密，那我们怎么验证呢？就是用公钥去解密加密项得到一个哈希值，再对原始内容做同样的哈希操作，判断两个哈希值到底一不一样，一样代表认证成功，否则，认证失败。</p>
+<h4 id="TLS的连接"><a href="#TLS的连接" class="headerlink" title="TLS的连接"></a>TLS的连接</h4><p>tls的密钥交换算法不同，那么连接步骤也不同，我们会介绍两种</p>
+<h4 id="RSA"><a href="#RSA" class="headerlink" title="RSA"></a>RSA</h4><h5 id="1、客户端-gt-服务端。client-随机数-tls版本好-密码套件，密码套件可以说是一组配置的整合信息罢了"><a href="#1、客户端-gt-服务端。client-随机数-tls版本好-密码套件，密码套件可以说是一组配置的整合信息罢了" class="headerlink" title="1、客户端 &gt; 服务端。client 随机数 + tls版本好+密码套件，密码套件可以说是一组配置的整合信息罢了"></a>1、客户端 &gt; 服务端。client 随机数 + tls版本好+密码套件，密码套件可以说是一组配置的整合信息罢了</h5><h5 id="2、客户端-lt-服务端。server随机数-确认版本号-确认密码套件-自己的数字证书Done"><a href="#2、客户端-lt-服务端。server随机数-确认版本号-确认密码套件-自己的数字证书Done" class="headerlink" title="2、客户端 &lt; 服务端。server随机数+确认版本号+确认密码套件+自己的数字证书Done"></a>2、客户端 &lt; 服务端。server随机数+确认版本号+确认密码套件+自己的数字证书Done</h5><p>当然这里收到之后，先校验，校验流程如下：</p>
+<p>首先我们知道了数字签名有原始内容和对于哈希值加密的数字签名，我们对原始内容加密（签名算法），对数字签名解密（CA公钥）</p>
+<p>当然，其中有一个问题就是证书的信任问题？为什么？</p>
+<p>因为我们得到的证书不一定是CA签发的，假如是中间机构签发的百度证书，那么我们就不能用内置的本地CA证书中的公钥去认证，所以我们先找签发机构，发现是一个中间机构，我们向中间机构请求证书，收到证书后发现这个机构的签发者是CA，那么我们可以用CA去认证中间的这个证书，这个证书被认证了 ，那么百度的也没认证了。</p>
+<h4 id="3、客户端-gt-服务端-使用服务器的公钥加密pre-master随机数发给服务端"><a href="#3、客户端-gt-服务端-使用服务器的公钥加密pre-master随机数发给服务端" class="headerlink" title="3、客户端 &gt; 服务端 使用服务器的公钥加密pre-master随机数发给服务端"></a>3、客户端 &gt; 服务端 使用服务器的公钥加密pre-master随机数发给服务端</h4><h5 id="4、客户端-lt-服务端-服务端发送-加密算法改变通知，和握手结束通知"><a href="#4、客户端-lt-服务端-服务端发送-加密算法改变通知，和握手结束通知" class="headerlink" title="4、客户端 &lt; 服务端 服务端发送 加密算法改变通知，和握手结束通知"></a>4、客户端 &lt; 服务端 服务端发送 加密算法改变通知，和握手结束通知</h5><p>这样，两边就都有了三个随机数，算出会话密钥</p>
+<p>之后的通信就用会话密钥了</p>
+<p>上面这个就是RSA的基本流程，但是基于RSA的https依旧存在《前向安全》的问题，如果服务端私钥泄密，那么所有的tls通讯就将被破解</p>
+<h4 id="ECDHE"><a href="#ECDHE" class="headerlink" title="ECDHE"></a>ECDHE</h4><p>1、客户端 &gt; 服务端。client Hello消息。随机数+tls版本好+密码套件。</p>
+<p>2、客户端 &lt; 服务端。serverhello消息，随机数+确认版本号+确认密码套件。certificate消息（证书）。ServerKeyExchange消息（选择名为25519的椭圆曲线基点G，生成随机数作为私钥保留本地，用G点和私钥算出公钥，对公钥做签名）。Server Hello Done。</p>
+<p>3、客户端 &gt; 服务端 校验证书，用服务端给的信息生成自己的公钥，发送client key exchange发给服务端</p>
+<p>至此，双方都有各自的公钥，自己的私钥，曲线基点，所以能算出x</p>
+<p>最终的会话密钥（客户端随机数，服务端随机数，x）</p>
+<p>算好后，客户端会发一个change cipher spec，开始使用对成算法加密通信</p>
+<p>接着，客户端再发一个excryted handshake message消息，把之前的摘要加密，让服务端做个验证。</p>
+<p>4、最后，服务端也会有一个同样的操作，发「<strong>Change Cipher Spec</strong>」和「<strong>Encrypted Handshake Message</strong>」消息，如果双方都验证加密和解密没问题，那么握手正式完成。于是，就可以正常收发加密的 HTTP 请求和响应了。</p>
+<p>RSA和ECDHE的区别</p>
+<ul>
+<li>RSA 密钥协商算法「不支持」前向保密，ECDHE 密钥协商算法「支持」前向保密；</li>
+<li>使用了 RSA 密钥协商算法，TLS 完成四次握手后，才能进行应用数据传输，而对于 ECDHE 算法，客户端可以不用等服务端的最后一次 TLS 握手，就可以提前发出加密的 HTTP 数据，节省了一个消息的往返时间（这个是 RFC 文档规定的，具体原因文档没有说明，所以这点我也不太明白）；</li>
+<li>使用 ECDHE， 在 TLS 第 2 次握手中，会出现服务器端发出的「Server Key Exchange」消息，而 RSA 握手过程没有该消息</li>
+</ul>
+<h4 id="https怎么实现数据的完整性？"><a href="#https怎么实现数据的完整性？" class="headerlink" title="https怎么实现数据的完整性？"></a>https怎么实现数据的完整性？</h4><p>刚才我们提到了TLS可以解决三个问题，包括完整性，</p>
+<p>其实TLS在实现上包括了握手协议和记录协议</p>
+<p>​	握手协议就是四次握手+后续加密来保护应用程序</p>
+<p>​	记录协议负责保护数据的完整性和来源</p>
+<p>所以我们来看记录协议：，他的实现就是负责对消息（http数据）的压缩，加密和数据认证<img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230802185945107.png" alt="	"></p>
+<p>这里还是应用层，消息被分割后进行压缩，加上消息验证码，加密，加密后加上一个报头，后面就是交给tcp层，传输层</p>
+<h4 id="HTTPS一定安全吗"><a href="#HTTPS一定安全吗" class="headerlink" title="HTTPS一定安全吗"></a>HTTPS一定安全吗</h4><p>理论上这个协议是安全的，https其实就是加了个tls协议，那就是问这个tls是不是安全的</p>
+<p>而tls就是按四次握手</p>
+<p>1、第一种方法：返回的证书，他大概率是伪造的，但是我们如果叫接受了，那就不一样了，你接受了服务器的证书，相当于信任了，那后面的通信就会被监听</p>
+<p>2、直接植入根证书也会导致这种情况</p>
+<p>所以关键就是对于证书的认证</p>
+<h3 id="http1-1-gt-http-2-gt-http3"><a href="#http1-1-gt-http-2-gt-http3" class="headerlink" title="http1.1  -&gt; http 2 -&gt; http3"></a>http1.1  -&gt; http 2 -&gt; http3</h3><h5 id="http1-1在http1-0的基础上增了长连接和管道，解决了发送方的对头阻塞"><a href="#http1-1在http1-0的基础上增了长连接和管道，解决了发送方的对头阻塞" class="headerlink" title="http1.1在http1.0的基础上增了长连接和管道，解决了发送方的对头阻塞"></a>http1.1在http1.0的基础上增了长连接和管道，解决了发送方的对头阻塞</h5><p>缺点：header是没有压缩的，只压缩了body部分，接收方会有对头阻塞，服务端智能被动响应</p>
+<h5 id="http2在是基于https的，所以安全性肯定有保障"><a href="#http2在是基于https的，所以安全性肯定有保障" class="headerlink" title="http2在是基于https的，所以安全性肯定有保障"></a>http2在是基于https的，所以安全性肯定有保障</h5><p>1、头部压缩</p>
+<p>http1.1报文是【header+body】对于body部分可以通过content- encoding指定比如gzip，但是http1.1对Header不做出处理</p>
+<p>http2会压缩头部，如果同时发送多个请求，头是一样的化，协议就会帮你压缩消除重复的部分</p>
+<p>这就是HPACK算法，HPACK包括三个部分（静态字典、动态字典、huffman编码）</p>
+<p>2、二进制格式</p>
+<p>http2不像是http1是纯文本的报文，而是全部改成了二进制，头部和数据题都是二进制，统称帧</p>
+<p>3、并发传输，引入了流的机制</p>
+<p>一条tcp连接有多个流，每个流可以包含一个或者多个message，这个message就是请求或者响应，message里面有一个或者多个frame帧，不同的http请求有独一无二的帧，所以可以乱序发送，后面会按照streamid组装，<strong>同一 Stream 内部的帧必须是严格有序的</strong></p>
+<p>4、服务器主动推送</p>
+<p>缺点：</p>
+<p>他是基于tcp协议的，tcp是字节流，所以必须保证收到的数据是完整连续的，才会把数据交给应用，如果有一个数据卡住了，那么后面的流都要卡住，那就会触发超时重传，一个tcp连接的http请求都要等待的这个重传成功。</p>
+<h5 id="http3，就把tcp换成了udp，但是为了可靠，推出了QUIC"><a href="#http3，就把tcp换成了udp，但是为了可靠，推出了QUIC" class="headerlink" title="http3，就把tcp换成了udp，但是为了可靠，推出了QUIC"></a>http3，就把tcp换成了udp，但是为了可靠，推出了QUIC</h5><p>1、没有对头阻塞</p>
+<p>借鉴了http2的流，就是每一个流都有一个自己的滑动窗口，某个流内部的确还是会阻塞，但是各个流之间是相互独立的，一个流阻塞了，另外的流不会阻塞，这样就保证了没有对头阻塞</p>
+<p>2、更快连接</p>
+<p>因为http2里面tcp和tls是分层的先三次握手然后四次握手，这样需要3个rtt</p>
+<p>然后在http3厘米quic内部适合tls一起的，而且只需要一个rtt就可以完成密钥的协商，用的是tls1.3，1.3版本有话了过程，就是说，第一次发送的时候就已经把签名算法、随机数都发给服务端了。</p>
+<p>，甚至在第二次可以达到0rtt</p>
+<p>3、连接迁移</p>
+<p>tcp是四元组，而quic是基于dcp的，他是考连接id来标记通信，所以ip换了也没事</p>
+<p>4、头部压缩变成了QPACK，静态表变成91项，动态编码方式换了，</p>
+<h4 id="http1-1请求怎么优化"><a href="#http1-1请求怎么优化" class="headerlink" title="http1.1请求怎么优化"></a>http1.1请求怎么优化</h4><p>一方面是http发送的问题，一方面是他本身数据的问题</p>
+<p>1、首先肯定是避免http请求：缓存技术</p>
+<p>2、减少重定向，这个就是把重定向请求交给代理服务器</p>
+<p>3、合并请求，就是把多个访问小文件的请求合并成一个大的</p>
+<p>4、延迟发送，只访问看得到的资源</p>
+<p>5、无损压缩，accept- encoding：gzip br </p>
+<p>6、有损压缩，webP png</p>
+<h4 id="https怎么优化"><a href="#https怎么优化" class="headerlink" title="https怎么优化"></a>https怎么优化</h4><p>https对于http多了一个tls，关键就是通过非对成加密握手得到对成加密的会话密钥</p>
+<ul>
+<li>提高cpu</li>
+<li>升级linux </li>
+<li>对密钥交换过程进行优化</li>
+<li>RSA要四次握手，慢，安全性不高，我们可以缓存eche密钥交换算法，曲线选择x25519，对成加密算法，也可以换aes128</li>
+<li>tls升级1.3，升级的地方在于hello和公钥交换两个消息合并成一个消息</li>
+<li>证书优化，分为传输优化和验证优化。</li>
+</ul>
+<p>传输：服务器证书选择椭圆曲线</p>
+<p>验证：验证的过程中不仅需要ca还需要是否被ca吊销；crl是吊销列表，ca定期更新，但是实时性不好，ocsp，向ca fan song请求，返回状态，这个增加了请求开销，万一网络不好或者ca繁忙就会出现延迟；oscp stapling，服务器向ca定期查证书状态，然后在握手阶段就直接发给客户端，这样客户端就不用再去请求了。</p>
+<ul>
+<li>会话复用：session id 和session ticket</li>
+</ul>
+<p>session id：首次连接后，在内存缓存会话密钥，用session id标识，再次连接的时候，会在hello消息中带上这个，服务器收到这个就从缓存里面找，直接回复会话状态，跳过中间流程</p>
+<p>缺点是，内存压力大</p>
+<p>session ticket：类似于cookie，把缓存的工作交给客户端，首次连接，会加密这个发给客户端缓存起来，第二次连接，客户端会发送ticket，服务器解密后验证日期是否有效，没问题就恢复会话。</p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" rel="tag">计算机网络</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
+                    data-tooltip="Java基础知识"
+                    aria-label="PREVIOUS: Java基础知识"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/07/08/MYSQL%E5%A4%8D%E4%B9%A01/"
+                    data-tooltip="Mysql复习1"
+                    aria-label="NEXT: Mysql复习1"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
+                    data-tooltip="Java基础知识"
+                    aria-label="PREVIOUS: Java基础知识"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/07/08/MYSQL%E5%A4%8D%E4%B9%A01/"
+                    data-tooltip="Mysql复习1"
+                    aria-label="NEXT: Mysql复习1"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
+                        aria-label="Share on Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
+                        aria-label="Share on Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
+                        aria-label="Share on Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+        
+            <h4 id="about-card-name">CSEN</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                浙江温州
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-39paoi2hupf5wmw7ojejrxpco6edftjriz5ezbtp4grymrdceksftgan2adp.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+
+    </body>
+</html>

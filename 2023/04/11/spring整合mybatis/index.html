@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"Spring整合Mybatis要解决的问题重点关注下的Mapper动态代理对象，因为Spring整合Mybatis的核心目标是：把某个Mapper的代理对象作为一个bean放入Spring容器中，使得能够像使用一个普通bean一样去使用这个代理对象，比如能被@Autowire自动注入。常用如下通过Ioc容器把UserMapper注入了UserService\n@Servicepublic class UserService &#123;        @Autowired        private UserMapper userMapper;            public UserEntity queryUser(int id)&#123;                UserEntity userEntity = userMapper.getById(id);                return userEntity;        &#125;            public void printServiceName()&#123;                System.out.println(&quot;I&#x27;m UserService&quot;);        &#125;&#125;\n\nSpring启动过程中，bean的生命周期如下\n\n扫描指定的包路径下的class文件或解析xml文件\n生成对应的BeanDefinition\nBeanFactoryPostProcessor注册或修改BeanDefinition定义\n根据BeanDefinition反射实例化Bean\nBeanPostProcessor修改Bean定义\nBean的业务调用\nBean的销毁\n\n对于两个Service：UserService&#x2F;OrderInfoService定义如下\n@Servicepublic class UserService &#123;     public void printServiceName()&#123;        System.out.println(&quot;I&#x27;m UserService&quot;);    &#125; &#125;执行如下命令：AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);System.out.println(ctx.getBean(&quot;userService&quot;));结果如下：com.hobbit.service.UserService@4167d97b\n\n增加一个FactoryBean后置处理器，修改userService的BeanDefinition定义@Componentpublic class RenameBeanFactoryPostProcessor implements BeanFactoryPostProcessor &#123;     @Override    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException &#123;        BeanDefinition beanDefinition = beanFactory.getBeanDefinition(&quot;userService&quot;);        beanDefinition.setBeanClassName(OrderInfoService.class.getName());    &#125;&#125;重新运行结果如下，生成了OrderInfoService对象。com.hobbit.service.OrderInfoService@57ad2aa7\n\n所以在Spring中bean对象跟class或xml定义的bean无直接关系，跟最终的BeanDefinition有直接关系。\n要想生成一个bean，首先要有一个BeanDefinition。那Mapper对应的BeanDefinition是？\n这就引出了下一个类\nMapperFactoryBeanSpring通过BeanDefinition的beanClassName生成对应的bean，那mapper的对应的beanClassName是什么？本可以有两个答案：\n\n代理对象对应的代理类\n代理对象对应的接口\n\n因为代理类是动态生成的，spring启动时无法得知，无法使用。那么代理对象对应的接口？思路如下：\nBeanDefinition bd = new BeanDefinitoin();// 注意这里，设置的是UserMapperbd.setBeanClassName(UserMapper.class.getName());SpringContainer.addBd(bd);\n\n实际上给BeanDefinition对应的类型设置为一个接口是行不通的，因为Spring没有办法根据这个BeanDefinition去new出对应类型的实例，接口是没法直接new出实例的。\n所以想通过设置BeanDefinition的class类型，然后由Spring自动地帮助我们去生成对应的bean，但是这条路是行不通的。可以通过其它方MapperFactoryBean来实现。\nMapperFactoryBean继承关系\n\npublic class MapperFactoryBean&lt;T&gt; extends SqlSessionDaoSupport implements FactoryBean&lt;T&gt; &#123;   ...  /**   * &#123;@inheritDoc&#125;   */  @Override  public T getObject() throws Exception &#123;    return getSqlSession().getMapper(this.mapperInterface);  &#125;   /**   * &#123;@inheritDoc&#125;   */  @Override  public Class&lt;T&gt; getObjectType() &#123;    return this.mapperInterface;  &#125;   /**   * &#123;@inheritDoc&#125;   */  @Override  public boolean isSingleton() &#123;    return true;  &#125;  ...&#125;\n\ngetObjectType返回的是Mapper接口，通过 AbstractBeanDefinition.AUTOWIRE_BY_TYPE时，可自动注入使用。\ngetObject返回了动态代理对象，跟之前的使用一致。至此完成了Mapper对应BeanDefinition定义的问题，那这些BeanDefinition是如何注册到Ioc容器呢？\nMapper BeanDefinition加载Spring可通过多种方式加载BeanDefinition，从XmlBeanDefinitionReader到ClassPathBeanDefinitionScanner在到ConfigurationClassBeanDefinitionReader分别对应xml、@component、@configuration类定义的加载。Mapper BeanDefinition可通过2种形式加载MapperScannerConfigurer和@MapperScan注解，内部都是通过ClassPathMapperScanner实现。ClassPathMapperScanner继承了ClassPathBeanDefinitionScanner，类图如下\n两种方式如下\n&lt;!-- 指定要扫描的包，在此包下自动搜索映射器(接口) --&gt;    &lt;bean class=&quot;org.mybatis.spring.mapper.MapperScannerConfigurer&quot;&gt;        &lt;property name=&quot;basePackage&quot; value=&quot;com.hobbit.mapper&quot; /&gt;        &lt;property name=&quot;sqlSessionFactoryBeanName&quot; value=&quot;sessionFactory&quot; /&gt;    &lt;/bean&gt;\n\n使用@MapperScan加载\n\n使用MapperScannerConfigurer加载在配置MapperScannerConfigurer中主要是加载dao包中的所有dao接口，通过sqlsessionFactory获取sqlsession，然后创建所有dao接口对象，存储在spring容器\n会在spring容器刷新refresh过程中被调用\n到此为止，Spring整合Mybatis的核心原理就结束了，再次总结一下：\n定义MapperFactoryBean，用来封装Mapper对应的BeanDefinition通过ClassPathMapperScanner重新定义BeanClass及AutowireMode，实现BeanDefinition加载及MapperInterface与MapperFactory整合通过MapperScannerConfigurer或@MapperScan，分别扩展BeanDefinitionRegistryPostProcessor及ImportBeanDefinitionRegistrar 用来在启动Spring时执行调用ClassPathMapperScanner完成Mapper BeanDefinition的注册\nSpring的启动流程：https://blog.csdn.net/weixin_39559282/article/details/118255793\nMyBatis与Spring的集成原理https://blog.csdn.net/m0_73311735/article/details/129226313\n","dateCreated":"2023-04-11T00:00:00+08:00","dateModified":"2023-04-12T14:34:25+08:00","datePublished":"2023-04-11T00:00:00+08:00","description":"","headline":"Spring整合mybatis","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/","keywords":"spring勇攀高峰"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"Spring整合Mybatis要解决的问题重点关注下的Mapper动态代理对象，因为Spring整合Mybatis的核心目标是：把某个Mapper的代理对象作为一个bean放入Spring容器中，使得能够像使用一个普通bean一样去使用这个代理对象，比如能被@Autowire自动注入。常用如下通过Ioc容器把UserMapper注入了UserService\n@Servicepublic class UserService &#123;        @Autowired        private UserMapper userMapper;            public UserEntity queryUser(int id)&#123;                UserEntity userEntity = userMapper.getById(id);                return userEntity;        &#125;            public void printServiceName()&#123;                System.out.println(&quot;I&#x27;m UserService&quot;);        &#125;&#125;\n\nSpring启动过程中，bean的生命周期如下\n\n扫描指定的包路径下的class文件或解析xml文件\n生成对应的BeanDefinition\nBeanFactoryPostProcessor注册或修改BeanDefinition定义\n根据BeanDefinition反射实例化Bean\nBeanPostProcessor修改Bean定义\nBean的业务调用\nBean的销毁\n\n对于两个Service：UserService&#x2F;OrderInfoService定义如下\n@Servicepublic class UserService &#123;     public void printServiceName()&#123;        System.out.println(&quot;I&#x27;m UserService&quot;);    &#125; &#125;执行如下命令：AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);System.out.println(ctx.getBean(&quot;userService&quot;));结果如下：com.hobbit.service.UserService@4167d97b\n\n增加一个FactoryBean后置处理器，修改userService的BeanDefinition定义@Componentpublic class RenameBeanFactoryPostProcessor implements BeanFactoryPostProcessor &#123;     @Override    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException &#123;        BeanDefinition beanDefinition = beanFactory.getBeanDefinition(&quot;userService&quot;);        beanDefinition.setBeanClassName(OrderInfoService.class.getName());    &#125;&#125;重新运行结果如下，生成了OrderInfoService对象。com.hobbit.service.OrderInfoService@57ad2aa7\n\n所以在Spring中bean对象跟class或xml定义的bean无直接关系，跟最终的BeanDefinition有直接关系。\n要想生成一个bean，首先要有一个BeanDefinition。那Mapper对应的BeanDefinition是？\n这就引出了下一个类\nMapperFactoryBeanSpring通过BeanDefinition的beanClassName生成对应的bean，那mapper的对应的beanClassName是什么？本可以有两个答案：\n\n代理对象对应的代理类\n代理对象对应的接口\n\n因为代理类是动态生成的，spring启动时无法得知，无法使用。那么代理对象对应的接口？思路如下：\nBeanDefinition bd = new BeanDefinitoin();// 注意这里，设置的是UserMapperbd.setBeanClassName(UserMapper.class.getName());SpringContainer.addBd(bd);\n\n实际上给BeanDefinition对应的类型设置为一个接口是行不通的，因为Spring没有办法根据这个BeanDefinition去new出对应类型的实例，接口是没法直接new出实例的。\n所以想通过设置BeanDefinition的class类型，然后由Spring自动地帮助我们去生成对应的bean，但是这条路是行不通的。可以通过其它方MapperFactoryBean来实现。\nMapperFactoryBean继承关系\n\npublic class MapperFactoryBean&lt;T&gt; extends SqlSessionDaoSupport implements FactoryBean&lt;T&gt; &#123;   ...  /**   * &#123;@inheritDoc&#125;   */  @Override  public T getObject() throws Exception &#123;    return getSqlSession().getMapper(this.mapperInterface);  &#125;   /**   * &#123;@inheritDoc&#125;   */  @Override  public Class&lt;T&gt; getObjectType() &#123;    return this.mapperInterface;  &#125;   /**   * &#123;@inheritDoc&#125;   */  @Override  public boolean isSingleton() &#123;    return true;  &#125;  ...&#125;\n\ngetObjectType返回的是Mapper接口，通过 AbstractBeanDefinition.AUTOWIRE_BY_TYPE时，可自动注入使用。\ngetObject返回了动态代理对象，跟之前的使用一致。至此完成了Mapper对应BeanDefinition定义的问题，那这些BeanDefinition是如何注册到Ioc容器呢？\nMapper BeanDefinition加载Spring可通过多种方式加载BeanDefinition，从XmlBeanDefinitionReader到ClassPathBeanDefinitionScanner在到ConfigurationClassBeanDefinitionReader分别对应xml、@component、@configuration类定义的加载。Mapper BeanDefinition可通过2种形式加载MapperScannerConfigurer和@MapperScan注解，内部都是通过ClassPathMapperScanner实现。ClassPathMapperScanner继承了ClassPathBeanDefinitionScanner，类图如下\n两种方式如下\n&lt;!-- 指定要扫描的包，在此包下自动搜索映射器(接口) --&gt;    &lt;bean class=&quot;org.mybatis.spring.mapper.MapperScannerConfigurer&quot;&gt;        &lt;property name=&quot;basePackage&quot; value=&quot;com.hobbit.mapper&quot; /&gt;        &lt;property name=&quot;sqlSessionFactoryBeanName&quot; value=&quot;sessionFactory&quot; /&gt;    &lt;/bean&gt;\n\n使用@MapperScan加载\n\n使用MapperScannerConfigurer加载在配置MapperScannerConfigurer中主要是加载dao包中的所有dao接口，通过sqlsessionFactory获取sqlsession，然后创建所有dao接口对象，存储在spring容器\n会在spring容器刷新refresh过程中被调用\n到此为止，Spring整合Mybatis的核心原理就结束了，再次总结一下：\n定义MapperFactoryBean，用来封装Mapper对应的BeanDefinition通过ClassPathMapperScanner重新定义BeanClass及AutowireMode，实现BeanDefinition加载及MapperInterface与MapperFactory整合通过MapperScannerConfigurer或@MapperScan，分别扩展BeanDefinitionRegistryPostProcessor及ImportBeanDefinitionRegistrar 用来在启动Spring时执行调用ClassPathMapperScanner完成Mapper BeanDefinition的注册\nSpring的启动流程：https://blog.csdn.net/weixin_39559282/article/details/118255793\nMyBatis与Spring的集成原理https://blog.csdn.net/m0_73311735/article/details/129226313\n","dateCreated":"2023-04-11T00:00:00+08:00","dateModified":"2023-09-25T13:10:29+08:00","datePublished":"2023-04-11T00:00:00+08:00","description":"","headline":"Spring整合mybatis","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/","keywords":"mybatis-starter"}</script>
     <meta name="description" content="Spring整合Mybatis要解决的问题重点关注下的Mapper动态代理对象，因为Spring整合Mybatis的核心目标是：把某个Mapper的代理对象作为一个bean放入Spring容器中，使得能够像使用一个普通bean一样去使用这个代理对象，比如能被@Autowire自动注入。常用如下通过Ioc容器把UserMapper注入了UserService @Servicepublic class">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Spring整合mybatis">
@@ -21,9 +21,9 @@
 <meta property="og:locale" content="zh_CH">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/img_convert/b00b1795cde71cbf838c42c2d7bd8d42.png">
 <meta property="article:published_time" content="2023-04-10T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-04-12T06:34:25.159Z">
+<meta property="article:modified_time" content="2023-09-25T05:10:29.947Z">
 <meta property="article:author" content="CSEN">
-<meta property="article:tag" content="spring勇攀高峰">
+<meta property="article:tag" content="mybatis-starter">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://img-blog.csdnimg.cn/img_convert/b00b1795cde71cbf838c42c2d7bd8d42.png">
     
@@ -77,11 +77,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -100,9 +100,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -163,10 +163,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archiv"
+                            title="Archives"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archiv</span>
+                        <span class="sidebar-button-desc">Archives</span>
                     </a>
             </li>
             
@@ -177,10 +177,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Suche"
+                            title="Search"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Suche</span>
+                        <span class="sidebar-button-desc">Search</span>
                     </a>
             </li>
             
@@ -191,10 +191,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="Über"
+                            title="About"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Über</span>
+                        <span class="sidebar-button-desc">About</span>
                     </a>
             </li>
             
@@ -242,13 +242,13 @@
         <div class="post-meta">
     <time datetime="2023-04-11T00:00:00+08:00">
 	
-		    11 Apr 2023
+		    Apr 11, 2023
     	
     </time>
     
         <span>in </span>
         
-    <a class="category-link" href="/categories/java%E5%AD%A6%E4%B9%A0/">java学习</a>
+    <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
 
 
     
@@ -318,9 +318,9 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">GETAGGT IN</span><br/>
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
                 
-    <a class="tag tag--primary tag--small t-none-link" href="/tags/spring%E5%8B%87%E6%94%80%E9%AB%98%E5%B3%B0/" rel="tag">spring勇攀高峰</a>
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/mybatis-starter/" rel="tag">mybatis-starter</a>
 
             </div>
         
@@ -335,11 +335,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                     data-tooltip="DBRouter组件的整合理解"
-                    aria-label="FRÜHER: DBRouter组件的整合理解"
+                    aria-label="PREVIOUS: DBRouter组件的整合理解"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
                     </a>
             </li>
             <li class="post-action">
@@ -349,10 +349,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/11/%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99/"
                     data-tooltip="参考资料"
-                    aria-label="NÄCHSTER: 参考资料"
+                    aria-label="NEXT: 参考资料"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -363,7 +363,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
+                aria-label="Share this post"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -375,8 +375,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
-                    title="Teilen auf Facebook"
-                    aria-label="Teilen auf Facebook"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -388,8 +388,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
-                    title="Teilen auf Twitter"
-                    aria-label="Teilen auf Twitter"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -401,8 +401,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
-                    title="Teilen auf Google Plus"
-                    aria-label="Teilen auf Google Plus"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -413,7 +413,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -450,11 +450,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                     data-tooltip="DBRouter组件的整合理解"
-                    aria-label="FRÜHER: DBRouter组件的整合理解"
+                    aria-label="PREVIOUS: DBRouter组件的整合理解"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
                     </a>
             </li>
             <li class="post-action">
@@ -464,10 +464,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/11/%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99/"
                     data-tooltip="参考资料"
-                    aria-label="NÄCHSTER: 参考资料"
+                    aria-label="NEXT: 参考资料"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -478,7 +478,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
+                aria-label="Share this post"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -490,8 +490,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
-                    title="Teilen auf Facebook"
-                    aria-label="Teilen auf Facebook"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -503,8 +503,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
-                    title="Teilen auf Twitter"
-                    aria-label="Teilen auf Twitter"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -516,8 +516,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
-                    title="Teilen auf Google Plus"
-                    aria-label="Teilen auf Google Plus"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -528,7 +528,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -550,9 +550,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
-                        aria-label="Teilen auf Facebook"
+                        aria-label="Share on Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
                     </a>
                 </li>
             
@@ -563,9 +563,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
-                        aria-label="Teilen auf Twitter"
+                        aria-label="Share on Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
                     </a>
                 </li>
             
@@ -576,9 +576,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
-                        aria-label="Teilen auf Google Plus"
+                        aria-label="Share on Google+"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
                     </a>
                 </li>
             
@@ -601,7 +601,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
