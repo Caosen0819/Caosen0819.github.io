@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"7-10，同时回顾一下4-6的内容\n第六节的重点是模版模式。\n模版模式是定义一个算法的骨架，并允许子类为一个或多个步骤提供实现。在第六节中这个算法骨架（抽象模版类）是AbstractDrawBase，这个类中有通用的比如对于抽奖结果的包装，也有抽象方法比如执行抽奖算法（这个在子类中实现）。小傅哥在这个基础上又把一些一些通用的数据服务抽象出新的一层DrawStrategySupport，这个算是一种优化，但是他本质也属于抽象模版类的一部分。\n而我们抽奖则需要抽奖策略（怎么个抽法），这就是第五节的东西—策略模式：\n对象的某个行为，在不同场景中有不同的实现方式，这样就可以将这些实现方式定义成一组策略，每个实现类对应一个策略，在不同的场景就使用不同的实现类，并且可以自由切换策略。\n其实看完第六节会发现第五节和第六节很像，也是抽象出了一个接口和一个抽象模版类，其他的子类继承抽象模版类实现randomDraw（）方法，不同的实现对应不同的算法，具体算法我们自己可以修改逻辑、补充内容等操作。\n在这时候我们发现策略模式和模版模式很像，但是是有一些区别的：\n模板模式：问题处理的流程已经被定义好，父类实现通用的逻辑（当然你也可以再抽象出一层），子类实现个性化逻辑。\n策略模式：父类定义一组抽象算法，子类自己实现自己的。每个策略完成的功能是重复的，同一时间，只能选择其中的一种，即互斥的\n策略模式核心在使用者的策略，按照自己的策略去替换。模板方法模式核心在子类的怎么实现。\n举个例子：\n模版模式： 父类：早上6点吃饭，晚上6点吃面。子类1：早上6点吃稀饭，晚上6点吃泡面。子类2：早上6点吃干饭，晚上6点吃挂面。\n策略模式：父类：早晚进食。子类1:早上5点吃面，晚上5点吃面。子类2:早上7点吃饭，晚上7点吃饭。子类3:早上不吃，晚上不吃…\n第八节：状态模式\n当一个对象的内在状态改变时，允许改变其行为，把不同状态当做一个类，解决对象在多种状态转换时，需要对外输出不同的行为的问题。\n同样的有抽象模版类（AbstractState，当然你要自己提炼一个接口大概也没什么问题），多个具体实现的子类。要有一个Context类，这个类持有State，负责保持并切换当前的状态，当状态变化时，修改这个State。在项目中应该是活动创建的时候初始化状态，后续收到一些通知（比如：快递公司揽件，发送目的地，菜鸟驿站收到快递）修改活动中的状态变量就可以，非常方面。\n第九节：ID生成策略\n也是策略模型，因为目前就一个id生成的要求，也无需什么流程啊，也不涉及什么状态改变，不同情境下使用不同类型的id，所以策略模式最佳。\n第十节：分库分表\n内容多，也是这几天最花时间的，bug奇多，自己不小心把application.yml文件里面的配置写错了，然后报空指针，找不到bean，我还以为自己打包有问题呢；因为自己的版本和傅哥的不太一样，总报一些依赖错误，还有什么commons-lang、commons-beanutils依赖缺失。自己的的项目工程包名是自定义的，和傅哥的cn.itedus.lottery和那个cn.bugstack不一样，中途修改的时候感觉对理解还是有益处的。\n之后再对第十节做一次总结，加深感悟。\n","dateCreated":"2023-04-04T00:00:00+08:00","dateModified":"2023-04-12T12:30:29+08:00","datePublished":"2023-04-04T00:00:00+08:00","description":"","headline":"章节：7-10，同时回顾一下4-6的内容","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/","keywords":"lucky项目"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"7-10，同时回顾一下4-6的内容\n第六节的重点是模版模式。\n模版模式是定义一个算法的骨架，并允许子类为一个或多个步骤提供实现。在第六节中这个算法骨架（抽象模版类）是AbstractDrawBase，这个类中有通用的比如对于抽奖结果的包装，也有抽象方法比如执行抽奖算法（这个在子类中实现）。小傅哥在这个基础上又把一些一些通用的数据服务抽象出新的一层DrawStrategySupport，这个算是一种优化，但是他本质也属于抽象模版类的一部分。\n而我们抽奖则需要抽奖策略（怎么个抽法），这就是第五节的东西—策略模式：\n对象的某个行为，在不同场景中有不同的实现方式，这样就可以将这些实现方式定义成一组策略，每个实现类对应一个策略，在不同的场景就使用不同的实现类，并且可以自由切换策略。\n其实看完第六节会发现第五节和第六节很像，也是抽象出了一个接口和一个抽象模版类，其他的子类继承抽象模版类实现randomDraw（）方法，不同的实现对应不同的算法，具体算法我们自己可以修改逻辑、补充内容等操作。\n在这时候我们发现策略模式和模版模式很像，但是是有一些区别的：\n模板模式：问题处理的流程已经被定义好，父类实现通用的逻辑（当然你也可以再抽象出一层），子类实现个性化逻辑。\n策略模式：父类定义一组抽象算法，子类自己实现自己的。每个策略完成的功能是重复的，同一时间，只能选择其中的一种，即互斥的\n策略模式核心在使用者的策略，按照自己的策略去替换。模板方法模式核心在子类的怎么实现。\n举个例子：\n模版模式： 父类：早上6点吃饭，晚上6点吃面。子类1：早上6点吃稀饭，晚上6点吃泡面。子类2：早上6点吃干饭，晚上6点吃挂面。\n策略模式：父类：早晚进食。子类1:早上5点吃面，晚上5点吃面。子类2:早上7点吃饭，晚上7点吃饭。子类3:早上不吃，晚上不吃…\n第八节：状态模式\n当一个对象的内在状态改变时，允许改变其行为，把不同状态当做一个类，解决对象在多种状态转换时，需要对外输出不同的行为的问题。\n同样的有抽象模版类（AbstractState，当然你要自己提炼一个接口大概也没什么问题），多个具体实现的子类。要有一个Context类，这个类持有State，负责保持并切换当前的状态，当状态变化时，修改这个State。在项目中应该是活动创建的时候初始化状态，后续收到一些通知（比如：快递公司揽件，发送目的地，菜鸟驿站收到快递）修改活动中的状态变量就可以，非常方面。\n第九节：ID生成策略\n也是策略模型，因为目前就一个id生成的要求，也无需什么流程啊，也不涉及什么状态改变，不同情境下使用不同类型的id，所以策略模式最佳。\n第十节：分库分表\n内容多，也是这几天最花时间的，bug奇多，自己不小心把application.yml文件里面的配置写错了，然后报空指针，找不到bean，我还以为自己打包有问题呢；因为自己的版本和傅哥的不太一样，总报一些依赖错误，还有什么commons-lang、commons-beanutils依赖缺失。自己的的项目工程包名是自定义的，和傅哥的cn.itedus.lottery和那个cn.bugstack不一样，中途修改的时候感觉对理解还是有益处的。\n之后再对第十节做一次总结，加深感悟。\n","dateCreated":"2023-04-04T00:00:00+08:00","dateModified":"2023-04-12T12:30:29+08:00","datePublished":"2023-04-04T00:00:00+08:00","description":"","headline":"章节：7-10，同时回顾一下4-6的内容","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/","keywords":"lucky项目"}</script>
     <meta name="description" content="7-10，同时回顾一下4-6的内容 第六节的重点是模版模式。 模版模式是定义一个算法的骨架，并允许子类为一个或多个步骤提供实现。在第六节中这个算法骨架（抽象模版类）是AbstractDrawBase，这个类中有通用的比如对于抽奖结果的包装，也有抽象方法比如执行抽奖算法（这个在子类中实现）。小傅哥在这个基础上又把一些一些通用的数据服务抽象出新的一层DrawStrategySupport，这个算是一种">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="章节：7-10，同时回顾一下4-6的内容">
@@ -75,11 +75,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -98,9 +98,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -119,10 +119,10 @@
                             href="/"
                             
                             rel="noopener"
-                            title="Home"
+                            title="首页"
                         >
                         <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Home</span>
+                        <span class="sidebar-button-desc">首页</span>
                     </a>
             </li>
             
@@ -133,10 +133,10 @@
                             href="/all-categories"
                             
                             rel="noopener"
-                            title="categories"
+                            title="分类"
                         >
                         <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">categories</span>
+                        <span class="sidebar-button-desc">分类</span>
                     </a>
             </li>
             
@@ -147,10 +147,10 @@
                             href="/all-tags"
                             
                             rel="noopener"
-                            title="Tags"
+                            title="标签"
                         >
                         <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Tags</span>
+                        <span class="sidebar-button-desc">标签</span>
                     </a>
             </li>
             
@@ -161,10 +161,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archives"
+                            title="档案"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archives</span>
+                        <span class="sidebar-button-desc">档案</span>
                     </a>
             </li>
             
@@ -175,10 +175,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Search"
+                            title="搜索"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Search</span>
+                        <span class="sidebar-button-desc">搜索</span>
                     </a>
             </li>
             
@@ -189,10 +189,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="About"
+                            title="关于"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">About</span>
+                        <span class="sidebar-button-desc">关于</span>
                     </a>
             </li>
             
@@ -204,15 +204,15 @@
                     
                         <a
                             class="sidebar-button-link "
-                            href="https://github.com/"
+                            href="https://github.com/Caosen0819"
                             
                                 target="_blank"
                             
                             rel="noopener"
-                            title="GitHub"
+                            title=".github"
                         >
                         <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">GitHub</span>
+                        <span class="sidebar-button-desc">.github</span>
                     </a>
             </li>
             
@@ -240,7 +240,7 @@
         <div class="post-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -288,7 +288,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/lucky%E9%A1%B9%E7%9B%AE/" rel="tag">lucky项目</a>
 
@@ -305,11 +305,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
                     data-tooltip="章节：10"
-                    aria-label="PREVIOUS: 章节：10"
+                    aria-label="FRÜHER: 章节：10"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -319,10 +319,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A11-13/"
                     data-tooltip="章节：11-13"
-                    aria-label="NEXT: 章节：11-13"
+                    aria-label="NÄCHSTER: 章节：11-13"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -333,7 +333,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -345,8 +345,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -358,8 +358,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -371,8 +371,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -383,7 +383,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -420,11 +420,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
                     data-tooltip="章节：10"
-                    aria-label="PREVIOUS: 章节：10"
+                    aria-label="FRÜHER: 章节：10"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -434,10 +434,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A11-13/"
                     data-tooltip="章节：11-13"
-                    aria-label="NEXT: 章节：11-13"
+                    aria-label="NÄCHSTER: 章节：11-13"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -448,7 +448,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -460,8 +460,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -473,8 +473,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -486,8 +486,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -498,7 +498,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -520,9 +520,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
-                        aria-label="Share on Facebook"
+                        aria-label="Teilen auf Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
                     </a>
                 </li>
             
@@ -533,9 +533,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
-                        aria-label="Share on Twitter"
+                        aria-label="Teilen auf Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
                     </a>
                 </li>
             
@@ -546,9 +546,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
-                        aria-label="Share on Google+"
+                        aria-label="Teilen auf Google Plus"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
                     </a>
                 </li>
             
@@ -571,7 +571,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

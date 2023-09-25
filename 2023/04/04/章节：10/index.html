@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"第十节我们可以从注解出发看项目。DBRouter注解写好后，肯定要配备切面类DBRouterJoinPoint（这里面包括了路由策略和路由配置几库几表），里面有一个@Around注解，表示包围一个函数，也就是可以在函数执行前做一些事情，也可以在函数执行后做一些事情。\n项目中是先拿到Key字段（uId），判断是不是空，是的话Runtime异常，不是的话就去拿uId这个字段对应的值，按照例子就是Uhdgkw766120d。\n拿到值之后，那么下面就是拿着这个值去做路由了（该怎么走），这部分内容被写在DBRouterStrategyHashCode的doRouter里面。其实就是hash的扰动函数，通过设定的算法得到去拿个库哪个表，把这两个信息交给DBContextHolder（一个标识类，用来存储当前数据源的key及状态判断），下面就要向数据集里面写东西了，jp.process(),接下去就是mybatis拦截器的任务了。\n自定义拦截器需要实现org.apache.ibatis.plugin.Interceptor接口, 并在接口上添加@Intercepts注解。@Intercepts注解是通过一个@Signature注解(拦截点),来指定拦截那个对象里面的某个方法。@Signature注解需要定义三个东西：\n定义拦截的类 Executor、ParameterHandler、StatementHandler、ResultSetHandler当中的一个Class&lt;?&gt; type();\n在定义拦截类的基础之上，在定义拦截的方法String method();\n在定义拦截方法的基础之上在定义拦截的方法对应的参数，因方法里面可能重载，不指定参数列表，不能确定是对应拦截的方法Class&lt;?&gt;[] args();\n我们查看代码，发现拦截的类选择的是StatementHandler，目前不太了解mybatis的源码，但是查询资料之后发现毫无疑问是四大对象最重要的一个，它的任务就是和数据库对话。在它这里会使用parameterHandler和ResultSetHandler对象为我们绑定SQL参数和组装最后的结果返回。\n拦截的方法是prepare，预编译阶段\n参数是{Connection.class, Integer.class}\n回到那个自定义拦截器类 继承了Interceptor。intercept里面就放着怎么把sql变成我们想要的那种动态分库分表的逻辑。首先几行代码拿到dbRouterStrategy注解，看他是不是true如果是，我们去拿sql语句，如下所示：\nINSERT INTO user_strategy_export        (u_id, activity_id, order_id, strategy_id, strategy_mode,         grant_type, grant_date, grant_state, award_id, award_type,         award_name, award_content, uuid, create_time, update_time)        VALUES        (?,?,?,?,?,         ?,?,?,?,?,         ?,?,?,now(),now())\n他利用一个matcher找到 INTO user_strategy_export这段语句。为什么？因为INTO后面跟着的就是表，至于是哪个表，在上面已经提到了，就是DBContextHolder。这里就实现了分表。\n至于分库，我们重写了determineCurrentLookupKey方法，这个方法被determineTargetDataSource调用，determineTargetDataSource被getConnection调用，getConection可以追溯到DataSource接口的getConnection抽象方法。但是我还不知道determineCurrentLookupKey什么时候被调用？？\n所以就去查了查多数据源的处理机制的一些文章，发现和自己想的有区别，我一直以为调用DAO层的方法，应该先切面再切换数据源最后才是DAO的逻辑（毕竟我看不到什么时候切换数据源，但是DBRouter注解就是直勾勾的放在DAO方法上面的），结果文章中提到其实是先切换数据源，然后切面方法，最后DAO逻辑。文章给出的原因是事务中不支持数据源切换。但是我打断点还是没找到调用determineCurrentLookupKey的那段代码，可惜。\n最后就是把这些配置到DataSourceAutoConfig，打包给我们的项目。\n","dateCreated":"2023-04-04T00:00:00+08:00","dateModified":"2023-04-12T12:30:48+08:00","datePublished":"2023-04-04T00:00:00+08:00","description":"","headline":"章节：10","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/","keywords":"lucky项目"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"第十节我们可以从注解出发看项目。DBRouter注解写好后，肯定要配备切面类DBRouterJoinPoint（这里面包括了路由策略和路由配置几库几表），里面有一个@Around注解，表示包围一个函数，也就是可以在函数执行前做一些事情，也可以在函数执行后做一些事情。\n项目中是先拿到Key字段（uId），判断是不是空，是的话Runtime异常，不是的话就去拿uId这个字段对应的值，按照例子就是Uhdgkw766120d。\n拿到值之后，那么下面就是拿着这个值去做路由了（该怎么走），这部分内容被写在DBRouterStrategyHashCode的doRouter里面。其实就是hash的扰动函数，通过设定的算法得到去拿个库哪个表，把这两个信息交给DBContextHolder（一个标识类，用来存储当前数据源的key及状态判断），下面就要向数据集里面写东西了，jp.process(),接下去就是mybatis拦截器的任务了。\n自定义拦截器需要实现org.apache.ibatis.plugin.Interceptor接口, 并在接口上添加@Intercepts注解。@Intercepts注解是通过一个@Signature注解(拦截点),来指定拦截那个对象里面的某个方法。@Signature注解需要定义三个东西：\n定义拦截的类 Executor、ParameterHandler、StatementHandler、ResultSetHandler当中的一个Class&lt;?&gt; type();\n在定义拦截类的基础之上，在定义拦截的方法String method();\n在定义拦截方法的基础之上在定义拦截的方法对应的参数，因方法里面可能重载，不指定参数列表，不能确定是对应拦截的方法Class&lt;?&gt;[] args();\n我们查看代码，发现拦截的类选择的是StatementHandler，目前不太了解mybatis的源码，但是查询资料之后发现毫无疑问是四大对象最重要的一个，它的任务就是和数据库对话。在它这里会使用parameterHandler和ResultSetHandler对象为我们绑定SQL参数和组装最后的结果返回。\n拦截的方法是prepare，预编译阶段\n参数是{Connection.class, Integer.class}\n回到那个自定义拦截器类 继承了Interceptor。intercept里面就放着怎么把sql变成我们想要的那种动态分库分表的逻辑。首先几行代码拿到dbRouterStrategy注解，看他是不是true如果是，我们去拿sql语句，如下所示：\nINSERT INTO user_strategy_export        (u_id, activity_id, order_id, strategy_id, strategy_mode,         grant_type, grant_date, grant_state, award_id, award_type,         award_name, award_content, uuid, create_time, update_time)        VALUES        (?,?,?,?,?,         ?,?,?,?,?,         ?,?,?,now(),now())\n他利用一个matcher找到 INTO user_strategy_export这段语句。为什么？因为INTO后面跟着的就是表，至于是哪个表，在上面已经提到了，就是DBContextHolder。这里就实现了分表。\n至于分库，我们重写了determineCurrentLookupKey方法，这个方法被determineTargetDataSource调用，determineTargetDataSource被getConnection调用，getConection可以追溯到DataSource接口的getConnection抽象方法。但是我还不知道determineCurrentLookupKey什么时候被调用？？\n所以就去查了查多数据源的处理机制的一些文章，发现和自己想的有区别，我一直以为调用DAO层的方法，应该先切面再切换数据源最后才是DAO的逻辑（毕竟我看不到什么时候切换数据源，但是DBRouter注解就是直勾勾的放在DAO方法上面的），结果文章中提到其实是先切换数据源，然后切面方法，最后DAO逻辑。文章给出的原因是事务中不支持数据源切换。但是我打断点还是没找到调用determineCurrentLookupKey的那段代码，可惜。\n最后就是把这些配置到DataSourceAutoConfig，打包给我们的项目。\n","dateCreated":"2023-04-04T00:00:00+08:00","dateModified":"2023-04-12T12:30:48+08:00","datePublished":"2023-04-04T00:00:00+08:00","description":"","headline":"章节：10","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/","keywords":"lucky项目"}</script>
     <meta name="description" content="第十节我们可以从注解出发看项目。DBRouter注解写好后，肯定要配备切面类DBRouterJoinPoint（这里面包括了路由策略和路由配置几库几表），里面有一个@Around注解，表示包围一个函数，也就是可以在函数执行前做一些事情，也可以在函数执行后做一些事情。 项目中是先拿到Key字段（uId），判断是不是空，是的话Runtime异常，不是的话就去拿uId这个字段对应的值，按照例子就是Uhd">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="章节：10">
@@ -75,11 +75,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -98,9 +98,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -119,10 +119,10 @@
                             href="/"
                             
                             rel="noopener"
-                            title="Home"
+                            title="首页"
                         >
                         <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Home</span>
+                        <span class="sidebar-button-desc">首页</span>
                     </a>
             </li>
             
@@ -133,10 +133,10 @@
                             href="/all-categories"
                             
                             rel="noopener"
-                            title="categories"
+                            title="分类"
                         >
                         <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">categories</span>
+                        <span class="sidebar-button-desc">分类</span>
                     </a>
             </li>
             
@@ -147,10 +147,10 @@
                             href="/all-tags"
                             
                             rel="noopener"
-                            title="Tags"
+                            title="标签"
                         >
                         <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Tags</span>
+                        <span class="sidebar-button-desc">标签</span>
                     </a>
             </li>
             
@@ -161,10 +161,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archives"
+                            title="档案"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archives</span>
+                        <span class="sidebar-button-desc">档案</span>
                     </a>
             </li>
             
@@ -175,10 +175,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Search"
+                            title="搜索"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Search</span>
+                        <span class="sidebar-button-desc">搜索</span>
                     </a>
             </li>
             
@@ -189,10 +189,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="About"
+                            title="关于"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">About</span>
+                        <span class="sidebar-button-desc">关于</span>
                     </a>
             </li>
             
@@ -204,15 +204,15 @@
                     
                         <a
                             class="sidebar-button-link "
-                            href="https://github.com/"
+                            href="https://github.com/Caosen0819"
                             
                                 target="_blank"
                             
                             rel="noopener"
-                            title="GitHub"
+                            title=".github"
                         >
                         <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">GitHub</span>
+                        <span class="sidebar-button-desc">.github</span>
                     </a>
             </li>
             
@@ -240,7 +240,7 @@
         <div class="post-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -283,7 +283,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/lucky%E9%A1%B9%E7%9B%AE/" rel="tag">lucky项目</a>
 
@@ -300,11 +300,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/04/new%20page/"
                     data-tooltip="待定"
-                    aria-label="PREVIOUS: 待定"
+                    aria-label="FRÜHER: 待定"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -314,10 +314,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
                     data-tooltip="章节：7-10，同时回顾一下4-6的内容"
-                    aria-label="NEXT: 章节：7-10，同时回顾一下4-6的内容"
+                    aria-label="NÄCHSTER: 章节：7-10，同时回顾一下4-6的内容"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -328,7 +328,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -340,8 +340,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -353,8 +353,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -366,8 +366,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -378,7 +378,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -415,11 +415,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/04/new%20page/"
                     data-tooltip="待定"
-                    aria-label="PREVIOUS: 待定"
+                    aria-label="FRÜHER: 待定"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -429,10 +429,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
                     data-tooltip="章节：7-10，同时回顾一下4-6的内容"
-                    aria-label="NEXT: 章节：7-10，同时回顾一下4-6的内容"
+                    aria-label="NÄCHSTER: 章节：7-10，同时回顾一下4-6的内容"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -443,7 +443,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -455,8 +455,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -468,8 +468,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -481,8 +481,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -493,7 +493,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -515,9 +515,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                        aria-label="Share on Facebook"
+                        aria-label="Teilen auf Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
                     </a>
                 </li>
             
@@ -528,9 +528,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                        aria-label="Share on Twitter"
+                        aria-label="Teilen auf Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
                     </a>
                 </li>
             
@@ -541,9 +541,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                        aria-label="Share on Google+"
+                        aria-label="Teilen auf Google Plus"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
                     </a>
                 </li>
             
@@ -566,7 +566,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

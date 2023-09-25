@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"前言：博主从win换成mac后，想试着自己配一下docker环境，花了足足3到4天的时间。由于中土存在各种中间件的兼容问题，mac版和win版的不一致，中间件版本过新等问题，且大多数博客对于版本的描述不够清晰，很难帮到忙，故博主斗胆记录一下，希望对大家有帮助。\n环境：\n\nspringboot: 2.7.0\nnacos: 2.1.0\nelasticsearch: 8.2.0\nkibana: 8.2.0\nspringcloud: 2021.0.3\nspringcloudalibaba: 2021.0.1\nmysql: 8.0.26\nredis: 7\nrabbitmq: 3.9.11\njdk: 8\nkafka: 3.5.11\n\n1、elasticsearch8.2.0当es和kibana到达8版本后，出现了很多变化，而且兼容mac版本的镜像提示不够明确  \n可能出现的问题：\n1、装好es之后你打开9200端口，发现他要求你输入密码，但是你其实根本就没有告诉你初始账号密码和默认的账号密码\n解决方法：\ncsen@CsendeMBA Sen-Blog % docker exec -it (容器名字) /bin/bashelasticsearch@52142308d267:~$ lsLICENSE.txt  README.asciidoc  config  jdk  logs     pluginsNOTICE.txt   bin              data    lib  moduleselasticsearch@52142308d267:~$ cd configelasticsearch@52142308d267:~/config$ lscerts                              jvm.options             role_mapping.ymlelasticsearch-plugins.example.yml  jvm.options.d           roles.ymlelasticsearch.keystore             log4j2.file.properties  userselasticsearch.yml                  log4j2.properties       users_roleselasticsearch@52142308d267:~/config$ \n你会看到有一个文件叫做elasticsearch.yml,我们需要做的就是修改这个文件\n修改文件内容：\ncluster.name: &quot;docker-cluster&quot;network.host: 0.0.0.0http.cors.enabled: truehttp.cors.allow-origin: &quot;*&quot;# Enable security featuresxpack.security.enabled: truexpack.security.enrollment.enabled: true（可以先不加，上面的必须加）\n\n当你修改之后，重启容器：\ndocker restart 容器名字\n等重启之后，进入容器的es内部（可以直接docker desk客户端的cli那里，也可以像上面一样命令行）\n/usr/share/elasticsearch/bin/x-pack/setup-passwords interactive\n\n依此设置elastic、apm_system、kibana_system、logstash_system、beats_system、remote_monitoring_user6个用户的密码，每设置一个都要验证一次，所以要按12次，建议直接用一个密码就行，我用的是elastic\nInitiating the setup of passwords for reserved users elastic,apm_system,kibana,kibana_system,logstash_system,beats_system,remote_monitoring_user.You will be prompted to enter passwords as the process progresses.Please confirm that you would like to continue [y/N]yEnter password for [elastic]: Reenter password for [elastic]: Enter password for [apm_system]: Reenter password for [apm_system]: Enter password for [kibana_system]: Reenter password for [kibana_system]: Enter password for [logstash_system]: Reenter password for [logstash_system]: Enter password for [beats_system]: Reenter password for [beats_system]: Enter password for [remote_monitoring_user]: Reenter password for [remote_monitoring_user]: Changed password for user [apm_system]Changed password for user [kibana_system]Changed password for user [kibana]Changed password for user [logstash_system]Changed password for user [beats_system]Changed password for user [remote_monitoring_user]Changed password for user [elastic]\n这时候登陆9200端口查看是否成功，如果成功他会返回一个json串，一看就知道成功的json串，有name clustername、version这些属性。\n2、kibana8.2.0kibana安装完成后打开5601端口，他会在页面左上角显示一段英文串，意思就是没准备好，但实际是因为权限问题，人家进不去。\n这个问题大多数博主都没讲到。\n解决办法是：你告诉kibana，es的账号密码，我们会发现，在es设置密码的时候有6个用户，那我们到底用哪一个呢？这里有点歧义，我的选择是直接用kibana_system这个用户。因为我们就是kibana所以没什么问题，但是有一个博主用的elastic用户，而我使用这个用户会提示错误，所以大家可以先试试kibana_system然后elastic，具体操作如下：\n首先挂载config，把原本自带的挤掉，因为我们在docker修改起来也不方便，所以直接挂载是最简单的。\nvolumes:     - /Users/csen/dockerProject/mydata/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml      - \n挂载成功后，在我们的kibana.yml文件中修改内容\n1、要对应你们自己修改的密码。如果是elastic那就完全复制，如果不是，就自己改一下密码。2、elasticseatch.hosts那一栏我写的是es：9200，因为我的elasticsearch容器跑通之后，在springboot项目中的别名叫做es，大家根据自己的改哦，别死抄。\n## ** THIS IS AN AUTO-GENERATED FILE **## Default Kibana configuration for docker targetserver.host: &quot;0.0.0.0&quot;server.shutdownTimeout: &quot;5s&quot;elasticsearch.hosts: [ &quot;http://es:9200&quot; ]monitoring.ui.container.elasticsearch.enabled: true# 这里配置中文显示，默认为英文 【English - en (default)、Chinese - zh-CN、Japanese - ja-JP】i18n.locale: &quot;zh-CN&quot;# 此处设置elastic的用户名和密码elasticsearch.username: kibana_systemelasticsearch.password: elastic\n\nnacos这个只说一点就可以了，当然这也是所有中间件的选择方案。版本选对，由于mac有芯片有两代，i5i7和m1m2，这两代的架构是不一样的，所以去hub里面找相应的版本大下载就可以了，举个例子：\n我们要下载2.1.0版本的nacos，我们打开hub.docker.com然后搜索nacos，去tag里面输入2.1.0，你会发现，有好多版本，这时候我们要看【os&#x2F;arch】这一栏，你去看看他到底是哪种架构的，有的是linux&#x2F;amd64，有的是linux&#x2F;arm64，有的是两者皆有。如果是i5i7的就去下带amd64的，如果是m1m2的就去下载带arm64的。\n不过这里提一嘴，m1m2芯片他自带了转译的功能，也就是说即使是amd64的他也有能力转成适合自己的，但是可能存在两代电脑环境配置的问题，大家还是下载各自适合的最好。\nmysql8目前网上的博客大多都是mysql5.7版本之类的，8版本的较少，所以会出一些错误。\n特别是连接数据库的时候，大家发现明明我的账号密码都对的，为什么还是说连接错误呢？这其实很可能不是我们自己的问题。\n下面给出我的连接数据库的配置：\ndatasource:  url: jdbc:mysql://db:3306/mall?useUnicode=true&amp;characterEncoding=utf-8&amp;serverTimezone=Asia/Shanghai&amp;useSSL=false&amp;allowPublicKeyRetrieval=true  username: root  password: XXXXXXXX  druid:    initial-size: 5 #连接池初始化大小    min-idle: 10 #最小空闲连接数    max-active: 20 #最大连接数    web-stat-filter:      exclusions: &quot;*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*&quot; #不统计这些请求数据    stat-view-servlet: #访问监控网页的登录用户名和密码      login-username: druid      login-password: druid\n\n这里需要注意的是一下几点：\n1、如果你把项目放到docker里面，就不要用localhost了，要么你直接用ip地址，要么就和我一样用这种别名。而这种别名的配置则放在docker-compose里面。这个在文章最后会给大家放一个链接将docker-compose怎么写。\n2、由于版本升级和docker的原因，在连接数据库的时候最好加上这些后缀：\n2.1、useUnicode&#x3D;true&amp;characterEncoding&#x3D;utf-8：一旦设置了之后，不管数据库是什么编码，读取的时候都会转换成UTF-8，存取的时候还是会按数据库编码存\n2.2、serverTimezone&#x3D;Asia&#x2F;Shanghai：问题在 MySQL8.0的驱动包跟之前不一样了，默认时区是全球统一时间 (UTC)，北京时间是 UTC+8，这句话不加就导致了很多人就算不在docker里面都连不上数据库，mysql8就很烦。\n2.3、useSSL&#x3D;false：useSSL&#x3D;true是进行安全验证，一般通过证书或者令牌什么的，useSSL&#x3D;false就是通过账号密码进行连接，通常使用useSSL&#x3D;false，这个也是mysql8的问题，不过这个问题并不是到了8之后才有的，5.7之后就存在这个问题了。ssl会认证用户的服务器，然后加密数据，最后维护数据的完整性。但是我们用docker相当于把它部署到一个linux服务器上，所以用不到这个。\n2.4、allowPublicKeyRetrieval&#x3D;true。\n这个指令比较玄学，是由于报了下面错误才用的，Public Key Retrieval is not allowed（不允许检索公钥）。博主也去网上查了很多资料，大家的话大差不差，就是在第一次连接的时候会出问题，第二次连的时候貌似数据库就缓存的这个配置信息，既然加上能用，大家就加上。有一些朋友也说到，如果我们使用一些可视化工具比如navicat这类的也能解决。\n另一种法是：使用指令mysql -u root -p指令进入mysql，将验证方式修改为“mysql_native_password”\nUSE mysql; ALTER USER &#x27;root&#x27;@&#x27;%&#x27; IDENTIFIED WITH mysql_native_password BY &#x27;123456&#x27;;FLUSH PRIVILEGES;","dateCreated":"2022-10-04T21:23:41+08:00","dateModified":"2023-09-25T13:21:11+08:00","datePublished":"2022-10-04T21:23:41+08:00","description":"","headline":"整合docker和中间件记录","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/","keywords":"整合中间件"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"前言：博主从win换成mac后，想试着自己配一下docker环境，花了足足3到4天的时间。由于中土存在各种中间件的兼容问题，mac版和win版的不一致，中间件版本过新等问题，且大多数博客对于版本的描述不够清晰，很难帮到忙，故博主斗胆记录一下，希望对大家有帮助。\n环境：\n\nspringboot: 2.7.0\nnacos: 2.1.0\nelasticsearch: 8.2.0\nkibana: 8.2.0\nspringcloud: 2021.0.3\nspringcloudalibaba: 2021.0.1\nmysql: 8.0.26\nredis: 7\nrabbitmq: 3.9.11\njdk: 8\nkafka: 3.5.11\n\n1、elasticsearch8.2.0当es和kibana到达8版本后，出现了很多变化，而且兼容mac版本的镜像提示不够明确  \n可能出现的问题：\n1、装好es之后你打开9200端口，发现他要求你输入密码，但是你其实根本就没有告诉你初始账号密码和默认的账号密码\n解决方法：\ncsen@CsendeMBA Sen-Blog % docker exec -it (容器名字) /bin/bashelasticsearch@52142308d267:~$ lsLICENSE.txt  README.asciidoc  config  jdk  logs     pluginsNOTICE.txt   bin              data    lib  moduleselasticsearch@52142308d267:~$ cd configelasticsearch@52142308d267:~/config$ lscerts                              jvm.options             role_mapping.ymlelasticsearch-plugins.example.yml  jvm.options.d           roles.ymlelasticsearch.keystore             log4j2.file.properties  userselasticsearch.yml                  log4j2.properties       users_roleselasticsearch@52142308d267:~/config$ \n你会看到有一个文件叫做elasticsearch.yml,我们需要做的就是修改这个文件\n修改文件内容：\ncluster.name: &quot;docker-cluster&quot;network.host: 0.0.0.0http.cors.enabled: truehttp.cors.allow-origin: &quot;*&quot;# Enable security featuresxpack.security.enabled: truexpack.security.enrollment.enabled: true（可以先不加，上面的必须加）\n\n当你修改之后，重启容器：\ndocker restart 容器名字\n等重启之后，进入容器的es内部（可以直接docker desk客户端的cli那里，也可以像上面一样命令行）\n/usr/share/elasticsearch/bin/x-pack/setup-passwords interactive\n\n依此设置elastic、apm_system、kibana_system、logstash_system、beats_system、remote_monitoring_user6个用户的密码，每设置一个都要验证一次，所以要按12次，建议直接用一个密码就行，我用的是elastic\nInitiating the setup of passwords for reserved users elastic,apm_system,kibana,kibana_system,logstash_system,beats_system,remote_monitoring_user.You will be prompted to enter passwords as the process progresses.Please confirm that you would like to continue [y/N]yEnter password for [elastic]: Reenter password for [elastic]: Enter password for [apm_system]: Reenter password for [apm_system]: Enter password for [kibana_system]: Reenter password for [kibana_system]: Enter password for [logstash_system]: Reenter password for [logstash_system]: Enter password for [beats_system]: Reenter password for [beats_system]: Enter password for [remote_monitoring_user]: Reenter password for [remote_monitoring_user]: Changed password for user [apm_system]Changed password for user [kibana_system]Changed password for user [kibana]Changed password for user [logstash_system]Changed password for user [beats_system]Changed password for user [remote_monitoring_user]Changed password for user [elastic]\n这时候登陆9200端口查看是否成功，如果成功他会返回一个json串，一看就知道成功的json串，有name clustername、version这些属性。\n2、kibana8.2.0kibana安装完成后打开5601端口，他会在页面左上角显示一段英文串，意思就是没准备好，但实际是因为权限问题，人家进不去。\n这个问题大多数博主都没讲到。\n解决办法是：你告诉kibana，es的账号密码，我们会发现，在es设置密码的时候有6个用户，那我们到底用哪一个呢？这里有点歧义，我的选择是直接用kibana_system这个用户。因为我们就是kibana所以没什么问题，但是有一个博主用的elastic用户，而我使用这个用户会提示错误，所以大家可以先试试kibana_system然后elastic，具体操作如下：\n首先挂载config，把原本自带的挤掉，因为我们在docker修改起来也不方便，所以直接挂载是最简单的。\nvolumes:     - /Users/csen/dockerProject/mydata/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml      - \n挂载成功后，在我们的kibana.yml文件中修改内容\n1、要对应你们自己修改的密码。如果是elastic那就完全复制，如果不是，就自己改一下密码。2、elasticseatch.hosts那一栏我写的是es：9200，因为我的elasticsearch容器跑通之后，在springboot项目中的别名叫做es，大家根据自己的改哦，别死抄。\n## ** THIS IS AN AUTO-GENERATED FILE **## Default Kibana configuration for docker targetserver.host: &quot;0.0.0.0&quot;server.shutdownTimeout: &quot;5s&quot;elasticsearch.hosts: [ &quot;http://es:9200&quot; ]monitoring.ui.container.elasticsearch.enabled: true# 这里配置中文显示，默认为英文 【English - en (default)、Chinese - zh-CN、Japanese - ja-JP】i18n.locale: &quot;zh-CN&quot;# 此处设置elastic的用户名和密码elasticsearch.username: kibana_systemelasticsearch.password: elastic\n\nnacos这个只说一点就可以了，当然这也是所有中间件的选择方案。版本选对，由于mac有芯片有两代，i5i7和m1m2，这两代的架构是不一样的，所以去hub里面找相应的版本大下载就可以了，举个例子：\n我们要下载2.1.0版本的nacos，我们打开hub.docker.com然后搜索nacos，去tag里面输入2.1.0，你会发现，有好多版本，这时候我们要看【os&#x2F;arch】这一栏，你去看看他到底是哪种架构的，有的是linux&#x2F;amd64，有的是linux&#x2F;arm64，有的是两者皆有。如果是i5i7的就去下带amd64的，如果是m1m2的就去下载带arm64的。\n不过这里提一嘴，m1m2芯片他自带了转译的功能，也就是说即使是amd64的他也有能力转成适合自己的，但是可能存在两代电脑环境配置的问题，大家还是下载各自适合的最好。\nmysql8目前网上的博客大多都是mysql5.7版本之类的，8版本的较少，所以会出一些错误。\n特别是连接数据库的时候，大家发现明明我的账号密码都对的，为什么还是说连接错误呢？这其实很可能不是我们自己的问题。\n下面给出我的连接数据库的配置：\ndatasource:  url: jdbc:mysql://db:3306/mall?useUnicode=true&amp;characterEncoding=utf-8&amp;serverTimezone=Asia/Shanghai&amp;useSSL=false&amp;allowPublicKeyRetrieval=true  username: root  password: XXXXXXXX  druid:    initial-size: 5 #连接池初始化大小    min-idle: 10 #最小空闲连接数    max-active: 20 #最大连接数    web-stat-filter:      exclusions: &quot;*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*&quot; #不统计这些请求数据    stat-view-servlet: #访问监控网页的登录用户名和密码      login-username: druid      login-password: druid\n\n这里需要注意的是一下几点：\n1、如果你把项目放到docker里面，就不要用localhost了，要么你直接用ip地址，要么就和我一样用这种别名。而这种别名的配置则放在docker-compose里面。这个在文章最后会给大家放一个链接将docker-compose怎么写。\n2、由于版本升级和docker的原因，在连接数据库的时候最好加上这些后缀：\n2.1、useUnicode&#x3D;true&amp;characterEncoding&#x3D;utf-8：一旦设置了之后，不管数据库是什么编码，读取的时候都会转换成UTF-8，存取的时候还是会按数据库编码存\n2.2、serverTimezone&#x3D;Asia&#x2F;Shanghai：问题在 MySQL8.0的驱动包跟之前不一样了，默认时区是全球统一时间 (UTC)，北京时间是 UTC+8，这句话不加就导致了很多人就算不在docker里面都连不上数据库，mysql8就很烦。\n2.3、useSSL&#x3D;false：useSSL&#x3D;true是进行安全验证，一般通过证书或者令牌什么的，useSSL&#x3D;false就是通过账号密码进行连接，通常使用useSSL&#x3D;false，这个也是mysql8的问题，不过这个问题并不是到了8之后才有的，5.7之后就存在这个问题了。ssl会认证用户的服务器，然后加密数据，最后维护数据的完整性。但是我们用docker相当于把它部署到一个linux服务器上，所以用不到这个。\n2.4、allowPublicKeyRetrieval&#x3D;true。\n这个指令比较玄学，是由于报了下面错误才用的，Public Key Retrieval is not allowed（不允许检索公钥）。博主也去网上查了很多资料，大家的话大差不差，就是在第一次连接的时候会出问题，第二次连的时候貌似数据库就缓存的这个配置信息，既然加上能用，大家就加上。有一些朋友也说到，如果我们使用一些可视化工具比如navicat这类的也能解决。\n另一种法是：使用指令mysql -u root -p指令进入mysql，将验证方式修改为“mysql_native_password”\nUSE mysql; ALTER USER &#x27;root&#x27;@&#x27;%&#x27; IDENTIFIED WITH mysql_native_password BY &#x27;123456&#x27;;FLUSH PRIVILEGES;","dateCreated":"2022-10-04T21:23:41+08:00","dateModified":"2023-09-25T13:21:11+08:00","datePublished":"2022-10-04T21:23:41+08:00","description":"","headline":"整合docker和中间件记录","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/","keywords":"整合中间件"}</script>
     <meta name="description" content="前言：博主从win换成mac后，想试着自己配一下docker环境，花了足足3到4天的时间。由于中土存在各种中间件的兼容问题，mac版和win版的不一致，中间件版本过新等问题，且大多数博客对于版本的描述不够清晰，很难帮到忙，故博主斗胆记录一下，希望对大家有帮助。 环境：  springboot: 2.7.0 nacos: 2.1.0 elasticsearch: 8.2.0 kibana: 8.2.">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="整合docker和中间件记录">
@@ -75,11 +75,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -98,9 +98,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -119,10 +119,10 @@
                             href="/"
                             
                             rel="noopener"
-                            title="Home"
+                            title="首页"
                         >
                         <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Home</span>
+                        <span class="sidebar-button-desc">首页</span>
                     </a>
             </li>
             
@@ -133,10 +133,10 @@
                             href="/all-categories"
                             
                             rel="noopener"
-                            title="categories"
+                            title="分类"
                         >
                         <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">categories</span>
+                        <span class="sidebar-button-desc">分类</span>
                     </a>
             </li>
             
@@ -147,10 +147,10 @@
                             href="/all-tags"
                             
                             rel="noopener"
-                            title="Tags"
+                            title="标签"
                         >
                         <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Tags</span>
+                        <span class="sidebar-button-desc">标签</span>
                     </a>
             </li>
             
@@ -161,10 +161,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archives"
+                            title="档案"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archives</span>
+                        <span class="sidebar-button-desc">档案</span>
                     </a>
             </li>
             
@@ -175,10 +175,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Search"
+                            title="搜索"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Search</span>
+                        <span class="sidebar-button-desc">搜索</span>
                     </a>
             </li>
             
@@ -189,10 +189,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="About"
+                            title="关于"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">About</span>
+                        <span class="sidebar-button-desc">关于</span>
                     </a>
             </li>
             
@@ -204,15 +204,15 @@
                     
                         <a
                             class="sidebar-button-link "
-                            href="https://github.com/"
+                            href="https://github.com/Caosen0819"
                             
                                 target="_blank"
                             
                             rel="noopener"
-                            title="GitHub"
+                            title=".github"
                         >
                         <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">GitHub</span>
+                        <span class="sidebar-button-desc">.github</span>
                     </a>
             </li>
             
@@ -240,7 +240,7 @@
         <div class="post-meta">
     <time datetime="2022-10-04T21:23:41+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -325,7 +325,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/%E6%95%B4%E5%90%88%E4%B8%AD%E9%97%B4%E4%BB%B6/" rel="tag">整合中间件</a>
 
@@ -342,11 +342,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2022/10/04/spring%E6%95%B4%E5%90%88docker-compose/"
                     data-tooltip="springboot/cloud整合docker-compose"
-                    aria-label="PREVIOUS: springboot/cloud整合docker-compose"
+                    aria-label="FRÜHER: springboot/cloud整合docker-compose"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -356,10 +356,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
                     data-tooltip="springboot整合elasticsearch8.2.0"
-                    aria-label="NEXT: springboot整合elasticsearch8.2.0"
+                    aria-label="NÄCHSTER: springboot整合elasticsearch8.2.0"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -370,7 +370,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -382,8 +382,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -395,8 +395,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -408,8 +408,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -420,7 +420,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -457,11 +457,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2022/10/04/spring%E6%95%B4%E5%90%88docker-compose/"
                     data-tooltip="springboot/cloud整合docker-compose"
-                    aria-label="PREVIOUS: springboot/cloud整合docker-compose"
+                    aria-label="FRÜHER: springboot/cloud整合docker-compose"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -471,10 +471,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
                     data-tooltip="springboot整合elasticsearch8.2.0"
-                    aria-label="NEXT: springboot整合elasticsearch8.2.0"
+                    aria-label="NÄCHSTER: springboot整合elasticsearch8.2.0"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -485,7 +485,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -497,8 +497,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -510,8 +510,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -523,8 +523,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -535,7 +535,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -557,9 +557,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
-                        aria-label="Share on Facebook"
+                        aria-label="Teilen auf Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
                     </a>
                 </li>
             
@@ -570,9 +570,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
-                        aria-label="Share on Twitter"
+                        aria-label="Teilen auf Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
                     </a>
                 </li>
             
@@ -583,9 +583,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
-                        aria-label="Share on Google+"
+                        aria-label="Teilen auf Google Plus"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
                     </a>
                 </li>
             
@@ -608,7 +608,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

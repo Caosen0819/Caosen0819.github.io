@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"这个项目我设计的初衷是考虑到业务体量的增加，为了避免原有的设计出现不能承载业务规模的情况发生，所以想设计分库分表， 因为想提高自己的理解，决定自己写一个小组件。\n\n主要考虑以下几个方面：\n一是配置，分库分表需要配置连接池，这个依赖于配置文件，配置连接池之后要二是：考虑动态切换，所以需要去实现AbstractRoutingDataSource的deteemingCurrentlookKey方法。\n三：数据库连接池和动态切换配置好了，就只剩下一个路由的计算模块了，从路由计算中获得分库分表的字段，通过哈希散列和扰动函数最终选择去哪个表，让数据均匀的散列到各个表。\n首先讲一下：DataSourceAutoConfig，借助springboot自动配置机制，读取配置以及数据源的创建，包括yml自定义配置，JoinPoint、路由策略、路由配置、数据源、transactionTemplate.\n举个例子：setEnvironment, 读取自定义配置，因为我们要设置的是一个在yml配置多组数据源，这个方法就是为了解析下面的配置信息。\nrouter :jdbc:datasource :dbCount: 2tbCount: 4list: db01 , db02db01 :dr iver-class-name: com . mysql. jdbc .Driverurl: jdbc :mysql://127.0.0.1:3306/bugstack_ 01?useUnicode-trueusername: rootpassword: 123456db02 :dr iver-class-name: com. mysql. jdbc . Driverurl: jdbc :mysql:/ /127.0.0.1:3306/bugstack_ 02?useUnicode-trueusername: rootpassword: 123456\n\n\n\n动态数据源的切换如下：\npublic class DynamicDataSource extends AbstractRoutingDataSource &#123;    @Override    protected Object determineCurrentLookupKey() &#123;        return &quot;db&quot; + DBContextHolder.getDBKey();    &#125;&#125;\n\n\n\n路由计算：\n路由结果会存储在DBConrtextHolder里面\n路由计算首先需要一些前提\n路由注解@DBRouter 路由的标识，目的是为了给切面提供切点，同时获取方法中入参属性点某个字段，这个字段会作为路由字段存在，比如某个dao接口的xxxdao方法上面就有这个\n分表标记@DBRouterStrategy：目的是告诉路由组件要不要分表，默认false\n最关键的，DBRouterJoinPoint切面类，进行路由选择\t\n","dateCreated":"2023-04-22T00:00:00+08:00","dateModified":"2023-09-25T13:16:31+08:00","datePublished":"2023-04-22T00:00:00+08:00","description":"","headline":"DBRouter组件的整合理解","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/","keywords":"DBRouter-starter"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"这个项目我设计的初衷是考虑到业务体量的增加，为了避免原有的设计出现不能承载业务规模的情况发生，所以想设计分库分表， 因为想提高自己的理解，决定自己写一个小组件。\n\n主要考虑以下几个方面：\n一是配置，分库分表需要配置连接池，这个依赖于配置文件，配置连接池之后要二是：考虑动态切换，所以需要去实现AbstractRoutingDataSource的deteemingCurrentlookKey方法。\n三：数据库连接池和动态切换配置好了，就只剩下一个路由的计算模块了，从路由计算中获得分库分表的字段，通过哈希散列和扰动函数最终选择去哪个表，让数据均匀的散列到各个表。\n首先讲一下：DataSourceAutoConfig，借助springboot自动配置机制，读取配置以及数据源的创建，包括yml自定义配置，JoinPoint、路由策略、路由配置、数据源、transactionTemplate.\n举个例子：setEnvironment, 读取自定义配置，因为我们要设置的是一个在yml配置多组数据源，这个方法就是为了解析下面的配置信息。\nrouter :jdbc:datasource :dbCount: 2tbCount: 4list: db01 , db02db01 :dr iver-class-name: com . mysql. jdbc .Driverurl: jdbc :mysql://127.0.0.1:3306/bugstack_ 01?useUnicode-trueusername: rootpassword: 123456db02 :dr iver-class-name: com. mysql. jdbc . Driverurl: jdbc :mysql:/ /127.0.0.1:3306/bugstack_ 02?useUnicode-trueusername: rootpassword: 123456\n\n\n\n动态数据源的切换如下：\npublic class DynamicDataSource extends AbstractRoutingDataSource &#123;    @Override    protected Object determineCurrentLookupKey() &#123;        return &quot;db&quot; + DBContextHolder.getDBKey();    &#125;&#125;\n\n\n\n路由计算：\n路由结果会存储在DBConrtextHolder里面\n路由计算首先需要一些前提\n路由注解@DBRouter 路由的标识，目的是为了给切面提供切点，同时获取方法中入参属性点某个字段，这个字段会作为路由字段存在，比如某个dao接口的xxxdao方法上面就有这个\n分表标记@DBRouterStrategy：目的是告诉路由组件要不要分表，默认false\n最关键的，DBRouterJoinPoint切面类，进行路由选择\t\n","dateCreated":"2023-04-22T00:00:00+08:00","dateModified":"2023-09-25T13:16:31+08:00","datePublished":"2023-04-22T00:00:00+08:00","description":"","headline":"DBRouter组件的整合理解","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/","keywords":"DBRouter-starter"}</script>
     <meta name="description" content="这个项目我设计的初衷是考虑到业务体量的增加，为了避免原有的设计出现不能承载业务规模的情况发生，所以想设计分库分表， 因为想提高自己的理解，决定自己写一个小组件。  主要考虑以下几个方面： 一是配置，分库分表需要配置连接池，这个依赖于配置文件，配置连接池之后要二是：考虑动态切换，所以需要去实现AbstractRoutingDataSource的deteemingCurrentlookKey方法。 三">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="DBRouter组件的整合理解">
@@ -77,11 +77,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -100,9 +100,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -121,10 +121,10 @@
                             href="/"
                             
                             rel="noopener"
-                            title="Home"
+                            title="首页"
                         >
                         <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Home</span>
+                        <span class="sidebar-button-desc">首页</span>
                     </a>
             </li>
             
@@ -135,10 +135,10 @@
                             href="/all-categories"
                             
                             rel="noopener"
-                            title="categories"
+                            title="分类"
                         >
                         <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">categories</span>
+                        <span class="sidebar-button-desc">分类</span>
                     </a>
             </li>
             
@@ -149,10 +149,10 @@
                             href="/all-tags"
                             
                             rel="noopener"
-                            title="Tags"
+                            title="标签"
                         >
                         <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Tags</span>
+                        <span class="sidebar-button-desc">标签</span>
                     </a>
             </li>
             
@@ -163,10 +163,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archives"
+                            title="档案"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archives</span>
+                        <span class="sidebar-button-desc">档案</span>
                     </a>
             </li>
             
@@ -177,10 +177,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Search"
+                            title="搜索"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Search</span>
+                        <span class="sidebar-button-desc">搜索</span>
                     </a>
             </li>
             
@@ -191,10 +191,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="About"
+                            title="关于"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">About</span>
+                        <span class="sidebar-button-desc">关于</span>
                     </a>
             </li>
             
@@ -206,15 +206,15 @@
                     
                         <a
                             class="sidebar-button-link "
-                            href="https://github.com/"
+                            href="https://github.com/Caosen0819"
                             
                                 target="_blank"
                             
                             rel="noopener"
-                            title="GitHub"
+                            title=".github"
                         >
                         <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">GitHub</span>
+                        <span class="sidebar-button-desc">.github</span>
                     </a>
             </li>
             
@@ -242,7 +242,7 @@
         <div class="post-meta">
     <time datetime="2023-04-22T00:00:00+08:00">
 	
-		    Apr 22, 2023
+		    22 Apr 2023
     	
     </time>
     
@@ -291,7 +291,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/DBRouter-starter/" rel="tag">DBRouter-starter</a>
 
@@ -308,11 +308,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                     data-tooltip="mybatis组件的整合理解1"
-                    aria-label="PREVIOUS: mybatis组件的整合理解1"
+                    aria-label="FRÜHER: mybatis组件的整合理解1"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -322,10 +322,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
                     data-tooltip="Spring整合mybatis"
-                    aria-label="NEXT: Spring整合mybatis"
+                    aria-label="NÄCHSTER: Spring整合mybatis"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -336,7 +336,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -348,8 +348,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -361,8 +361,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -374,8 +374,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -386,7 +386,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -423,11 +423,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
                     data-tooltip="mybatis组件的整合理解1"
-                    aria-label="PREVIOUS: mybatis组件的整合理解1"
+                    aria-label="FRÜHER: mybatis组件的整合理解1"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -437,10 +437,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
                     data-tooltip="Spring整合mybatis"
-                    aria-label="NEXT: Spring整合mybatis"
+                    aria-label="NÄCHSTER: Spring整合mybatis"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -451,7 +451,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -463,8 +463,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -476,8 +476,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -489,8 +489,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -501,7 +501,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -523,9 +523,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
-                        aria-label="Share on Facebook"
+                        aria-label="Teilen auf Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
                     </a>
                 </li>
             
@@ -536,9 +536,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
-                        aria-label="Share on Twitter"
+                        aria-label="Teilen auf Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
                     </a>
                 </li>
             
@@ -549,9 +549,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2023/04/22/DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
-                        aria-label="Share on Google+"
+                        aria-label="Teilen auf Google Plus"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
                     </a>
                 </li>
             
@@ -574,7 +574,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

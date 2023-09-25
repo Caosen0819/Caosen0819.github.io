@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"java 整合elasticsearch8.2.0[TOC]\n一、application.yml或者其他的配置文件皆可两种方式：【1】\nelasticsearch:  hosts: 127.0.0.1:9200     # 如果有多个IP就自己加逗号吧\n\n【2】\nspring：\telasticsearch:    \turis: localhost:9200   #这样子自动配置了\n\n二、config类不同的版本会有不同的config类要求，这里只提供es8.2.0的，对应着上面两种application文件，此处也提供两种对应的config类，至于之后和springboot整合就不会出现分类了。\n【1】自定义属性/** * @Author Caosen * @Date 2022/9/22 10:34 * @Version 1.0 */@Configurationpublic class EsUtilConfigClint2 &#123;    @Value(&quot;elasticsearch.hosts&quot;)    private String hosts;    private HttpHost[] getHttpHost()&#123;        if (hosts.length() &gt; 0)&#123;            System.out.println(hosts);        &#125;        else &#123;            throw new RuntimeException(&quot;invalid&quot;);        &#125;        String[] hosts_array = hosts.split(&quot;,&quot;);        //用string类型创建host的集合        HttpHost[] httpHosts = new HttpHost[hosts_array.length];        int i = 0;        for (String s : hosts_array) &#123;            //这里解析端口            String[] hosts_array_in = s.split(&quot;:&quot;);            //到这里就有了id和端口两个东西            HttpHost http = new HttpHost(hosts_array_in[0], Integer.parseInt(hosts_array_in[1]), &quot;http&quot;);            httpHosts[i++] = http;        &#125;        System.out.println(&quot;目前的配置加入了&quot; + i + &quot;个id及其端口&quot;);        return httpHosts;    &#125;    /**     * 客户端     * @return     * @throws IOException     */    @Bean    public ElasticsearchClient configClint() throws IOException &#123;        // Create the low-level client        HttpHost[] httpHosts = getHttpHost();        RestClient restClient = RestClient.builder(httpHosts).build();        // Create the transport with a Jackson mapper        ElasticsearchTransport transport = new RestClientTransport(                restClient, new JacksonJsonpMapper());        // 客户端        ElasticsearchClient client = new ElasticsearchClient(transport);        return client;    &#125;&#125;\n\n\n\n【2】使用自带的属性/** * @Author Caosen * @Date 2022/9/18 15:01 * @Version 1.0 */@Configurationpublic class EsUtilConfigClint &#123;    /**     * 客户端     * @return     * @throws IOException     */    public ElasticsearchClient configClint() throws IOException &#123;        // Create the low-level client        RestClient restClient = RestClient.builder(                new HttpHost(&quot;127.0.0.1&quot;, 9200)).build();        // Create the transport with a Jackson mapper        ElasticsearchTransport transport = new RestClientTransport(                restClient, new JacksonJsonpMapper());        // 客户端        ElasticsearchClient client = new ElasticsearchClient(transport);        return client;    &#125;&#125;\n\n三、测试【1】service接口由于作者是直接在项目里面加内容的，可能会出现一些不相关的东西，我尽量截取相关代码\n/**     * 从数据库中导入所有商品到ES     */    int importAll();    /**     * 新建指定名称的索引     * @param name     * @throws IOException     */    void addIndex(String name) throws IOException;    /**     * 检查指定名称的索引是否存在     * @param name     * @return     * @throws IOException     */    boolean indexExists(String name) throws IOException;    /**     * 删除指定索引     * @param name     * @throws IOException     */    void delIndex(String name) throws IOException;    /**     * 创建索引，指定setting和mapping     * @param name 索引名称     * @param settingFn 索引参数     * @param mappingFn 索引结构     * @throws IOException     */    void create(String name,                Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; settingFn,                Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mappingFn) throws IOException;\n\n【2】serviceImpl，主要看create ，add，exsits, delete@Autowired    private EsProductDao esProductDao;    @Autowired    private EsProductRepository esProductRepository;    @Autowired    private ElasticsearchClient elasticsearchClient;    @Override    public int importAll() &#123;        List&lt;EsProduct&gt; allEsProductList = esProductDao.getAllEsProductList(null);        Iterable&lt;EsProduct&gt; esProducts = esProductRepository.saveAll(allEsProductList);        Iterator&lt;EsProduct&gt; iterator = esProducts.iterator();        int result = 0;        while (iterator.hasNext()) &#123;            result++;            iterator.next();        &#125;        return result;    &#125;    @Override    public void addIndex(String name) throws IOException &#123;        elasticsearchClient.indices().create(b -&gt; b.index(name));    &#125;    @Override    public boolean indexExists(String name) throws IOException &#123;        return elasticsearchClient.indices().exists(b -&gt; b.index(name)).value();    &#125;    @Override    public void delIndex(String name) throws IOException &#123;        elasticsearchClient.indices().delete(b -&gt; b.index(name));    &#125;    @Override    public void create(String name, Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; setting, Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mapping) throws IOException &#123;        elasticsearchClient.indices()                .create(b -&gt; b                        .index(name)                        .settings(setting)                        .mappings(mapping));    &#125;\n\n【3】测试测试可以用controller 或者 用test伪装controller，自己测试的时候还是用postman接口比较合适。这里测试两种创建index，一种简单，一种稍微复杂，结果都是通过，见图。其他的删除啊，导入数据库的数据（repository）都是可以查到的。\n@Test    void addIndexSimple() throws IOException &#123;        String s = &quot;simple&quot;;        esProductService.addIndex(s);        System.out.println(&quot;创建success&quot;);    &#125;    @Test    void addIndexComplicated() throws IOException &#123;        String s = &quot;complicated&quot;;        Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; setting = builder -&gt; builder                .index(i -&gt; i.numberOfShards(&quot;3&quot;).numberOfReplicas(&quot;1&quot;));        Property keywordproperty = Property.of(p -&gt; p.keyword(k -&gt; k.ignoreAbove(256)));        Property testproperty = Property.of(p -&gt; p.text(builder -&gt; builder));        Property integerproperty = Property.of(builder -&gt; builder.integer(i -&gt; i));        Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mapping = builder -&gt; builder                .properties(&quot;name&quot;, keywordproperty)                .properties(&quot;description&quot;, testproperty)                .properties(&quot;price&quot;, integerproperty);        esProductService.create(s, setting, mapping);    &#125;\n\n\n","dateCreated":"2022-10-04T13:40:04+08:00","dateModified":"2023-09-25T13:22:04+08:00","datePublished":"2022-10-04T13:40:04+08:00","description":"","headline":"springboot整合elasticsearch8.2.0","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/","keywords":"整合中间件"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"java 整合elasticsearch8.2.0[TOC]\n一、application.yml或者其他的配置文件皆可两种方式：【1】\nelasticsearch:  hosts: 127.0.0.1:9200     # 如果有多个IP就自己加逗号吧\n\n【2】\nspring：\telasticsearch:    \turis: localhost:9200   #这样子自动配置了\n\n二、config类不同的版本会有不同的config类要求，这里只提供es8.2.0的，对应着上面两种application文件，此处也提供两种对应的config类，至于之后和springboot整合就不会出现分类了。\n【1】自定义属性/** * @Author Caosen * @Date 2022/9/22 10:34 * @Version 1.0 */@Configurationpublic class EsUtilConfigClint2 &#123;    @Value(&quot;elasticsearch.hosts&quot;)    private String hosts;    private HttpHost[] getHttpHost()&#123;        if (hosts.length() &gt; 0)&#123;            System.out.println(hosts);        &#125;        else &#123;            throw new RuntimeException(&quot;invalid&quot;);        &#125;        String[] hosts_array = hosts.split(&quot;,&quot;);        //用string类型创建host的集合        HttpHost[] httpHosts = new HttpHost[hosts_array.length];        int i = 0;        for (String s : hosts_array) &#123;            //这里解析端口            String[] hosts_array_in = s.split(&quot;:&quot;);            //到这里就有了id和端口两个东西            HttpHost http = new HttpHost(hosts_array_in[0], Integer.parseInt(hosts_array_in[1]), &quot;http&quot;);            httpHosts[i++] = http;        &#125;        System.out.println(&quot;目前的配置加入了&quot; + i + &quot;个id及其端口&quot;);        return httpHosts;    &#125;    /**     * 客户端     * @return     * @throws IOException     */    @Bean    public ElasticsearchClient configClint() throws IOException &#123;        // Create the low-level client        HttpHost[] httpHosts = getHttpHost();        RestClient restClient = RestClient.builder(httpHosts).build();        // Create the transport with a Jackson mapper        ElasticsearchTransport transport = new RestClientTransport(                restClient, new JacksonJsonpMapper());        // 客户端        ElasticsearchClient client = new ElasticsearchClient(transport);        return client;    &#125;&#125;\n\n\n\n【2】使用自带的属性/** * @Author Caosen * @Date 2022/9/18 15:01 * @Version 1.0 */@Configurationpublic class EsUtilConfigClint &#123;    /**     * 客户端     * @return     * @throws IOException     */    public ElasticsearchClient configClint() throws IOException &#123;        // Create the low-level client        RestClient restClient = RestClient.builder(                new HttpHost(&quot;127.0.0.1&quot;, 9200)).build();        // Create the transport with a Jackson mapper        ElasticsearchTransport transport = new RestClientTransport(                restClient, new JacksonJsonpMapper());        // 客户端        ElasticsearchClient client = new ElasticsearchClient(transport);        return client;    &#125;&#125;\n\n三、测试【1】service接口由于作者是直接在项目里面加内容的，可能会出现一些不相关的东西，我尽量截取相关代码\n/**     * 从数据库中导入所有商品到ES     */    int importAll();    /**     * 新建指定名称的索引     * @param name     * @throws IOException     */    void addIndex(String name) throws IOException;    /**     * 检查指定名称的索引是否存在     * @param name     * @return     * @throws IOException     */    boolean indexExists(String name) throws IOException;    /**     * 删除指定索引     * @param name     * @throws IOException     */    void delIndex(String name) throws IOException;    /**     * 创建索引，指定setting和mapping     * @param name 索引名称     * @param settingFn 索引参数     * @param mappingFn 索引结构     * @throws IOException     */    void create(String name,                Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; settingFn,                Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mappingFn) throws IOException;\n\n【2】serviceImpl，主要看create ，add，exsits, delete@Autowired    private EsProductDao esProductDao;    @Autowired    private EsProductRepository esProductRepository;    @Autowired    private ElasticsearchClient elasticsearchClient;    @Override    public int importAll() &#123;        List&lt;EsProduct&gt; allEsProductList = esProductDao.getAllEsProductList(null);        Iterable&lt;EsProduct&gt; esProducts = esProductRepository.saveAll(allEsProductList);        Iterator&lt;EsProduct&gt; iterator = esProducts.iterator();        int result = 0;        while (iterator.hasNext()) &#123;            result++;            iterator.next();        &#125;        return result;    &#125;    @Override    public void addIndex(String name) throws IOException &#123;        elasticsearchClient.indices().create(b -&gt; b.index(name));    &#125;    @Override    public boolean indexExists(String name) throws IOException &#123;        return elasticsearchClient.indices().exists(b -&gt; b.index(name)).value();    &#125;    @Override    public void delIndex(String name) throws IOException &#123;        elasticsearchClient.indices().delete(b -&gt; b.index(name));    &#125;    @Override    public void create(String name, Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; setting, Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mapping) throws IOException &#123;        elasticsearchClient.indices()                .create(b -&gt; b                        .index(name)                        .settings(setting)                        .mappings(mapping));    &#125;\n\n【3】测试测试可以用controller 或者 用test伪装controller，自己测试的时候还是用postman接口比较合适。这里测试两种创建index，一种简单，一种稍微复杂，结果都是通过，见图。其他的删除啊，导入数据库的数据（repository）都是可以查到的。\n@Test    void addIndexSimple() throws IOException &#123;        String s = &quot;simple&quot;;        esProductService.addIndex(s);        System.out.println(&quot;创建success&quot;);    &#125;    @Test    void addIndexComplicated() throws IOException &#123;        String s = &quot;complicated&quot;;        Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; setting = builder -&gt; builder                .index(i -&gt; i.numberOfShards(&quot;3&quot;).numberOfReplicas(&quot;1&quot;));        Property keywordproperty = Property.of(p -&gt; p.keyword(k -&gt; k.ignoreAbove(256)));        Property testproperty = Property.of(p -&gt; p.text(builder -&gt; builder));        Property integerproperty = Property.of(builder -&gt; builder.integer(i -&gt; i));        Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mapping = builder -&gt; builder                .properties(&quot;name&quot;, keywordproperty)                .properties(&quot;description&quot;, testproperty)                .properties(&quot;price&quot;, integerproperty);        esProductService.create(s, setting, mapping);    &#125;\n\n\n","dateCreated":"2022-10-04T13:40:04+08:00","dateModified":"2023-09-25T13:22:04+08:00","datePublished":"2022-10-04T13:40:04+08:00","description":"","headline":"springboot整合elasticsearch8.2.0","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/","keywords":"整合中间件"}</script>
     <meta name="description" content="java 整合elasticsearch8.2.0[TOC] 一、application.yml或者其他的配置文件皆可两种方式：【1】 elasticsearch:  hosts: 127.0.0.1:9200     # 如果有多个IP就自己加逗号吧  【2】 spring：	elasticsearch:    	uris: localhost:9200   #这样子自动配置了  二、confi">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="springboot整合elasticsearch8.2.0">
@@ -77,11 +77,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -100,9 +100,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -121,10 +121,10 @@
                             href="/"
                             
                             rel="noopener"
-                            title="Home"
+                            title="首页"
                         >
                         <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Home</span>
+                        <span class="sidebar-button-desc">首页</span>
                     </a>
             </li>
             
@@ -135,10 +135,10 @@
                             href="/all-categories"
                             
                             rel="noopener"
-                            title="categories"
+                            title="分类"
                         >
                         <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">categories</span>
+                        <span class="sidebar-button-desc">分类</span>
                     </a>
             </li>
             
@@ -149,10 +149,10 @@
                             href="/all-tags"
                             
                             rel="noopener"
-                            title="Tags"
+                            title="标签"
                         >
                         <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Tags</span>
+                        <span class="sidebar-button-desc">标签</span>
                     </a>
             </li>
             
@@ -163,10 +163,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archives"
+                            title="档案"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archives</span>
+                        <span class="sidebar-button-desc">档案</span>
                     </a>
             </li>
             
@@ -177,10 +177,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Search"
+                            title="搜索"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Search</span>
+                        <span class="sidebar-button-desc">搜索</span>
                     </a>
             </li>
             
@@ -191,10 +191,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="About"
+                            title="关于"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">About</span>
+                        <span class="sidebar-button-desc">关于</span>
                     </a>
             </li>
             
@@ -206,15 +206,15 @@
                     
                         <a
                             class="sidebar-button-link "
-                            href="https://github.com/"
+                            href="https://github.com/Caosen0819"
                             
                                 target="_blank"
                             
                             rel="noopener"
-                            title="GitHub"
+                            title=".github"
                         >
                         <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">GitHub</span>
+                        <span class="sidebar-button-desc">.github</span>
                     </a>
             </li>
             
@@ -242,7 +242,7 @@
         <div class="post-meta">
     <time datetime="2022-10-04T13:40:04+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -292,7 +292,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/%E6%95%B4%E5%90%88%E4%B8%AD%E9%97%B4%E4%BB%B6/" rel="tag">整合中间件</a>
 
@@ -309,11 +309,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
                     data-tooltip="整合docker和中间件记录"
-                    aria-label="PREVIOUS: 整合docker和中间件记录"
+                    aria-label="FRÜHER: 整合docker和中间件记录"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -323,10 +323,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2022/10/04/%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
                     data-tooltip="springboot整合kafka3.1-基本配置和操作"
-                    aria-label="NEXT: springboot整合kafka3.1-基本配置和操作"
+                    aria-label="NÄCHSTER: springboot整合kafka3.1-基本配置和操作"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -337,7 +337,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -349,8 +349,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -362,8 +362,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -375,8 +375,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -387,7 +387,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -424,11 +424,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
                     data-tooltip="整合docker和中间件记录"
-                    aria-label="PREVIOUS: 整合docker和中间件记录"
+                    aria-label="FRÜHER: 整合docker和中间件记录"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -438,10 +438,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2022/10/04/%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
                     data-tooltip="springboot整合kafka3.1-基本配置和操作"
-                    aria-label="NEXT: springboot整合kafka3.1-基本配置和操作"
+                    aria-label="NÄCHSTER: springboot整合kafka3.1-基本配置和操作"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -452,7 +452,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -464,8 +464,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -477,8 +477,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -490,8 +490,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -502,7 +502,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -524,9 +524,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
-                        aria-label="Share on Facebook"
+                        aria-label="Teilen auf Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
                     </a>
                 </li>
             
@@ -537,9 +537,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
-                        aria-label="Share on Twitter"
+                        aria-label="Teilen auf Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
                     </a>
                 </li>
             
@@ -550,9 +550,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
-                        aria-label="Share on Google+"
+                        aria-label="Teilen auf Google Plus"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
                     </a>
                 </li>
             
@@ -575,7 +575,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

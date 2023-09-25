@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"线性表\n线性结构特点：在数据元素的非空有限集合中\n\n(1)存在唯一的一个被称做“第一个”的数据元素；\n(2)存在唯一的一个被称做“最后一个”的数据元素；\n\n\n(3)除第一个之外，集合中的每个数据元素均只有一个前驱；(4)除最后一个之外，集合中每个数据元素均只有一个后继。\n\n线性表定义：有限个性质相同的数据元素组成的序列。\n\n\n线性表的存储结构：顺序存储结构和链式存储结构\n\n\n\n顺序存储定义：把逻辑上相邻的数据元素存储在物理上相邻的存储单元中的存储结构。\n通常用一维数组来描述数据结构中的顺序存储结构。\n\n\n链式存储结构: 其结点在存储器中的位置是随意的，即逻辑上相邻的数据元素在物理上不一定相邻。通过指针来实现。\n\n\n\n顺序表顺序表把线性表的所有元素按照其逻辑顺序，依次存储到从指定的存储位置开始的一块连续的存储结构空间中中。\n\n链表在存储链表中，每个节点不仅包含所存元素的信息，还包含元素之间逻辑关系的信息。可以通过前驱结点中的地址信息找到后继结点的位置。\n\n两者存储结构比较\n\n顺序表的特性：(其实就是数组)随机访问特性。占用连续的存储空间。\n链表的特性：不支持随机访问的特性。结点的存储空间利用率较顺序表稍微低一些。不需要一次性划分所有结点所需空间给链表。\n链表支持存储空间的动态分配。顺序表在做插入操作的时候需要移动多个元素链表进行插入操作无需移动元素\n\n\n4.链表的5种形式\n\n1 单链表\n\n带头结点与不带头结点的区别：\n\n带头结点的单链表有一个结点不存储信息，而不带头结点的单链表所有结点都存储信息。\n\n\n2 双链表\n- \n\n3 循环单链表\n\n环单链表可以实现从任一结点出发访问链表的任何结点，而单链表从任一结点出发后只能访问这个结点本身及其后边的所有结点。带头结点的循环单链表，链表空，head&#x3D;head-&gt;next;不带头结点，链表空，head&#x3D;NULL\n\n\n\n\n4 循环双链表\n\n循环双链表即终端结点的next指针指向链表中的第一个结点，将链表中第一个结点的prior指针指向终端结点\n\n\n\n\n5 静态链表\n\n静态链表借助一维数组来表示。静态链表来自于一个结构体数组，数组中每一个结点含有两个分量：一个数据元素分量data;另个一个是指针分量，指示了当前结点的直接后继结点在数组中的位置。\n\n\n\n考研中遇到考顺序表和链表的比较：\n基于空间的比较\n\n1.存储方式的比较：\n顺序表的存储空间是一次性分配，链表的存储空间是多次分配。\n2.存储密度：(存储密度&#x3D;结点值域所占存储量&#x2F;结点结构所占的存储量)：\n顺序表的存储密度&#x3D;1，链表的存储密度&lt;1(因为结点中有指针域)\n\n基于时间的比较\n\n1.存储方式：\n顺序表可以随机存储，也可以顺序存储，链表只能顺序存储\n2.插入、删除时移动元素的个数:\n顺序表平均需要移动一半的元素；链表不需要移动，只需要修改指针。\n对顺序表平均需要移动近一半元素，链表不需要移动元素，只需要修改指针。\n具有n个元素的顺序表，插入一个元素所进行的平均移动个数是多少，\n1）求概率，是随机的，可能性相同，有n个可插入位置，所以任何一个位置被插入元素的概率为p&#x3D;1&#x2F;n；\n2）求对应于每个插入位置需要移动元素个数。\n假设要把新元素插入在表中第i个圆度之后，则需要将第i个元素之后的所有元素往后移动一个为置，因此移动元素个数为n-i。\n由1和2可知，移动元素个数的期望E为：\nE&#x3D;n-1&#x2F;2\n插入和删除算法的平均时间复杂度为O（n).\n\n\n顺序表的定义&gt; 1.线性表的顺序存储又称顺序表&gt; 2.元素的逻辑顺序与物理顺序相同&gt; 3.顺序存储结构是一种随机存储结构&gt; 4.特点：&gt; \t1）顺序表的随机访问：通过首地址和元素符号在O(1)时间内找到指定的元素&gt;\t2）储存密度高，每个节点只存储数据元素&gt;\t3）由于逻辑相邻与物理相邻，所以插入和删除操作需要移动大量的元素一维数组可以是静态分配的，也可以是动态分配的。#define MaxSize 50  //定义线性表的最大长度typedef struct&#123;\tElemType data[MaxSize];   //顺序表的元素\tint length;\t\t\t\t  //顺序表的当前长度&#125;SqList;\t\t\t\t\t  //顺序表的类型定义动态分配时，存储数组的空间是在程序执行过程中通过动态存储语句分配的，一旦数据空间占满，就另外开辟一块更大的存储空间，用以替换原来的存储空间，从而达到扩充存储数组空间的目的，而不需要为顺序表一次性划分所有空间。#define InitSize 100  //表长度的初始定义typedef struct&#123;\tElemType *data;   //指示动态分配数组的指针\tint MaxSize,length;\t\t\t\t  //数组最大容量和当前定义&#125;SeqList;\t\t\t\t\t  //动态分配数组顺序表的类型定义分配存储空间的语句C：\t  L.data=(ElemType*)malloc(sizeof(ElemType)*InitSize);C++： L.data=new ElemType(InitSize);注意：动态分配并不是链式存储，物理结构没有变化，依然是随机存取方式，只是分配的空间大小可以在运行时动态决定。\n\n顺序表的插入1.插入操作 【在顺序表L的第i（1&lt;i&lt;L.length+1）个位置插入新元素e】#define MaxSize 10typedef struct&#123;\tint data[MaxSize];\tint length;&#125;SqList;bool ListInsert(SqList &amp;L,int i,ElemType e)&#123;\tif(i&lt;1 || i&gt;L.length+1)  // 判断i的范围是否有效\t\treturn false;\tif(L.length&gt;=MaxSize)\t//当前存储空间已满不能插入\t\treturn false;       \tfor(int j=L.length;j&gt;=i;j--)  //将第i个即以后元素往后移\t\tL.data[j]=L.data[j-1];\tL.data[i-1]=e;   //在位置i放置e\tL.lenght++;      //线性表长度+1\treturn true;&#125;int main()&#123;................&#125;注意：区别顺序表的位序和数组下标。为何判断插入位置是否合法时 if语句中用length+1，而移动元素的for语句中只用length？答：\t1.首先明确，位序从 1 开始，数组下标从 0 开始；这里 i 是指 位序；\t2.if语句：分析两种种情况(前提：线性表未满)：\t\t\t\t1）length+2的情况：i的范围是[1，length+2],length+2所插入的位置在顺序表上是断档，违背顺序表定义（一组地址连续的存储单元逻辑上相邻的两个元素的物理位置上也相邻）\t\t\t\t2）length的情况：i的范围是[1，length],顺序表上length+1位置是空的\t3.for语句：到for语句时，说明至少有一个可插入的位置；\t\t\t   j=L.length时，保证最后一个数组元素可以移到数组的后一个位置而不产生数组越界异常\t\t2.在不同位置进行插入操作的时间复杂度（n为length）\t1)最好情况：表尾插入（i=n+1），元素后移语句不执行，复杂度O(1);\t2)最坏情况：表头插入(i=1)，元素后移语句执行n次，复杂度O(n);\t3)平均情况：略，复杂度O(n);\n\n顺序表的删除1.删除操作 【删除顺序表L中第i(1&lt;=i&lt;=L.length)个位置的元素，用引用变量e返回】#define MaxSize 10typedef struct&#123;\tint data[MaxSize];\tint length;&#125;SqList;bool ListDelete(SqList &amp;L,int i,ElemType &amp;e)&#123;\tif(i&lt;1||i&gt;L.length)    //判断i的范围是否有效\t\treutrn false;\te=L.data[i-1];     //e保存将要被删的值\tfor(int j=i;j&lt;L.length;j++)    //第i个位置后的元素前移\t\tL.data[j-1]=L.data[j];\tL.length--;\treturn true;&#125;int main()&#123;................&#125;2.在不同位置进行删除操作的时间复杂度（n为length）\t1)最好情况：删除表尾元素(i=n)，元素前移语句不执行，复杂度O(1);\t2)最坏情况：删除表头元素（i=1），元素前移语句执行n次，复杂度O(n);\t3)平均情况：略，复杂度O(n);\n\n按值查找1.按值查找（顺序查找）【在顺序表L中查找第一个元素值等于e的元素，并返回其位序】#define MaxSize 10typedef struct&#123;\tint data[MaxSize];\tint length;&#125;SqList;int LocateElem(SqList L,Elem e)&#123;\tint i;\tfor(i=0;i&lt;L.length;i++)\t\tif(L.data[i]===e)\t\t\treturn i+1;\treturn 0;&#125;int main()&#123;................&#125;2.时间复杂度（n为length）\t1)最好情况：查找的元素就在表头，仅需比较1次，复杂度为O(1);\t2)最坏情况：查找的元素就在表尾，需比较n次，复杂度为O(n);\t3)平均情况：略，O(n);\n\n单链表的操作例题将AB，插入C中 归并，尾插\n\n\nvoid merge(LNode *A,LNode *B,LNode *&amp;C)&#123; \tLNode *P=A-&gt;next;//p来跟踪A的最小值结点。A-&gt;next表示A链表的开始结点（头结点后边一个结点），A链表是递增，所以最前面的是最小节点。    LNode *q=B-&gt;next;    LNode *r;//r始终指向C的终端结点    C=A;//用A的头结点做C的头结点    C-&gt;next=NULL;    free(B);//B头结点无用，释放掉    r=C;//r指向C，因此头结点是终端结点    while(p!=NULL&amp;&amp;q!=NULL)//当p与q不空时，选取p与q所指结点中较小的插入c的尾部，       //以下的if else语句中，r始终指向当前链表终端结点，作为接纳新结点的一个媒介，通过他，新节点被链接入c并且重新指向新的终端接点，以便接受下一个新节点，这里是尾插法的思想    &#123;\t\tif(p-&gt;data&lt;=q-&gt;data)        &#123;            r-&gt;next=p;p=p-&gt;next;            r=er-&gt;next;        &#125;        else        &#123;            r-&gt;next=q;q=q-&gt;next                r=r-&gt;next;        &#125;    &#125;    r-&gt;next=NULL；        //以下两个语句将还有剩余的结点的链表连接在C的尾部        if(p!=NULL) r-&gt;next=p;        if(q!=NULL) r-next=q;&#125;\n\n假设有n个元素已经存储数组a中，用尾插法建立链表c\nvoid createlistR(LNode *&amp;C,int a[],int n)//要改变的变量用引用型&#123;\tLNode *s,*r;//s用来指向新申请的结点，r始终指向c的终端    int i;///    C=(LNode*)malloc(sizeof(LNode));//申请C的头结点空间    C-&gt;next=NULL;    r=c;//r指向头结点，因为此时头结点就是终端结点 \tfor(i=0;i&lt;n;++1)//循环申请n个结点来接受数组a中元素    &#123;        s=(LNode*)malloc(sizeof(LNode));//s指向新申请的结点        s-&gt;data=a[i];//用新申请的结点来接受a中的一个元素        r-&gt;next=s;//用r来接纳新结点        r=r-&gt;next;//r指向终端结点，以便于接纳下一个新到来的结点    &#125;    r-&gt;next=NULL;//数组a中所有的元素都已经装入链表c中，c的终端结点的指针域置为为null，c建立完成&#125;\n\n\n\n头插法建表\nvoid createlistF(LNode *&amp;C,int a[],int n)&#123;    LNode *s;    int i;    C=(LNode*)malloc(sizeof(LNode));    C-&gt;next=NULL;    for(i=0;i&lt;n;++i)    &#123;        s=(LNode*)malloc(sizeof(LNode));        s-&gt;data=a[i];        //下面两句是头插法的关键        s-&gt;next=C-&gt;next;//s所指新节点的指针域next指向C中的开始结点        C-&gt;next=s;//头指针的指针域next指向s结点，使得s成为新的开始结点    &#125;&#125;\n\n\n归并成递减的单链表的算法\nvoid merge(LNode *A,LNode *B,LNode *&amp;C)&#123;\tLNode *p=A-&gt;next;    LNode *q=B-&gt;next;    LNode *s;    C=A;    C-&gt;next=NULL;    free(B);    while(p!=NULL&amp;&amp;q!=NULL)    &#123;//头插法        if(p-&gt;data&lt;=q-&gt;data)        &#123;            s=p;p=p-&gt;next;            s-&gt;next=C-&gt;next;            C-next=s;        &#125;        else        &#123;            s=q;q=q-&gt;next;            s-&gt;next=C-&gt;next;            C-&gt;next=s;\t\t&#125;    &#125;    //下边这两个循环是和求增递归并序列不同的地方，必须将剩余元素逐个插入c的头部才能得到最终递减序列    while(p!NULL)    &#123;        s=p;        p=p-&gt;next;        s-&gt;next=C-&gt;next;        C-&gt;next=s;    &#125;    while(q!=NULL)    &#123;        s=q;        q=q-&gt;next;        s-&gt;next=C-&gt;next;        C-&gt;next=s;    &#125;&#125;\n\n\n\n插入操作\ns-&gt;next=p-&gt;next;p-next=s;\n\n删除操作\nq=p-&gt;next;p-&gt;next=p-&gt;next-&gt;next;free(q);\n\n\n双链表的操作1.采用尾插法建立双链表\nvoid createDlistR(DLNode *&amp;L.int a[],int n)&#123;    DLNode *s,*r;    int i;    L=(DLNode*)malloc(sizeof(DLNode));    L-&gt;prior=NULL;    L-&gt;next=NULL;    r=L;//和单链表一样，r始终指向终端结点，开始头结点也是尾结点    for(i=0;i&lt;n;++i)    &#123;        s=(DLNode*)malloc(sizeof(DLNode));//创建新结点        s-&gt;data=a[i];       //下面3句将s插入到L的尾部，并且r指向s。        r-&gt;next=s;        s-&gt;prior=r;        r=s;    &#125;    r-&gt;next=NULL;    &#125;\n\n\n\n\n2.查找结点的算法\n在双链表中查找第一个值为x的结点，从第一个结点开始，边扫描边比较，若找到这样的结点，则返回结点指针，否则返回NULL。DLNode* findNode(DLNode *C.,int x)&#123;    DLNode *p=C-&gt;next;    while(p!=NULL)    &#123;        if(p-data==x)        break;        p=p-&gt;next;    &#125;    return p;//如果找到，则p中内容是结点地址（循环因break结束）；如果没找到，则p中内容是Null(循环因p等于NULL而结束)。因此这一句话将要求的两种返回值得情况统一起来。&#125;\n\n3.插入结点的算法\n假设在双链表中p所指的结点之后插入一个结点s.s-&gt;next=p-&gt;next;s-&gt;prior=p;p-&gt;next=s;s-&gt;next-&gt;prior=s;//加入p指向最后一个结点，则本行可去掉\n\n\n4.删除结点算法\n设要删除双链表中p结点的后继结点q=p-&gt;next;p-&gt;next=q-&gt;next;q-&gt;next-&gt;prior=p;free(q);\n\n\n5.循环链表的操作循环单链表和循环双链表是有对应的单链表和双链表改造来得，只需在终端结点和头结点建立联系即可。循环单链表终端结点的next结点指针向表头结点；循环双链表终端接结点的next指针指向表头结点，头结点的prior指针向表尾结点。需要注意的是，如果p指针压着循环链表行走，则判断p走到表尾结点的条件是p-&gt;next&#x3D;&#x3D;head.\n6.逆置问题给定一个线性表，如何将其中的元素逆置？可设置两个整型变量i和j，i指向最后一个元素，边交换i和j所指元素，边让i和j相向而行，直到遇到，实现代码如下：\n假设元素存在于数组a[]中，left和right是数组两端元素的下标。\nfor(int i=left,j=right;i&lt;j;++i,--j)&#123;\ttemp=a[i];\ta[i]=a[j];\ta[j]=temp;&#125;\n\n\n分析：\n（1）只需要逆置整个数组，即可满足前端k个元素逆序后放到数组的后端，如下图：\n\nvoid reverse(int a[],int left,int right,int k)&#123;\tint temp;\tfor(int i=left,j=right;i&lt;left+k;&amp;&amp;i&lt;j;++i,--j)\t&#123;\t\ttemp=a[i];\t\ta[j]=a[j];\t\ta[j]=temp;\t&#125;&#125;\n\n\n(2)只需要将前端k个元素逆置，然后将整个数组逆置，即满足前端k个元素保持原序放到数组后端，如下图\n\nvoid moveToEnd(int a[],int n,int k)&#123;\t//调用（1）中的实现的reverse()函数：\treverse(a,0,k-1,k);\treverse(a,0,n-1,k);&#125;\n\n\n(3)只需要将0p-1位置逆置，在将pn-1位置元素逆置，然后再将整个数组逆置\nvoid movep(int a[],int n,int p)&#123;\t//调用（1）中实现的reverse（）函数：\treverse(a,0,p-1,p);\treverse(a,p,n-1,n-p);\treverse(a,0,n-1,n);&#125;\n\n​\t\n​\t\n","dateCreated":"2022-10-04T13:33:19+08:00","dateModified":"2022-10-04T13:33:49+08:00","datePublished":"2022-10-04T13:33:19+08:00","description":"线性表\n线性结构特点：在数据元素的非空有限集合中\n\n(1)存在唯一的一个被称做“第一个”的数据元素；\n(2)存在唯一的一个被称做“最后一个”的数据元素；\n\n\n(3)除第一个之外，集合中的每个数据元素均只有一个前驱；(4)除最后一个之外，集合中每个数据元素均只有一个后继。\n\n线性表定义：有限个性质相同的数据元素组成的序列。","headline":"数据结构-线性表","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/","keywords":"数据结构"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"线性表\n线性结构特点：在数据元素的非空有限集合中\n\n(1)存在唯一的一个被称做“第一个”的数据元素；\n(2)存在唯一的一个被称做“最后一个”的数据元素；\n\n\n(3)除第一个之外，集合中的每个数据元素均只有一个前驱；(4)除最后一个之外，集合中每个数据元素均只有一个后继。\n\n线性表定义：有限个性质相同的数据元素组成的序列。\n\n\n线性表的存储结构：顺序存储结构和链式存储结构\n\n\n\n顺序存储定义：把逻辑上相邻的数据元素存储在物理上相邻的存储单元中的存储结构。\n通常用一维数组来描述数据结构中的顺序存储结构。\n\n\n链式存储结构: 其结点在存储器中的位置是随意的，即逻辑上相邻的数据元素在物理上不一定相邻。通过指针来实现。\n\n\n\n顺序表顺序表把线性表的所有元素按照其逻辑顺序，依次存储到从指定的存储位置开始的一块连续的存储结构空间中中。\n\n链表在存储链表中，每个节点不仅包含所存元素的信息，还包含元素之间逻辑关系的信息。可以通过前驱结点中的地址信息找到后继结点的位置。\n\n两者存储结构比较\n\n顺序表的特性：(其实就是数组)随机访问特性。占用连续的存储空间。\n链表的特性：不支持随机访问的特性。结点的存储空间利用率较顺序表稍微低一些。不需要一次性划分所有结点所需空间给链表。\n链表支持存储空间的动态分配。顺序表在做插入操作的时候需要移动多个元素链表进行插入操作无需移动元素\n\n\n4.链表的5种形式\n\n1 单链表\n\n带头结点与不带头结点的区别：\n\n带头结点的单链表有一个结点不存储信息，而不带头结点的单链表所有结点都存储信息。\n\n\n2 双链表\n- \n\n3 循环单链表\n\n环单链表可以实现从任一结点出发访问链表的任何结点，而单链表从任一结点出发后只能访问这个结点本身及其后边的所有结点。带头结点的循环单链表，链表空，head&#x3D;head-&gt;next;不带头结点，链表空，head&#x3D;NULL\n\n\n\n\n4 循环双链表\n\n循环双链表即终端结点的next指针指向链表中的第一个结点，将链表中第一个结点的prior指针指向终端结点\n\n\n\n\n5 静态链表\n\n静态链表借助一维数组来表示。静态链表来自于一个结构体数组，数组中每一个结点含有两个分量：一个数据元素分量data;另个一个是指针分量，指示了当前结点的直接后继结点在数组中的位置。\n\n\n\n考研中遇到考顺序表和链表的比较：\n基于空间的比较\n\n1.存储方式的比较：\n顺序表的存储空间是一次性分配，链表的存储空间是多次分配。\n2.存储密度：(存储密度&#x3D;结点值域所占存储量&#x2F;结点结构所占的存储量)：\n顺序表的存储密度&#x3D;1，链表的存储密度&lt;1(因为结点中有指针域)\n\n基于时间的比较\n\n1.存储方式：\n顺序表可以随机存储，也可以顺序存储，链表只能顺序存储\n2.插入、删除时移动元素的个数:\n顺序表平均需要移动一半的元素；链表不需要移动，只需要修改指针。\n对顺序表平均需要移动近一半元素，链表不需要移动元素，只需要修改指针。\n具有n个元素的顺序表，插入一个元素所进行的平均移动个数是多少，\n1）求概率，是随机的，可能性相同，有n个可插入位置，所以任何一个位置被插入元素的概率为p&#x3D;1&#x2F;n；\n2）求对应于每个插入位置需要移动元素个数。\n假设要把新元素插入在表中第i个圆度之后，则需要将第i个元素之后的所有元素往后移动一个为置，因此移动元素个数为n-i。\n由1和2可知，移动元素个数的期望E为：\nE&#x3D;n-1&#x2F;2\n插入和删除算法的平均时间复杂度为O（n).\n\n\n顺序表的定义&gt; 1.线性表的顺序存储又称顺序表&gt; 2.元素的逻辑顺序与物理顺序相同&gt; 3.顺序存储结构是一种随机存储结构&gt; 4.特点：&gt; \t1）顺序表的随机访问：通过首地址和元素符号在O(1)时间内找到指定的元素&gt;\t2）储存密度高，每个节点只存储数据元素&gt;\t3）由于逻辑相邻与物理相邻，所以插入和删除操作需要移动大量的元素一维数组可以是静态分配的，也可以是动态分配的。#define MaxSize 50  //定义线性表的最大长度typedef struct&#123;\tElemType data[MaxSize];   //顺序表的元素\tint length;\t\t\t\t  //顺序表的当前长度&#125;SqList;\t\t\t\t\t  //顺序表的类型定义动态分配时，存储数组的空间是在程序执行过程中通过动态存储语句分配的，一旦数据空间占满，就另外开辟一块更大的存储空间，用以替换原来的存储空间，从而达到扩充存储数组空间的目的，而不需要为顺序表一次性划分所有空间。#define InitSize 100  //表长度的初始定义typedef struct&#123;\tElemType *data;   //指示动态分配数组的指针\tint MaxSize,length;\t\t\t\t  //数组最大容量和当前定义&#125;SeqList;\t\t\t\t\t  //动态分配数组顺序表的类型定义分配存储空间的语句C：\t  L.data=(ElemType*)malloc(sizeof(ElemType)*InitSize);C++： L.data=new ElemType(InitSize);注意：动态分配并不是链式存储，物理结构没有变化，依然是随机存取方式，只是分配的空间大小可以在运行时动态决定。\n\n顺序表的插入1.插入操作 【在顺序表L的第i（1&lt;i&lt;L.length+1）个位置插入新元素e】#define MaxSize 10typedef struct&#123;\tint data[MaxSize];\tint length;&#125;SqList;bool ListInsert(SqList &amp;L,int i,ElemType e)&#123;\tif(i&lt;1 || i&gt;L.length+1)  // 判断i的范围是否有效\t\treturn false;\tif(L.length&gt;=MaxSize)\t//当前存储空间已满不能插入\t\treturn false;       \tfor(int j=L.length;j&gt;=i;j--)  //将第i个即以后元素往后移\t\tL.data[j]=L.data[j-1];\tL.data[i-1]=e;   //在位置i放置e\tL.lenght++;      //线性表长度+1\treturn true;&#125;int main()&#123;................&#125;注意：区别顺序表的位序和数组下标。为何判断插入位置是否合法时 if语句中用length+1，而移动元素的for语句中只用length？答：\t1.首先明确，位序从 1 开始，数组下标从 0 开始；这里 i 是指 位序；\t2.if语句：分析两种种情况(前提：线性表未满)：\t\t\t\t1）length+2的情况：i的范围是[1，length+2],length+2所插入的位置在顺序表上是断档，违背顺序表定义（一组地址连续的存储单元逻辑上相邻的两个元素的物理位置上也相邻）\t\t\t\t2）length的情况：i的范围是[1，length],顺序表上length+1位置是空的\t3.for语句：到for语句时，说明至少有一个可插入的位置；\t\t\t   j=L.length时，保证最后一个数组元素可以移到数组的后一个位置而不产生数组越界异常\t\t2.在不同位置进行插入操作的时间复杂度（n为length）\t1)最好情况：表尾插入（i=n+1），元素后移语句不执行，复杂度O(1);\t2)最坏情况：表头插入(i=1)，元素后移语句执行n次，复杂度O(n);\t3)平均情况：略，复杂度O(n);\n\n顺序表的删除1.删除操作 【删除顺序表L中第i(1&lt;=i&lt;=L.length)个位置的元素，用引用变量e返回】#define MaxSize 10typedef struct&#123;\tint data[MaxSize];\tint length;&#125;SqList;bool ListDelete(SqList &amp;L,int i,ElemType &amp;e)&#123;\tif(i&lt;1||i&gt;L.length)    //判断i的范围是否有效\t\treutrn false;\te=L.data[i-1];     //e保存将要被删的值\tfor(int j=i;j&lt;L.length;j++)    //第i个位置后的元素前移\t\tL.data[j-1]=L.data[j];\tL.length--;\treturn true;&#125;int main()&#123;................&#125;2.在不同位置进行删除操作的时间复杂度（n为length）\t1)最好情况：删除表尾元素(i=n)，元素前移语句不执行，复杂度O(1);\t2)最坏情况：删除表头元素（i=1），元素前移语句执行n次，复杂度O(n);\t3)平均情况：略，复杂度O(n);\n\n按值查找1.按值查找（顺序查找）【在顺序表L中查找第一个元素值等于e的元素，并返回其位序】#define MaxSize 10typedef struct&#123;\tint data[MaxSize];\tint length;&#125;SqList;int LocateElem(SqList L,Elem e)&#123;\tint i;\tfor(i=0;i&lt;L.length;i++)\t\tif(L.data[i]===e)\t\t\treturn i+1;\treturn 0;&#125;int main()&#123;................&#125;2.时间复杂度（n为length）\t1)最好情况：查找的元素就在表头，仅需比较1次，复杂度为O(1);\t2)最坏情况：查找的元素就在表尾，需比较n次，复杂度为O(n);\t3)平均情况：略，O(n);\n\n单链表的操作例题将AB，插入C中 归并，尾插\n\n\nvoid merge(LNode *A,LNode *B,LNode *&amp;C)&#123; \tLNode *P=A-&gt;next;//p来跟踪A的最小值结点。A-&gt;next表示A链表的开始结点（头结点后边一个结点），A链表是递增，所以最前面的是最小节点。    LNode *q=B-&gt;next;    LNode *r;//r始终指向C的终端结点    C=A;//用A的头结点做C的头结点    C-&gt;next=NULL;    free(B);//B头结点无用，释放掉    r=C;//r指向C，因此头结点是终端结点    while(p!=NULL&amp;&amp;q!=NULL)//当p与q不空时，选取p与q所指结点中较小的插入c的尾部，       //以下的if else语句中，r始终指向当前链表终端结点，作为接纳新结点的一个媒介，通过他，新节点被链接入c并且重新指向新的终端接点，以便接受下一个新节点，这里是尾插法的思想    &#123;\t\tif(p-&gt;data&lt;=q-&gt;data)        &#123;            r-&gt;next=p;p=p-&gt;next;            r=er-&gt;next;        &#125;        else        &#123;            r-&gt;next=q;q=q-&gt;next                r=r-&gt;next;        &#125;    &#125;    r-&gt;next=NULL；        //以下两个语句将还有剩余的结点的链表连接在C的尾部        if(p!=NULL) r-&gt;next=p;        if(q!=NULL) r-next=q;&#125;\n\n假设有n个元素已经存储数组a中，用尾插法建立链表c\nvoid createlistR(LNode *&amp;C,int a[],int n)//要改变的变量用引用型&#123;\tLNode *s,*r;//s用来指向新申请的结点，r始终指向c的终端    int i;///    C=(LNode*)malloc(sizeof(LNode));//申请C的头结点空间    C-&gt;next=NULL;    r=c;//r指向头结点，因为此时头结点就是终端结点 \tfor(i=0;i&lt;n;++1)//循环申请n个结点来接受数组a中元素    &#123;        s=(LNode*)malloc(sizeof(LNode));//s指向新申请的结点        s-&gt;data=a[i];//用新申请的结点来接受a中的一个元素        r-&gt;next=s;//用r来接纳新结点        r=r-&gt;next;//r指向终端结点，以便于接纳下一个新到来的结点    &#125;    r-&gt;next=NULL;//数组a中所有的元素都已经装入链表c中，c的终端结点的指针域置为为null，c建立完成&#125;\n\n\n\n头插法建表\nvoid createlistF(LNode *&amp;C,int a[],int n)&#123;    LNode *s;    int i;    C=(LNode*)malloc(sizeof(LNode));    C-&gt;next=NULL;    for(i=0;i&lt;n;++i)    &#123;        s=(LNode*)malloc(sizeof(LNode));        s-&gt;data=a[i];        //下面两句是头插法的关键        s-&gt;next=C-&gt;next;//s所指新节点的指针域next指向C中的开始结点        C-&gt;next=s;//头指针的指针域next指向s结点，使得s成为新的开始结点    &#125;&#125;\n\n\n归并成递减的单链表的算法\nvoid merge(LNode *A,LNode *B,LNode *&amp;C)&#123;\tLNode *p=A-&gt;next;    LNode *q=B-&gt;next;    LNode *s;    C=A;    C-&gt;next=NULL;    free(B);    while(p!=NULL&amp;&amp;q!=NULL)    &#123;//头插法        if(p-&gt;data&lt;=q-&gt;data)        &#123;            s=p;p=p-&gt;next;            s-&gt;next=C-&gt;next;            C-next=s;        &#125;        else        &#123;            s=q;q=q-&gt;next;            s-&gt;next=C-&gt;next;            C-&gt;next=s;\t\t&#125;    &#125;    //下边这两个循环是和求增递归并序列不同的地方，必须将剩余元素逐个插入c的头部才能得到最终递减序列    while(p!NULL)    &#123;        s=p;        p=p-&gt;next;        s-&gt;next=C-&gt;next;        C-&gt;next=s;    &#125;    while(q!=NULL)    &#123;        s=q;        q=q-&gt;next;        s-&gt;next=C-&gt;next;        C-&gt;next=s;    &#125;&#125;\n\n\n\n插入操作\ns-&gt;next=p-&gt;next;p-next=s;\n\n删除操作\nq=p-&gt;next;p-&gt;next=p-&gt;next-&gt;next;free(q);\n\n\n双链表的操作1.采用尾插法建立双链表\nvoid createDlistR(DLNode *&amp;L.int a[],int n)&#123;    DLNode *s,*r;    int i;    L=(DLNode*)malloc(sizeof(DLNode));    L-&gt;prior=NULL;    L-&gt;next=NULL;    r=L;//和单链表一样，r始终指向终端结点，开始头结点也是尾结点    for(i=0;i&lt;n;++i)    &#123;        s=(DLNode*)malloc(sizeof(DLNode));//创建新结点        s-&gt;data=a[i];       //下面3句将s插入到L的尾部，并且r指向s。        r-&gt;next=s;        s-&gt;prior=r;        r=s;    &#125;    r-&gt;next=NULL;    &#125;\n\n\n\n\n2.查找结点的算法\n在双链表中查找第一个值为x的结点，从第一个结点开始，边扫描边比较，若找到这样的结点，则返回结点指针，否则返回NULL。DLNode* findNode(DLNode *C.,int x)&#123;    DLNode *p=C-&gt;next;    while(p!=NULL)    &#123;        if(p-data==x)        break;        p=p-&gt;next;    &#125;    return p;//如果找到，则p中内容是结点地址（循环因break结束）；如果没找到，则p中内容是Null(循环因p等于NULL而结束)。因此这一句话将要求的两种返回值得情况统一起来。&#125;\n\n3.插入结点的算法\n假设在双链表中p所指的结点之后插入一个结点s.s-&gt;next=p-&gt;next;s-&gt;prior=p;p-&gt;next=s;s-&gt;next-&gt;prior=s;//加入p指向最后一个结点，则本行可去掉\n\n\n4.删除结点算法\n设要删除双链表中p结点的后继结点q=p-&gt;next;p-&gt;next=q-&gt;next;q-&gt;next-&gt;prior=p;free(q);\n\n\n5.循环链表的操作循环单链表和循环双链表是有对应的单链表和双链表改造来得，只需在终端结点和头结点建立联系即可。循环单链表终端结点的next结点指针向表头结点；循环双链表终端接结点的next指针指向表头结点，头结点的prior指针向表尾结点。需要注意的是，如果p指针压着循环链表行走，则判断p走到表尾结点的条件是p-&gt;next&#x3D;&#x3D;head.\n6.逆置问题给定一个线性表，如何将其中的元素逆置？可设置两个整型变量i和j，i指向最后一个元素，边交换i和j所指元素，边让i和j相向而行，直到遇到，实现代码如下：\n假设元素存在于数组a[]中，left和right是数组两端元素的下标。\nfor(int i=left,j=right;i&lt;j;++i,--j)&#123;\ttemp=a[i];\ta[i]=a[j];\ta[j]=temp;&#125;\n\n\n分析：\n（1）只需要逆置整个数组，即可满足前端k个元素逆序后放到数组的后端，如下图：\n\nvoid reverse(int a[],int left,int right,int k)&#123;\tint temp;\tfor(int i=left,j=right;i&lt;left+k;&amp;&amp;i&lt;j;++i,--j)\t&#123;\t\ttemp=a[i];\t\ta[j]=a[j];\t\ta[j]=temp;\t&#125;&#125;\n\n\n(2)只需要将前端k个元素逆置，然后将整个数组逆置，即满足前端k个元素保持原序放到数组后端，如下图\n\nvoid moveToEnd(int a[],int n,int k)&#123;\t//调用（1）中的实现的reverse()函数：\treverse(a,0,k-1,k);\treverse(a,0,n-1,k);&#125;\n\n\n(3)只需要将0p-1位置逆置，在将pn-1位置元素逆置，然后再将整个数组逆置\nvoid movep(int a[],int n,int p)&#123;\t//调用（1）中实现的reverse（）函数：\treverse(a,0,p-1,p);\treverse(a,p,n-1,n-p);\treverse(a,0,n-1,n);&#125;\n\n​\t\n​\t\n","dateCreated":"2022-10-04T13:33:19+08:00","dateModified":"2022-10-04T13:33:49+08:00","datePublished":"2022-10-04T13:33:19+08:00","description":"线性表\n线性结构特点：在数据元素的非空有限集合中\n\n(1)存在唯一的一个被称做“第一个”的数据元素；\n(2)存在唯一的一个被称做“最后一个”的数据元素；\n\n\n(3)除第一个之外，集合中的每个数据元素均只有一个前驱；(4)除最后一个之外，集合中每个数据元素均只有一个后继。\n\n线性表定义：有限个性质相同的数据元素组成的序列。","headline":"数据结构-线性表","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/","keywords":"数据结构"}</script>
     <meta name="description" content="线性表 线性结构特点：在数据元素的非空有限集合中  (1)存在唯一的一个被称做“第一个”的数据元素； (2)存在唯一的一个被称做“最后一个”的数据元素；   (3)除第一个之外，集合中的每个数据元素均只有一个前驱；(4)除最后一个之外，集合中每个数据元素均只有一个后继。  线性表定义：有限个性质相同的数据元素组成的序列。">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="数据结构-线性表">
@@ -88,11 +88,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -111,9 +111,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -132,10 +132,10 @@
                             href="/"
                             
                             rel="noopener"
-                            title="Home"
+                            title="首页"
                         >
                         <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Home</span>
+                        <span class="sidebar-button-desc">首页</span>
                     </a>
             </li>
             
@@ -146,10 +146,10 @@
                             href="/all-categories"
                             
                             rel="noopener"
-                            title="categories"
+                            title="分类"
                         >
                         <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">categories</span>
+                        <span class="sidebar-button-desc">分类</span>
                     </a>
             </li>
             
@@ -160,10 +160,10 @@
                             href="/all-tags"
                             
                             rel="noopener"
-                            title="Tags"
+                            title="标签"
                         >
                         <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Tags</span>
+                        <span class="sidebar-button-desc">标签</span>
                     </a>
             </li>
             
@@ -174,10 +174,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archives"
+                            title="档案"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archives</span>
+                        <span class="sidebar-button-desc">档案</span>
                     </a>
             </li>
             
@@ -188,10 +188,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Search"
+                            title="搜索"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Search</span>
+                        <span class="sidebar-button-desc">搜索</span>
                     </a>
             </li>
             
@@ -202,10 +202,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="About"
+                            title="关于"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">About</span>
+                        <span class="sidebar-button-desc">关于</span>
                     </a>
             </li>
             
@@ -217,15 +217,15 @@
                     
                         <a
                             class="sidebar-button-link "
-                            href="https://github.com/"
+                            href="https://github.com/Caosen0819"
                             
                                 target="_blank"
                             
                             rel="noopener"
-                            title="GitHub"
+                            title=".github"
                         >
                         <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">GitHub</span>
+                        <span class="sidebar-button-desc">.github</span>
                     </a>
             </li>
             
@@ -253,7 +253,7 @@
         <div class="post-meta">
     <time datetime="2022-10-04T13:33:19+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -444,7 +444,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" rel="tag">数据结构</a>
 
@@ -461,11 +461,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1/"
                     data-tooltip="springboot整合OAuth2认证服务"
-                    aria-label="PREVIOUS: springboot整合OAuth2认证服务"
+                    aria-label="FRÜHER: springboot整合OAuth2认证服务"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -475,10 +475,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/"
                     data-tooltip="数据结构的基本概念"
-                    aria-label="NEXT: 数据结构的基本概念"
+                    aria-label="NÄCHSTER: 数据结构的基本概念"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -489,7 +489,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -501,8 +501,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -514,8 +514,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -527,8 +527,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -539,7 +539,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -576,11 +576,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1/"
                     data-tooltip="springboot整合OAuth2认证服务"
-                    aria-label="PREVIOUS: springboot整合OAuth2认证服务"
+                    aria-label="FRÜHER: springboot整合OAuth2认证服务"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -590,10 +590,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/"
                     data-tooltip="数据结构的基本概念"
-                    aria-label="NEXT: 数据结构的基本概念"
+                    aria-label="NÄCHSTER: 数据结构的基本概念"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -604,7 +604,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -616,8 +616,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -629,8 +629,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -642,8 +642,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -654,7 +654,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -676,9 +676,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"
-                        aria-label="Share on Facebook"
+                        aria-label="Teilen auf Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
                     </a>
                 </li>
             
@@ -689,9 +689,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"
-                        aria-label="Share on Twitter"
+                        aria-label="Teilen auf Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
                     </a>
                 </li>
             
@@ -702,9 +702,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"
-                        aria-label="Share on Google+"
+                        aria-label="Teilen auf Google Plus"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
                     </a>
                 </li>
             
@@ -727,7 +727,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

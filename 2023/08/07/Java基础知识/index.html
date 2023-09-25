@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"讲讲Java的代理代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。\n动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy，\n动态代理有两种方式一种是jdk方法，一种是cglib方法\n我们先来讲jdk代理：\n首先，代理是一个代理类代理真正的对象去帮助你做一些操作，可以在原本的方法前后加一些操作。那代理类就需要一个执行器去帮你做这些事情，那这个执行器就是InvocationHandler接口，他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组\n这三个参数里面代理方法和参数组其实我们可以依赖于最基础反射得到。而jdk代理又必须要实现InvocationHandler接口，而这个接口他又有这么三个参数，而这三个参数其实是可以变化的，被代理类被代理方法参数组是可以变化的，那这样就成功的实现了动态的代理。\n那我们怎么去调用这个方法呢？依赖于Proxy类和他的方法newproxyInstance，得到的代理类，调用方法其实会直接调用我们实现InvocationHandler接口的invoke方法\n下面来讲CGLIB代理\n在 CGLIB 动态代理机制中 MethodInterceptor 接口和 Enhancer 类是核心。你可以通过 Enhancer类来动态获取被代理类，\n  CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法拦截器拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 MethodInterceptor 中的 intercept 方法。\n为什么JDK动态代理只能代理接口实现类，原因是JDK动态代理是基于接口实现的。\n有两个原因，一个是继承Proxy。第二个是当你使用Proxy类创建代理对象时，你需要指定一个接口列表来表示理对象的类型。代理对象的类型是由接口列表决定的，因此只有实现了接口的类才能被代理。如果你想代理一个类而不是一个接口，你需要使用其他的代理技术，比如CGLIB。\n二者区别总结一下两者的区别吧：\nJDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承 java.lang.reflect.Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰JDK 和 CGLIB 动态代理都是在运行期生成字节码。而 JDK 是直接写 Class 字节码；而 CGLIB 使用 ASM 框架写 Class 字节码（不鼓励直接使用ASM，因为它要求你必须对 JVM 内部结构包括 class 文件的格式和指令集都很熟悉）JDK 通过反射调用方法，CGLIB 通过 FastClass 机制（下一篇再将）直接调用方法。所以，CGLIB 执行的效率较高JDK 核心是实现 InvocationHandler接口，使用 invoke()方法进行面向切面的处理，调用相应的通知；CGLIB 动态代理是利用 asm 开源包，对代理对象类的 class 文件加载进来，通过修改其字节码生成子类来处理。核心是实现 MethodInterceptor 接口，使用 intercept() 方法进行面向切面的处理，调用相应的通知。\n集合重点是list和map，其中list比较简单，map需要重点掌握\nArrayList 插入和删除元素的时间复杂度？对于插入：\n\n头部插入：由于需要将所有元素都依次向后移动一个位置，因此时间复杂度是 O(n)。\n尾部插入：当 ArrayList 的容量未达到极限时，往列表末尾插入元素的时间复杂度是 O(1)，因为它只需要在数组末尾添加一个元素即可；当容量已达到极限并且需要扩容时，则需要执行一次 O(n) 的操作将原数组复制到新的更大的数组中，然后再执行 O(1) 的操作添加元素。\n指定位置插入：需要将目标位置之后的所有元素都向后移动一个位置，然后再把新元素放入指定位置。这个过程需要移动平均 n&#x2F;2 个元素，因此时间复杂度为 O(n)。\n\n对于删除：\n\n头部删除：由于需要将所有元素依次向前移动一个位置，因此时间复杂度是 O(n)。\n尾部删除：当删除的元素位于列表末尾时，时间复杂度为 O(1)。\n指定位置删除：需要将目标元素之后的所有元素向前移动一个位置以填补被删除的空白位置，因此需要移动平均 n&#x2F;2 个元素，时间复杂度为 O(n)。\n\nLinkedList 插入和删除元素的时间复杂度？\n头部插入&#x2F;删除：只需要修改头结点的指针即可完成插入&#x2F;删除操作，因此时间复杂度为 O(1)。\n尾部插入&#x2F;删除：只需要修改尾结点的指针即可完成插入&#x2F;删除操作，因此时间复杂度为 O(1)。\n指定位置插入&#x2F;删除：需要先移动到指定位置，再修改指定节点的指针完成插入&#x2F;删除，因此需要移动平均 n&#x2F;2 个元素，时间复杂度为 O(n)。\n\nArrayList 与 LinkedList 区别? 是否保证线程安全： ArrayList 和 LinkedList 都是不同步的，也就是不保证线程安全；\n底层数据结构： ArrayList 底层使用的是 Object 数组；LinkedList 底层使用的是 双向链表 数据结构（JDK1.6 之前为循环链表，JDK1.7 取消了循环。注意双向链表和双向循环链表的区别，下面有介绍到！）\n**插入和删除是否受元素位置的影响：\n插入和删除是否受元素位置的影响：\n是否支持快速随机访问： LinkedList 不支持高效的随机元素访问，而 ArrayList（实现了 RandomAccess 接口） 支持。快速随机访问就是通过元素的序号快速获取元素对象(对应于get(int index)方法)。\n内存空间占用： ArrayList 的空间浪费主要体现在在 list 列表的结尾会预留一定的容量空间，而 LinkedList 的空间花费则体现在它的每一个元素都需要消耗比 ArrayList 更多的空间（因为要存放直接后继和直接前驱以及数据）\nArrayList扩容机制首先有三种初始化方式，无参数（空数组，没有分配空间），有数量参数，collections的列表（Arrays.copyOf）\n再者讲一下扩容机制，add函数先会经历一次ensurecapacityInternal，确保容量能达到指定的最小容量，当容量不足的时候将新容量更新为旧容量的1.5倍，新容量是否大于最小需要容量，若还是小于最小需要容量，那么就把最小需要容量当作数组的新容量。如果minCapacity大于最大容量，则新容量则为Integer.MAX_VALUE，否则，新容量大小则为 MAX_ARRAY_SIZE 即为 Integer.MAX_VALUE - 8\nps\n\nJava 中的 length属性是针对数组说的,比如说你声明了一个数组,想知道这个数组的长度则用到了 length 这个属性.\nJava 中的 length() 方法是针对字符串说的,如果想看这个字符串的长度则用到 length() 这个方法.\nJava 中的 size() 方法是针对泛型集合说的,如果想看这个泛型有多少个元素,就调用此方法来查看!\n\n元素排序 Comparable 和 Comparator 有什么区别？Comparable 接口只有一个方法 compareTo，实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。\nComparator 除了可以通过创建自定义比较器外，还可以通过匿名类的方式，更快速、便捷的完成自定义比较器的功能，具体的代码实现如下：\nComparable 必须由自定义类内部实现排序方法，而 Comparator 是外部定义并实现排序的\n比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同\nHashSet、LinkedHashSet 和 TreeSet 都是 Set 接口的实现类，都能保证元素唯一，并且都不是线程安全的。\nHashSet、LinkedHashSet 和 TreeSet 的主要区别在于底层数据结构不同。HashSet 的底层数据结构是哈希表（基于 HashMap 实现）。LinkedHashSet 的底层数据结构是链表和哈希表，元素的插入和取出顺序满足 FIFO。TreeSet 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。\n底层数据结构不同又导致这三者的应用场景不同。HashSet 用于不需要保证元素插入和取出顺序的场景，LinkedHashSet 用于保证元素的插入和取出顺序满足 FIFO 的场景，TreeSet 用于支持对元素自定义排序规则的场景。\n\nQueue 与 Deque 的区别Queue 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 先进先出（FIFO） 规则。\nDeque 是双端队列，在队列的两端均可以插入或删除元素。\nDeque 扩展了 Queue 的接口, 增加了在队首和队尾进行插入和删除的方法\nArrayDeque 与 LinkedList 的区别ArrayDeque 和 LinkedList 都实现了 Deque 接口，两者都具有队列的功能，但两者有什么区别呢？\n\nArrayDeque 是基于可变长的数组和双指针来实现，而 LinkedList 则通过链表来实现。\nArrayDeque 不支持存储 NULL 数据，但 LinkedList 支持。\nArrayDeque 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 LinkedList 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。\n\n从性能的角度上，选用 ArrayDeque 来实现队列要比 LinkedList 更好。此外，ArrayDeque 也可以用于实现栈。\n什么是 BlockingQueue？BlockingQueue （阻塞队列）是一个接口，继承自 Queue。BlockingQueue阻塞的原因是其支持当队列没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。BlockingQueue 常用于生产者-消费者模型中，生产者线程会向队列中添加数据，而消费者线程会从队列中取出数据进行处理。\nHashmap：HashMap 和 Hashtable 的区别\n线程是否安全：HashMap 是非线程安全的，Hashtable 是线程安全的,因为 Hashtable 内部的方法基本都经过synchronized 修饰。（如果你要保证线程安全的话就使用 ConcurrentHashMap 吧！）\n效率： 因为线程安全的问题，HashMap 要比 Hashtable 效率高一点。另外，Hashtable 基本被淘汰，不要在代码中使用它；\n初始容量大小和每次扩充容量大小的不同： ① 创建时如果不指定容量初始值，Hashtable 默认的初始大小为 11，之后每次扩充，容量变为原来的 2n+1。HashMap 默认的初始化大小为 16。之后每次扩充，容量变为原来的 2 倍。② 创建时如果给定了容量初始值，那么 Hashtable 会直接使用你给定的大小，而 HashMap 会将其扩充为 2 的幂次方大小（HashMap 中的tableSizeFor()方法保证，下面给出了源代码）。也就是说 HashMap 总是使用 2 的幂作为哈希表的大小,后面会介绍到为什么是 2 的幂次方。\n底层数据结构： JDK1.8 以后的 HashMap 在解决哈希冲突时有了较大的变化，当链表长度大于阈值（默认为 8）时，将链表转化为红黑树（将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树），以减少搜索时间（后文中我会结合源码对这一过程进行分析）。Hashtable 没有这样的机制。\n相比于HashMap来说 TreeMap 主要多了对集合中的元素根据键排序的能力以及对集合内元素的搜索的能力\n\nHashMap 的底层实现JDK1.8 之前 HashMap 底层是 数组和链表 结合在一起使用也就是 链表散列。相比于之前的版本， JDK1.8 之后在解决哈希冲突时有了较大的变化，当链表长度大于阈值（默认为 8）（将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树）时，将链表转化为红黑树，以减少搜索时间\nHashMap 通过 key 的 hashcode 经过扰动函数处理过后得到 hash 值，然后通过 (n - 1) &amp; hash 判断当前元素存放的位置（这里的 n 指的是数组的长度），如果当前位置存在元素的话，就判断该元素与要存入的元素的 hash 值以及 key 是否相同，如果相同的话，直接覆盖，不相同就通过拉链法解决冲突。\nHashMap 链表到红黑树的转换。\n1、 putVal 方法中执行链表转红黑树的判断逻辑。\n链表的长度大于 8 的时候，就执行 treeifyBin （转换红黑树）的逻辑。\ntreeifyBin 方法中判断是否真的转换为红黑树。\nHashMap 的长度为什么是 2 的幂次方我们首先可能会想到采用%取余的操作来实现。但是，重点来了：“取余(%)操作中如果除数是 2 的幂次则等价于与其除数减一的与(&amp;)操作（也就是说 hash%length&#x3D;&#x3D;hash&amp;(length-1)的前提是 length 是 2 的 n 次方；）。” 并且 采用二进制位操作 &amp;，相对于%能够提高运算效率，这就解释了 HashMap 的长度为什么是 2 的幂次方。1111最后一位是1，散列平均\nHashMap 多线程操作导致死循环问题扩容问题和头插法问题\n假设两个线程同时对hashmap进行扩容，这时候两个都指向首节点A，后面的节点分别是bcd。\n那么这时候线程1正常执行，线程2卡住了。但是A执行完后因为是头插法所以abc变成了cba，但是问题就在与线程2还是从a指向b，这样子就出现了问题。一个是c指向b指向a，一个是a指向 b。\n解决的方法：concurrenthashmap，推荐；hashtable安全，不建议；或者直接加锁，也不建议。或者头插法改成尾插法。\nHashMap 为什么线程不安全？一方面就是多线程操作导致的死循环问题。\n另一方面就是两个线程 1,2 进行 put 操作，线程1 、执行的时候通过判断发现没有出发hash碰撞，但是时间片用完了挂起，这时候线程2也判断有没有hash碰撞发现没有，因为线程1还没来得及插入。这时候线程2插入一个b值结束了，线程1重新获得时间片，因为之前已经成功判断过了，所以直接插入一个a值，那么这样b值就被a值覆盖了。\nHashmap代码loadFactor 负载因子\nloadFactor 负载因子是控制数组存放数据的疏密程度，loadFactor 越趋近于 1，那么 数组中存放的数据(entry)也就越多，也就越密，也就是会让链表的长度增加，loadFactor 越小，也就是趋近于 0，数组中存放的数据(entry)也就越少，也就越稀疏。\nloadFactor 太大导致查找元素效率低，太小导致数组的利用率低，存放的数据会很分散。loadFactor 的默认值为 0.75f 是官方给出的一个比较好的临界值。\n给定的默认容量为 16，负载因子为 0.75。Map 在使用过程中不断的往里面存放数据，当数量超过了 16 * 0.75 &#x3D; 12 就需要将当前 16 的容量进行扩容，而扩容这个过程涉及到 rehash、复制数据等操作，所以非常消耗性能。\nhashmap插入扰动函数的得到散列值，将 hash 值右移16位（hash值的高16位）与 原 hash 值做异或运算（^），从而得到一个新的散列值\n如果定位到的数组位置没有元素 就直接插入。\n如果定位到的数组位置有元素就和要插入的 key 比较，如果 key 相同就直接覆盖，如果 key 不相同，就判断 p 是否是一个树节点，如果是就调用e = ((TreeNode&lt;K,V&gt;)p).putTreeVal(this, tab, hash, key, value)将元素添加进入。\n如果不是就遍历链表插入(插入的是链表尾部)，并查看连标长度是不是大于等于8且数组长度是不是大于64，如果是的话转化成红黑树，如果链表长度大于等于8，数组长度小于64，那么先不转成红黑树，先扩容。\nhashmap扩容过程首先判断扩容，插入数据后，如果容量大于threshold（容量*负载因子），则进行扩容；获取当前容量，若当前容量大于0，并且大于MAXIMUM_CAPACITY &#x3D; 1 &lt;&lt; 30，则不进行扩容，将 threshold &#x3D; Integer.MAX_VALUE进行赋值。否则创建新的数组，将容量进行两倍扩大，threshold也进行两倍扩容,下面截取部分源码；\n扩容后将旧数组的元素进行迁移到新数组上，通过尾插法进行插入到新数组中新的位置。\n扩容简单来说就是做了两件事。1：创建一个新数组，原来的两倍大。2：把旧数组的元素放入到新数组中\n遍历老数组的每个槽位；如果槽位中是一个普通节点，则将节点放在新数组中，所在新数组中的下标计算方式为：e.hash &amp; (newCap - 1);如果槽位中是一个树节点，则进行红黑树的迁移操作，新数组中下标计算方式同普通节点；如果槽位中是一个链表节点，则将链表拆为高位链表和低位链表，分别放入新数组的旧数组的下标位置和 （旧数组下标 + 旧数组容量）下标位置；最后返回新数组。\nConcurrentHashMap 和 Hashtable 的区别实现线程安全的方式（重要）：\n在 JDK1.7 的时候，ConcurrentHashMap 对整个桶数组进行了分割分段(Segment，分段锁)，每一把锁只锁容器其中一部分数据（下面有示意图），多线程访问容器里不同数据段的数据，就不会存在锁竞争，提高并发访问率。\n到了 JDK1.8 的时候，ConcurrentHashMap 已经摒弃了 Segment 的概念，而是直接用 Node 数组+链表+红黑树的数据结构来实现，并发控制使用 synchronized 和 CAS 来操作。（JDK1.6 以后 synchronized 锁做了很多优化） 整个看起来就像是优化过且线程安全的 HashMap，虽然在 JDK1.8 中还能看到 Segment 的数据结构，但是已经简化了属性，只是为了兼容旧版本；\nHashtable(同一把锁) :使用 synchronized 来保证线程安全，效率非常低下。当一个线程访问同步方法时，其他线程也访问同步方法，可能会进入阻塞或轮询状态，如使用 put 添加元素，另一个线程不能使用 put 添加元素，也不能使用 get，竞争会越来越激烈效率越低。\nConcurrentHashMapConcurrentHashMap是线程安全的，ConcurrentHashMap并非锁住整个方法，而是通过原子操作和局部加锁的方法保证了多线程的线程安全，且尽可能减少了性能损耗\n想要解析concurrenthashmap，我从他的底层具体原理和实际的代码层面讲一讲。\n底层具体原理方面：\nConcurrentHashMap 取消了 Segment 分段锁，采用 Node + CAS + synchronized 来保证并发安全。数据结构跟 HashMap 1.8 的结构类似，数组+链表&#x2F;红黑二叉树。Java 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。\nJava 8 中，锁粒度更细，synchronized 只锁定当前链表或红黑二叉树的首节点，这样只要 hash 不冲突，就不会产生并发，就不会影响其他 Node 的读写，效率大幅提升。\n具体的代码层面：\n代码层面做插入操作的时候\n做插入操作时，首先初始化则初始化容器，如果已经初始化，则判断该hash位置的节点是否为空，如果为空，则通过CAS操作进行插入。如果该节点不为空，再判断容器是否在扩容中，如果在扩容，则帮助其扩容。如果没有扩容，则进行最后一步，先加锁，然后找到hash值相同的那个节点(hash冲突)，循环判断这个节点上的链表，决定做覆盖操作还是插入操作。循环结束，插入完毕。\n","dateCreated":"2023-08-07T00:00:00+08:00","dateModified":"2023-09-25T13:16:43+08:00","datePublished":"2023-08-07T00:00:00+08:00","description":"","headline":"Java基础知识","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/","keywords":"Java基础知识"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"讲讲Java的代理代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。\n动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy，\n动态代理有两种方式一种是jdk方法，一种是cglib方法\n我们先来讲jdk代理：\n首先，代理是一个代理类代理真正的对象去帮助你做一些操作，可以在原本的方法前后加一些操作。那代理类就需要一个执行器去帮你做这些事情，那这个执行器就是InvocationHandler接口，他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组\n这三个参数里面代理方法和参数组其实我们可以依赖于最基础反射得到。而jdk代理又必须要实现InvocationHandler接口，而这个接口他又有这么三个参数，而这三个参数其实是可以变化的，被代理类被代理方法参数组是可以变化的，那这样就成功的实现了动态的代理。\n那我们怎么去调用这个方法呢？依赖于Proxy类和他的方法newproxyInstance，得到的代理类，调用方法其实会直接调用我们实现InvocationHandler接口的invoke方法\n下面来讲CGLIB代理\n在 CGLIB 动态代理机制中 MethodInterceptor 接口和 Enhancer 类是核心。你可以通过 Enhancer类来动态获取被代理类，\n  CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法拦截器拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 MethodInterceptor 中的 intercept 方法。\n为什么JDK动态代理只能代理接口实现类，原因是JDK动态代理是基于接口实现的。\n有两个原因，一个是继承Proxy。第二个是当你使用Proxy类创建代理对象时，你需要指定一个接口列表来表示理对象的类型。代理对象的类型是由接口列表决定的，因此只有实现了接口的类才能被代理。如果你想代理一个类而不是一个接口，你需要使用其他的代理技术，比如CGLIB。\n二者区别总结一下两者的区别吧：\nJDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承 java.lang.reflect.Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰JDK 和 CGLIB 动态代理都是在运行期生成字节码。而 JDK 是直接写 Class 字节码；而 CGLIB 使用 ASM 框架写 Class 字节码（不鼓励直接使用ASM，因为它要求你必须对 JVM 内部结构包括 class 文件的格式和指令集都很熟悉）JDK 通过反射调用方法，CGLIB 通过 FastClass 机制（下一篇再将）直接调用方法。所以，CGLIB 执行的效率较高JDK 核心是实现 InvocationHandler接口，使用 invoke()方法进行面向切面的处理，调用相应的通知；CGLIB 动态代理是利用 asm 开源包，对代理对象类的 class 文件加载进来，通过修改其字节码生成子类来处理。核心是实现 MethodInterceptor 接口，使用 intercept() 方法进行面向切面的处理，调用相应的通知。\n集合重点是list和map，其中list比较简单，map需要重点掌握\nArrayList 插入和删除元素的时间复杂度？对于插入：\n\n头部插入：由于需要将所有元素都依次向后移动一个位置，因此时间复杂度是 O(n)。\n尾部插入：当 ArrayList 的容量未达到极限时，往列表末尾插入元素的时间复杂度是 O(1)，因为它只需要在数组末尾添加一个元素即可；当容量已达到极限并且需要扩容时，则需要执行一次 O(n) 的操作将原数组复制到新的更大的数组中，然后再执行 O(1) 的操作添加元素。\n指定位置插入：需要将目标位置之后的所有元素都向后移动一个位置，然后再把新元素放入指定位置。这个过程需要移动平均 n&#x2F;2 个元素，因此时间复杂度为 O(n)。\n\n对于删除：\n\n头部删除：由于需要将所有元素依次向前移动一个位置，因此时间复杂度是 O(n)。\n尾部删除：当删除的元素位于列表末尾时，时间复杂度为 O(1)。\n指定位置删除：需要将目标元素之后的所有元素向前移动一个位置以填补被删除的空白位置，因此需要移动平均 n&#x2F;2 个元素，时间复杂度为 O(n)。\n\nLinkedList 插入和删除元素的时间复杂度？\n头部插入&#x2F;删除：只需要修改头结点的指针即可完成插入&#x2F;删除操作，因此时间复杂度为 O(1)。\n尾部插入&#x2F;删除：只需要修改尾结点的指针即可完成插入&#x2F;删除操作，因此时间复杂度为 O(1)。\n指定位置插入&#x2F;删除：需要先移动到指定位置，再修改指定节点的指针完成插入&#x2F;删除，因此需要移动平均 n&#x2F;2 个元素，时间复杂度为 O(n)。\n\nArrayList 与 LinkedList 区别? 是否保证线程安全： ArrayList 和 LinkedList 都是不同步的，也就是不保证线程安全；\n底层数据结构： ArrayList 底层使用的是 Object 数组；LinkedList 底层使用的是 双向链表 数据结构（JDK1.6 之前为循环链表，JDK1.7 取消了循环。注意双向链表和双向循环链表的区别，下面有介绍到！）\n**插入和删除是否受元素位置的影响：\n插入和删除是否受元素位置的影响：\n是否支持快速随机访问： LinkedList 不支持高效的随机元素访问，而 ArrayList（实现了 RandomAccess 接口） 支持。快速随机访问就是通过元素的序号快速获取元素对象(对应于get(int index)方法)。\n内存空间占用： ArrayList 的空间浪费主要体现在在 list 列表的结尾会预留一定的容量空间，而 LinkedList 的空间花费则体现在它的每一个元素都需要消耗比 ArrayList 更多的空间（因为要存放直接后继和直接前驱以及数据）\nArrayList扩容机制首先有三种初始化方式，无参数（空数组，没有分配空间），有数量参数，collections的列表（Arrays.copyOf）\n再者讲一下扩容机制，add函数先会经历一次ensurecapacityInternal，确保容量能达到指定的最小容量，当容量不足的时候将新容量更新为旧容量的1.5倍，新容量是否大于最小需要容量，若还是小于最小需要容量，那么就把最小需要容量当作数组的新容量。如果minCapacity大于最大容量，则新容量则为Integer.MAX_VALUE，否则，新容量大小则为 MAX_ARRAY_SIZE 即为 Integer.MAX_VALUE - 8\nps\n\nJava 中的 length属性是针对数组说的,比如说你声明了一个数组,想知道这个数组的长度则用到了 length 这个属性.\nJava 中的 length() 方法是针对字符串说的,如果想看这个字符串的长度则用到 length() 这个方法.\nJava 中的 size() 方法是针对泛型集合说的,如果想看这个泛型有多少个元素,就调用此方法来查看!\n\n元素排序 Comparable 和 Comparator 有什么区别？Comparable 接口只有一个方法 compareTo，实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。\nComparator 除了可以通过创建自定义比较器外，还可以通过匿名类的方式，更快速、便捷的完成自定义比较器的功能，具体的代码实现如下：\nComparable 必须由自定义类内部实现排序方法，而 Comparator 是外部定义并实现排序的\n比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同\nHashSet、LinkedHashSet 和 TreeSet 都是 Set 接口的实现类，都能保证元素唯一，并且都不是线程安全的。\nHashSet、LinkedHashSet 和 TreeSet 的主要区别在于底层数据结构不同。HashSet 的底层数据结构是哈希表（基于 HashMap 实现）。LinkedHashSet 的底层数据结构是链表和哈希表，元素的插入和取出顺序满足 FIFO。TreeSet 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。\n底层数据结构不同又导致这三者的应用场景不同。HashSet 用于不需要保证元素插入和取出顺序的场景，LinkedHashSet 用于保证元素的插入和取出顺序满足 FIFO 的场景，TreeSet 用于支持对元素自定义排序规则的场景。\n\nQueue 与 Deque 的区别Queue 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 先进先出（FIFO） 规则。\nDeque 是双端队列，在队列的两端均可以插入或删除元素。\nDeque 扩展了 Queue 的接口, 增加了在队首和队尾进行插入和删除的方法\nArrayDeque 与 LinkedList 的区别ArrayDeque 和 LinkedList 都实现了 Deque 接口，两者都具有队列的功能，但两者有什么区别呢？\n\nArrayDeque 是基于可变长的数组和双指针来实现，而 LinkedList 则通过链表来实现。\nArrayDeque 不支持存储 NULL 数据，但 LinkedList 支持。\nArrayDeque 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 LinkedList 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。\n\n从性能的角度上，选用 ArrayDeque 来实现队列要比 LinkedList 更好。此外，ArrayDeque 也可以用于实现栈。\n什么是 BlockingQueue？BlockingQueue （阻塞队列）是一个接口，继承自 Queue。BlockingQueue阻塞的原因是其支持当队列没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。BlockingQueue 常用于生产者-消费者模型中，生产者线程会向队列中添加数据，而消费者线程会从队列中取出数据进行处理。\nHashmap：HashMap 和 Hashtable 的区别\n线程是否安全：HashMap 是非线程安全的，Hashtable 是线程安全的,因为 Hashtable 内部的方法基本都经过synchronized 修饰。（如果你要保证线程安全的话就使用 ConcurrentHashMap 吧！）\n效率： 因为线程安全的问题，HashMap 要比 Hashtable 效率高一点。另外，Hashtable 基本被淘汰，不要在代码中使用它；\n初始容量大小和每次扩充容量大小的不同： ① 创建时如果不指定容量初始值，Hashtable 默认的初始大小为 11，之后每次扩充，容量变为原来的 2n+1。HashMap 默认的初始化大小为 16。之后每次扩充，容量变为原来的 2 倍。② 创建时如果给定了容量初始值，那么 Hashtable 会直接使用你给定的大小，而 HashMap 会将其扩充为 2 的幂次方大小（HashMap 中的tableSizeFor()方法保证，下面给出了源代码）。也就是说 HashMap 总是使用 2 的幂作为哈希表的大小,后面会介绍到为什么是 2 的幂次方。\n底层数据结构： JDK1.8 以后的 HashMap 在解决哈希冲突时有了较大的变化，当链表长度大于阈值（默认为 8）时，将链表转化为红黑树（将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树），以减少搜索时间（后文中我会结合源码对这一过程进行分析）。Hashtable 没有这样的机制。\n相比于HashMap来说 TreeMap 主要多了对集合中的元素根据键排序的能力以及对集合内元素的搜索的能力\n\nHashMap 的底层实现JDK1.8 之前 HashMap 底层是 数组和链表 结合在一起使用也就是 链表散列。相比于之前的版本， JDK1.8 之后在解决哈希冲突时有了较大的变化，当链表长度大于阈值（默认为 8）（将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树）时，将链表转化为红黑树，以减少搜索时间\nHashMap 通过 key 的 hashcode 经过扰动函数处理过后得到 hash 值，然后通过 (n - 1) &amp; hash 判断当前元素存放的位置（这里的 n 指的是数组的长度），如果当前位置存在元素的话，就判断该元素与要存入的元素的 hash 值以及 key 是否相同，如果相同的话，直接覆盖，不相同就通过拉链法解决冲突。\nHashMap 链表到红黑树的转换。\n1、 putVal 方法中执行链表转红黑树的判断逻辑。\n链表的长度大于 8 的时候，就执行 treeifyBin （转换红黑树）的逻辑。\ntreeifyBin 方法中判断是否真的转换为红黑树。\nHashMap 的长度为什么是 2 的幂次方我们首先可能会想到采用%取余的操作来实现。但是，重点来了：“取余(%)操作中如果除数是 2 的幂次则等价于与其除数减一的与(&amp;)操作（也就是说 hash%length&#x3D;&#x3D;hash&amp;(length-1)的前提是 length 是 2 的 n 次方；）。” 并且 采用二进制位操作 &amp;，相对于%能够提高运算效率，这就解释了 HashMap 的长度为什么是 2 的幂次方。1111最后一位是1，散列平均\nHashMap 多线程操作导致死循环问题扩容问题和头插法问题\n假设两个线程同时对hashmap进行扩容，这时候两个都指向首节点A，后面的节点分别是bcd。\n那么这时候线程1正常执行，线程2卡住了。但是A执行完后因为是头插法所以abc变成了cba，但是问题就在与线程2还是从a指向b，这样子就出现了问题。一个是c指向b指向a，一个是a指向 b。\n解决的方法：concurrenthashmap，推荐；hashtable安全，不建议；或者直接加锁，也不建议。或者头插法改成尾插法。\nHashMap 为什么线程不安全？一方面就是多线程操作导致的死循环问题。\n另一方面就是两个线程 1,2 进行 put 操作，线程1 、执行的时候通过判断发现没有出发hash碰撞，但是时间片用完了挂起，这时候线程2也判断有没有hash碰撞发现没有，因为线程1还没来得及插入。这时候线程2插入一个b值结束了，线程1重新获得时间片，因为之前已经成功判断过了，所以直接插入一个a值，那么这样b值就被a值覆盖了。\nHashmap代码loadFactor 负载因子\nloadFactor 负载因子是控制数组存放数据的疏密程度，loadFactor 越趋近于 1，那么 数组中存放的数据(entry)也就越多，也就越密，也就是会让链表的长度增加，loadFactor 越小，也就是趋近于 0，数组中存放的数据(entry)也就越少，也就越稀疏。\nloadFactor 太大导致查找元素效率低，太小导致数组的利用率低，存放的数据会很分散。loadFactor 的默认值为 0.75f 是官方给出的一个比较好的临界值。\n给定的默认容量为 16，负载因子为 0.75。Map 在使用过程中不断的往里面存放数据，当数量超过了 16 * 0.75 &#x3D; 12 就需要将当前 16 的容量进行扩容，而扩容这个过程涉及到 rehash、复制数据等操作，所以非常消耗性能。\nhashmap插入扰动函数的得到散列值，将 hash 值右移16位（hash值的高16位）与 原 hash 值做异或运算（^），从而得到一个新的散列值\n如果定位到的数组位置没有元素 就直接插入。\n如果定位到的数组位置有元素就和要插入的 key 比较，如果 key 相同就直接覆盖，如果 key 不相同，就判断 p 是否是一个树节点，如果是就调用e = ((TreeNode&lt;K,V&gt;)p).putTreeVal(this, tab, hash, key, value)将元素添加进入。\n如果不是就遍历链表插入(插入的是链表尾部)，并查看连标长度是不是大于等于8且数组长度是不是大于64，如果是的话转化成红黑树，如果链表长度大于等于8，数组长度小于64，那么先不转成红黑树，先扩容。\nhashmap扩容过程首先判断扩容，插入数据后，如果容量大于threshold（容量*负载因子），则进行扩容；获取当前容量，若当前容量大于0，并且大于MAXIMUM_CAPACITY &#x3D; 1 &lt;&lt; 30，则不进行扩容，将 threshold &#x3D; Integer.MAX_VALUE进行赋值。否则创建新的数组，将容量进行两倍扩大，threshold也进行两倍扩容,下面截取部分源码；\n扩容后将旧数组的元素进行迁移到新数组上，通过尾插法进行插入到新数组中新的位置。\n扩容简单来说就是做了两件事。1：创建一个新数组，原来的两倍大。2：把旧数组的元素放入到新数组中\n遍历老数组的每个槽位；如果槽位中是一个普通节点，则将节点放在新数组中，所在新数组中的下标计算方式为：e.hash &amp; (newCap - 1);如果槽位中是一个树节点，则进行红黑树的迁移操作，新数组中下标计算方式同普通节点；如果槽位中是一个链表节点，则将链表拆为高位链表和低位链表，分别放入新数组的旧数组的下标位置和 （旧数组下标 + 旧数组容量）下标位置；最后返回新数组。\nConcurrentHashMap 和 Hashtable 的区别实现线程安全的方式（重要）：\n在 JDK1.7 的时候，ConcurrentHashMap 对整个桶数组进行了分割分段(Segment，分段锁)，每一把锁只锁容器其中一部分数据（下面有示意图），多线程访问容器里不同数据段的数据，就不会存在锁竞争，提高并发访问率。\n到了 JDK1.8 的时候，ConcurrentHashMap 已经摒弃了 Segment 的概念，而是直接用 Node 数组+链表+红黑树的数据结构来实现，并发控制使用 synchronized 和 CAS 来操作。（JDK1.6 以后 synchronized 锁做了很多优化） 整个看起来就像是优化过且线程安全的 HashMap，虽然在 JDK1.8 中还能看到 Segment 的数据结构，但是已经简化了属性，只是为了兼容旧版本；\nHashtable(同一把锁) :使用 synchronized 来保证线程安全，效率非常低下。当一个线程访问同步方法时，其他线程也访问同步方法，可能会进入阻塞或轮询状态，如使用 put 添加元素，另一个线程不能使用 put 添加元素，也不能使用 get，竞争会越来越激烈效率越低。\nConcurrentHashMapConcurrentHashMap是线程安全的，ConcurrentHashMap并非锁住整个方法，而是通过原子操作和局部加锁的方法保证了多线程的线程安全，且尽可能减少了性能损耗\n想要解析concurrenthashmap，我从他的底层具体原理和实际的代码层面讲一讲。\n底层具体原理方面：\nConcurrentHashMap 取消了 Segment 分段锁，采用 Node + CAS + synchronized 来保证并发安全。数据结构跟 HashMap 1.8 的结构类似，数组+链表&#x2F;红黑二叉树。Java 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。\nJava 8 中，锁粒度更细，synchronized 只锁定当前链表或红黑二叉树的首节点，这样只要 hash 不冲突，就不会产生并发，就不会影响其他 Node 的读写，效率大幅提升。\n具体的代码层面：\n代码层面做插入操作的时候\n做插入操作时，首先初始化则初始化容器，如果已经初始化，则判断该hash位置的节点是否为空，如果为空，则通过CAS操作进行插入。如果该节点不为空，再判断容器是否在扩容中，如果在扩容，则帮助其扩容。如果没有扩容，则进行最后一步，先加锁，然后找到hash值相同的那个节点(hash冲突)，循环判断这个节点上的链表，决定做覆盖操作还是插入操作。循环结束，插入完毕。\n","dateCreated":"2023-08-07T00:00:00+08:00","dateModified":"2023-09-25T13:16:43+08:00","datePublished":"2023-08-07T00:00:00+08:00","description":"","headline":"Java基础知识","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/","keywords":"Java基础知识"}</script>
     <meta name="description" content="讲讲Java的代理代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。 动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy， 动态代理有两种方式一种是jdk方法，一种是cglib方法 我们先来讲jdk代理： 首先，代理是一个">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Java基础知识">
@@ -75,11 +75,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -98,9 +98,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -119,10 +119,10 @@
                             href="/"
                             
                             rel="noopener"
-                            title="Home"
+                            title="首页"
                         >
                         <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Home</span>
+                        <span class="sidebar-button-desc">首页</span>
                     </a>
             </li>
             
@@ -133,10 +133,10 @@
                             href="/all-categories"
                             
                             rel="noopener"
-                            title="categories"
+                            title="分类"
                         >
                         <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">categories</span>
+                        <span class="sidebar-button-desc">分类</span>
                     </a>
             </li>
             
@@ -147,10 +147,10 @@
                             href="/all-tags"
                             
                             rel="noopener"
-                            title="Tags"
+                            title="标签"
                         >
                         <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Tags</span>
+                        <span class="sidebar-button-desc">标签</span>
                     </a>
             </li>
             
@@ -161,10 +161,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archives"
+                            title="档案"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archives</span>
+                        <span class="sidebar-button-desc">档案</span>
                     </a>
             </li>
             
@@ -175,10 +175,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Search"
+                            title="搜索"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Search</span>
+                        <span class="sidebar-button-desc">搜索</span>
                     </a>
             </li>
             
@@ -189,10 +189,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="About"
+                            title="关于"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">About</span>
+                        <span class="sidebar-button-desc">关于</span>
                     </a>
             </li>
             
@@ -204,15 +204,15 @@
                     
                         <a
                             class="sidebar-button-link "
-                            href="https://github.com/"
+                            href="https://github.com/Caosen0819"
                             
                                 target="_blank"
                             
                             rel="noopener"
-                            title="GitHub"
+                            title=".github"
                         >
                         <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">GitHub</span>
+                        <span class="sidebar-button-desc">.github</span>
                     </a>
             </li>
             
@@ -240,7 +240,7 @@
         <div class="post-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    Aug 07, 2023
+		    07 Aug 2023
     	
     </time>
     
@@ -376,7 +376,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" rel="tag">Java基础知识</a>
 
@@ -393,11 +393,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
                     data-tooltip="Java并发知识"
-                    aria-label="PREVIOUS: Java并发知识"
+                    aria-label="FRÜHER: Java并发知识"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -407,10 +407,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
                     data-tooltip="计算机网络复习1"
-                    aria-label="NEXT: 计算机网络复习1"
+                    aria-label="NÄCHSTER: 计算机网络复习1"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -421,7 +421,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -433,8 +433,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -446,8 +446,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -459,8 +459,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -471,7 +471,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -508,11 +508,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
                     data-tooltip="Java并发知识"
-                    aria-label="PREVIOUS: Java并发知识"
+                    aria-label="FRÜHER: Java并发知识"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -522,10 +522,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
                     data-tooltip="计算机网络复习1"
-                    aria-label="NEXT: 计算机网络复习1"
+                    aria-label="NÄCHSTER: 计算机网络复习1"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -536,7 +536,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -548,8 +548,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -561,8 +561,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -574,8 +574,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -586,7 +586,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -608,9 +608,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                        aria-label="Share on Facebook"
+                        aria-label="Teilen auf Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
                     </a>
                 </li>
             
@@ -621,9 +621,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                        aria-label="Share on Twitter"
+                        aria-label="Teilen auf Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
                     </a>
                 </li>
             
@@ -634,9 +634,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                        aria-label="Share on Google+"
+                        aria-label="Teilen auf Google Plus"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
                     </a>
                 </li>
             
@@ -659,7 +659,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

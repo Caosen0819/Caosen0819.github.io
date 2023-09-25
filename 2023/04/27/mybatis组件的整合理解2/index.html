@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg"},"articleBody":"orm我们已经知道具体的做法了，那怎么把这个和我们的spring结合在一起呢？\n其实我们要做的就是让他参与到Spring的事务管理之中，然后创建映射器和sqlsession并注入到bean里面，再把异常转化成Spring到dataaccessexception。以上的种种就是要把我们自己的orm交给spring管理。\norm结合spring的核心内容就是对需要注册对象的扫描，代理类的实现，bean的注册。\n这里和orm框架一样，也有三个类非常重要：SqlSessionFactoryBean、MapperScannerConfigurer、MapperFactoryBean\n先说SqlSessionFactoryBean\n* 在基本的 MyBatis 中，session 工厂可以使用 SqlSessionFactoryBuilder 来创建。而在 MyBatis-Spring 中,则使用 SqlSessionFactoryBean 来替代。public class SqlSessionFactoryBean implements FactoryBean&lt;SqlSessionFactory&gt;, InitializingBean &#123;    private String resource;    private SqlSessionFactory sqlSessionFactory;    @Override    public void afterPropertiesSet() throws Exception &#123;        try (Reader reader = Resources.getResourceAsReader(resource)) &#123;            this.sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);        &#125; catch (Exception e) &#123;            e.printStackTrace();        &#125;    &#125;    @Override    public SqlSessionFactory getObject() throws Exception &#123;        return sqlSessionFactory;    &#125;    @Override    public Class&lt;?&gt; getObjectType() &#123;        return SqlSessionFactory.class;    &#125;    @Override    public boolean isSingleton() &#123;        return true;    &#125;    public void setResource(String resource) &#123;        this.resource = resource;    &#125;&#125;\n\nSqlSessionFactoryBean实现InitializingBean主要适用于加载mybatis相关内容；解析xml、构造sqlsession、链接数据库等等，这三步就是我们orm框架中的核心部分，这也是为什么你只要引入一些数据库的依赖，你如果没有配置数据库，他在项目启动的时候就会报错，因为这个需要一开始就配置好。\nMapperScannerConfigurer\npublic class MapperScannerConfigurer implements BeanDefinitionRegistryPostProcessor &#123;    private String basePackage;    private SqlSessionFactory sqlSessionFactory;    @Override    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException &#123;        try &#123;            String packageSearchPath = &quot;classpath*:&quot; + basePackage.replace(&#x27;.&#x27;, &#x27;/&#x27;) + &quot;/**/*.class&quot;;            ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();            Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);            for (Resource resource : resources) &#123;                MetadataReader metadataReader = new SimpleMetadataReader(resource, ClassUtils.getDefaultClassLoader());                ScannedGenericBeanDefinition beanDefinition = new ScannedGenericBeanDefinition(metadataReader);                String beanName = Introspector.decapitalize(ClassUtils.getShortName(beanDefinition.getBeanClassName()));                beanDefinition.setResource(resource);                beanDefinition.setSource(resource);                beanDefinition.setScope(&quot;singleton&quot;);                beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(beanDefinition.getBeanClassName());                beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(sqlSessionFactory);                beanDefinition.setBeanClass(MapperFactoryBean.class);                BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(beanDefinition, beanName);                registry.registerBeanDefinition(beanName, definitionHolder.getBeanDefinition());            &#125;        &#125; catch (IOException e) &#123;            e.printStackTrace();        &#125;    &#125;    @Override    public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException &#123;    &#125;    public void setBasePackage(String basePackage) &#123;        this.basePackage = basePackage;    &#125;    public void setSqlSessionFactory(SqlSessionFactory sqlSessionFactory) &#123;        this.sqlSessionFactory = sqlSessionFactory;    &#125;&#125;\n\n这个类要做的就是把Dao接口全部扫描出来（也就是所有的XXXdao），完成他们的代理，然后把他们注册到spring Bean容器\n打个锻炼看看：\npostProcessBeanDefinitionRegistry\n\n\n看这个packagesearchpath就明白了\n\n看resource，因为我们只有一个dao所以就扫描到了一个\n\n这里把他注册到容器中\nmapperfactory：\n这个类其实就是你所有dao接口类的\n日常调用的 dao 层接口就是 MapperFactoryBean 实例化的\n\n我们虽然配置的是MapperFactoryBean的实列，但是根据id拿到的是getObject方法里面返回的的对象。其实在容器中创建的对象仍然是MapperFactoryBean的实列，只是在获取的时候会判断这个结果对象是不是派生于FactoryBean，如果是的话则返回getObject方法创建的对象，并且这个对象并不是容器初始化时创建的，而是使用context.getBean()方法时才创建。当然了，如果你确实想要获取FactoryBean实例，你需要这样写: MapperFactoryBean mapper = context.getBean(&quot;&amp;mapper&quot;, MapperFactoryBean.class); 只需要在bean的名字ID前加上&amp;符号。\n所以究竟getObject获取的是什么呢？那就看他return了什么，后面的详细知识和加载流程，就涉及spring源码，所以可以看我的Spring ioc加载流程，保真有所收获！\n","dateCreated":"2023-04-27T00:00:00+08:00","dateModified":"2023-09-25T13:10:36+08:00","datePublished":"2023-04-27T00:00:00+08:00","description":"","headline":"mybatis组件的整合理解2","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/","keywords":"mybatis-starter"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"orm我们已经知道具体的做法了，那怎么把这个和我们的spring结合在一起呢？\n其实我们要做的就是让他参与到Spring的事务管理之中，然后创建映射器和sqlsession并注入到bean里面，再把异常转化成Spring到dataaccessexception。以上的种种就是要把我们自己的orm交给spring管理。\norm结合spring的核心内容就是对需要注册对象的扫描，代理类的实现，bean的注册。\n这里和orm框架一样，也有三个类非常重要：SqlSessionFactoryBean、MapperScannerConfigurer、MapperFactoryBean\n先说SqlSessionFactoryBean\n* 在基本的 MyBatis 中，session 工厂可以使用 SqlSessionFactoryBuilder 来创建。而在 MyBatis-Spring 中,则使用 SqlSessionFactoryBean 来替代。public class SqlSessionFactoryBean implements FactoryBean&lt;SqlSessionFactory&gt;, InitializingBean &#123;    private String resource;    private SqlSessionFactory sqlSessionFactory;    @Override    public void afterPropertiesSet() throws Exception &#123;        try (Reader reader = Resources.getResourceAsReader(resource)) &#123;            this.sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);        &#125; catch (Exception e) &#123;            e.printStackTrace();        &#125;    &#125;    @Override    public SqlSessionFactory getObject() throws Exception &#123;        return sqlSessionFactory;    &#125;    @Override    public Class&lt;?&gt; getObjectType() &#123;        return SqlSessionFactory.class;    &#125;    @Override    public boolean isSingleton() &#123;        return true;    &#125;    public void setResource(String resource) &#123;        this.resource = resource;    &#125;&#125;\n\nSqlSessionFactoryBean实现InitializingBean主要适用于加载mybatis相关内容；解析xml、构造sqlsession、链接数据库等等，这三步就是我们orm框架中的核心部分，这也是为什么你只要引入一些数据库的依赖，你如果没有配置数据库，他在项目启动的时候就会报错，因为这个需要一开始就配置好。\nMapperScannerConfigurer\npublic class MapperScannerConfigurer implements BeanDefinitionRegistryPostProcessor &#123;    private String basePackage;    private SqlSessionFactory sqlSessionFactory;    @Override    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException &#123;        try &#123;            String packageSearchPath = &quot;classpath*:&quot; + basePackage.replace(&#x27;.&#x27;, &#x27;/&#x27;) + &quot;/**/*.class&quot;;            ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();            Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);            for (Resource resource : resources) &#123;                MetadataReader metadataReader = new SimpleMetadataReader(resource, ClassUtils.getDefaultClassLoader());                ScannedGenericBeanDefinition beanDefinition = new ScannedGenericBeanDefinition(metadataReader);                String beanName = Introspector.decapitalize(ClassUtils.getShortName(beanDefinition.getBeanClassName()));                beanDefinition.setResource(resource);                beanDefinition.setSource(resource);                beanDefinition.setScope(&quot;singleton&quot;);                beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(beanDefinition.getBeanClassName());                beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(sqlSessionFactory);                beanDefinition.setBeanClass(MapperFactoryBean.class);                BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(beanDefinition, beanName);                registry.registerBeanDefinition(beanName, definitionHolder.getBeanDefinition());            &#125;        &#125; catch (IOException e) &#123;            e.printStackTrace();        &#125;    &#125;    @Override    public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException &#123;    &#125;    public void setBasePackage(String basePackage) &#123;        this.basePackage = basePackage;    &#125;    public void setSqlSessionFactory(SqlSessionFactory sqlSessionFactory) &#123;        this.sqlSessionFactory = sqlSessionFactory;    &#125;&#125;\n\n这个类要做的就是把Dao接口全部扫描出来（也就是所有的XXXdao），完成他们的代理，然后把他们注册到spring Bean容器\n打个锻炼看看：\npostProcessBeanDefinitionRegistry\n\n\n看这个packagesearchpath就明白了\n\n看resource，因为我们只有一个dao所以就扫描到了一个\n\n这里把他注册到容器中\nmapperfactory：\n这个类其实就是你所有dao接口类的\n日常调用的 dao 层接口就是 MapperFactoryBean 实例化的\n\n我们虽然配置的是MapperFactoryBean的实列，但是根据id拿到的是getObject方法里面返回的的对象。其实在容器中创建的对象仍然是MapperFactoryBean的实列，只是在获取的时候会判断这个结果对象是不是派生于FactoryBean，如果是的话则返回getObject方法创建的对象，并且这个对象并不是容器初始化时创建的，而是使用context.getBean()方法时才创建。当然了，如果你确实想要获取FactoryBean实例，你需要这样写: MapperFactoryBean mapper = context.getBean(&quot;&amp;mapper&quot;, MapperFactoryBean.class); 只需要在bean的名字ID前加上&amp;符号。\n所以究竟getObject获取的是什么呢？那就看他return了什么，后面的详细知识和加载流程，就涉及spring源码，所以可以看我的Spring ioc加载流程，保真有所收获！\n","dateCreated":"2023-04-27T00:00:00+08:00","dateModified":"2023-09-25T13:10:36+08:00","datePublished":"2023-04-27T00:00:00+08:00","description":"","headline":"mybatis组件的整合理解2","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/","keywords":"mybatis-starter"}</script>
     <meta name="description" content="orm我们已经知道具体的做法了，那怎么把这个和我们的spring结合在一起呢？ 其实我们要做的就是让他参与到Spring的事务管理之中，然后创建映射器和sqlsession并注入到bean里面，再把异常转化成Spring到dataaccessexception。以上的种种就是要把我们自己的orm交给spring管理。 orm结合spring的核心内容就是对需要注册对象的扫描，代理类的实现，bean">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="mybatis组件的整合理解2">
@@ -80,11 +80,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -103,9 +103,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -124,10 +124,10 @@
                             href="/"
                             
                             rel="noopener"
-                            title="Home"
+                            title="首页"
                         >
                         <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Home</span>
+                        <span class="sidebar-button-desc">首页</span>
                     </a>
             </li>
             
@@ -138,10 +138,10 @@
                             href="/all-categories"
                             
                             rel="noopener"
-                            title="categories"
+                            title="分类"
                         >
                         <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">categories</span>
+                        <span class="sidebar-button-desc">分类</span>
                     </a>
             </li>
             
@@ -152,10 +152,10 @@
                             href="/all-tags"
                             
                             rel="noopener"
-                            title="Tags"
+                            title="标签"
                         >
                         <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Tags</span>
+                        <span class="sidebar-button-desc">标签</span>
                     </a>
             </li>
             
@@ -166,10 +166,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archives"
+                            title="档案"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archives</span>
+                        <span class="sidebar-button-desc">档案</span>
                     </a>
             </li>
             
@@ -180,10 +180,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Search"
+                            title="搜索"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Search</span>
+                        <span class="sidebar-button-desc">搜索</span>
                     </a>
             </li>
             
@@ -194,10 +194,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="About"
+                            title="关于"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">About</span>
+                        <span class="sidebar-button-desc">关于</span>
                     </a>
             </li>
             
@@ -209,15 +209,15 @@
                     
                         <a
                             class="sidebar-button-link "
-                            href="https://github.com/"
+                            href="https://github.com/Caosen0819"
                             
                                 target="_blank"
                             
                             rel="noopener"
-                            title="GitHub"
+                            title=".github"
                         >
                         <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">GitHub</span>
+                        <span class="sidebar-button-desc">.github</span>
                     </a>
             </li>
             
@@ -245,7 +245,7 @@
         <div class="post-meta">
     <time datetime="2023-04-27T00:00:00+08:00">
 	
-		    Apr 27, 2023
+		    27 Apr 2023
     	
     </time>
     
@@ -299,7 +299,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/mybatis-starter/" rel="tag">mybatis-starter</a>
 
@@ -316,11 +316,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/"
                     data-tooltip="计算机网络复习2"
-                    aria-label="PREVIOUS: 计算机网络复习2"
+                    aria-label="FRÜHER: 计算机网络复习2"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -330,10 +330,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/"
                     data-tooltip="mybatis组件的整合理解3"
-                    aria-label="NEXT: mybatis组件的整合理解3"
+                    aria-label="NÄCHSTER: mybatis组件的整合理解3"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -344,7 +344,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -356,8 +356,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -369,8 +369,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -382,8 +382,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -394,7 +394,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -431,11 +431,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/"
                     data-tooltip="计算机网络复习2"
-                    aria-label="PREVIOUS: 计算机网络复习2"
+                    aria-label="FRÜHER: 计算机网络复习2"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -445,10 +445,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/"
                     data-tooltip="mybatis组件的整合理解3"
-                    aria-label="NEXT: mybatis组件的整合理解3"
+                    aria-label="NÄCHSTER: mybatis组件的整合理解3"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -459,7 +459,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -471,8 +471,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -484,8 +484,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -497,8 +497,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -509,7 +509,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -531,9 +531,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
-                        aria-label="Share on Facebook"
+                        aria-label="Teilen auf Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
                     </a>
                 </li>
             
@@ -544,9 +544,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
-                        aria-label="Share on Twitter"
+                        aria-label="Teilen auf Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
                     </a>
                 </li>
             
@@ -557,9 +557,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
-                        aria-label="Share on Google+"
+                        aria-label="Teilen auf Google Plus"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
                     </a>
                 </li>
             
@@ -582,7 +582,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
