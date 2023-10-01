@@ -233,6 +233,68 @@
                     
                         <a
                             class="link-unstyled"
+                            href="/2023/09/30/shua/"
+                            aria-label=": Java刷题"
+                        >
+                            Java刷题
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-09-30T00:00:00+08:00">
+	
+		    30 Sep 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>动态规划中，结束条件判断中，建议判断已知的。</p>
+<p>结束标志一般一个是null，一个是结束值。</p>
+<p>递归中的凭据，如果是多个数组、Treenod、者链表，用坐标也许会很麻烦，可以先尝试原本的累心，比如数组，就用子数组。因为数组如果用坐标判断长度是不是0会比较麻烦</p>
+<p><img src="/../images/shua/image-20231001132922742.png" alt="image-20231001132922742"></p>
+<p>如果能做一次这种就好了</p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/09/30/shua/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Kommentieren und teilen
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
                             href="/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
                             aria-label=": Java并发知识"
                         >
@@ -311,11 +373,13 @@
 <p>共享式和独占式最大的区别就局势同一时刻能够多个线程获取到同步状态</p>
 <h2 id="ReentrantLock原理"><a href="#ReentrantLock原理" class="headerlink" title="ReentrantLock原理"></a>ReentrantLock原理</h2><p>用这个之前需要先创建 ReentrantLock 对象，然后使用 lock 方法进行加锁，使用完之后再调用 unlock 方法释放锁</p>
 <p><strong>synchronized 是 JVM 层面通过监视器（Monitor）实现的，而 ReentrantLock 是通过 AQS（AbstractQueuedSynchronizer）程序级别的 API 实现</strong></p>
+<p>这里涉及到aqs的两种实现一个公平锁一个非公平锁，她们两个的区别是，我的线程入栈的时候，公平锁直接往队列的末尾去加，非公平锁先看下我能不能通过cas的方式获得到锁，如果获取不到，这个时候我要进行入栈。入栈的时候也会判断一下，当前这个栈头是不是和我这个线程的id是一致的，如果是一致的，那我就获得到锁。</p>
 <p>用state表示同步状态，state&#x3D;0表示初始状态可以占有锁，state&#x3D;1表示已有线程占有，大于1是重入锁。</p>
-<p>用一个同步队列来管理同步状态fifo双向队列，当线程尝试获取同步状态时候，如果是0说明现在没人拿，我可以去直接去拿。但是如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</p>
+<p>用一个同步队列来管理同步状态fifo双向队列，</p>
 <p>解锁的时候将state减一，看其是否为0，如果是的话将空闲标志置为true，将持有锁的线程设置为null。然后设置state。当这个线程已经没有持有state的时候就要唤醒下一个节点。</p>
 <h2 id="公平锁和非公平锁"><a href="#公平锁和非公平锁" class="headerlink" title="公平锁和非公平锁"></a>公平锁和非公平锁</h2><p><strong>锁 synchronized 和 ReentrantLock 默认都是非公平锁，当然我们在创建 ReentrantLock 时，可以手动指定其为公平锁</strong></p>
-<p><strong>每个线程获取锁的顺序是按照线程访问锁的先后顺序获取的，最前面的线程总是最先获取到锁。</strong> <strong>非公平锁：每个线程获取锁的顺序是随机的，并不会遵循先来先得的规则，所有线程会竞争获取锁。</strong>公平锁这里会多一个判断，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。非公平锁不管<strong>我都去CAS一把，看看能不能拿到</strong>。</p>
+<p><strong>每个线程获取锁的顺序是按照线程访问锁的先后顺序获取的，最前面的线程总是最先获取到锁。</strong> </p>
+<p>公平锁和非公平锁有两个判断的区别，非公平锁在acquire的之前会先用CAS的方式获取锁，拿不到我就走正常的逻辑。还有一个判断是tryacquire的时候，里面有一个步骤是获取同步状态时候，如果这个同步状态是0的话，说明现在没人拿，我可以去直接去拿，公平锁这里会多一个判断，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</p>
 <h2 id="synchronized"><a href="#synchronized" class="headerlink" title="synchronized"></a>synchronized</h2><p><strong>特性</strong></p>
 <p>原子性</p>
 <p><strong>可见性</strong>	</p>
