@@ -1669,23 +1669,23 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
-                            aria-label=": mybatis组件的整合理解2"
+                            href="/2023/07/08/Mysql%E5%A4%8D%E4%B9%A0%EF%BC%88mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%20innodb%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%EF%BC%89/"
+                            aria-label=": Mysql复习（mysql技术内幕 innodb存储引擎）"
                         >
-                            mybatis组件的整合理解2
+                            Mysql复习（mysql技术内幕 innodb存储引擎）
                         </a>
                     
                 </h1>
                 <div class="postShorten-meta">
-    <time datetime="2023-04-27T00:00:00+08:00">
+    <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    27 Apr 2023
+		    08 Jul 2023
     	
     </time>
     
         <span>in </span>
         
-    <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
+    <a class="category-link" href="/categories/Java/">Java</a>
 
 
     
@@ -1694,33 +1694,101 @@
             </div>
             
                 <div class="postShorten-content">
-                    <p>orm我们已经知道具体的做法了，那怎么把这个和我们的spring结合在一起呢？</p>
-<p>其实我们要做的就是让他参与到Spring的事务管理之中，然后创建映射器和sqlsession并注入到bean里面，再把异常转化成Spring到dataaccessexception。以上的种种就是要把我们自己的orm交给spring管理。<img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/image-20230427143800831.png" alt="image-20230427143800831"></p>
-<p>orm结合spring的核心内容就是对需要注册对象的扫描，代理类的实现，bean的注册。</p>
-<p>这里和orm框架一样，也有三个类非常重要：SqlSessionFactoryBean、MapperScannerConfigurer、MapperFactoryBean</p>
-<p>先说SqlSessionFactoryBean</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">* 在基本的 MyBatis 中，session 工厂可以使用 SqlSessionFactoryBuilder 来创建。而在 MyBatis-Spring 中,则使用 SqlSessionFactoryBean 来替代。</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SqlSessionFactoryBean</span> <span class="keyword">implements</span> <span class="title class_">FactoryBean</span>&lt;SqlSessionFactory&gt;, InitializingBean &#123;</span><br><span class="line">    <span class="keyword">private</span> String resource;</span><br><span class="line">    <span class="keyword">private</span> SqlSessionFactory sqlSessionFactory;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">afterPropertiesSet</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">try</span> (<span class="type">Reader</span> <span class="variable">reader</span> <span class="operator">=</span> Resources.getResourceAsReader(resource)) &#123;</span><br><span class="line">            <span class="built_in">this</span>.sqlSessionFactory = <span class="keyword">new</span> <span class="title class_">SqlSessionFactoryBuilder</span>().build(reader);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> SqlSessionFactory <span class="title function_">getObject</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">return</span> sqlSessionFactory;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Class&lt;?&gt; getObjectType() &#123;</span><br><span class="line">        <span class="keyword">return</span> SqlSessionFactory.class;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isSingleton</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setResource</span><span class="params">(String resource)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.resource = resource;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>SqlSessionFactoryBean实现InitializingBean主要适用于加载mybatis相关内容；解析xml、构造sqlsession、链接数据库等等，这三步就是我们orm框架中的核心部分，这也是为什么你只要引入一些数据库的依赖，你如果没有配置数据库，他在项目启动的时候就会报错，因为这个需要一开始就配置好。</p>
-<p>MapperScannerConfigurer</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MapperScannerConfigurer</span> <span class="keyword">implements</span> <span class="title class_">BeanDefinitionRegistryPostProcessor</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String basePackage;</span><br><span class="line">    <span class="keyword">private</span> SqlSessionFactory sqlSessionFactory;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">postProcessBeanDefinitionRegistry</span><span class="params">(BeanDefinitionRegistry registry)</span> <span class="keyword">throws</span> BeansException &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">packageSearchPath</span> <span class="operator">=</span> <span class="string">&quot;classpath*:&quot;</span> + basePackage.replace(<span class="string">&#x27;.&#x27;</span>, <span class="string">&#x27;/&#x27;</span>) + <span class="string">&quot;/**/*.class&quot;</span>;</span><br><span class="line"></span><br><span class="line">            <span class="type">ResourcePatternResolver</span> <span class="variable">resourcePatternResolver</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PathMatchingResourcePatternResolver</span>();</span><br><span class="line"></span><br><span class="line">            Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (Resource resource : resources) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="type">MetadataReader</span> <span class="variable">metadataReader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SimpleMetadataReader</span>(resource, ClassUtils.getDefaultClassLoader());</span><br><span class="line"></span><br><span class="line">                <span class="type">ScannedGenericBeanDefinition</span> <span class="variable">beanDefinition</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ScannedGenericBeanDefinition</span>(metadataReader);</span><br><span class="line">                <span class="type">String</span> <span class="variable">beanName</span> <span class="operator">=</span> Introspector.decapitalize(ClassUtils.getShortName(beanDefinition.getBeanClassName()));</span><br><span class="line"></span><br><span class="line">                beanDefinition.setResource(resource);</span><br><span class="line">                beanDefinition.setSource(resource);</span><br><span class="line">                beanDefinition.setScope(<span class="string">&quot;singleton&quot;</span>);</span><br><span class="line">                beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(beanDefinition.getBeanClassName());</span><br><span class="line">                beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(sqlSessionFactory);</span><br><span class="line">                beanDefinition.setBeanClass(MapperFactoryBean.class);</span><br><span class="line"></span><br><span class="line">                <span class="type">BeanDefinitionHolder</span> <span class="variable">definitionHolder</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BeanDefinitionHolder</span>(beanDefinition, beanName);</span><br><span class="line">                registry.registerBeanDefinition(beanName, definitionHolder.getBeanDefinition());</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">postProcessBeanFactory</span><span class="params">(ConfigurableListableBeanFactory configurableListableBeanFactory)</span> <span class="keyword">throws</span> BeansException &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setBasePackage</span><span class="params">(String basePackage)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.basePackage = basePackage;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setSqlSessionFactory</span><span class="params">(SqlSessionFactory sqlSessionFactory)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.sqlSessionFactory = sqlSessionFactory;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>这个类要做的就是把Dao接口全部扫描出来（也就是所有的XXXdao），完成他们的代理，然后把他们注册到spring Bean容器</p>
-<p>打个锻炼看看：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">postProcessBeanDefinitionRegistry</span><br></pre></td></tr></table></figure>
-
-<p><img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/image-20230427145417700.png" alt="image-20230427145417700"></p>
-<p>看这个packagesearchpath就明白了</p>
-<p><img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/image-20230427145506491.png" alt="image-20230427145506491"></p>
-<p>看resource，因为我们只有一个dao所以就扫描到了一个</p>
-<p><img src="/../images/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/image-20230427145729295.png" alt="image-20230427145729295"></p>
-<p>这里把他注册到容器中</p>
-<p>mapperfactory：</p>
-<p>这个类其实就是你所有dao接口类的</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">日常调用的 dao 层接口就是 MapperFactoryBean 实例化的</span><br></pre></td></tr></table></figure>
-
-<p>我们虽然配置的是<code>MapperFactoryBean</code>的实列，但是根据id拿到的是<code>getObject</code>方法里面返回的的对象。其实在容器中创建的对象仍然是<code>MapperFactoryBean</code>的实列，只是在获取的时候会判断这个结果对象是不是派生于<code>FactoryBean</code>，如果是的话则返回<code>getObject</code>方法创建的对象，并且这个对象并不是容器初始化时创建的，而是使用<code>context.getBean()</code>方法时才创建。当然了，如果你确实想要获取<code>FactoryBean</code>实例，你需要这样写: <em><code>MapperFactoryBean mapper = context.getBean(&quot;&amp;mapper&quot;, MapperFactoryBean.class);</code></em> 只需要在bean的名字ID前加上&amp;符号。</p>
-<p>所以究竟getObject获取的是什么呢？那就看他return了什么，后面的详细知识和加载流程，就涉及spring源码，所以可以看我的Spring ioc加载流程，保真有所收获！</p>
+                    <p>InnoDB最重要的点：行锁设计、MVCC、外键</p>
+<p>首先来了解一下InnoDB的体系架构：</p>
+<h1 id="体系架构"><a href="#体系架构" class="headerlink" title="体系架构"></a>体系架构</h1><p>![image-20231004235405057](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231004235405057.png)</p>
+<p>InnoDB有很多内存块，组成内存池，负责的工作：</p>
+<p>维护所有线程</p>
+<p>缓存磁盘的数据</p>
+<p>重做日志缓冲</p>
+<p>后台线程的主要作用就是：刷新内存池中的数据，保证缓冲池里的是最新的数据。把已修改的数据文件刷新到磁盘文件，</p>
+<p>我们看体系架构，可以从以下几点：</p>
+<h2 id="1、后台线程"><a href="#1、后台线程" class="headerlink" title="1、后台线程"></a>1、后台线程</h2><p>主要有：</p>
+<p>master thread：最重要的，脏页刷新、合并insert buffer，undo 页的回收。不过后来脏页回收放到了单独的线程，也就是page thread</p>
+<p>本质是一个</p>
+<p>IO thread</p>
+<p>purge thread</p>
+<p>page thread</p>
+<h3 id="1、master-thread"><a href="#1、master-thread" class="headerlink" title="1、master thread"></a>1、master thread</h3><p>本质是一个循环</p>
+<p>每秒都会进行一次操作：重做日志缓冲刷新、合并insertbuffer ，脏页刷新被放到了page clean 线程</p>
+<p>每十秒会进行的操作：重做日志缓冲刷新、合并insertbuffer、脏页刷新被放到了page clean 线程、删除无用的undo 页</p>
+<h2 id="2、内存"><a href="#2、内存" class="headerlink" title="2、内存"></a>2、内存</h2><p>内存方面就是缓冲池、lrulist freelist flushlist、redo log buffer 三块，还有一些额外内存池</p>
+<h3 id="1、缓冲池"><a href="#1、缓冲池" class="headerlink" title="1、缓冲池"></a>1、缓冲池</h3><p>本质就是一块内存，就是为了缓解cpu和磁盘的差距，缓冲池里面有数据页、索引页、undo 页、insert buffer、自适应哈希索引、锁信息、数据字典。</p>
+<p>所以修改操作，基本都是现修改缓冲池里面的数据，然后按照一定频率通过checkpoint刷回磁盘。</p>
+<h3 id="2、List"><a href="#2、List" class="headerlink" title="2、List"></a>2、List</h3><p>缓冲池是通过改进的LRU算法（在原本的基础上加了midpoint，新加入的页放到这里，默认5&#x2F;8）进行管理的，方法就是LRUlist、freelist flushlist。如果缓冲池不能放新的，就把lru里面末尾的释放掉。</p>
+<p>改进lru的原因：有可能新页仅仅是这次查询需要用到，并不是真正的热点数据，这样反而有可能将真正的热点数据淘汰。</p>
+<p>flushlist就是脏页列表，就像上面说的，用checkpoiint机制刷新</p>
+<p>一页16k</p>
+<p>说了这么多checkpoint，什么是checkpoint？</p>
+<h4 id="1、checkpoint"><a href="#1、checkpoint" class="headerlink" title="1、checkpoint"></a>1、checkpoint</h4><p>解决问题：</p>
+<ul>
+<li>缩短数据库恢复时间？</li>
+</ul>
+<p>即使发生宕机， 因为checkpoint之前多页已经刷新回磁盘，所以只需要对checkpoint之后对进行恢复</p>
+<ul>
+<li>缓冲池不够时，可以将脏页刷回磁盘？</li>
+</ul>
+<p>缓冲池不够用的时候，根据lru找lru末尾的页，如果是脏页，就强制执行checkpoint，讲脏页刷新回磁盘</p>
+<ul>
+<li>重做日志不可用，刷新脏页。</li>
+</ul>
+<p>重做日志两个文件是循环使用，为了不让他一直无限变大，不可用是指重做日志已经不被需要了可以被覆盖。如果宕机，数据库恢复操作不需要这部分的重做日志就可以覆盖重用。如果此时重做日志还需要用，就必须强制产生checkpoint将讲缓冲池的页至少刷新到当前重做日志的位置</p>
+<p>所以总归checkpoint做的事情就是把脏页刷回磁盘。那怎么刷新？什么时候刷新？</p>
+<p>这里有两种checkpoint，分别是：</p>
+<p>sharp checkpoint</p>
+<p>fuzzy checkpoint</p>
+<p>sharp checkpoint就是在关闭的时候全部刷新到磁盘</p>
+<p>fuzzy checkpoint是刷新部分脏页？刷新到时机如下：</p>
+<p>master thread checkpoint</p>
+<p>flushlrulist checkpoint：这饿是lru列表需要有100个空闲的页，否则一处lru末尾的页，如果有脏页就checkpoint</p>
+<p>async sycn flush checkpoint：这个是重做日志i文件不可用的情况，需要强制将一些刷新回磁盘  </p>
+<p>dirty page too much：这个是脏页数量太多了，强制checkpoint 75%</p>
+<h3 id="3、Redo-log-buffer"><a href="#3、Redo-log-buffer" class="headerlink" title="3、Redo log buffer"></a>3、Redo log buffer</h3><p>这个是innodb独有的，重做日志信息 -》Redo log buffer -〉 重做日志文件</p>
+<p>刷回时机：</p>
+<p>master thread 每秒</p>
+<p>每个事务提交的时候</p>
+<p>重做日志缓冲 剩余空间小雨1&#x2F;2</p>
+<h1 id="关键特性"><a href="#关键特性" class="headerlink" title="关键特性"></a>关键特性</h1><p>1、插入缓冲</p>
+<p>2、两次写</p>
+<p>3、自适应哈希</p>
+<p>4、异步io</p>
+<p>5、刷新邻接页</p>
+<h2 id="1、插入缓冲"><a href="#1、插入缓冲" class="headerlink" title="1、插入缓冲"></a>1、插入缓冲</h2><h3 id="1、insert-buffer"><a href="#1、insert-buffer" class="headerlink" title="1、insert buffer"></a>1、insert buffer</h3><p>插入缓冲是针对辅助索引的，数据在真正存放的时候还是按照主键顺序插入的，但是这个表如果有辅助索引，那么这条记录也会插入辅助索引，但是这时候他就不是顺序插入了，而是离散的插入访问。</p>
+<p>为此，InnoDB开创性的提出了Insert buffer，insertbuffer不是缓存，而是实实在在的物理页。我们在对非聚集索引的插入的时候不会实时的插入，而是先判断有没有在缓冲池里面，有的话直接插入，没有的话，先放到一个insert buffer里面。后面再以一定的频率进行insertbuffer和非聚集索页子节点的merge操作。</p>
+<h3 id="2、change-buffer"><a href="#2、change-buffer" class="headerlink" title="2、change buffer"></a>2、change buffer</h3><p>insert buffer 升级为了 change buffer，对插入更新删除操作都准备了缓冲</p>
+<h3 id="3、insert-buffer的内部实现"><a href="#3、insert-buffer的内部实现" class="headerlink" title="3、insert buffer的内部实现"></a>3、insert buffer的内部实现</h3><p>全局唯一的b+树的形式，负责对所有表的辅助索引进行insert buffer，存放在共享表空间，就是ibdata1。但是我们知道，我们可以有独立表ibdata，但是恢复的时候最好用共享表里面的。</p>
+<p>因为是树，所以有非叶子结点和叶子结点。</p>
+<p>非叶子结点放的是searchkey，所以插入非聚集索引的时候，如果不在缓冲池，那么要加入这颗唯一的insertbuffer，实现构造一个searchkey，我想通过这个searchkey找到我要插入的位置，然后再构造一个叶子结点，放进去。</p>
+<h3 id="4、Merge-insert-buffer"><a href="#4、Merge-insert-buffer" class="headerlink" title="4、Merge insert buffer"></a>4、Merge insert buffer</h3><p>所以后面就是合并操作，合并的时机：</p>
+<p>1、master thread</p>
+<p>2、辅助索引页被读到缓冲池里去，然后这个是要执行正常的查询语句了，就去检查这个insert buffer bitmap，确认这个该辅助索引是不是在insert buffer b+书里面，如果有，就把树里面的记录查到辅助索引里面。</p>
+<h2 id="2、两次写"><a href="#2、两次写" class="headerlink" title="2、两次写"></a>2、两次写</h2><p>doublewrite的目的是为了数据的可靠性。</p>
+<p>具体实现的话，是依赖于两个部分，一个是内存中的doublewrite buffer，2m。另一部分是磁盘里的共享表空间里面有一个连续的128页，也是2m。然后我们对脏页进行刷新到磁盘里面，我先不直接写磁盘，我先复制到这个内存的doublewrite buffer里面，然后分两次写入，每次1m写入共享表空间的物理磁盘，然后马上调用fsync函数，同步磁盘。所以，如果写的时候崩溃了，那就把这个共享表空间里面的副本拿出来配合redo log进行恢复。</p>
+<h2 id="3、自适应哈希"><a href="#3、自适应哈希" class="headerlink" title="3、自适应哈希"></a>3、自适应哈希</h2><p>InnoDB会自动为某些访问频率非常高的页建立哈希索引，而哈希索引比起b+树更快，所以也是一种提高性能手段。</p>
+<p>但是有一个比较大的痛点就是他只能用于做 等值查询，如果遇到范围查到，就无能为力。</p>
+<h1 id="文件"><a href="#文件" class="headerlink" title="文件"></a>文件</h1><p>文件包括mysql文件和innodb文件</p>
+<p>1、参数文件</p>
+<p>2、日志文件、</p>
+<p>3、socket文件</p>
+<p>4、pid文件</p>
+<p>5、mysql表结构文件</p>
+<p>6、存储引擎文件</p>
+<p>我们这里只讲几个</p>
+<h2 id="2、日志文件"><a href="#2、日志文件" class="headerlink" title="2、日志文件"></a>2、日志文件</h2><p>日志文件有错误日志、慢查询日志、查询日志、二进制日志，我们着重可以讲一下二进制日志</p>
+<h3 id="1、二进制日志"><a href="#1、二进制日志" class="headerlink" title="1、二进制日志"></a>1、二进制日志</h3><p>他是mysql 的日志，记录了对mysql数据库更改的所有操作。不包括selectshow这类操作</p>
+<p>主要用于：</p>
+<p>恢复：某些数据需要二进制日志。比如数据库全备文件恢复之后，通过二进制进行point-in-time的恢复</p>
+<p>复制；主从同步，那canal也是通过这种方式去监听binlog</p>
+<p>审计：用户通过二进制的信息判断是否有对数据库进行注入的攻击</p>
+<p>然后二进制日志它肯定要落盘，但是他不是每一次写都要落盘，他有个参数sync——binlog，如果等于n，代表每次缓冲多少次就同步到磁盘里面。如果等于1，那就代表同步写磁盘。</p>
+<p>还有个需要关注的点就是它落盘点形式，就是怎么记录的？</p>
+<p>这个是依赖于binlog——format这个参数，他就是记录二进制的格式，有三种、statement、row、mixed。</p>
+<p>statement就是最简单的sql语句，但是他有个很大的问题就是如果用到了uuid rand udf这些函数或触发器，那么回导致主从不一致，那我们可以用row的格式，row的话就是记录表的行修改情况。同样的他也有一个很大问题就是要求的容量比较大。那还有一种mixed格式就是混用，正常情况下我按照statement记录sql语句，但是在uuid rand udf这些特殊情况我用row的格式进行纪记录。</p>
+<h3 id="2、表结构定义文件"><a href="#2、表结构定义文件" class="headerlink" title="2、表结构定义文件"></a>2、表结构定义文件</h3><p>这个文件的后缀是.frm，每个文件都会有这个一个frm文件，记录了该表的表结构定义</p>
+<h3 id="3、Innodb存储引擎文件"><a href="#3、Innodb存储引擎文件" class="headerlink" title="3、Innodb存储引擎文件"></a>3、Innodb存储引擎文件</h3><h4 id="1、表空间文件"><a href="#1、表空间文件" class="headerlink" title="1、表空间文件"></a>1、表空间文件</h4><p>首当其冲的就是表空间文件，次情况下我们会放到ibdata那个文件里面，但是我们可以通过设置一个参数去产生一个自己表的独立表空间，然后这些独立的表空间记录该表的数据，索引，insertbuffer等信息，其余的还是放在共享表空间里面。</p>
+<h4 id="2、重做日志文件"><a href="#2、重做日志文件" class="headerlink" title="2、重做日志文件"></a>2、重做日志文件</h4><p>这个ib_logfile0 ib_logile1，先写logfile0，写完之后我们再去写logfile1.然后他有一个capacity容量参数，如果超过这个值，就必须从缓冲池里面的脏页列表去刷回一部分脏页。</p>
+<p>binlog他是mysql的，所以很多其他引擎的操作都会记录，而redolog就是属于innodb的，然后她的记录格式也是大不相同的，binlog是逻辑日志，而redolog则是记录每个页的更改的物理情况</p>
+<p>其次刷新的时间也不同，binlog是很明显，我事务提交之前进行一次提交，而redolog在事务执行过程中就会不多的写入redolog。</p>
 
                     
                         
@@ -1730,7 +1798,7 @@
                     
                         <p>
                             <a
-                                href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/#post-footer"
+                                href="/2023/07/08/Mysql%E5%A4%8D%E4%B9%A0%EF%BC%88mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%20innodb%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%EF%BC%89/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
@@ -1759,7 +1827,7 @@
             </a>
           </li>
         
-        <li class="pagination-number">Seite 1 von 3</li>
+        <li class="pagination-number">Seite 1 von 4</li>
     </ul>
 </div>
 
