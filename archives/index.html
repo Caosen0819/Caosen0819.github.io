@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv - 森</title>
+    <title>Archives - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-09-30T00:00:00+08:00">
 	
-		    30 Sep 2023
+		    Sep 30, 2023
     	
     </time>
     
@@ -286,7 +286,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -315,7 +315,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-09-08T00:00:00+08:00">
 	
-		    08 Sep 2023
+		    Sep 08, 2023
     	
     </time>
     
@@ -427,7 +427,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -456,7 +456,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    07 Aug 2023
+		    Aug 07, 2023
     	
     </time>
     
@@ -593,7 +593,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -622,7 +622,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -881,7 +881,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -910,7 +910,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -959,7 +959,7 @@
 <p><strong>2、STATEMENT：</strong>基于SQL语句级别的记录日志，相对于ROW模式，STATEMENT模式下只会记录这个update 的语句。所以此模式下会非常节省日志空间，也避免着大量的IO操作。</p>
 <p><strong>3、MIXED：</strong> 混合模式，此模式是ROW模式和STATEMENT模式的混合体，一般的语句修改使用statment格式保存binlog，如一些函数，statement无法完成主从复制的操作，则采用row格式保存binlog。</p>
 <p>这三种模式需要注意的是：使用 row 格式的 binlog 时，在进行数据同步或恢复的时候不一致的问题更容易被发现，因为它是基于数据行记录的。而使用 mixed 或者 statement 格式的 binlog 时，很多事务操作都是基于SQL逻辑记录，我们都知道一个SQL在不同的时间点执行它们产生的数据变化和影响是不一样的，所以这种情况下，数据同步或恢复的时候就容易出现不一致的情况。</p>
-<h2 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h2><h4 id="全局锁"><a href="#全局锁" class="headerlink" title="全局锁"></a>全局锁</h4><p>典型的使用场景就是做全库的逻辑备份，对所有的表进行 行锁定，从而获取一致性视图，保证数据的完整性。加了全局锁就是只能读</p>
+<h2 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h2><h3 id="全局锁"><a href="#全局锁" class="headerlink" title="全局锁"></a>全局锁</h3><p>典型的使用场景就是做全库的逻辑备份，对所有的表进行 行锁定，从而获取一致性视图，保证数据的完整性。加了全局锁就是只能读</p>
 <ul>
 <li><p>一旦加了全局锁之后，其他的DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句，也就是处于只读状态，而数据备份就是查询操作。 那么数据在进行逻辑备份的过程中，数据库中的数据就是不会发生变化的，这样就保证了数据的一致性 和完整性 .</p>
 </li>
@@ -973,14 +973,14 @@
 <p>3、释放锁</p>
 <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">unlock tables;</span><br></pre></td></tr></table></figure></li>
 </ul>
-<h3 id="数据库中加全局锁，是一个比较重的操作，存在的问题有："><a href="#数据库中加全局锁，是一个比较重的操作，存在的问题有：" class="headerlink" title="数据库中加全局锁，是一个比较重的操作，存在的问题有："></a>数据库中加全局锁，是一个比较重的操作，存在的问题有：</h3><ul>
+<h4 id="数据库中加全局锁，是一个比较重的操作，存在的问题有："><a href="#数据库中加全局锁，是一个比较重的操作，存在的问题有：" class="headerlink" title="数据库中加全局锁，是一个比较重的操作，存在的问题有："></a>数据库中加全局锁，是一个比较重的操作，存在的问题有：</h4><ul>
 <li>如果在主库上备份，那么在备份期间都不能执行更新，业务基本上就得停摆。</li>
 <li>如果在从库上备份，那么在备份期间从库不能执行主库同步过来的二进制日志（binlog），会导致主从延迟。</li>
 </ul>
 <p>在InnoDB引擎中，我们可以在备份时加上参数 –single-transaction 参数来完成不加锁的一致 性数据备份。</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysqldump --single-transaction -uroot -pxxx db_name -&gt; xxx.sql;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<h4 id="表级锁"><a href="#表级锁" class="headerlink" title="表级锁"></a>表级锁</h4><p>表级锁，主要分为3类：</p>
+<h2 id="表级锁"><a href="#表级锁" class="headerlink" title="表级锁"></a>表级锁</h2><p>表级锁，主要分为3类：</p>
 <ul>
 <li>表锁</li>
 <li>元数据锁（meta data lock，MDL）</li>
@@ -993,11 +993,30 @@
 <li>表独占写锁（write lock）</li>
 </ul>
 <p>结论: 读锁不会阻塞其他客户端的读，但是会阻塞写。写锁既会阻塞其他客户端的读，又会阻塞 其他客户端的写。</p>
-<p>元数据锁：当对一张表进行增删改查的时候，加MDL读锁（共享）；当对表结构进行变更操作的时候，加MDL写锁（排他）。</p>
+<h3 id="元数据锁"><a href="#元数据锁" class="headerlink" title="元数据锁"></a>元数据锁</h3><p>再来说说<strong>元数据锁</strong>（MDL）。</p>
+<p>我们不需要显示的使用 MDL，因为当我们对数据库表进行操作时，会自动给这个表加上 MDL：</p>
+<ul>
+<li>对一张表进行 CRUD 操作时，加的是 <strong>MDL 读锁</strong>；</li>
+<li>对一张表做结构变更操作的时候，加的是 <strong>MDL 写锁</strong>；</li>
+</ul>
+<p>MDL 是为了保证当用户对表执行 CRUD 操作时，防止其他线程对这个表结构做了变更。</p>
+<p>当有线程在执行 select 语句（ 加 MDL 读锁）的期间，如果有其他线程要更改该表的结构（ 申请 MDL 写锁），那么将会被阻塞，直到执行完 select 语句（ 释放 MDL 读锁）。</p>
+<p>反之，当有线程对表结构进行变更（ 加 MDL 写锁）的期间，如果有其他线程执行了 CRUD 操作（ 申请 MDL 读锁），那么就会被阻塞，直到表结构变更完成（ 释放 MDL 写锁）。</p>
+<blockquote>
+<p>MDL 不需要显示调用，那它是在什么时候释放的?</p>
+</blockquote>
+<p>MDL 是在事务提交后才会释放，这意味着<strong>事务执行期间，MDL 是一直持有的</strong>。</p>
 <p>MDL 加锁过程是系统自动控制，无需显式使用，在访问一张表的时候会自动加上。MDL 锁主要作用是维 护表元数据的数据一致性，在表上有活动事务的时候，不可以对元数据进行写入操作。为了避免DML与 DDL冲突，保证读写的正确性。</p>
-<p>元数据锁是<strong>server层</strong>的锁，表级锁，每执行一条DML、DDL语句时都会申请metadata锁，DML操作需要<strong>metadata读锁</strong>锁，DDL操作需要<strong>metadata写锁</strong>，<strong>metadata</strong>加锁过程是系统自动控制，无法直接干预</p>
-<p>行锁</p>
-<p>InnoDB实现了以下两种类型的行锁：</p>
+<h3 id="意向锁"><a href="#意向锁" class="headerlink" title="意向锁"></a>意向锁</h3><p>我觉得意向锁主要还是解决行锁和表锁之间的冲突问题。</p>
+<ul>
+<li>在使用 InnoDB 引擎的表里对某些记录加上「共享锁」之前，需要先在表级别加上一个「意向共享锁」；</li>
+<li>在使用 InnoDB 引擎的表里对某些纪录加上「独占锁」之前，需要先在表级别加上一个「意向独占锁」；</li>
+</ul>
+<p>也就是，当执行插入、更新、删除操作，需要先对表加上「意向独占锁」，然后对该记录加行级独占锁。</p>
+<p><img src="/../images/MYSQL%E5%A4%8D%E4%B9%A01/20e0f35589584352bd15e817668a0886.png" alt="img"></p>
+<p><img src="/../images/MYSQL%E5%A4%8D%E4%B9%A01/6e6b275c2d6d4dfcbbb338be4f61bee9.png" alt="img"></p>
+<p>所以，<strong>意向锁的目的是为了快速判断表里是否有记录被加锁</strong>。</p>
+<h2 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h2><p>InnoDB实现了以下两种类型的行锁：</p>
 <ul>
 <li>共享锁（S）：允许一个事务去读一行，阻止其他事务获得相同数据集的排它锁。</li>
 <li>排他锁（X）：允许获取排他锁的事务更新数据，阻止其他事务获得相同数据集的共享锁和排他 锁</li>
@@ -1049,7 +1068,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1078,7 +1097,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -1133,7 +1152,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1162,7 +1181,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -1269,7 +1288,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1298,7 +1317,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -1499,7 +1518,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1528,7 +1547,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -1651,7 +1670,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1680,7 +1699,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -1790,6 +1809,238 @@
 <h4 id="2、重做日志文件"><a href="#2、重做日志文件" class="headerlink" title="2、重做日志文件"></a>2、重做日志文件</h4><p>这个ib_logfile0 ib_logile1，先写logfile0，写完之后我们再去写logfile1.然后他有一个capacity容量参数，如果超过这个值，就必须从缓冲池里面的脏页列表去刷回一部分脏页。</p>
 <p>binlog他是mysql的，所以很多其他引擎的操作都会记录，而redolog就是属于innodb的，然后她的记录格式也是大不相同的，binlog是逻辑日志，而redolog则是记录每个页的更改的物理情况</p>
 <p>其次刷新的时间也不同，binlog是很明显，我事务提交之前进行一次提交，而redolog在事务执行过程中就会不多的写入redolog。</p>
+<h1 id="索引前的准备知识"><a href="#索引前的准备知识" class="headerlink" title="索引前的准备知识"></a>索引前的准备知识</h1><p><a target="_blank" rel="noopener" href="https://baijiahao.baidu.com/s?id=1709211669369376612&amp;wfr=spider&amp;for=pc">https://baijiahao.baidu.com/s?id=1709211669369376612&amp;wfr=spider&amp;for=pc</a></p>
+<p><strong>这里我们首先要问三个重要的问题去扒一扒MySQL的InnoDB存储引擎</strong></p>
+<ol>
+<li><strong>MySQL的记录是怎么存储的？</strong></li>
+<li><strong>页内记录到底是怎么维护的？</strong></li>
+<li><strong>页内查询过程是怎样的</strong></li>
+</ol>
+<h3 id="穿上第一件：Page页面"><a href="#穿上第一件：Page页面" class="headerlink" title="穿上第一件：Page页面"></a>穿上第一件：Page页面</h3><p>MySQL管理数据的一个单位叫Page页面，数据都是存在页面里的<strong>。</strong>那咱们想要知道数据是怎么存，就<strong>需要了解页面长什么样子</strong>。</p>
+<p>直接爆照：</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;42a98226cffc1e171d3b202cf4e9e50a728de9ae.jpeg)</p>
+<p>页头（Page Header）：存一些统计信息，记录页面的控制信息，共占56字节，包括页面空间使用情况、页的左右兄弟页面指针（<strong>这个就是双向链表，把左右兄弟页面的指针给拿到了</strong>）等。</p>
+<p>虚记录：分为最大虚记录与最小虚记录，<strong>它俩把这页里面存储的数据的范围框住了。</strong>那怎么比较谁大谁小？用的是主键去比较：最大虚记录比页内最大主键还大，最小虚记录比页内最小主键还小<strong>。</strong>那主键到底是怎么存的呢？InnoDB用的是聚簇索引——<strong>数据和主键存到一起、数据和索引存到一起，数据按主键顺序存储。</strong></p>
+<p>记录堆：<strong>这部分就是存储记录的区域</strong>，分为有效记录和已删除记录。已被删除的记录构成一个链表，叫做自由空间链表<strong>，</strong>如图蓝色已经被删除的数据，<strong>用一个链表把它们连起来</strong>。</p>
+<p>未分配空间：页面未使用的存储空间，除了用了一部分的橙色的区域和已删除的蓝色的数据，剩下的就是未分配空间了，<strong>后面有新的数据插入，往里放就行了</strong>。</p>
+<p>Slog区：<strong>这一块对数据检索非常有用</strong>，卖个关子，后面详细说。</p>
+<p>页尾（Page Tailer）：页面的最后部分，占8个字节，主要存储页面的校验信息。<strong>这一页如果写坏了，数据不对了，通过校验位可以检查出来。</strong></p>
+<p>好了，到这里一个页面咱们了解了，了解数据大概是怎么分布的，<strong>那接下来需要考虑哪些点呢？</strong>我们接下来研究一下——页面记录是怎么维护的</p>
+<h3 id="穿上第二件：聚簇索引"><a href="#穿上第二件：聚簇索引" class="headerlink" title="穿上第二件：聚簇索引"></a>穿上第二件：聚簇索引</h3><p>刚刚提到了主键顺序这个词，那这个顺序是怎么保证的？这里说的按什么顺序存储，不是说升序、降序这些，这些没有意义，实际上说的是<strong>在页里面数据是怎么组织起来的</strong>，还有就是插入数据的策略，<strong>我怎么插入数据</strong>，还有就是<strong>页内的查询是怎样的</strong>。</p>
+<p>我们先来看看聚簇索引：</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;c9fcc3cec3fdfc032a5c874b6446949da5c2269b.jpeg)</p>
+<p>首先，聚簇索引是一棵B+树，那什么是聚簇呢？</p>
+<p>图中下面绿色的部分是咱们的数据区域，数据是基于紫色部分的主键顺序去存储的，<strong>数据和主键存到一起没毛病，主键是按照树的顺序去组织的，这个结构就叫聚簇</strong>。</p>
+<p>我们再看每一个Page，刚刚说到，Page里面有最大虚记录、最小虚记录，最大、最小这数据肯定是有个范围，<strong>那这个数据在里边到底是怎么存的</strong>？换个说法——数据的顺序是怎么保证的？<strong>到底是物理有序，还是逻辑有序？</strong></p>
+<p>我们再回顾一下大学的知识——<strong>物理有序写入不友好，查询友好；逻辑有序查询不友好，插入友好</strong>，两者优缺点互补。</p>
+<p>再回到正题，了解了这两种不同存储方式的特性，反观页面是怎么做的。</p>
+<p>先看下面这幅图，思考一下插入主键为10，9，8的数据，是按物理有序存储还是逻辑有序存储：</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;e850352ac65c103892bb2f180b68801ab27e89a2.jpeg)</p>
+<p>数据插入是写入IO，数据查询是读IO，不管是写还是读，在分析存储的时候，无非是这四种：顺序写、随机写、顺序读、随机读。<strong>如果是顺序写，数据会有各种移动，写入性能肯定非常糟糕</strong>。但是没办法，<strong>优化写入的手段十分有限，不过呢我们却有很多办法优化读</strong>。</p>
+<p><strong>所以想都不用想，页内数据存储的顺序就是逻辑有序</strong>。</p>
+<p>重新梳理一下，Page与Page之间由双向链表连接，页内是用小的链表连起来的：</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;9825bc315c6034a8191108a4766a5a5d082376a2.jpeg)</p>
+<p>我们再来重新画一下这棵树：</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;80cb39dbb6fd5266c5d8021702618422d5073647.jpeg)</p>
+<p>这里要注意，每个Page的索引的每个节点，也就是树的每个节点，它也是一个Page。<strong>既然是个Page，也会有页头，也会有双向链表</strong>，如图蓝色与紫色相间那部分节点数据。</p>
+<p><strong>接下来咱分析一下它的插入策略。</strong></p>
+<p>蓝色部分已删除的空间（记录堆）怎么办呢？<strong>我们得想办法尽量把它们利用上</strong>，这个换谁做数据库设计都要这么设计<strong>。</strong></p>
+<p>其实，插入策略就是先使用自由空间链表，再使用未使用空间，<strong>把数据库“空洞”给补上。</strong>不过呢，自由空间链表的空间也不能完全利用上，比如旧的数据占25个字节，新的数据假设都只有20个字节，<strong>那剩下这5个字节基本也利用不上，这样一来就会产生越来越多的“碎片”</strong>。经过长时间的插入删除插入删除以后，我们就得考虑给数据库做一次收缩，比如通过两次主从表的双向同步，<strong>把所有表数据重新插一遍</strong>。</p>
+<p><strong>我们接下来研究一下——页内查询是怎么做的？</strong></p>
+<h3 id="穿上第三件：Slot槽"><a href="#穿上第三件：Slot槽" class="headerlink" title="穿上第三件：Slot槽"></a>穿上第三件：Slot槽</h3><p><strong>页内的数据是遍历还是二分查找？</strong></p>
+<p>无论数据是物理连续还是逻辑有序，都不能二分查找，都得用遍历的办法。如果我们设计一款数据库，通过索引找到数据在哪个Page里面，要是Page这一层通过遍历的方式，那效率实在是太低了，所以数据库肯定不能这样设计。</p>
+<p>遍历不行，那就使用二分查找吧，提高一下效率。那MySQL是怎么做的呢？看看这张图：</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;3b87e950352ac65c1fead4dc4c8ba11892138a30.jpeg)</p>
+<p>如图，最小虚记录和最大虚记录之间形成一个链表，这时候Slot区就派上用场了，每个Slot槽指向链表中的某一个位置，每个槽的大小一样，可以理解为一个指针，<strong>这样我们只需要用一个算法把每个子链表的长度拆成差不多大小就行了</strong>。</p>
+<p>在查找的时候，先基于Sn、S0找到指向的最大最小虚记录，在Slot区进行二分：<strong>先找到Sn和S0的中间位置，中间找到某个Slot，然后再一步步进行比较，通过几次二分后找到具体的子链表，最后，在子链表内进行遍历找到最终的记录</strong>。这样我们借助Slot区实现了一个近似二分查找的方法。这特别像Java里面的跳表结构，一次查找跳一次，再一次查找再跳一次，效率就特别高了</p>
+<h1 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h1><p>innodb最常见的索引就是：</p>
+<p>b+树索引 （b+树只能找到数据行所在的页，然后把页读到内存里面，进行查找）</p>
+<p>哈希索引（自动生成）</p>
+<p>全文索引</p>
+<h2 id="1、B-树索引"><a href="#1、B-树索引" class="headerlink" title="1、B+树索引"></a>1、B+树索引</h2><p>二叉查找树（左小于中小于右）-》平衡二叉树，任何结点的两个子树高度差小于等于1（性能比较高，但不是最高）（需要左旋右旋等等）</p>
+<p>b+树是为了磁盘或其他直接存取辅助设备设计的一种平衡查找树</p>
+<p>b+树的所有记录结点都是按照键值的大小顺序存放到同一层的叶子结点，他们之间通过叶子结点指针进行连接，中间的都是searchkey</p>
+<h3 id="1、操作"><a href="#1、操作" class="headerlink" title="1、操作"></a>1、操作</h3><h4 id="1、插入"><a href="#1、插入" class="headerlink" title="1、插入"></a>1、插入</h4><p>![image-20231005201534270](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231005201534270.png)</p>
+<h4 id="2、旋转"><a href="#2、旋转" class="headerlink" title="2、旋转"></a>2、旋转</h4><p>旋转发生在leaf page已经满了，但是左右兄弟还没有满，这时候会把记录平移到兄弟结点上面，左兄弟优先</p>
+<h4 id="3、删除"><a href="#3、删除" class="headerlink" title="3、删除"></a>3、删除</h4><p>![image-20231005202324173](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231005202324173.png)</p>
+<h3 id="2、分类"><a href="#2、分类" class="headerlink" title="2、分类"></a>2、分类</h3><p>b+树可以分成聚集索引、辅助索引，这两个到区别就是叶子结点放的到底是不是一行信息</p>
+<h4 id="1、聚集索引"><a href="#1、聚集索引" class="headerlink" title="1、聚集索引"></a>1、聚集索引</h4><p>innodb引擎是索引组织表，按照主键顺序存放，而聚集索引就是按照主键构造的索引b+树，所以叶子结点存放的就是整张表的数据，叶子结点也叫做数据页。非叶子结点的索引页存放的仅仅是键值和指向数据页的偏移量。</p>
+<h4 id="2、辅助索引"><a href="#2、辅助索引" class="headerlink" title="2、辅助索引"></a>2、辅助索引</h4><p>辅助索引的叶子结点不包含行记录的全部数据。叶子结点包含键值和书签，书签用来告诉引擎哪里能找到真正的行数据。由于innodb是索引组织表，所以辅助索引的书签就是行记录的聚集索引键。比如（文件名：页号：槽号），所以辅助索引就是包含了索引那列的值和主键的值</p>
+<h3 id="3、B-树索引的管理"><a href="#3、B-树索引的管理" class="headerlink" title="3、B+树索引的管理"></a>3、B+树索引的管理</h3><h4 id="1、索引管理"><a href="#1、索引管理" class="headerlink" title="1、索引管理"></a>1、索引管理</h4><p>创建和删除可以通过两种方法。一种是alter table。另一种是create&#x2F;drop index。</p>
+<p>查看：show index from XX</p>
+<h4 id="2、fast-index-create"><a href="#2、fast-index-create" class="headerlink" title="2、fast index create"></a>2、fast index create</h4><p>对于一张大表进行索引的添加和删除操作，这会需要很长时间。所以就提出了这个快速创建索引的方式。只限制于辅助索引。</p>
+<p>在创建索引的表加上一个S锁不需要重建表，删除索引只需要更新内部视图。</p>
+<h4 id="3、Online-Schema-Change在线架构改变OSC"><a href="#3、Online-Schema-Change在线架构改变OSC" class="headerlink" title="3、Online Schema Change在线架构改变OSC"></a>3、Online Schema Change在线架构改变OSC</h4><p>在线的意思其实就是在DDL的过程中，可以有读写事务对表进行操作</p>
+<h4 id="4、Online-DDL"><a href="#4、Online-DDL" class="headerlink" title="4、Online DDL"></a>4、Online DDL</h4><p>允许在辅助索引创建的同时，还允许insert update等DML操作</p>
+<p>原理是：执行insert update delete这些操作的时候，先把操作日志写入一个缓存里面，然后，索引建立后重做表上面</p>
+<p>新的alter table语法中，通过algorithm如果是 copy还是通过建立临时表的方式，如果是replace就是不需要临时表，如果是default，那就是根据old_alter_table判断，如果是off，那就是replace。</p>
+<h4 id="5、cardinality值"><a href="#5、cardinality值" class="headerlink" title="5、cardinality值"></a>5、cardinality值</h4><p>优化器会根据这个值来判断我们用不用索引。表示索引中唯一值的数据的估计值，如果是性别这种，重复的非常多，我们叫低选择性，不适合做索引。反之高选择性就比较适合，尤其是在高选择性属性字段里面取出一小部分数据，那就更有必要了。</p>
+<ul>
+<li><strong>统计的方式</strong>？</li>
+</ul>
+<p>一张大表，每次统计的时间很长，这是不能接受的，所以我们用的是采样的方法。cardinality值的更新发生在insert和update操作，但是肯定不是每一次insertupdate都去更新，具体策略如下：</p>
+<p>1、表中1&#x2F;16数据发生了变化</p>
+<p>2、计数器超过20亿</p>
+<ul>
+<li><strong>采样的方法：</strong></li>
+</ul>
+<p>对八个叶子结点进行采样预估，取出平均值</p>
+<h3 id="4、B-树索引的使用"><a href="#4、B-树索引的使用" class="headerlink" title="4、B+树索引的使用"></a>4、B+树索引的使用</h3><h4 id="1、联合索引"><a href="#1、联合索引" class="headerlink" title="1、联合索引"></a>1、联合索引</h4><p>本质也是一颗二叉树，之前是a,b,c,d现在是（a,b）(c,d)</p>
+<p>第一个好处：对于联合查询和单列的第一列的查询都可以用联合查询</p>
+<p>第二个好处：一句对第二个键值进行了排序处理，可以缩短某些情况的查询时间</p>
+<h4 id="2、覆盖索引"><a href="#2、覆盖索引" class="headerlink" title="2、覆盖索引"></a>2、覆盖索引</h4><p>覆盖索引的意思是，从辅助索引中就直接可以得到想要查询的记录，不需要回表。</p>
+<p>第一个好处是：辅助索引本身不包括整行记录，所以大小远小于聚集索引，减少io操作</p>
+<p>第二个好处是：对于某些统计问题，存储引擎并不会通过积极索引，辅助索引远远小于聚集索引，</p>
+<h4 id="3、优化器不选择索引的方式"><a href="#3、优化器不选择索引的方式" class="headerlink" title="3、优化器不选择索引的方式"></a>3、优化器不选择索引的方式</h4><p>多发生在范围查找、join链接操作</p>
+<h4 id="4、MRR优化（只支持非聚集索引）"><a href="#4、MRR优化（只支持非聚集索引）" class="headerlink" title="4、MRR优化（只支持非聚集索引）"></a>4、MRR优化（只支持非聚集索引）</h4><p>工作方式：</p>
+<ul>
+<li>把辅助索引读出来放到一个缓存里面</li>
+<li>把缓存中的键值更具rowid进行排序</li>
+<li>然后根据rowid去找数据</li>
+</ul>
+<p>他还可以进行某些范围查找，就是把范围查找拆分成键值对的等值查找。直接就过滤了一些不符合条件的数据。</p>
+<p>好处：</p>
+<ul>
+<li>数据访问更加顺序，</li>
+<li>减少缓冲池页的替换</li>
+</ul>
+<h4 id="5、ICP优化（只支持非聚集索引）"><a href="#5、ICP优化（只支持非聚集索引）" class="headerlink" title="5、ICP优化（只支持非聚集索引）"></a>5、ICP优化（只支持非聚集索引）</h4><p>原本我们通过索引进行查询的时候，首先根据索引查找记录，然后根据where条件过滤记录。ICP是在取出索引的同时，判断是否可以进行where条件的过滤，也就是讲where的部分过滤操作放到了存储引擎层</p>
+<p>场景：</p>
+<p>假设表TB1上有索引IDX_C1_C2_C3(C1,C2,C3)，对于查询SELECT * FROM TB1 WHERE C1&#x3D;’XXX’ AND C3&#x3D;’XXX’</p>
+<p>在MySQL 5.6版本以前，由于缺少C2的过滤条件，Innodb存储引擎层只能使用索引IDX_C1_C2_C3按照C1&#x3D;’XXX’条件找出所有满足条件的索引记录，再根据这些索引记录去聚集索引中查找，将找到的表数据返回给MySQL Server层，然后由MySQL Server层使用C3&#x3D;’XXX’条件进行过滤得到最终结果。</p>
+<p>再MySQL 5.6版本中引入ICP特性，Innodb存储引擎层只能使用索引IDX_C1_C2_C3按照C1&#x3D;’XXX’条件去扫描所有满足条件的索引记录，再将这些索引记录按照C3&#x3D;’XXX’条件进行过滤，并按照过滤后的索引记录去去聚集索引中查找，将找到的表数据返回给MySQL Server层，得到最终结果。</p>
+<p>假设满足C1&#x3D;’XXX’条件的数据行为100000条，而满足C1&#x3D;’XXX’ AND C3&#x3D;’XXX’的数据行为100条，则：</p>
+<p>1、在MySQL 5.5版本中，需要对TB1的聚集索引进行100000次Index Seek操作，Innodb存储引擎层向MySQL Server层传递100000行数据。</p>
+<p>2、在MySQL 5.6版本中，使用ICP仅需要对TB1的聚集索引进行100次的Index Seek操作，Innodb存储引擎层向MySQL Server层传递100行数据。</p>
+<h4 id="6、自适应哈希索引"><a href="#6、自适应哈希索引" class="headerlink" title="6、自适应哈希索引"></a>6、自适应哈希索引</h4><p>InnoDB中的哈希用的字典进行查找，冲突用链表解决，哈希函数用除法散列</p>
+<p>自适应哈希索引就是用的这种方法。</p>
+<h4 id="7、全文检索"><a href="#7、全文检索" class="headerlink" title="7、全文检索"></a>7、全文检索</h4><p>全文检索一般使用倒排索引。</p>
+<h5 id="1、倒排索引"><a href="#1、倒排索引" class="headerlink" title="1、倒排索引"></a>1、倒排索引</h5><p>它在辅助表（auxiliary table）中存储了单词与单词自身在一个或多个文档中所在位置之间的映射。这通常利用关键数组实现，其拥有两种表现形式：<br>inverted file index：其表现形式为{单词，单词所在文档的ID}<br>full inverted index：其表现形式为{单词，(单词所在文档的ID，在文档中的具体位置)}</p>
+<h5 id="2、InnoDB全文检索的实现"><a href="#2、InnoDB全文检索的实现" class="headerlink" title="2、InnoDB全文检索的实现"></a>2、InnoDB全文检索的实现</h5><p><strong>InnoDB全文索引有3个非常重要的东西，一个是辅助表，一个是FTS Index Cache、一个是FTS DOUCUMENT id</strong></p>
+<h6 id="1、Auxiliary-Table（辅助表）"><a href="#1、Auxiliary-Table（辅助表）" class="headerlink" title="1、Auxiliary Table（辅助表）"></a><strong>1、Auxiliary Table（辅助表）</strong></h6><p>辅助表是把文档，分词然后规范化后的白哦，</p>
+<p>辅助表的话采用“full inverted index”的方式有两个列：<br>一个是word字段。在word字段上有设有索引，另一个是ilist字段，（DocumentId,Position）</p>
+<h6 id="2、FTS-INDEX-Cache（全文检索缓存）"><a href="#2、FTS-INDEX-Cache（全文检索缓存）" class="headerlink" title="2、FTS INDEX Cache（全文检索缓存）"></a><strong>2、FTS INDEX Cache（全文检索缓存）</strong></h6><p>他是一个红黑树的结构：我执行插入操作，插入的数据已经更新了对应的表，但是我们的辅助表可能还没更新，这个更新还停留在FTS cache里面。如果没插一次就更新这是不合理的，那具体同步到辅助表的时机：</p>
+<p>1、在我进行全文检索查询的时候，我把FTS INDEX cache里的word字段合并到辅助表，然后查询。有点类似于insert buffer</p>
+<p>2、数据库关闭的时候会同步</p>
+<p>3、cache满了	</p>
+<p>数据库宕机时：一些FTS InDEX Cache中的数据库可能未被同步到磁盘上。那么下次重启时，当用户对表进行全文检索（查询或者插入操作）时，InnoDB会自动读取未完成的文档，然后进行分词操作，再将分词的结果放入到FTS Index Cache中</p>
+<p>对于InnoDB来说，其总是在事务提交时将分词写入到FTS Index Cache。</p>
+<h6 id="3、FTS-DOUCUMENT-ID"><a href="#3、FTS-DOUCUMENT-ID" class="headerlink" title="3、FTS DOUCUMENT ID"></a>3、FTS DOUCUMENT ID</h6><p>为了支持全文检索，<strong>必须有一个列与word进行映射：</strong></p>
+<ul>
+<li>在InnoDB中这个列<strong>被命名为FTS_DOC_ID</strong></li>
+<li>其<strong>类型必须是</strong>bigint unsigned not null</li>
+<li>并且InnoDB自动会在该列上加入一个<strong>名为FTS_DOC_ID_INDEX的unique index索引</strong></li>
+<li><strong>用户也可以在建表时自动添加FTS_DOC_ID，以及相应的Unique Index</strong></li>
+</ul>
+<p>Deleted auxiliary table<br>文档中分词的插入操作是在事务提交时完成的，然而对于删除操作，其在事务提交时不删除磁盘Auxiliary Table中的记录，而只是删除FTS Index Cache中的记录。对于Auxiliary Table中被删除的记录，InnoDB会记录其FTS Document ID，并将其保存在Deleted auxiliary table中</p>
+<p>由于文档的DML操作实际并不删除索引中的数据，相反还会在对应的DELETED表中插入记录，因此随着应用程序的允许，索引会变得非常大，即使索引列中的有些数据已经被删除，查询也不会使用到。为了，InnoDB存储引擎提供了一种方式，允许用户手动地将已删除的记录从索引中彻底删除，该命令就是OPTIMIZE TABLE</p>
+<h1 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h1><p>锁机制是用于管理对共享资源的并发访问，保证数据的完整性和一致性。</p>
+<h2 id="1、锁的类型"><a href="#1、锁的类型" class="headerlink" title="1、锁的类型"></a>1、锁的类型</h2><h3 id="1、全局锁"><a href="#1、全局锁" class="headerlink" title="1、全局锁"></a>1、全局锁</h3><p>典型的使用场景就是做全库的逻辑备份</p>
+<ul>
+<li><p>一旦加了全局锁之后，其他的DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句，也就是处于只读状态</p>
+</li>
+<li><p>语法</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">flush tables <span class="keyword">with</span> read lock;<span class="number">1</span>、加全局锁</span><br><span class="line">mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>pxxx db_name <span class="operator">-</span><span class="operator">&gt;</span> xxx.sql;<span class="number">2</span>、数据备份</span><br><span class="line">unlock tables;<span class="number">3</span>、释放锁</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="2、表级锁"><a href="#2、表级锁" class="headerlink" title="2、表级锁"></a>2、表级锁</h3><p>表级锁，主要分为3类：</p>
+<ul>
+<li>表锁</li>
+<li>元数据锁（meta data lock，MDL）</li>
+<li>意向锁</li>
+</ul>
+<h4 id="1、表锁"><a href="#1、表锁" class="headerlink" title="1、表锁"></a>1、表锁</h4><p>对于表锁，又可以分为2类：</p>
+<ul>
+<li>表共享读锁（read lock）</li>
+<li>表独占写锁（write lock）</li>
+</ul>
+<p>结论: 读锁不会阻塞其他客户端的读，但是会阻塞写。写锁既会阻塞其他客户端的读，又会阻塞 其他客户端的写。</p>
+<h4 id="2、、元数据锁"><a href="#2、、元数据锁" class="headerlink" title="2、、元数据锁"></a>2、、元数据锁</h4><p>再来说说<strong>元数据锁</strong>（MDL）。</p>
+<p>我们不需要显示的使用 MDL，因为当我们对数据库表进行操作时，会自动给这个表加上 MDL：</p>
+<ul>
+<li>对一张表进行 CRUD 操作时，加的是 <strong>MDL 读锁</strong>；</li>
+<li>对一张表做结构变更操作的时候，加的是 <strong>MDL 写锁</strong>；</li>
+</ul>
+<p>MDL 是为了保证当用户对表执行 CRUD 操作时，防止其他线程对这个表结构做了变更。</p>
+<blockquote>
+<p>MDL 不需要显示调用，那它是在什么时候释放的?</p>
+</blockquote>
+<p>MDL 是在事务提交后才会释放，这意味着<strong>事务执行期间，MDL 是一直持有的</strong>。</p>
+<p>MDL 加锁过程是系统自动控制，无需显式使用，在访问一张表的时候会自动加上。MDL 锁主要作用是维 护表元数据的数据一致性，在表上有活动事务的时候，不可以对元数据进行写入操作。为了避免DML与 DDL冲突，保证读写的正确性。</p>
+<h4 id="3、意向锁"><a href="#3、意向锁" class="headerlink" title="3、意向锁"></a>3、意向锁</h4><p>我觉得意向锁主要还是解决行锁和表锁之间的冲突问题。</p>
+<ul>
+<li>在使用 InnoDB 引擎的表里对某些记录加上「共享锁」之前，需要先在表级别加上一个「意向共享锁」；</li>
+<li>在使用 InnoDB 引擎的表里对某些纪录加上「独占锁」之前，需要先在表级别加上一个「意向独占锁」；</li>
+</ul>
+<p>也就是，当执行插入、更新、删除操作，需要先对表加上「意向独占锁」，然后对该记录加行级独占锁。</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;20e0f35589584352bd15e817668a0886.png)</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;6e6b275c2d6d4dfcbbb338be4f61bee9.png)</p>
+<p>所以，<strong>意向锁的目的是为了快速判断表里是否有记录被加锁</strong>。</p>
+<h4 id="4、自增锁"><a href="#4、自增锁" class="headerlink" title="4、自增锁"></a>4、自增锁</h4><p>主键设置成自增之后，在插入数据时，可以不指定主键的值，数据库会自动给主键赋值递增的值，这主要是通过 <strong>AUTO-INC 锁</strong>实现的。</p>
+<p><strong>在插入数据时，会加一个表级别的 AUTO-INC 锁</strong>，<strong>不是再一个事务提交后才释放，而是再执行完插入语句后就会立即释放</strong>。</p>
+<p>但是， AUTO-INC 锁再对大量数据进行插入的时候，会影响插入性能，因为另一个事务中的插入会被阻塞。</p>
+<p>因此， 在 MySQL 5.1.22 版本开始，InnoDB 存储引擎提供了一种<strong>轻量级的锁</strong>来实现自增</p>
+<p>InnoDB 存储引擎提供了个 innodb_autoinc_lock_mode 的系统变量，是用来控制选择用 AUTO-INC 锁，还是轻量级的锁。</p>
+<ul>
+<li>当 innodb_autoinc_lock_mode &#x3D; 0，就采用 AUTO-INC 锁，语句执行结束后才释放锁；</li>
+<li>当 innodb_autoinc_lock_mode &#x3D; 2，就采用轻量级锁，申请自增主键后就释放锁，并不需要等语句执行后才释放。</li>
+<li>当 innodb_autoinc_lock_mode &#x3D; 1：<ul>
+<li>普通 insert 语句，自增锁在申请之后就马上释放；</li>
+<li>类似 insert … select 这样的批量插入数据的语句，自增锁还是要等语句结束后才被释放；</li>
+</ul>
+</li>
+</ul>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;innodb_autoinc_lock_mode&#x3D;2.png)</p>
+<p>session A 往表 t 中插入了 4 行数据，然后创建了一个相同结构的表 t2，然后<strong>两个 session 同时执行向表 t2 中插入数据</strong>。</p>
+<p>如果 innodb_autoinc_lock_mode &#x3D; 2，意味着「申请自增主键后就释放锁，不必等插入语句执行完」。那么就可能出现这样的情况：</p>
+<ul>
+<li>session B 先插入了两个记录，(1,1,1)、(2,2,2)；</li>
+<li>然后，session A 来申请自增 id 得到 id&#x3D;3，插入了（3,5,5)；</li>
+<li>之后，session B 继续执行，插入两条记录 (4,3,3)、 (5,4,4)。</li>
+</ul>
+<p>可以看到，<strong>session B 的 insert 语句，生成的 id 不连续</strong>。</p>
+<p>当「主库」发生了这种情况，binlog 面对 t2 表的更新只会记录这两个 session 的 insert 语句，如果 binlog_format&#x3D;statement，记录的语句就是原始语句。记录的顺序要么先记 session A 的 insert 语句，要么先记 session B 的 insert 语句。</p>
+<p>但不论是哪一种，这个 binlog 拿去「从库」执行，这时从库是按「顺序」执行语句的，只有当执行完一条 SQL 语句后，才会执行下一条 SQL。因此，在<strong>从库上「不会」发生像主库那样两个 session 「同时」执行向表 t2 中插入数据的场景。所以，在备库上执行了 session B 的 insert 语句，生成的结果里面，id 都是连续的。这时，主从库就发生了数据不一致</strong>。</p>
+<p>要解决这问题，binlog 日志格式要设置为 row，这样在 binlog 里面记录的是主库分配的自增值，到备库执行的时候，主库的自增值是什么，从库的自增值就是什么。</p>
+<p>所以，<strong>当 innodb_autoinc_lock_mode &#x3D; 2 时，并且 binlog_format &#x3D; row，既能提升并发性，又不会出现数据一致性问题</strong>。</p>
+<h3 id="3、行锁"><a href="#3、行锁" class="headerlink" title="3、行锁"></a>3、行锁</h3><p>InnoDB实现了以下两种类型的行锁：</p>
+<ul>
+<li>共享锁（S）：允许一个事务去读一行，阻止其他事务获得相同数据集的排它锁。</li>
+<li>排他锁（X）：允许获取排他锁的事务更新数据，阻止其他事务获得相同数据集的共享锁和排他 锁</li>
+</ul>
+<p>![image-20230805221422216](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20230805221422216.png)</p>
+<h2 id="2、一致性非锁定读（快照读）"><a href="#2、一致性非锁定读（快照读）" class="headerlink" title="2、一致性非锁定读（快照读）"></a>2、一致性非锁定读（快照读）</h2><p>一致性非锁定读是指InnoDb通过多版本控制（MVCC）的方式读取当前执行时间里面数据库的数据。如果读取的那一行正在做一些dml操作，但是我不会去等，我会直接去读一个快照数据。不需要等待X锁的释放，那这个数据是哪里来的呢？这个快照数据是指该行之前版本的数据，他的实现是通过undo页完成的，而一个行记录它对应的可能不只有一个快照数据，所以我们把对于这些快照数据的管理，叫做多版本控制MVCC。当然这里提一嘴就是,读已提交和可重复读这两种级别是可以用一致性非锁定读，但是对于快照数据的定义不一样，读已提交总是读区被锁定行的最新的一份快照，可重复读总是读事务开始时候的数据版本，</p>
+<h2 id="3、一致性锁定读（当前读）"><a href="#3、一致性锁定读（当前读）" class="headerlink" title="3、一致性锁定读（当前读）"></a>3、一致性锁定读（当前读）</h2><p>有时候用户需要些显式的对读操作进行加锁保证一致性。</p>
+<h2 id="4、锁的算法"><a href="#4、锁的算法" class="headerlink" title="4、锁的算法"></a>4、锁的算法</h2><p>InnoDB有三种行锁的算法：</p>
+<p>Record Lock：单个行记录的锁</p>
+<p>Gap Lock：间隙锁，锁定一个范围，但不包括记录本身</p>
+<p>Next-Key Lock：Record Lock + Gap Lock</p>
+<p>InnoDB就是用Next-Key去解决幻想问题（同一事务下，连续执行两次相同的sql语句可能导致不同的结果，第二次sql可能会返回之前不存在的行）</p>
+<p>查询的索引如果是唯一性质，那么降级为Record Lock</p>
+<h2 id="5、锁问题"><a href="#5、锁问题" class="headerlink" title="5、锁问题"></a>5、锁问题</h2><h3 id="1、脏读"><a href="#1、脏读" class="headerlink" title="1、脏读"></a>1、脏读</h3><p>读到了其他事务没有提交的数据，违反了隔离性。但是脏读发生的隔离级别最少也得是read uncommitted，而我们的数据库默认是可重复读，所以一般在生产环境中，发生的并不多。</p>
+<h3 id="2、不可重复读"><a href="#2、不可重复读" class="headerlink" title="2、不可重复读"></a>2、不可重复读</h3><p>就是一个事务读两次，另一个事务在两次读之间作出修改，因为读是mvcc，不加锁，所以会出现不可重复读。innoDB的解决方法：</p>
+<ul>
+<li>针对<strong>快照读</strong>（普通 select 语句），是<strong>通过 MVCC 方式解决了幻读</strong>，因为可重复读隔离级别下，事务执行过程中看到的数据，一直跟这个事务启动时看到的数据是一致的，即使中途有其他事务插入了一条数据，是查询不出来这条数据的，所以就很好了避免幻读问题。</li>
+<li>针对<strong>当前读</strong>（select … for update 等语句），是<strong>通过 next-key lock（记录锁+间隙锁）方式解决了幻读</strong>，因为当执行 select … for update 语句的时候，会加上 next-key lock，如果有其他事务在 next-key lock 锁范围内插入了一条记录，那么这个插入语句就会被阻塞，无法成功插入，所以就很好了避免幻读问题。</li>
+</ul>
+<h3 id="3、丢失更新"><a href="#3、丢失更新" class="headerlink" title="3、丢失更新"></a>3、丢失更新</h3><p>是指一个事务的操作被另一个事务的操作覆盖了，但是当前数据库的任何隔离级别都对行或者粗粒度的对象加锁，所以还是比较难发生。</p>
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2><p>事务级别</p>
+<p><strong>类型一：RU（READ-UNCOMMITTED 表示读未提交）</strong></p>
+<p>可以读取到事务未提交的数据，隔离性差，会出现脏读（当前内存读），不可重复读，幻读问题;</p>
+<p><strong>类型二：RC（READ-COMMITTED 表示读已提交）</strong>可用</p>
+<p>可以读取到事务已提交的数据，隔离性一般，不会出现脏读问题，但是会出现不可重复读，幻读问题；</p>
+<p><strong>类型三：RR（REPEATABLE-READ 表示可重复读）</strong><code>默认</code></p>
+<p>可以防止脏读（当前内存读），防止不可重复读问题，防止会出现的幻读问题，但是并发能力较差；</p>
+<p>会使用next lock锁进制，来防止幻读问题，但是引入锁进制后，锁的代价会比较高，比较耗费CPU资源，占用系统性能；</p>
+<p><strong>类型四：SR（SERIALIZABLE 可串行化）</strong></p>
+<p>隔离性比较高，可以实现串行化读取数据，但是事务的并发度就没有了；</p>
+<p>这是事务的最高级别，在每条读的数据上，加上锁，使之不可能相互冲突</p>
+<h2 id="6、死锁"><a href="#6、死锁" class="headerlink" title="6、死锁"></a>6、死锁</h2><p>死锁是指两个或以上的事务争夺资源造成的一种互相等待的现象</p>
+<p>解决方法：</p>
+<p>1、设置超时的阈值，回滚一个事务</p>
+<p>2、wait-for-graph 等待图。检测是否有回路。通常用深度优先。1.2版本开始就变成非递归</p>
+<p>如果有死锁，那就回归undo量最少的</p>
+<h2 id="7、锁升级"><a href="#7、锁升级" class="headerlink" title="7、锁升级"></a>7、锁升级</h2><p>InnoDB中不存在锁升级的问题，因为InnoDB不是更具每个记录来产生锁的，相反，其根据每个事务访问的每个页对锁进行管理，采用的是位图的方式。所以不管你锁住的是页中的一个记录或者多个记录，开销一样</p>
+<p>![image-20231006204601132](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231006204601132.png)</p>
 
                     
                         
@@ -1803,7 +2054,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1821,14 +2072,14 @@
             <a
                 class="btn btn--default btn--small"
                 href="/archives/page/2/"
-                aria-label="ÄLTERE BEITRÄGE"
+                aria-label="OLDER POSTS"
             >
-              <span>ÄLTERE BEITRÄGE</span>
+              <span>OLDER POSTS</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">Seite 1 von 4</li>
+        <li class="pagination-number">page 1 of 4</li>
     </ul>
 </div>
 
@@ -1858,7 +2109,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
