@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archives - 森</title>
+    <title>Archiv - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -233,6 +233,84 @@
                     
                         <a
                             class="link-unstyled"
+                            href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+                            aria-label=": 章节：7-10，同时回顾一下4-6的内容"
+                        >
+                            章节：7-10，同时回顾一下4-6的内容
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-04-04T00:00:00+08:00">
+	
+		    04 Apr 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>7-10，同时回顾一下4-6的内容</p>
+<p>第六节的重点是模版模式。</p>
+<p>模版模式是定义一个算法的骨架，并允许子类为一个或多个步骤提供实现。在第六节中这个算法骨架（抽象模版类）是AbstractDrawBase，这个类中有通用的比如对于抽奖结果的包装，也有抽象方法比如执行抽奖算法（这个在子类中实现）。小傅哥在这个基础上又把一些一些通用的数据服务抽象出新的一层DrawStrategySupport，这个算是一种优化，但是他本质也属于抽象模版类的一部分。</p>
+<p>而我们抽奖则需要抽奖策略（怎么个抽法），这就是第五节的东西—策略模式：</p>
+<p>对象的某个行为，在不同场景中有不同的实现方式，这样就可以将这些实现方式定义成一组策略，每个实现类对应一个策略，在不同的场景就使用不同的实现类，并且可以自由切换策略。</p>
+<p>其实看完第六节会发现第五节和第六节很像，也是抽象出了一个接口和一个抽象模版类，其他的子类继承抽象模版类实现randomDraw（）方法，不同的实现对应不同的算法，具体算法我们自己可以修改逻辑、补充内容等操作。</p>
+<p>在这时候我们发现策略模式和模版模式很像，但是是有一些区别的：</p>
+<p>模板模式：问题处理的流程已经被定义好，父类实现通用的逻辑（当然你也可以再抽象出一层），子类实现个性化逻辑。</p>
+<p>策略模式：父类定义一组抽象算法，子类自己实现自己的。每个策略完成的功能是重复的，同一时间，只能选择其中的一种，即互斥的</p>
+<p>策略模式核心在使用者的策略，按照自己的策略去替换。模板方法模式核心在子类的怎么实现。</p>
+<p>举个例子：</p>
+<p>模版模式： 父类：早上6点吃饭，晚上6点吃面。子类1：早上6点吃稀饭，晚上6点吃泡面。子类2：早上6点吃干饭，晚上6点吃挂面。</p>
+<p>策略模式：父类：早晚进食。子类1:早上5点吃面，晚上5点吃面。子类2:早上7点吃饭，晚上7点吃饭。子类3:早上不吃，晚上不吃…</p>
+<p>第八节：状态模式</p>
+<p>当一个对象的内在状态改变时，允许改变其行为，把不同状态当做一个类，解决对象在多种状态转换时，需要对外输出不同的行为的问题。</p>
+<p>同样的有抽象模版类（AbstractState，当然你要自己提炼一个接口大概也没什么问题），多个具体实现的子类。要有一个Context类，这个类持有State，负责保持并切换当前的状态，当状态变化时，修改这个State。在项目中应该是活动创建的时候初始化状态，后续收到一些通知（比如：快递公司揽件，发送目的地，菜鸟驿站收到快递）修改活动中的状态变量就可以，非常方面。</p>
+<p>第九节：ID生成策略</p>
+<p>也是策略模型，因为目前就一个id生成的要求，也无需什么流程啊，也不涉及什么状态改变，不同情境下使用不同类型的id，所以策略模式最佳。</p>
+<p>第十节：分库分表</p>
+<p>内容多，也是这几天最花时间的，bug奇多，自己不小心把application.yml文件里面的配置写错了，然后报空指针，找不到bean，我还以为自己打包有问题呢；因为自己的版本和傅哥的不太一样，总报一些依赖错误，还有什么commons-lang、commons-beanutils依赖缺失。自己的的项目工程包名是自定义的，和傅哥的cn.itedus.lottery和那个cn.bugstack不一样，中途修改的时候感觉对理解还是有益处的。</p>
+<p>之后再对第十节做一次总结，加深感悟。</p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Kommentieren und teilen
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
                             href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A11-13/"
                             aria-label=": 章节：11-13"
                         >
@@ -243,7 +321,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-03T00:00:00+08:00">
 	
-		    Apr 03, 2023
+		    03 Apr 2023
     	
     </time>
     
@@ -279,7 +357,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -308,7 +386,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-03T00:00:00+08:00">
 	
-		    Apr 03, 2023
+		    03 Apr 2023
     	
     </time>
     
@@ -383,7 +461,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -412,7 +490,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-23T13:03:43+08:00">
 	
-		    Oct 23, 2022
+		    23 Oct 2022
     	
     </time>
     
@@ -457,7 +535,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -486,7 +564,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-20T14:43:00+08:00">
 	
-		    Oct 20, 2022
+		    20 Oct 2022
     	
     </time>
     
@@ -573,7 +651,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -602,7 +680,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T21:25:08+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -653,7 +731,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -682,7 +760,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T21:23:41+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -768,7 +846,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -797,7 +875,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:40:04+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -848,7 +926,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -877,7 +955,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:38:01+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -1017,7 +1095,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1046,7 +1124,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:35:52+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -1311,69 +1389,9 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"
-                            aria-label=": 数据结构-线性表"
-                        >
-                            数据结构-线性表
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2022-10-04T13:33:19+08:00">
-	
-		    Oct 04, 2022
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt">
-                    <h2 id="线性表"><a href="#线性表" class="headerlink" title="线性表"></a>线性表</h2><ul>
-<li><p>线性结构特点：在数据元素的非空有限集合中</p>
-<ul>
-<li>(1)存在唯一的一个被称做“第一个”的数据元素；</li>
-<li>(2)存在唯一的一个被称做“最后一个”的数据元素；</li>
-</ul>
-</li>
-<li><p>(3)除第一个之外，集合中的每个数据元素均只有一个前驱；(4)除最后一个之外，集合中每个数据元素均只有一个后继。</p>
-</li>
-<li><p>线性表定义：有限个性质相同的数据元素组成的序列。</p>
-                    
-                        <a
-                            href="/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"
-                            class="postShorten-excerpt_link link"
-                            aria-label=": 数据结构-线性表"
-                        >
-                            Continue reading
-                        </a>
-                        
                     
                 </div>
             
@@ -1388,10 +1406,10 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
             <a
                 class="btn btn--default btn--small"
                 href="/archives/page/2/"
-                aria-label="NEWER POSTS"
+                aria-label="NEUERE BEITRÄGE"
             >
               <i class="fa fa-angle-left text-base icon-mr"></i>
-              <span>NEWER POSTS</span>
+              <span>NEUERE BEITRÄGE</span>
             </a>
           </li>
         
@@ -1400,14 +1418,14 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
             <a
                 class="btn btn--default btn--small"
                 href="/archives/page/4/"
-                aria-label="OLDER POSTS"
+                aria-label="ÄLTERE BEITRÄGE"
             >
-              <span>OLDER POSTS</span>
+              <span>ÄLTERE BEITRÄGE</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">page 3 of 4</li>
+        <li class="pagination-number">Seite 3 von 4</li>
     </ul>
 </div>
 
@@ -1437,7 +1455,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

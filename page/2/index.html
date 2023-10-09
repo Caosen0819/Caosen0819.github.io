@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -232,6 +232,454 @@
                     
                         <a
                             class="link-unstyled"
+                            href="/2023/07/08/Mysql%E5%A4%8D%E4%B9%A0%EF%BC%88mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%20innodb%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%EF%BC%89/"
+                            aria-label=": Mysql复习（mysql技术内幕 innodb存储引擎）"
+                        >
+                            Mysql复习（mysql技术内幕 innodb存储引擎）
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-07-08T00:00:00+08:00">
+	
+		    08 Jul 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>InnoDB最重要的点：行锁设计、MVCC、外键</p>
+<p>首先来了解一下InnoDB的体系架构：</p>
+<h1 id="体系架构"><a href="#体系架构" class="headerlink" title="体系架构"></a>体系架构</h1><p>![image-20231004235405057](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231004235405057.png)</p>
+<p>InnoDB有很多内存块，组成内存池，负责的工作：</p>
+<p>维护所有线程</p>
+<p>缓存磁盘的数据</p>
+<p>重做日志缓冲</p>
+<p>后台线程的主要作用就是：刷新内存池中的数据，保证缓冲池里的是最新的数据。把已修改的数据文件刷新到磁盘文件，</p>
+<p>我们看体系架构，可以从以下几点：</p>
+<h2 id="1、后台线程"><a href="#1、后台线程" class="headerlink" title="1、后台线程"></a>1、后台线程</h2><p>主要有：</p>
+<p>master thread：最重要的，脏页刷新、合并insert buffer，undo 页的回收。不过后来脏页回收放到了单独的线程，也就是page thread</p>
+<p>本质是一个</p>
+<p>IO thread</p>
+<p>purge thread</p>
+<p>page thread</p>
+<h3 id="1、master-thread"><a href="#1、master-thread" class="headerlink" title="1、master thread"></a>1、master thread</h3><p>本质是一个循环</p>
+<p>每秒都会进行一次操作：重做日志缓冲刷新、合并insertbuffer ，脏页刷新被放到了page clean 线程</p>
+<p>每十秒会进行的操作：重做日志缓冲刷新、合并insertbuffer、脏页刷新被放到了page clean 线程、删除无用的undo 页</p>
+<h2 id="2、内存"><a href="#2、内存" class="headerlink" title="2、内存"></a>2、内存</h2><p>内存方面就是缓冲池、lrulist freelist flushlist、redo log buffer 三块，还有一些额外内存池</p>
+<h3 id="1、缓冲池"><a href="#1、缓冲池" class="headerlink" title="1、缓冲池"></a>1、缓冲池</h3><p>本质就是一块内存，就是为了缓解cpu和磁盘的差距，缓冲池里面有数据页、索引页、undo 页、insert buffer、自适应哈希索引、锁信息、数据字典。</p>
+<p>所以修改操作，基本都是现修改缓冲池里面的数据，然后按照一定频率通过checkpoint刷回磁盘。</p>
+<h3 id="2、List"><a href="#2、List" class="headerlink" title="2、List"></a>2、List</h3><p>缓冲池是通过改进的LRU算法（在原本的基础上加了midpoint，新加入的页放到这里，默认5&#x2F;8）进行管理的，方法就是LRUlist、freelist flushlist。如果缓冲池不能放新的，就把lru里面末尾的释放掉。</p>
+<p>改进lru的原因：有可能新页仅仅是这次查询需要用到，并不是真正的热点数据，这样反而有可能将真正的热点数据淘汰。</p>
+<p>flushlist就是脏页列表，就像上面说的，用checkpoiint机制刷新</p>
+<p>一页16k</p>
+<p>说了这么多checkpoint，什么是checkpoint？</p>
+<h4 id="1、checkpoint"><a href="#1、checkpoint" class="headerlink" title="1、checkpoint"></a>1、checkpoint</h4><p>解决问题：</p>
+<ul>
+<li>缩短数据库恢复时间？</li>
+</ul>
+<p>即使发生宕机， 因为checkpoint之前多页已经刷新回磁盘，所以只需要对checkpoint之后对进行恢复</p>
+<ul>
+<li>缓冲池不够时，可以将脏页刷回磁盘？</li>
+</ul>
+<p>缓冲池不够用的时候，根据lru找lru末尾的页，如果是脏页，就强制执行checkpoint，讲脏页刷新回磁盘</p>
+<ul>
+<li>重做日志不可用，刷新脏页。</li>
+</ul>
+<p>重做日志两个文件是循环使用，为了不让他一直无限变大，不可用是指重做日志已经不被需要了可以被覆盖。如果宕机，数据库恢复操作不需要这部分的重做日志就可以覆盖重用。如果此时重做日志还需要用，就必须强制产生checkpoint将讲缓冲池的页至少刷新到当前重做日志的位置</p>
+<p>所以总归checkpoint做的事情就是把脏页刷回磁盘。那怎么刷新？什么时候刷新？</p>
+<p>这里有两种checkpoint，分别是：</p>
+<p>sharp checkpoint</p>
+<p>fuzzy checkpoint</p>
+<p>sharp checkpoint就是在关闭的时候全部刷新到磁盘</p>
+<p>fuzzy checkpoint是刷新部分脏页？刷新到时机如下：</p>
+<p>master thread checkpoint</p>
+<p>flushlrulist checkpoint：这饿是lru列表需要有100个空闲的页，否则一处lru末尾的页，如果有脏页就checkpoint</p>
+<p>async sycn flush checkpoint：这个是重做日志i文件不可用的情况，需要强制将一些刷新回磁盘  </p>
+<p>dirty page too much：这个是脏页数量太多了，强制checkpoint 75%</p>
+<h3 id="3、Redo-log-buffer"><a href="#3、Redo-log-buffer" class="headerlink" title="3、Redo log buffer"></a>3、Redo log buffer</h3><p>这个是innodb独有的，重做日志信息 -&gt;Redo log buffer -〉 重做日志文件，为重做日志文件服务，重做日志文件本身是为了数据库的恢复功能，但是同样的，为了环节和磁盘的差距，我们给他加一个buffer。</p>
+<p>刷回时机：</p>
+<p>master thread 每秒</p>
+<p>每个事务提交的时候</p>
+<p>重做日志缓冲 剩余空间小雨1&#x2F;2</p>
+<h1 id="关键特性"><a href="#关键特性" class="headerlink" title="关键特性"></a>关键特性</h1><p>1、插入缓冲</p>
+<p>2、两次写</p>
+<p>3、自适应哈希</p>
+<p>4、异步io</p>
+<p>5、刷新邻接页</p>
+<h2 id="1、插入缓冲"><a href="#1、插入缓冲" class="headerlink" title="1、插入缓冲"></a>1、插入缓冲</h2><h3 id="1、insert-buffer"><a href="#1、insert-buffer" class="headerlink" title="1、insert buffer"></a>1、insert buffer</h3><p>插入缓冲是针对辅助索引的，数据在真正存放的时候还是按照主键顺序插入的，但是这个表如果有辅助索引，那么这条记录也会插入辅助索引，但是这时候他就不是顺序插入了，而是离散的插入访问。</p>
+<p>为此，InnoDB开创性的提出了Insert buffer，insertbuffer不是缓存，而是实实在在的物理页。我们在对非聚集索引的插入的时候不会实时的插入，而是先判断有没有在缓冲池里面，有的话直接插入，没有的话，先放到一个insert buffer里面。后面再以一定的频率进行insertbuffer和非聚集索页子节点的merge操作。</p>
+<h3 id="2、change-buffer"><a href="#2、change-buffer" class="headerlink" title="2、change buffer"></a>2、change buffer</h3><p>insert buffer 升级为了 change buffer，对插入更新删除操作都准备了缓冲</p>
+<h3 id="3、insert-buffer的内部实现"><a href="#3、insert-buffer的内部实现" class="headerlink" title="3、insert buffer的内部实现"></a>3、insert buffer的内部实现</h3><p>全局唯一的b+树的形式，负责对所有表的辅助索引进行insert buffer，存放在共享表空间，就是ibdata1。但是我们知道，我们可以有独立表ibdata，但是恢复的时候最好用共享表里面的。</p>
+<p>因为是树，所以有非叶子结点和叶子结点。</p>
+<p>非叶子结点放的是searchkey，所以插入非聚集索引的时候，如果不在缓冲池，那么要加入这颗唯一的insertbuffer，实现构造一个searchkey，我想通过这个searchkey找到我要插入的位置，然后再构造一个叶子结点，放进去。</p>
+<h3 id="4、Merge-insert-buffer"><a href="#4、Merge-insert-buffer" class="headerlink" title="4、Merge insert buffer"></a>4、Merge insert buffer</h3><p>所以后面就是合并操作，合并的时机：</p>
+<p>1、master thread</p>
+<p>2、辅助索引页被读到缓冲池里去，然后这个是要执行正常的查询语句了，就去检查这个insert buffer bitmap，确认这个该辅助索引是不是在insert buffer b+书里面，如果有，就把树里面的记录查到辅助索引里面。</p>
+<h2 id="2、两次写"><a href="#2、两次写" class="headerlink" title="2、两次写"></a>2、两次写</h2><p>doublewrite的目的是为了数据的可靠性。</p>
+<p>具体实现的话，是依赖于两个部分，一个是内存中的doublewrite buffer，2m。另一部分是磁盘里的共享表空间里面有一个连续的128页，也是2m。然后我们对脏页进行刷新到磁盘里面，我先不直接写磁盘，我先复制到这个内存的doublewrite buffer里面，然后分两次写入，每次1m写入共享表空间的物理磁盘，然后马上调用fsync函数，同步磁盘。所以，如果写的时候崩溃了，那就把这个共享表空间里面的副本拿出来配合redo log进行恢复。</p>
+<h2 id="3、自适应哈希"><a href="#3、自适应哈希" class="headerlink" title="3、自适应哈希"></a>3、自适应哈希</h2><p>InnoDB会自动为某些访问频率非常高的页建立哈希索引，而哈希索引比起b+树更快，所以也是一种提高性能手段。</p>
+<p>但是有一个比较大的痛点就是他只能用于做 等值查询，如果遇到范围查到，就无能为力。</p>
+<h1 id="文件"><a href="#文件" class="headerlink" title="文件"></a>文件</h1><p>文件包括mysql文件和innodb文件</p>
+<p>1、参数文件</p>
+<p>2、日志文件、</p>
+<p>3、socket文件</p>
+<p>4、pid文件</p>
+<p>5、mysql表结构文件</p>
+<p>6、存储引擎文件</p>
+<p>我们这里只讲几个</p>
+<h2 id="2、日志文件"><a href="#2、日志文件" class="headerlink" title="2、日志文件"></a>2、日志文件</h2><p>日志文件有错误日志、慢查询日志、查询日志、二进制日志，我们着重可以讲一下二进制日志</p>
+<h3 id="1、二进制日志"><a href="#1、二进制日志" class="headerlink" title="1、二进制日志"></a>1、二进制日志</h3><p>事务执行过程中，先把日志写到 binlog cache（Server 层的 cache），MySQL 给每个线程分配了一片内存用于缓冲 binlog，事务提交的时候，再把 binlog cache 写到 binlog 文件中</p>
+<p>他是mysql 的日志，记录了对mysql数据库更改的所有操作。不包括selectshow这类操作</p>
+<p>主要用于：</p>
+<p>恢复：某些数据需要二进制日志。比如数据库全备文件恢复之后，通过二进制进行point-in-time的恢复</p>
+<p>复制；主从同步，那canal也是通过这种方式去监听binlog</p>
+<p>审计：用户通过二进制的信息判断是否有对数据库进行注入的攻击</p>
+<p>然后二进制日志它肯定要落盘，但是他不是每一次写都要落盘，他有个参数sync—binlog，如果等于n，代表每次缓冲多少次就同步到磁盘里面。如果等于1，那就代表同步写磁盘。</p>
+<p>MySQL提供一个 sync_binlog 参数来控制数据库的 binlog 刷到磁盘上的频率：</p>
+<ul>
+<li>sync_binlog &#x3D; 0 的时候，表示每次提交事务都只 write，不 fsync，后续交由操作系统决定何时将数据持久化到磁盘；</li>
+<li>sync_binlog &#x3D; 1 的时候，表示每次提交事务都会 write，然后马上执行 fsync；</li>
+<li>sync_binlog &#x3D;N(N&gt;1) 的时候，表示每次提交事务都 write，但累积 N 个事务后才 fsync。</li>
+</ul>
+<p>还有个需要关注的点就是它落盘的形式，就是怎么记录的？</p>
+<p>这个是依赖于binlog——format这个参数，他就是记录二进制的格式，有三种、statement、row、mixed。</p>
+<p>statement就是最简单的sql语句，但是他有个很大的问题就是如果用到了uuid rand udf这些函数或触发器，那么回导致主从不一致，那我们可以用row的格式，row的话就是记录表的行修改情况。同样的他也有一个很大问题就是要求的容量比较大。那还有一种mixed格式就是混用，正常情况下我按照statement记录sql语句，但是在uuid rand udf这些特殊情况我用row的格式进行纪记录。</p>
+<h3 id="2、表结构定义文件"><a href="#2、表结构定义文件" class="headerlink" title="2、表结构定义文件"></a>2、表结构定义文件</h3><p>这个文件的后缀是.frm，每个文件都会有这个一个frm文件，记录了该表的表结构定义</p>
+<h3 id="3、Innodb存储引擎文件"><a href="#3、Innodb存储引擎文件" class="headerlink" title="3、Innodb存储引擎文件"></a>3、Innodb存储引擎文件</h3><h4 id="1、表空间文件"><a href="#1、表空间文件" class="headerlink" title="1、表空间文件"></a>1、表空间文件</h4><p>首当其冲的就是表空间文件，次情况下我们会放到ibdata那个文件里面，但是我们可以通过设置一个参数去产生一个自己表的独立表空间，然后这些独立的表空间记录该表的数据，索引，insertbuffer等信息，其余的还是放在共享表空间里面。</p>
+<h4 id="2、重做日志文件"><a href="#2、重做日志文件" class="headerlink" title="2、重做日志文件"></a>2、重做日志文件</h4><p>这个ib_logfile0 ib_logile1，先写logfile0，写完之后我们再去写logfile1.然后他有一个capacity容量参数，如果超过这个值，就必须从缓冲池里面的脏页列表去刷回一部分脏页。</p>
+<p>binlog他是mysql的，所以很多其他引擎的操作都会记录，而redolog就是属于innodb的，然后她的记录格式也是大不相同的，binlog是逻辑日志，而redolog则是记录每个页的更改的物理情况</p>
+<p>其次刷新的时间也不同，binlog是很明显，我事务提交之前进行一次提交，而redolog在事务执行过程中就会不多的写入redolog。</p>
+<h1 id="索引前的准备知识"><a href="#索引前的准备知识" class="headerlink" title="索引前的准备知识"></a>索引前的准备知识</h1><p><a target="_blank" rel="noopener" href="https://baijiahao.baidu.com/s?id=1709211669369376612&amp;wfr=spider&amp;for=pc">https://baijiahao.baidu.com/s?id=1709211669369376612&amp;wfr=spider&amp;for=pc</a></p>
+<p><strong>这里我们首先要问三个重要的问题去扒一扒MySQL的InnoDB存储引擎</strong></p>
+<ol>
+<li><strong>MySQL的记录是怎么存储的？</strong></li>
+<li><strong>页内记录到底是怎么维护的？</strong></li>
+<li><strong>页内查询过程是怎样的</strong></li>
+</ol>
+<h3 id="穿上第一件：Page页面"><a href="#穿上第一件：Page页面" class="headerlink" title="穿上第一件：Page页面"></a>穿上第一件：Page页面</h3><p>MySQL管理数据的一个单位叫Page页面，数据都是存在页面里的<strong>。</strong>那咱们想要知道数据是怎么存，就<strong>需要了解页面长什么样子</strong>。</p>
+<p>直接爆照：</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;42a98226cffc1e171d3b202cf4e9e50a728de9ae.jpeg)</p>
+<p>页头（Page Header）：存一些统计信息，记录页面的控制信息，共占56字节，包括页面空间使用情况、页的左右兄弟页面指针（<strong>这个就是双向链表，把左右兄弟页面的指针给拿到了</strong>）等。</p>
+<p>虚记录：分为最大虚记录与最小虚记录，<strong>它俩把这页里面存储的数据的范围框住了。</strong>那怎么比较谁大谁小？用的是主键去比较：最大虚记录比页内最大主键还大，最小虚记录比页内最小主键还小<strong>。</strong>那主键到底是怎么存的呢？InnoDB用的是聚簇索引——<strong>数据和主键存到一起、数据和索引存到一起，数据按主键顺序存储。</strong></p>
+<p>记录堆：<strong>这部分就是存储记录的区域</strong>，分为有效记录和已删除记录。已被删除的记录构成一个链表，叫做自由空间链表<strong>，</strong>如图蓝色已经被删除的数据，<strong>用一个链表把它们连起来</strong>。</p>
+<p>未分配空间：页面未使用的存储空间，除了用了一部分的橙色的区域和已删除的蓝色的数据，剩下的就是未分配空间了，<strong>后面有新的数据插入，往里放就行了</strong>。</p>
+<p>Slog区：<strong>这一块对数据检索非常有用</strong>，卖个关子，后面详细说。</p>
+<p>页尾（Page Tailer）：页面的最后部分，占8个字节，主要存储页面的校验信息。<strong>这一页如果写坏了，数据不对了，通过校验位可以检查出来。</strong></p>
+<p>好了，到这里一个页面咱们了解了，了解数据大概是怎么分布的，<strong>那接下来需要考虑哪些点呢？</strong>我们接下来研究一下——页面记录是怎么维护的</p>
+<h3 id="穿上第二件：聚簇索引"><a href="#穿上第二件：聚簇索引" class="headerlink" title="穿上第二件：聚簇索引"></a>穿上第二件：聚簇索引</h3><p>刚刚提到了主键顺序这个词，那这个顺序是怎么保证的？这里说的按什么顺序存储，不是说升序、降序这些，这些没有意义，实际上说的是<strong>在页里面数据是怎么组织起来的</strong>，还有就是插入数据的策略，<strong>我怎么插入数据</strong>，还有就是<strong>页内的查询是怎样的</strong>。</p>
+<p>我们先来看看聚簇索引：</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;c9fcc3cec3fdfc032a5c874b6446949da5c2269b.jpeg)</p>
+<p>首先，聚簇索引是一棵B+树，那什么是聚簇呢？</p>
+<p>图中下面绿色的部分是咱们的数据区域，数据是基于紫色部分的主键顺序去存储的，<strong>数据和主键存到一起没毛病，主键是按照树的顺序去组织的，这个结构就叫聚簇</strong>。</p>
+<p>我们再看每一个Page，刚刚说到，Page里面有最大虚记录、最小虚记录，最大、最小这数据肯定是有个范围，<strong>那这个数据在里边到底是怎么存的</strong>？换个说法——数据的顺序是怎么保证的？<strong>到底是物理有序，还是逻辑有序？</strong></p>
+<p>我们再回顾一下大学的知识——<strong>物理有序写入不友好，查询友好；逻辑有序查询不友好，插入友好</strong>，两者优缺点互补。</p>
+<p>再回到正题，了解了这两种不同存储方式的特性，反观页面是怎么做的。</p>
+<p>先看下面这幅图，思考一下插入主键为10，9，8的数据，是按物理有序存储还是逻辑有序存储：</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;e850352ac65c103892bb2f180b68801ab27e89a2.jpeg)</p>
+<p>数据插入是写入IO，数据查询是读IO，不管是写还是读，在分析存储的时候，无非是这四种：顺序写、随机写、顺序读、随机读。<strong>如果是顺序写，数据会有各种移动，写入性能肯定非常糟糕</strong>。但是没办法，<strong>优化写入的手段十分有限，不过呢我们却有很多办法优化读</strong>。</p>
+<p><strong>所以想都不用想，页内数据存储的顺序就是逻辑有序</strong>。</p>
+<p>重新梳理一下，Page与Page之间由双向链表连接，页内是用小的链表连起来的：</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;9825bc315c6034a8191108a4766a5a5d082376a2.jpeg)</p>
+<p>我们再来重新画一下这棵树：</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;80cb39dbb6fd5266c5d8021702618422d5073647.jpeg)</p>
+<p>这里要注意，每个Page的索引的每个节点，也就是树的每个节点，它也是一个Page。<strong>既然是个Page，也会有页头，也会有双向链表</strong>，如图蓝色与紫色相间那部分节点数据。</p>
+<p><strong>接下来咱分析一下它的插入策略。</strong></p>
+<p>蓝色部分已删除的空间（记录堆）怎么办呢？<strong>我们得想办法尽量把它们利用上</strong>，这个换谁做数据库设计都要这么设计<strong>。</strong></p>
+<p>其实，插入策略就是先使用自由空间链表，再使用未使用空间，<strong>把数据库“空洞”给补上。</strong>不过呢，自由空间链表的空间也不能完全利用上，比如旧的数据占25个字节，新的数据假设都只有20个字节，<strong>那剩下这5个字节基本也利用不上，这样一来就会产生越来越多的“碎片”</strong>。经过长时间的插入删除插入删除以后，我们就得考虑给数据库做一次收缩，比如通过两次主从表的双向同步，<strong>把所有表数据重新插一遍</strong>。</p>
+<p><strong>我们接下来研究一下——页内查询是怎么做的？</strong></p>
+<h3 id="穿上第三件：Slot槽"><a href="#穿上第三件：Slot槽" class="headerlink" title="穿上第三件：Slot槽"></a>穿上第三件：Slot槽</h3><p><strong>页内的数据是遍历还是二分查找？</strong></p>
+<p>无论数据是物理连续还是逻辑有序，都不能二分查找，都得用遍历的办法。如果我们设计一款数据库，通过索引找到数据在哪个Page里面，要是Page这一层通过遍历的方式，那效率实在是太低了，所以数据库肯定不能这样设计。</p>
+<p>遍历不行，那就使用二分查找吧，提高一下效率。那MySQL是怎么做的呢？看看这张图：</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;3b87e950352ac65c1fead4dc4c8ba11892138a30.jpeg)</p>
+<p>如图，最小虚记录和最大虚记录之间形成一个链表，这时候Slot区就派上用场了，每个Slot槽指向链表中的某一个位置，每个槽的大小一样，可以理解为一个指针，<strong>这样我们只需要用一个算法把每个子链表的长度拆成差不多大小就行了</strong>。</p>
+<p>在查找的时候，先基于Sn、S0找到指向的最大最小虚记录，在Slot区进行二分：<strong>先找到Sn和S0的中间位置，中间找到某个Slot，然后再一步步进行比较，通过几次二分后找到具体的子链表，最后，在子链表内进行遍历找到最终的记录</strong>。这样我们借助Slot区实现了一个近似二分查找的方法。这特别像Java里面的跳表结构，一次查找跳一次，再一次查找再跳一次，效率就特别高了</p>
+<h1 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h1><p>innodb最常见的索引就是：</p>
+<p>b+树索引 （b+树只能找到数据行所在的页，然后把页读到内存里面，进行查找）</p>
+<p>哈希索引（自动生成）</p>
+<p>全文索引</p>
+<h2 id="1、B-树索引"><a href="#1、B-树索引" class="headerlink" title="1、B+树索引"></a>1、B+树索引</h2><p>二叉查找树（左小于中小于右）-》平衡二叉树，任何结点的两个子树高度差小于等于1（性能比较高，但不是最高）（需要左旋右旋等等）</p>
+<p>b+树是为了磁盘或其他直接存取辅助设备设计的一种平衡查找树</p>
+<p>b+树的所有记录结点都是按照键值的大小顺序存放到同一层的叶子结点，他们之间通过叶子结点指针进行连接，中间的都是searchkey</p>
+<h3 id="1、操作"><a href="#1、操作" class="headerlink" title="1、操作"></a>1、操作</h3><h4 id="1、插入"><a href="#1、插入" class="headerlink" title="1、插入"></a>1、插入</h4><p>![image-20231005201534270](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231005201534270.png)</p>
+<h4 id="2、旋转"><a href="#2、旋转" class="headerlink" title="2、旋转"></a>2、旋转</h4><p>旋转发生在leaf page已经满了，但是左右兄弟还没有满，这时候会把记录平移到兄弟结点上面，左兄弟优先</p>
+<h4 id="3、删除"><a href="#3、删除" class="headerlink" title="3、删除"></a>3、删除</h4><p>![image-20231005202324173](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231005202324173.png)</p>
+<h3 id="2、分类"><a href="#2、分类" class="headerlink" title="2、分类"></a>2、分类</h3><p>b+树可以分成聚集索引、辅助索引，这两个到区别就是叶子结点放的到底是不是一行信息</p>
+<h4 id="1、聚集索引"><a href="#1、聚集索引" class="headerlink" title="1、聚集索引"></a>1、聚集索引</h4><p>innodb引擎是索引组织表，按照主键顺序存放，而聚集索引就是按照主键构造的索引b+树，所以叶子结点存放的就是整张表的数据，叶子结点也叫做数据页。非叶子结点的索引页存放的仅仅是键值和指向数据页的偏移量。</p>
+<h4 id="2、辅助索引"><a href="#2、辅助索引" class="headerlink" title="2、辅助索引"></a>2、辅助索引</h4><p>辅助索引的叶子结点不包含行记录的全部数据。叶子结点包含键值和书签，书签用来告诉引擎哪里能找到真正的行数据。由于innodb是索引组织表，所以辅助索引的书签就是行记录的聚集索引键。比如（文件名：页号：槽号），所以辅助索引就是包含了索引那列的值和主键的值</p>
+<h3 id="3、B-树索引的管理"><a href="#3、B-树索引的管理" class="headerlink" title="3、B+树索引的管理"></a>3、B+树索引的管理</h3><h4 id="1、索引管理"><a href="#1、索引管理" class="headerlink" title="1、索引管理"></a>1、索引管理</h4><p>创建和删除可以通过两种方法。一种是alter table。另一种是create&#x2F;drop index。</p>
+<p>查看：show index from XX</p>
+<h4 id="2、fast-index-create"><a href="#2、fast-index-create" class="headerlink" title="2、fast index create"></a>2、fast index create</h4><p>对于一张大表进行索引的添加和删除操作，这会需要很长时间。所以就提出了这个快速创建索引的方式。只限制于辅助索引。</p>
+<p>在创建索引的表加上一个S锁不需要重建表，删除索引只需要更新内部视图。</p>
+<h4 id="3、Online-Schema-Change在线架构改变OSC"><a href="#3、Online-Schema-Change在线架构改变OSC" class="headerlink" title="3、Online Schema Change在线架构改变OSC"></a>3、Online Schema Change在线架构改变OSC</h4><p>在线的意思其实就是在DDL的过程中，可以有读写事务对表进行操作</p>
+<h4 id="4、Online-DDL"><a href="#4、Online-DDL" class="headerlink" title="4、Online DDL"></a>4、Online DDL</h4><p>允许在辅助索引创建的同时，还允许insert update等DML操作</p>
+<p>原理是：执行insert update delete这些操作的时候，先把操作日志写入一个缓存里面，然后，索引建立后重做表上面</p>
+<p>新的alter table语法中，通过algorithm如果是 copy还是通过建立临时表的方式，如果是replace就是不需要临时表，如果是default，那就是根据old_alter_table判断，如果是off，那就是replace。</p>
+<h4 id="5、cardinality值"><a href="#5、cardinality值" class="headerlink" title="5、cardinality值"></a>5、cardinality值</h4><p>优化器会根据这个值来判断我们用不用索引。表示索引中唯一值的数据的估计值，如果是性别这种，重复的非常多，我们叫低选择性，不适合做索引。反之高选择性就比较适合，尤其是在高选择性属性字段里面取出一小部分数据，那就更有必要了。</p>
+<ul>
+<li><strong>统计的方式</strong>？</li>
+</ul>
+<p>一张大表，每次统计的时间很长，这是不能接受的，所以我们用的是采样的方法。cardinality值的更新发生在insert和update操作，但是肯定不是每一次insertupdate都去更新，具体策略如下：</p>
+<p>1、表中1&#x2F;16数据发生了变化</p>
+<p>2、计数器超过20亿</p>
+<ul>
+<li><strong>采样的方法：</strong></li>
+</ul>
+<p>对八个叶子结点进行采样预估，取出平均值</p>
+<h3 id="4、B-树索引的使用"><a href="#4、B-树索引的使用" class="headerlink" title="4、B+树索引的使用"></a>4、B+树索引的使用</h3><h4 id="1、联合索引"><a href="#1、联合索引" class="headerlink" title="1、联合索引"></a>1、联合索引</h4><p>本质也是一颗二叉树，之前是a,b,c,d现在是（a,b）(c,d)</p>
+<p>第一个好处：对于联合查询和单列的第一列的查询都可以用联合查询</p>
+<p>第二个好处：一句对第二个键值进行了排序处理，可以缩短某些情况的查询时间</p>
+<h4 id="2、覆盖索引"><a href="#2、覆盖索引" class="headerlink" title="2、覆盖索引"></a>2、覆盖索引</h4><p>覆盖索引的意思是，从辅助索引中就直接可以得到想要查询的记录，不需要回表。</p>
+<p>第一个好处是：辅助索引本身不包括整行记录，所以大小远小于聚集索引，减少io操作</p>
+<p>第二个好处是：对于某些统计问题，存储引擎并不会通过积极索引，辅助索引远远小于聚集索引，</p>
+<h4 id="3、优化器不选择索引的方式"><a href="#3、优化器不选择索引的方式" class="headerlink" title="3、优化器不选择索引的方式"></a>3、优化器不选择索引的方式</h4><p>多发生在范围查找、join链接操作</p>
+<h4 id="4、MRR优化（只支持非聚集索引）（离散读变成顺序读）"><a href="#4、MRR优化（只支持非聚集索引）（离散读变成顺序读）" class="headerlink" title="4、MRR优化（只支持非聚集索引）（离散读变成顺序读）"></a>4、MRR优化（只支持非聚集索引）（离散读变成顺序读）</h4><p>工作方式：</p>
+<ul>
+<li>把辅助索引读出来放到一个缓存里面</li>
+<li>把缓存中的键值更具rowid进行排序</li>
+<li>然后根据rowid去找数据</li>
+</ul>
+<p>他还可以进行某些范围查找，就是把范围查找拆分成键值对的等值查找。直接就过滤了一些不符合条件的数据。</p>
+<p>好处：</p>
+<ul>
+<li>数据访问更加顺序，</li>
+<li>减少缓冲池页的替换</li>
+</ul>
+<h4 id="5、ICP优化（只支持非聚集索引）"><a href="#5、ICP优化（只支持非聚集索引）" class="headerlink" title="5、ICP优化（只支持非聚集索引）"></a>5、ICP优化（只支持非聚集索引）</h4><p>原本我们通过索引进行查询的时候，首先根据索引查找记录，然后根据where条件过滤记录。ICP是在取出索引的同时，判断是否可以进行where条件的过滤，也就是讲where的部分过滤操作放到了存储引擎层</p>
+<p>场景：</p>
+<p>假设表TB1上有索引IDX_C1_C2_C3(C1,C2,C3)，对于查询SELECT * FROM TB1 WHERE C1&#x3D;’XXX’ AND C3&#x3D;’XXX’</p>
+<p>在MySQL 5.6版本以前，由于缺少C2的过滤条件，Innodb存储引擎层只能使用索引IDX_C1_C2_C3按照C1&#x3D;’XXX’条件找出所有满足条件的索引记录，再根据这些索引记录去聚集索引中查找，将找到的表数据返回给MySQL Server层，然后由MySQL Server层使用C3&#x3D;’XXX’条件进行过滤得到最终结果。</p>
+<p>再MySQL 5.6版本中引入ICP特性，Innodb存储引擎层只能使用索引IDX_C1_C2_C3按照C1&#x3D;’XXX’条件去扫描所有满足条件的索引记录，再将这些索引记录按照C3&#x3D;’XXX’条件进行过滤，并按照过滤后的索引记录去去聚集索引中查找，将找到的表数据返回给MySQL Server层，得到最终结果。</p>
+<p>假设满足C1&#x3D;’XXX’条件的数据行为100000条，而满足C1&#x3D;’XXX’ AND C3&#x3D;’XXX’的数据行为100条，则：</p>
+<p>1、在MySQL 5.5版本中，需要对TB1的聚集索引进行100000次Index Seek操作，Innodb存储引擎层向MySQL Server层传递100000行数据。</p>
+<p>2、在MySQL 5.6版本中，使用ICP仅需要对TB1的聚集索引进行100次的Index Seek操作，Innodb存储引擎层向MySQL Server层传递100行数据。</p>
+<h4 id="6、自适应哈希索引"><a href="#6、自适应哈希索引" class="headerlink" title="6、自适应哈希索引"></a>6、自适应哈希索引</h4><p>InnoDB中的哈希用的字典进行查找，冲突用链表解决，哈希函数用除法散列</p>
+<p>自适应哈希索引就是用的这种方法。</p>
+<h4 id="7、全文检索"><a href="#7、全文检索" class="headerlink" title="7、全文检索"></a>7、全文检索</h4><p>全文检索一般使用倒排索引。</p>
+<h5 id="1、倒排索引"><a href="#1、倒排索引" class="headerlink" title="1、倒排索引"></a>1、倒排索引</h5><p>它在辅助表（auxiliary table）中存储了单词与单词自身在一个或多个文档中所在位置之间的映射。这通常利用关键数组实现，其拥有两种表现形式：<br>inverted file index：其表现形式为{单词，单词所在文档的ID}<br>full inverted index：其表现形式为{单词，(单词所在文档的ID，在文档中的具体位置)}</p>
+<h5 id="2、InnoDB全文检索的实现"><a href="#2、InnoDB全文检索的实现" class="headerlink" title="2、InnoDB全文检索的实现"></a>2、InnoDB全文检索的实现</h5><p><strong>InnoDB全文索引有3个非常重要的东西，一个是辅助表，一个是FTS Index Cache、一个是FTS DOUCUMENT id</strong></p>
+<h6 id="1、Auxiliary-Table（辅助表）"><a href="#1、Auxiliary-Table（辅助表）" class="headerlink" title="1、Auxiliary Table（辅助表）"></a><strong>1、Auxiliary Table（辅助表）</strong></h6><p>辅助表是把文档，分词然后规范化后的白哦，</p>
+<p>辅助表的话采用“full inverted index”的方式有两个列：<br>一个是word字段。在word字段上有设有索引，另一个是ilist字段，（DocumentId,Position）</p>
+<h6 id="2、FTS-INDEX-Cache（全文检索缓存）"><a href="#2、FTS-INDEX-Cache（全文检索缓存）" class="headerlink" title="2、FTS INDEX Cache（全文检索缓存）"></a><strong>2、FTS INDEX Cache（全文检索缓存）</strong></h6><p>他是一个红黑树的结构：我执行插入操作，插入的数据已经更新了对应的表，但是我们的辅助表可能还没更新，这个更新还停留在FTS cache里面。如果没插一次就更新这是不合理的，那具体同步到辅助表的时机：</p>
+<p>1、在我进行全文检索查询的时候，我把FTS INDEX cache里的word字段合并到辅助表，然后查询。有点类似于insert buffer</p>
+<p>2、数据库关闭的时候会同步</p>
+<p>3、cache满了	</p>
+<p>数据库宕机时：一些FTS InDEX Cache中的数据库可能未被同步到磁盘上。那么下次重启时，当用户对表进行全文检索（查询或者插入操作）时，InnoDB会自动读取未完成的文档，然后进行分词操作，再将分词的结果放入到FTS Index Cache中</p>
+<p>对于InnoDB来说，其总是在事务提交时将分词写入到FTS Index Cache。</p>
+<h6 id="3、FTS-DOUCUMENT-ID"><a href="#3、FTS-DOUCUMENT-ID" class="headerlink" title="3、FTS DOUCUMENT ID"></a>3、FTS DOUCUMENT ID</h6><p>为了支持全文检索，<strong>必须有一个列与word进行映射：</strong></p>
+<ul>
+<li>在InnoDB中这个列<strong>被命名为FTS_DOC_ID</strong></li>
+<li>其<strong>类型必须是</strong>bigint unsigned not null</li>
+<li>并且InnoDB自动会在该列上加入一个<strong>名为FTS_DOC_ID_INDEX的unique index索引</strong></li>
+<li><strong>用户也可以在建表时自动添加FTS_DOC_ID，以及相应的Unique Index</strong></li>
+</ul>
+<p>Deleted auxiliary table<br>文档中分词的插入操作是在事务提交时完成的，然而对于删除操作，其在事务提交时不删除磁盘Auxiliary Table中的记录，而只是删除FTS Index Cache中的记录。对于Auxiliary Table中被删除的记录，InnoDB会记录其FTS Document ID，并将其保存在Deleted auxiliary table中</p>
+<p>由于文档的DML操作实际并不删除索引中的数据，相反还会在对应的DELETED表中插入记录，因此随着应用程序的允许，索引会变得非常大，即使索引列中的有些数据已经被删除，查询也不会使用到。为了，InnoDB存储引擎提供了一种方式，允许用户手动地将已删除的记录从索引中彻底删除，该命令就是OPTIMIZE TABLE</p>
+<h1 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h1><p>锁机制是用于管理对共享资源的并发访问，保证数据的完整性和一致性。</p>
+<h2 id="1、锁的类型"><a href="#1、锁的类型" class="headerlink" title="1、锁的类型"></a>1、锁的类型</h2><h3 id="1、全局锁"><a href="#1、全局锁" class="headerlink" title="1、全局锁"></a>1、全局锁</h3><p>典型的使用场景就是做全库的逻辑备份</p>
+<ul>
+<li><p>一旦加了全局锁之后，其他的DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句，也就是处于只读状态</p>
+</li>
+<li><p>语法</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">flush tables <span class="keyword">with</span> read lock;<span class="number">1</span>、加全局锁</span><br><span class="line">mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>pxxx db_name <span class="operator">-</span><span class="operator">&gt;</span> xxx.sql;<span class="number">2</span>、数据备份</span><br><span class="line">unlock tables;<span class="number">3</span>、释放锁</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="2、表级锁"><a href="#2、表级锁" class="headerlink" title="2、表级锁"></a>2、表级锁</h3><p>表级锁，主要分为3类：</p>
+<ul>
+<li>表锁</li>
+<li>元数据锁（meta data lock，MDL）</li>
+<li>意向锁</li>
+</ul>
+<h4 id="1、表锁"><a href="#1、表锁" class="headerlink" title="1、表锁"></a>1、表锁</h4><p>对于表锁，又可以分为2类：</p>
+<ul>
+<li>表共享读锁（read lock）</li>
+<li>表独占写锁（write lock）</li>
+</ul>
+<p>结论: 读锁不会阻塞其他客户端的读，但是会阻塞写。写锁既会阻塞其他客户端的读，又会阻塞 其他客户端的写。</p>
+<h4 id="2、、元数据锁"><a href="#2、、元数据锁" class="headerlink" title="2、、元数据锁"></a>2、、元数据锁</h4><p>再来说说<strong>元数据锁</strong>（MDL）。</p>
+<p>我们不需要显示的使用 MDL，因为当我们对数据库表进行操作时，会自动给这个表加上 MDL：</p>
+<ul>
+<li>对一张表进行 CRUD 操作时，加的是 <strong>MDL 读锁</strong>；</li>
+<li>对一张表做结构变更操作的时候，加的是 <strong>MDL 写锁</strong>；</li>
+</ul>
+<p>MDL 是为了保证当用户对表执行 CRUD 操作时，防止其他线程对这个表结构做了变更。</p>
+<blockquote>
+<p>MDL 不需要显示调用，那它是在什么时候释放的?</p>
+</blockquote>
+<p>MDL 是在事务提交后才会释放，这意味着<strong>事务执行期间，MDL 是一直持有的</strong>。</p>
+<p>MDL 加锁过程是系统自动控制，无需显式使用，在访问一张表的时候会自动加上。MDL 锁主要作用是维 护表元数据的数据一致性，在表上有活动事务的时候，不可以对元数据进行写入操作。为了避免DML与 DDL冲突，保证读写的正确性。</p>
+<h4 id="3、意向锁"><a href="#3、意向锁" class="headerlink" title="3、意向锁"></a>3、意向锁</h4><p>我觉得意向锁主要还是解决行锁和表锁之间的冲突问题。</p>
+<ul>
+<li>在使用 InnoDB 引擎的表里对某些记录加上「共享锁」之前，需要先在表级别加上一个「意向共享锁」；</li>
+<li>在使用 InnoDB 引擎的表里对某些纪录加上「独占锁」之前，需要先在表级别加上一个「意向独占锁」；</li>
+</ul>
+<p>也就是，当执行插入、更新、删除操作，需要先对表加上「意向独占锁」，然后对该记录加行级独占锁。</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;20e0f35589584352bd15e817668a0886.png)</p>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;6e6b275c2d6d4dfcbbb338be4f61bee9.png)</p>
+<p>所以，<strong>意向锁的目的是为了快速判断表里是否有记录被加锁</strong>。</p>
+<h4 id="4、自增锁"><a href="#4、自增锁" class="headerlink" title="4、自增锁"></a>4、自增锁</h4><p>主键设置成自增之后，在插入数据时，可以不指定主键的值，数据库会自动给主键赋值递增的值，这主要是通过 <strong>AUTO-INC 锁</strong>实现的。</p>
+<p><strong>在插入数据时，会加一个表级别的 AUTO-INC 锁</strong>，<strong>不是再一个事务提交后才释放，而是再执行完插入语句后就会立即释放</strong>。</p>
+<p>但是， AUTO-INC 锁再对大量数据进行插入的时候，会影响插入性能，因为另一个事务中的插入会被阻塞。</p>
+<p>因此， 在 MySQL 5.1.22 版本开始，InnoDB 存储引擎提供了一种<strong>轻量级的锁</strong>来实现自增</p>
+<p>InnoDB 存储引擎提供了个 innodb_autoinc_lock_mode 的系统变量，是用来控制选择用 AUTO-INC 锁，还是轻量级的锁。</p>
+<ul>
+<li>当 innodb_autoinc_lock_mode &#x3D; 0，就采用 AUTO-INC 锁，语句执行结束后才释放锁；</li>
+<li>当 innodb_autoinc_lock_mode &#x3D; 2，就采用轻量级锁，申请自增主键后就释放锁，并不需要等语句执行后才释放。</li>
+<li>当 innodb_autoinc_lock_mode &#x3D; 1：<ul>
+<li>普通 insert 语句，自增锁在申请之后就马上释放；</li>
+<li>类似 insert … select 这样的批量插入数据的语句，自增锁还是要等语句结束后才被释放；</li>
+</ul>
+</li>
+</ul>
+<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;innodb_autoinc_lock_mode&#x3D;2.png)</p>
+<p>session A 往表 t 中插入了 4 行数据，然后创建了一个相同结构的表 t2，然后<strong>两个 session 同时执行向表 t2 中插入数据</strong>。</p>
+<p>如果 innodb_autoinc_lock_mode &#x3D; 2，意味着「申请自增主键后就释放锁，不必等插入语句执行完」。那么就可能出现这样的情况：</p>
+<ul>
+<li>session B 先插入了两个记录，(1,1,1)、(2,2,2)；</li>
+<li>然后，session A 来申请自增 id 得到 id&#x3D;3，插入了（3,5,5)；</li>
+<li>之后，session B 继续执行，插入两条记录 (4,3,3)、 (5,4,4)。</li>
+</ul>
+<p>可以看到，<strong>session B 的 insert 语句，生成的 id 不连续</strong>。</p>
+<p>当「主库」发生了这种情况，binlog 面对 t2 表的更新只会记录这两个 session 的 insert 语句，如果 binlog_format&#x3D;statement，记录的语句就是原始语句。记录的顺序要么先记 session A 的 insert 语句，要么先记 session B 的 insert 语句。</p>
+<p>但不论是哪一种，这个 binlog 拿去「从库」执行，这时从库是按「顺序」执行语句的，只有当执行完一条 SQL 语句后，才会执行下一条 SQL。因此，在<strong>从库上「不会」发生像主库那样两个 session 「同时」执行向表 t2 中插入数据的场景。所以，在备库上执行了 session B 的 insert 语句，生成的结果里面，id 都是连续的。这时，主从库就发生了数据不一致</strong>。</p>
+<p>要解决这问题，binlog 日志格式要设置为 row，这样在 binlog 里面记录的是主库分配的自增值，到备库执行的时候，主库的自增值是什么，从库的自增值就是什么。</p>
+<p>所以，<strong>当 innodb_autoinc_lock_mode &#x3D; 2 时，并且 binlog_format &#x3D; row，既能提升并发性，又不会出现数据一致性问题</strong>。</p>
+<h3 id="3、行锁"><a href="#3、行锁" class="headerlink" title="3、行锁"></a>3、行锁</h3><p>InnoDB实现了以下两种类型的行锁：</p>
+<ul>
+<li>共享锁（S）：允许一个事务去读一行，阻止其他事务获得相同数据集的排它锁。</li>
+<li>排他锁（X）：允许获取排他锁的事务更新数据，阻止其他事务获得相同数据集的共享锁和排他 锁</li>
+</ul>
+<p>![image-20230805221422216](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20230805221422216.png)</p>
+<h2 id="2、一致性非锁定读（快照读）"><a href="#2、一致性非锁定读（快照读）" class="headerlink" title="2、一致性非锁定读（快照读）"></a>2、一致性非锁定读（快照读）</h2><p>一致性非锁定读是指InnoDb通过多版本控制（MVCC）的方式读取当前执行时间里面数据库的数据。如果读取的那一行正在做一些dml操作，但是我不会去等，我会直接去读一个快照数据。不需要等待X锁的释放，那这个数据是哪里来的呢？这个快照数据是指该行之前版本的数据，他的实现是通过undo页完成的，而一个行记录它对应的可能不只有一个快照数据，所以我们把对于这些快照数据的管理，叫做多版本控制MVCC。当然这里提一嘴就是,读已提交和可重复读这两种级别是可以用一致性非锁定读，但是对于快照数据的定义不一样，读已提交总是读区被锁定行的最新的一份快照，可重复读总是读事务开始时候的数据版本，</p>
+<h2 id="3、一致性锁定读（当前读）"><a href="#3、一致性锁定读（当前读）" class="headerlink" title="3、一致性锁定读（当前读）"></a>3、一致性锁定读（当前读）</h2><p>有时候用户需要些显式的对读操作进行加锁保证一致性。</p>
+<h2 id="4、锁的算法"><a href="#4、锁的算法" class="headerlink" title="4、锁的算法"></a>4、锁的算法</h2><p>InnoDB有三种行锁的算法：</p>
+<p>Record Lock：单个行记录的锁</p>
+<p>Gap Lock：间隙锁，锁定一个范围，但不包括记录本身</p>
+<p>Next-Key Lock：Record Lock + Gap Lock</p>
+<p>InnoDB就是用Next-Key去解决幻想问题（同一事务下，连续执行两次相同的sql语句可能导致不同的结果，第二次sql可能会返回之前不存在的行）</p>
+<p>查询的索引如果是唯一性质，那么降级为Record Lock</p>
+<h2 id="5、锁问题"><a href="#5、锁问题" class="headerlink" title="5、锁问题"></a>5、锁问题</h2><h3 id="1、脏读"><a href="#1、脏读" class="headerlink" title="1、脏读"></a>1、脏读</h3><p>读到了其他事务没有提交的数据，违反了隔离性。但是脏读发生的隔离级别最少也得是read uncommitted，而我们的数据库默认是可重复读，所以一般在生产环境中，发生的并不多。</p>
+<h3 id="2、不可重复读"><a href="#2、不可重复读" class="headerlink" title="2、不可重复读"></a>2、不可重复读</h3><p>就是一个事务读两次，另一个事务在两次读之间作出修改，因为读是mvcc，不加锁，所以会出现不可重复读。innoDB的解决方法：</p>
+<ul>
+<li>针对<strong>快照读</strong>（普通 select 语句），是<strong>通过 MVCC 方式解决了幻读</strong>，因为可重复读隔离级别下，事务执行过程中看到的数据，一直跟这个事务启动时看到的数据是一致的，即使中途有其他事务插入了一条数据，是查询不出来这条数据的，所以就很好了避免幻读问题。</li>
+<li>针对<strong>当前读</strong>（select … for update 等语句），是<strong>通过 next-key lock（记录锁+间隙锁）方式解决了幻读</strong>，因为当执行 select … for update 语句的时候，会加上 next-key lock，如果有其他事务在 next-key lock 锁范围内插入了一条记录，那么这个插入语句就会被阻塞，无法成功插入，所以就很好了避免幻读问题。</li>
+</ul>
+<h3 id="3、丢失更新"><a href="#3、丢失更新" class="headerlink" title="3、丢失更新"></a>3、丢失更新</h3><p>是指一个事务的操作被另一个事务的操作覆盖了，但是当前数据库的任何隔离级别都对行或者粗粒度的对象加锁，所以还是比较难发生。</p>
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2><p>事务级别</p>
+<p><strong>类型一：RU（READ-UNCOMMITTED 表示读未提交）</strong></p>
+<p>可以读取到事务未提交的数据，隔离性差，会出现脏读（当前内存读），不可重复读，幻读问题;</p>
+<p><strong>类型二：RC（READ-COMMITTED 表示读已提交）</strong>可用</p>
+<p>可以读取到事务已提交的数据，隔离性一般，不会出现脏读问题，但是会出现不可重复读，幻读问题；</p>
+<p><strong>类型三：RR（REPEATABLE-READ 表示可重复读）</strong><code>默认</code></p>
+<p>可以防止脏读（当前内存读），防止不可重复读问题，防止会出现的幻读问题，但是并发能力较差；</p>
+<p>会使用next lock锁进制，来防止幻读问题，但是引入锁进制后，锁的代价会比较高，比较耗费CPU资源，占用系统性能；</p>
+<p><strong>类型四：SR（SERIALIZABLE 可串行化）</strong></p>
+<p>隔离性比较高，可以实现串行化读取数据，但是事务的并发度就没有了；</p>
+<p>这是事务的最高级别，在每条读的数据上，加上锁，使之不可能相互冲突</p>
+<h2 id="6、死锁"><a href="#6、死锁" class="headerlink" title="6、死锁"></a>6、死锁</h2><p>死锁是指两个或以上的事务争夺资源造成的一种互相等待的现象</p>
+<p>解决方法：</p>
+<p>1、设置超时的阈值，回滚一个事务</p>
+<p>2、wait-for-graph 等待图。检测是否有回路。通常用深度优先。1.2版本开始就变成非递归</p>
+<p>如果有死锁，那就回归undo量最少的</p>
+<h2 id="7、锁升级"><a href="#7、锁升级" class="headerlink" title="7、锁升级"></a>7、锁升级</h2><p>InnoDB中不存在锁升级的问题，因为InnoDB不是更具每个记录来产生锁的，相反，其根据每个事务访问的每个页对锁进行管理，采用的是位图的方式。所以不管你锁住的是页中的一个记录或者多个记录，开销一样</p>
+<p>![image-20231006204601132](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231006204601132.png)</p>
+<h1 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h1><h2 id="1、认识事务"><a href="#1、认识事务" class="headerlink" title="1、认识事务"></a>1、认识事务</h2><h3 id="1、四个特性：acid。"><a href="#1、四个特性：acid。" class="headerlink" title="1、四个特性：acid。"></a>1、四个特性：acid。</h3><p>原子性：要么成功要么失败</p>
+<p>一致性：讲数据库从一种状态转变为下一种一致的专题。</p>
+<p>isolation：一个事务提交之前对其他事物不可见</p>
+<p>durability：一旦提交，那么结果是永久性的</p>
+<h3 id="2、分类-1"><a href="#2、分类-1" class="headerlink" title="2、分类"></a>2、分类</h3><p>扁平事务</p>
+<p>带有保存点的扁平事务</p>
+<p>链事务</p>
+<p>嵌套事务</p>
+<p>分布式事务</p>
+<h2 id="2、事务的实现"><a href="#2、事务的实现" class="headerlink" title="2、事务的实现"></a>2、事务的实现</h2><p>事务的隔离性由锁机制来实现。</p>
+<p>原子性、一致性、持久性通过redo log和undo log完成</p>
+<p>redo log保证持久性</p>
+<p>undo log保证事务的原子性，一致性</p>
+<p>redolog恢复提交事务修改的页操作</p>
+<p>undo回滚行记录道某个特定版本，事务</p>
+<h3 id="1、redo"><a href="#1、redo" class="headerlink" title="1、redo"></a>1、redo</h3><p>有两部分组成：redo log buffer缓冲，redo log file</p>
+<p>事务提交的时候必须把事务的所有日志写入重做日志文件进行持久化。这个的所有日志包括redo log 和undo log</p>
+<p>为了防止断电导致数据丢失的问题，当有一条记录需要更新的时候，InnoDB 引擎就会先更新内存（同时标记为脏页），然后将本次对这个页的修改以 redo log 的形式记录下来，<strong>这个时候更新就算完成了</strong>。</p>
+<p>后续，InnoDB 引擎会在适当的时候，由后台线程将缓存在 Buffer Pool 的脏页刷新到磁盘里，这就是 <strong>WAL （Write-Ahead Logging）技术</strong>。</p>
+<p><strong>WAL 技术指的是， MySQL 的写操作并不是立刻写到磁盘上，而是先写日志，然后在合适的时间再写到磁盘上</strong>。</p>
+<p>![image-20231007131604938](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231007131604938.png)</p>
+<p>![image-20231007131752781](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231007131752781.png)</p>
+<p>![image-20231007131726290](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231007131726290.png)</p>
+<blockquote>
+<p>产生的 redo log 是直接写入磁盘的吗？</p>
+</blockquote>
+<p>不是的。</p>
+<p>实际上， 执行一个事务的过程中，产生的 redo log 也不是直接写入磁盘的，因为这样会产生大量的 I&#x2F;O 操作，而且磁盘的运行速度远慢于内存。</p>
+<p>所以，redo log 也有自己的缓存—— <strong>redo log buffer</strong>，每当产生一条 redo log 时，会先写入到 redo log buffer，后续在持久化到磁盘如下图：</p>
+<p>![image-20231007131921540](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231007131921540.png)</p>
+<h3 id="redo-log-什么时候刷盘？"><a href="#redo-log-什么时候刷盘？" class="headerlink" title="redo log 什么时候刷盘？"></a>redo log 什么时候刷盘？</h3><p>缓存在 redo log buffer 里的 redo log 还是在内存中，它什么时候刷新到磁盘？</p>
+<p>主要有下面几个时机：</p>
+<ul>
+<li>MySQL 正常关闭时；</li>
+<li>当 redo log buffer 中记录的写入量大于 redo log buffer 内存空间的一半时，会触发落盘；</li>
+<li>InnoDB 的后台线程每隔 1 秒，将 redo log buffer 持久化到磁盘。</li>
+<li>每次事务提交时都将缓存在 redo log buffer 里的 redo log 直接持久化到磁盘（这个策略可由 innodb_flush_log_at_trx_commit 参数控制，下面会说）。</li>
+</ul>
+<p>由参数 <code>innodb_flush_log_at_trx_commit</code> 参数控制，可取的值有：0、1、2，默认值为 1，这三个值分别代表的策略如下：</p>
+<ul>
+<li>当设置该<strong>参数为 0 时</strong>，表示每次事务提交时 ，还是<strong>将 redo log 留在 redo log buffer 中</strong> ，该模式下在事务提交时不会主动触发写入磁盘的操作。</li>
+<li>当设置该<strong>参数为 1 时</strong>，表示每次事务提交时，都<strong>将缓存在 redo log buffer 里的 redo log 直接持久化到磁盘</strong>，这样可以保证 MySQL 异常重启之后数据不会丢失。</li>
+<li>当设置该<strong>参数为 2 时</strong>，表示每次事务提交时，都只是缓存在 redo log buffer 里的 redo log <strong>写到 redo log 文件，注意写入到「 redo log 文件」并不意味着写入到了磁盘</strong>，因为操作系统的文件系统中有个 Page Cache（如果你想了解 Page Cache，可以看<a target="_blank" rel="noopener" href="https://xiaolincoding.com/os/6_file_system/pagecache.html">这篇 (opens new window)</a>），Page Cache 是专门用来缓存文件数据的，所以写入「 redo log文件」意味着写入到了操作系统的文件缓存。</li>
+</ul>
+<h3 id="2、undo-log"><a href="#2、undo-log" class="headerlink" title="2、undo log"></a>2、undo log</h3><p>undo log最主要的作用有两点：一个是事务回滚，保证原子性；还有一个是支持mvcc</p>
+<p>那我们先讲第一个，就是事务提交之前，如果发生意外，这时候你用redolog是没有办法恢复的，所以我们可以使用undolog，他的做法是，假如我们去修改一个数据，上锁之后，我们把该行数据拷贝到 <code>undo log</code>作为旧版本。copy之后，那进行真正的修改操作，同时修改trxid 和roll_pointer。</p>
+<p>另外一个大的作用是mvcc，mvcc他是基于undo log版本链和ReadView实现</p>
+<p>然后每一行数据其实都有两个隐藏列，一个是trxid一个是rollpointer，trxid 表示修最新修改事务的id，rollpointer表示指向旧版本log</p>
+<p>ReadView，里面有四个比较关键的东西：</p>
+<p>一个是m_ids，这个就是说事务开启那一刻有哪些事务在Mysql里面执行还没有提交的；</p>
+<p>一个是min_trx_id，就是m_ids里最小的事务id的值；</p>
+<p>一个是max_trx_id，就是此刻mysql下一个要生成的事务id，就是最大事务id；</p>
+<p>一个是creator_trx_id，就是你这个事务的id。</p>
+<p>那我们只要对比mintexid，如果说比他小，说明已经事务已经提交了，我们可以看得见。</p>
+<p>比如一条记录旧版本里面有三条记录：10，20，30。然后我们的事务id是15，m_ids里面有20，30。这里的min_trx_id就是20，我们的15比她小，说明还没有提交。因为隔离性所以肯定是看不到的，然后再去找更前面版本，我们就找到了10，发现10可以，所以我们这次读到的数据就是事务id为10的那一个版本。</p>
+<p>rr：事务启动的时候创建readview</p>
+<p>rc：每次查询都会创建一个readview</p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/07/08/Mysql%E5%A4%8D%E4%B9%A0%EF%BC%88mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%20innodb%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%EF%BC%89/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Kommentieren und teilen
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
                             href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
                             aria-label=": mybatis组件的整合理解2"
                         >
@@ -242,7 +690,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-27T00:00:00+08:00">
 	
-		    Apr 27, 2023
+		    27 Apr 2023
     	
     </time>
     
@@ -297,7 +745,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -326,7 +774,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-27T00:00:00+08:00">
 	
-		    Apr 27, 2023
+		    27 Apr 2023
     	
     </time>
     
@@ -359,7 +807,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -388,7 +836,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-26T00:00:00+08:00">
 	
-		    Apr 26, 2023
+		    26 Apr 2023
     	
     </time>
     
@@ -444,7 +892,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -473,7 +921,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-22T00:00:00+08:00">
 	
-		    Apr 22, 2023
+		    22 Apr 2023
     	
     </time>
     
@@ -523,7 +971,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -552,7 +1000,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-11T00:00:00+08:00">
 	
-		    Apr 11, 2023
+		    11 Apr 2023
     	
     </time>
     
@@ -629,7 +1077,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -658,7 +1106,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-11T00:00:00+08:00">
 	
-		    Apr 11, 2023
+		    11 Apr 2023
     	
     </time>
     
@@ -690,7 +1138,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -719,7 +1167,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-11T00:00:00+08:00">
 	
-		    Apr 11, 2023
+		    11 Apr 2023
     	
     </time>
     
@@ -968,7 +1416,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -997,7 +1445,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -1025,7 +1473,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1054,7 +1502,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -1098,85 +1546,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
-                            aria-label=": 章节：7-10，同时回顾一下4-6的内容"
-                        >
-                            章节：7-10，同时回顾一下4-6的内容
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-04-04T00:00:00+08:00">
-	
-		    Apr 04, 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <p>7-10，同时回顾一下4-6的内容</p>
-<p>第六节的重点是模版模式。</p>
-<p>模版模式是定义一个算法的骨架，并允许子类为一个或多个步骤提供实现。在第六节中这个算法骨架（抽象模版类）是AbstractDrawBase，这个类中有通用的比如对于抽奖结果的包装，也有抽象方法比如执行抽奖算法（这个在子类中实现）。小傅哥在这个基础上又把一些一些通用的数据服务抽象出新的一层DrawStrategySupport，这个算是一种优化，但是他本质也属于抽象模版类的一部分。</p>
-<p>而我们抽奖则需要抽奖策略（怎么个抽法），这就是第五节的东西—策略模式：</p>
-<p>对象的某个行为，在不同场景中有不同的实现方式，这样就可以将这些实现方式定义成一组策略，每个实现类对应一个策略，在不同的场景就使用不同的实现类，并且可以自由切换策略。</p>
-<p>其实看完第六节会发现第五节和第六节很像，也是抽象出了一个接口和一个抽象模版类，其他的子类继承抽象模版类实现randomDraw（）方法，不同的实现对应不同的算法，具体算法我们自己可以修改逻辑、补充内容等操作。</p>
-<p>在这时候我们发现策略模式和模版模式很像，但是是有一些区别的：</p>
-<p>模板模式：问题处理的流程已经被定义好，父类实现通用的逻辑（当然你也可以再抽象出一层），子类实现个性化逻辑。</p>
-<p>策略模式：父类定义一组抽象算法，子类自己实现自己的。每个策略完成的功能是重复的，同一时间，只能选择其中的一种，即互斥的</p>
-<p>策略模式核心在使用者的策略，按照自己的策略去替换。模板方法模式核心在子类的怎么实现。</p>
-<p>举个例子：</p>
-<p>模版模式： 父类：早上6点吃饭，晚上6点吃面。子类1：早上6点吃稀饭，晚上6点吃泡面。子类2：早上6点吃干饭，晚上6点吃挂面。</p>
-<p>策略模式：父类：早晚进食。子类1:早上5点吃面，晚上5点吃面。子类2:早上7点吃饭，晚上7点吃饭。子类3:早上不吃，晚上不吃…</p>
-<p>第八节：状态模式</p>
-<p>当一个对象的内在状态改变时，允许改变其行为，把不同状态当做一个类，解决对象在多种状态转换时，需要对外输出不同的行为的问题。</p>
-<p>同样的有抽象模版类（AbstractState，当然你要自己提炼一个接口大概也没什么问题），多个具体实现的子类。要有一个Context类，这个类持有State，负责保持并切换当前的状态，当状态变化时，修改这个State。在项目中应该是活动创建的时候初始化状态，后续收到一些通知（比如：快递公司揽件，发送目的地，菜鸟驿站收到快递）修改活动中的状态变量就可以，非常方面。</p>
-<p>第九节：ID生成策略</p>
-<p>也是策略模型，因为目前就一个id生成的要求，也无需什么流程啊，也不涉及什么状态改变，不同情境下使用不同类型的id，所以策略模式最佳。</p>
-<p>第十节：分库分表</p>
-<p>内容多，也是这几天最花时间的，bug奇多，自己不小心把application.yml文件里面的配置写错了，然后报空指针，找不到bean，我还以为自己打包有问题呢；因为自己的版本和傅哥的不太一样，总报一些依赖错误，还有什么commons-lang、commons-beanutils依赖缺失。自己的的项目工程包名是自定义的，和傅哥的cn.itedus.lottery和那个cn.bugstack不一样，中途修改的时候感觉对理解还是有益处的。</p>
-<p>之后再对第十节做一次总结，加深感悟。</p>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1193,10 +1563,10 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             <a
                 class="btn btn--default btn--small"
                 href="/"
-                aria-label="NEWER POSTS"
+                aria-label="NEUERE BEITRÄGE"
             >
               <i class="fa fa-angle-left text-base icon-mr"></i>
-              <span>NEWER POSTS</span>
+              <span>NEUERE BEITRÄGE</span>
             </a>
           </li>
         
@@ -1205,14 +1575,14 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             <a
                 class="btn btn--default btn--small"
                 href="/page/3/"
-                aria-label="OLDER POSTS"
+                aria-label="ÄLTERE BEITRÄGE"
             >
-              <span>OLDER POSTS</span>
+              <span>ÄLTERE BEITRÄGE</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">page 2 of 4</li>
+        <li class="pagination-number">Seite 2 von 4</li>
     </ul>
 </div>
 
@@ -1241,7 +1611,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
