@@ -258,13 +258,14 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h1><h2 id="代理模式"><a href="#代理模式" class="headerlink" title="代理模式"></a>代理模式</h2><p>代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。</p>
-<p>动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy，</p>
+                    <h1 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h1><h2 id="代理模式"><a href="#代理模式" class="headerlink" title="代理模式"></a>代理模式</h2><p>代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。</p>
+<p><strong>动态代理</strong>是代理类在程序运行时创建的代理方式被成为动态代理。</p>
 <p>动态代理有两种方式一种是jdk方法，一种是cglib方法</p>
 <p><strong>我们先来讲jdk代理：</strong></p>
-<p>首先，代理是一个代理类代理真正的对象去帮助你做一些操作，可以在原本的方法前后加一些操作。那代理类就需要一个执行器去帮你做这些事情，那这个执行器就是InvocationHandler接口，他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组</p>
-<p>这三个参数里面代理方法和参数组其实我们可以依赖于最基础反射得到。而jdk代理又必须要实现InvocationHandler接口，而这个接口他又有这么三个参数，而这三个参数其实是可以变化的，被代理类被代理方法参数组是可以变化的，那这样就成功的实现了动态的代理。</p>
-<p>那我们怎么去调用这个方法呢？依赖于Proxy类和他的方法newproxyInstance，得到的代理类，调用方法其实会直接调用我们实现InvocationHandler接口的invoke方法</p>
+<p>在java的<strong>java.lang.reflect包下提供了一个Proxy类和一个InvocationHandler接口</strong>，<strong>通过这个类和这个接口可以生成JDK动态代理类和动态代理对象</strong>。</p>
+<p>而代理类就需要一个执行器去帮你做这些事情，那这个执行器就是InvocationHandler接口，他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组</p>
+<p>而这三个参数其实是可以变化的，被代理方法参数组是可以变化的，这三个参数里面代理方法和参数组其实我们可以依赖于最基础反射得到。那这样就成功的实现了动态的含义。</p>
+<p>那我们怎么去调用这个方法呢？依赖于Proxy类和他的方法newproxyInstance，getProxyClass0(loader, intfs)这个类的产生就是整个动态代理的关键，产生的类反编译之后得到，调用代理对象的方法其实会直接调用我们InvocationHandler接口的invoke方法，在invoke方法中调用了被代理对象的相应方法。</p>
 <p><strong>下面来讲CGLIB代理</strong></p>
 <p><strong>在 CGLIB 动态代理机制中 <code>MethodInterceptor</code> 接口和 <code>Enhancer</code> 类是核心。你可以通过 <code>Enhancer</code>类来动态获取被代理类，</strong></p>
 <p>  CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E6%8B%A6%E6%88%AA%E5%99%A8&spm=1001.2101.3001.7020">拦截器</a>拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 <code>MethodInterceptor</code> 中的 <code>intercept</code> 方法。</p>
