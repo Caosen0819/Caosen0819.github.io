@@ -761,7 +761,7 @@
 <ol>
 <li>线程解锁前，必须把共享变量的最新值刷新到主内存中。</li>
 <li>线程加锁前，将清空工作内存中共享变量的值，从而使用共享变量时需要从主内存<br>中重新读取最新的值。</li>
-<li>volatile 的可见性都是通过内存屏障（Memnory Barrier）来实现的。</li>
+<li>volatile 的可见性都是通过内存屏障（Memnory Barrier）（生成字节码的时候插入）来实现的。</li>
 <li>synchronized 靠操作系统内核的Mutex Lock（互斥锁）实现，相当于 JMM 中的 lock、unlock。退出代码块时刷新变量到主内存。</li>
 </ol>
 <p><strong>实现原理</strong></p>
@@ -774,28 +774,32 @@
 <p>对象头一般有三部分：Mark Word、对象类型数据的指针、数组长度。</p>
 <p>而这个Mark Word<strong>存储了指向堆中的Monitor对象的指针</strong></p>
 <p>monitor由ObjectMonitor实现，他有两个队列，一个是waitset一个是entrylist，用来保存 等待锁的线程	</p>
-<p>_owner指向持有ObjectMonitor对象的线程，当多个线程同时访问一段同步代码时，首先会进入 _EntryList 集合，当线程获取到对象的monitor 后把monitor中的owner变量设置为当前线程同时monitor中的计数器count加1，若线程调用 wait() 方法，将释放当前持有的monitor，owner变量恢复为null，count自减1，同时该线程进入 WaitSe t集合中等待被唤醒。若当前线程执行完毕也将释放monitor(锁)并复位变量的值，以便其他线程进入获取monitor(锁)。</p>
+<p>_owner指向持有ObjectMonitor对象的线程，当多个线程同时访问一段同步代码时，首先会进入 _EntryList 集合，当线程获取到对象的monitor 后把monitor中的owner变量设置为当前线程同时monitor中的计数器count加1，若线程调用 wait() 方法，将释放当前持有的monitor，owner变量恢复为null，count自减1，同时该线程进入 WaitSet集合中等待被唤醒。若当前线程执行完毕也将释放monitor(锁)并复位变量的值，以便其他线程进入获取monitor(锁)。</p>
 </blockquote>
 <h3 id="3、锁"><a href="#3、锁" class="headerlink" title="3、锁"></a><strong>3、锁</strong></h3><p><strong>锁的内存语义</strong></p>
 <p>释放锁的时候，jmm把该线程对应的本地内存中的共享变量刷新到主内存，加锁的时候把该线程对应的本地内存置为无效。</p>
-<p>ps：锁和volatile是一样的内存语义</p>
+<p>ps：</p>
+<p>之前靠synchronized实现锁功能，se5之后新增了Lock接口，他提供了和synchronized类似的同步功能，知识需要显式的获取锁释放锁，但是他的灵活性可操作性都要比synchronized强。锁和volatile是一样的内存语义。实现LOCK的关键就是聚合一个同步器AQS，所以分析这个aqs大概率能理解锁机制怎么实现线程同步的</p>
 <p><strong>锁内存语义的实现</strong></p>
 <p>分为公平锁和非公平锁</p>
-<p>ReentrantLock的实现依赖于AbstractQueuedSynchronizer（AQS），AQS使用一个整形的volatile变量（state）来维护同步状态。这个volatile变量是ReentrantLock实现的关键。</p>
-<p>　　编译器<strong>不会对volatile读与其后的任意内存操作重排序</strong>，<strong>不会对volatile写与其前的任意操作重排序</strong>。AQS提供了compareAndSetState()方法来对state进行原子操作。CAS同时具有volatile读和写的内存语义，编译器<strong>不会对CAS前和后的任意内存操作重排序</strong>，其是通过底层处理器缓存锁定实现原子性的。</p>
-<h4 id="1、ReentrantLock原理"><a href="#1、ReentrantLock原理" class="headerlink" title="1、ReentrantLock原理"></a>1、ReentrantLock原理</h4><p>用这个之前需要先创建 ReentrantLock 对象，然后使用 lock 方法进行加锁，使用完之后再调用 unlock 方法释放锁</p>
+<p>ReentrantLock的实现依赖于AbstractQueuedSynchronizer（AQS），AQS使用一个整形的volatile变量（state）来维护同步状态。这个volatile变量是ReentrantLock实现的关键。AQS提供了compareAndSetState()方法来对state进行原子操作。编译器<strong>不会对volatile读与其后的任意内存操作重排序</strong>，<strong>不会对volatile写与其前的任意操作重排序</strong>。CAS同时具有volatile读和写的内存语义，编译器<strong>不会对CAS前和后的任意内存操作重排序</strong>，其是通过底层处理器缓存锁定实现原子性的。</p>
+<h4 id="1、AQS"><a href="#1、AQS" class="headerlink" title="1、AQS"></a>1、AQS</h4><p>本质是一个抽象类，用来构造锁或其他同步组件的基础框架</p>
+<p>用state表示同步状态（volatile）	</p>
+<p>同步器实现线程同步主要包括：同步队列，独占式的同步状态获取释放，共享式同步状态获取释放，以及超市获取同步状态。</p>
+<p>1、同步队列：</p>
+<p>一个双向列表，获取失败的线程会被构造成一个节点通过加入到这个队列。尾结点的加入是cas的，头结点是普通，因为只有一个线程能获得同步状态。</p>
+<p>2、独占式：</p>
+<p>首先调用tryAcquire，获取失败构造节点通过加入队列尾部进入一个自旋的过程，停止的条件是前驱节点是头结点且成功获取同步状态，。释放同步状态的时候会调用tryRelease，唤醒后面的后继结点。</p>
+<p>3、共享式</p>
+<p>共享式就是在同一时间能有多个线程同时获取到同步状态，，在共享式获取的自旋过程中，成功获取的条件是tryAcquireShared这个结果大于等于0。释放的时候也会唤醒后续节点，他有一个和独占式比较大的区别就是释放的时候通过循环和CAS保证。</p>
+<h4 id="2、ReentrantLock原理"><a href="#2、ReentrantLock原理" class="headerlink" title="2、ReentrantLock原理"></a>2、ReentrantLock原理</h4><p>用这个之前需要先创建 ReentrantLock 对象，然后使用 lock 方法进行加锁，使用完之后再调用 unlock 方法释放锁</p>
 <p><strong>synchronized 是 JVM 层面通过监视器（Monitor）实现的，而 ReentrantLock 是通过 AQS（AbstractQueuedSynchronizer）程序级别的 API 实现</strong></p>
 <p>公平锁和非公平锁区别: 非公平锁在tryacquire的时候，里面有一个步骤是获取同步状态，如果这个同步状态是0的话，说明现在没人拿，我可以去直接去拿，公平锁这里会多一个判断hasQueuedPredecessors，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</p>
 <p>用state表示同步状态，state&#x3D;0表示初始状态可以占有锁，state&#x3D;1表示已有线程占有，大于1是重入锁。</p>
 <p>用一个同步队列来管理同步状态fifo双向队列，</p>
 <p>解锁的时候将state减一，看其是否为0，如果是的话将空闲标志置为true，将持有锁的线程设置为null。然后设置state。当这个线程已经没有持有state的时候就要唤醒下一个节点。</p>
-<h3 id="AQS"><a href="#AQS" class="headerlink" title="AQS"></a>AQS</h3><p>本质是一个抽象类，用来构造锁或其他同步组件的基础框架</p>
-<p>用state表示同步状态（volatile）	</p>
-<p>用一个同步队列来管理同步状态fifo双向队列，当线程获取同步状态失败，那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</p>
-<p>独占式，线程调用tryacquire获取同步状态，如果获取同步状态失败的话构造同步节点将该节点通过CAS加入到同步队列尾部，并处于死循环。</p>
-<p>共享式和独占式最大的区别就局势同一时刻能够多个线程获取到同步状态</p>
-<h3 id="公平锁和非公平锁"><a href="#公平锁和非公平锁" class="headerlink" title="公平锁和非公平锁"></a>公平锁和非公平锁</h3><p><strong>锁 synchronized 和 ReentrantLock 默认都是非公平锁，当然我们在创建 ReentrantLock 时，可以手动指定其为公平锁</strong></p>
-<p><strong>每个线程获取锁的顺序是按照线程访问锁的先后顺序获取的，最前面的线程总是最先获取到锁。</strong> </p>
+<h4 id="3、CAS"><a href="#3、CAS" class="headerlink" title="3、CAS"></a>3、CAS</h4><p>CAS 是原子性操作操作，是解决多线程并发安全问题的一种乐观锁算法</p>
+<p>它的作用是将指定内存地址A的内容与所给的旧值B相比，如果相等，则将其内容替换为指令中提供的新值C；如果不等，循环执行（称为自旋锁），直到当前值与更新前的值一致为止，才执行更新。</p>
 <h3 id="3、锁升级"><a href="#3、锁升级" class="headerlink" title="3、锁升级"></a>3、锁升级</h3><p>而Java1.6为了减少性能消耗，引入了“偏向锁”“轻量级锁”。</p>
 <p><strong>偏向锁</strong></p>
 <blockquote>
@@ -829,9 +833,10 @@
 <p>1）对于编译器，JMM的编译器重排序规则会禁止特定类型的编译器重排序（不是所有的编译器重排序都要禁止）。</p>
 <p>2）对于处理器重排序，JMM的处理器重排序规则会要求Java编译器在生成指令序列时，插入特定类型的内存屏障指令，来禁止特定类型的处理器重排序。</p>
 <p>3）JMM根据代码中的关键字（如：synchronized、volatile）和J.U.C包下的一些具体类来插入内存屏障。</p>
-<h4 id="顺序一致性"><a href="#顺序一致性" class="headerlink" title="顺序一致性"></a>顺序一致性</h4><p>也有个理想的模式叫做顺序一致性内存模型，一个线程中的操作完全是顺序的，然说有现成兜只能看到一个单一的操作顺序。</p>
+<h4 id="顺序一致性"><a href="#顺序一致性" class="headerlink" title="顺序一致性"></a>顺序一致性</h4><p>也有个理想的模式叫做顺序一致性内存模型，一个线程中的操作完全是顺序的，所有线程只能看到一个单一的操作顺序。</p>
 <p>如果程序的执行结果和顺序一致性模型相同，那么就叫做具备顺序一致性。</p>
-<p>我们的JMM对于同步的 程序是具备顺序一致性的，虽然一个线程内部可能做了重排序，但是结果是不变的。但是对于未同步的程序不保证和顺序一致性模型的结果一致。</p>
+<p>我们的JMM对于正确同步的 程序是具备顺序一致性的，虽然一个线程内部可能做了重排序，但是结果是不变的。但是对于未同步的程序只提供最小安全保障：读到的值要么是之前写入的，要么是默认值。</p>
+<p>如果你想要达到正确同步，那么就可以使用（synchronized、volatile、final）</p>
 <h2 id="3、happens-before"><a href="#3、happens-before" class="headerlink" title="3、happens-before"></a>3、happens-before</h2><p>Java内存模型（JMM）可见性的更高级的语言层面的一组原则，用这个原则解决并发环境下两个操作之间的可见性问题，而一个原则可能就对应一个或者多个编译器和处理器重排序规则。</p>
 <p><strong>程序次序规则（Program Order Rule）</strong>：在一个线程内，按照控制流顺序，书写在前面的操作先行发生于书写在后面的操作。</p>
 <p><strong>管程锁定规则（Monitor Lock Rule）</strong>：一个unlock操作先行发生于后面对同一个锁的lock操作。</p>
