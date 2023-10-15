@@ -6,24 +6,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>章节：7-10，同时回顾一下4-6的内容 - 森</title>
+    <title>JVM - 森</title>
     <meta name="author" content="CSEN">
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"7-10，同时回顾一下4-6的内容\n第六节的重点是模版模式。\n模版模式是定义一个算法的骨架，并允许子类为一个或多个步骤提供实现。在第六节中这个算法骨架（抽象模版类）是AbstractDrawBase，这个类中有通用的比如对于抽奖结果的包装，也有抽象方法比如执行抽奖算法（这个在子类中实现）。小傅哥在这个基础上又把一些一些通用的数据服务抽象出新的一层DrawStrategySupport，这个算是一种优化，但是他本质也属于抽象模版类的一部分。\n而我们抽奖则需要抽奖策略（怎么个抽法），这就是第五节的东西—策略模式：\n对象的某个行为，在不同场景中有不同的实现方式，这样就可以将这些实现方式定义成一组策略，每个实现类对应一个策略，在不同的场景就使用不同的实现类，并且可以自由切换策略。\n其实看完第六节会发现第五节和第六节很像，也是抽象出了一个接口和一个抽象模版类，其他的子类继承抽象模版类实现randomDraw（）方法，不同的实现对应不同的算法，具体算法我们自己可以修改逻辑、补充内容等操作。\n在这时候我们发现策略模式和模版模式很像，但是是有一些区别的：\n模板模式：问题处理的流程已经被定义好，父类实现通用的逻辑（当然你也可以再抽象出一层），子类实现个性化逻辑。\n策略模式：父类定义一组抽象算法，子类自己实现自己的。每个策略完成的功能是重复的，同一时间，只能选择其中的一种，即互斥的\n策略模式核心在使用者的策略，按照自己的策略去替换。模板方法模式核心在子类的怎么实现。\n举个例子：\n模版模式： 父类：早上6点吃饭，晚上6点吃面。子类1：早上6点吃稀饭，晚上6点吃泡面。子类2：早上6点吃干饭，晚上6点吃挂面。\n策略模式：父类：早晚进食。子类1:早上5点吃面，晚上5点吃面。子类2:早上7点吃饭，晚上7点吃饭。子类3:早上不吃，晚上不吃…\n第八节：状态模式\n当一个对象的内在状态改变时，允许改变其行为，把不同状态当做一个类，解决对象在多种状态转换时，需要对外输出不同的行为的问题。\n同样的有抽象模版类（AbstractState，当然你要自己提炼一个接口大概也没什么问题），多个具体实现的子类。要有一个Context类，这个类持有State，负责保持并切换当前的状态，当状态变化时，修改这个State。在项目中应该是活动创建的时候初始化状态，后续收到一些通知（比如：快递公司揽件，发送目的地，菜鸟驿站收到快递）修改活动中的状态变量就可以，非常方面。\n第九节：ID生成策略\n也是策略模型，因为目前就一个id生成的要求，也无需什么流程啊，也不涉及什么状态改变，不同情境下使用不同类型的id，所以策略模式最佳。\n第十节：分库分表\n内容多，也是这几天最花时间的，bug奇多，自己不小心把application.yml文件里面的配置写错了，然后报空指针，找不到bean，我还以为自己打包有问题呢；因为自己的版本和傅哥的不太一样，总报一些依赖错误，还有什么commons-lang、commons-beanutils依赖缺失。自己的的项目工程包名是自定义的，和傅哥的cn.itedus.lottery和那个cn.bugstack不一样，中途修改的时候感觉对理解还是有益处的。\n之后再对第十节做一次总结，加深感悟。\n","dateCreated":"2023-04-04T00:00:00+08:00","dateModified":"2023-04-12T12:30:29+08:00","datePublished":"2023-04-04T00:00:00+08:00","description":"","headline":"章节：7-10，同时回顾一下4-6的内容","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/","keywords":"lucky项目"}</script>
-    <meta name="description" content="7-10，同时回顾一下4-6的内容 第六节的重点是模版模式。 模版模式是定义一个算法的骨架，并允许子类为一个或多个步骤提供实现。在第六节中这个算法骨架（抽象模版类）是AbstractDrawBase，这个类中有通用的比如对于抽奖结果的包装，也有抽象方法比如执行抽奖算法（这个在子类中实现）。小傅哥在这个基础上又把一些一些通用的数据服务抽象出新的一层DrawStrategySupport，这个算是一种">
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"1、Java内存区域主要有五大部分：程序计数器（私有）、虚拟机栈（私有）、本地方法栈（私有）、堆（公有）、方法区（公有），不过在8之后，方法区就已经被元空间代替了，而元空间在本地内存。\n\n1、程序计数器\n\n当前线程执行的字节码的行号指示器，什么循环、分支、线程恢复都靠这个。\n\n2、虚拟机栈\n\n每个方法调用的时候都会生成一个栈帧，栈帧里面存储了局部变量表，操作数栈、动态连接、方法出口等。局部变量表里面放了基本类型的引用，对象引用，\n\n3、本地方法栈\n和虚拟机栈很像，区别是为了虚拟机使用本地native方法服务的。\n4、堆\n虚拟机管理的内存中最大的一块，几乎所有的对象实例都在这里。这里有一块是字符串常量池，存的是堆String实例的引用。\n5、方法区\n存储被虚拟机加载的类型信息、常量、静态变量，编译后的代码缓存。不过在8之后就移到元空间了。\n运行时常量池：\nClass文件除了类的版本字段方法接口描述外，还有一个常量池，用于存放编译期间生成的字面量和符号引用，而当类加载到内存中后，jvm把符号引用换成直接引用，将class常量池中的内容存放到运行时常量池中。\n\n对象的创建\n1、当遇到new，先去检查这个指令的参数能不能再常量池找到类的符号引用，然后去检查是不是已经类加载、解析、初始化。\n2、如果没有，就先执行类加载。\n3、然后分配内存，内存的大小在类加载的时候就确认了。具体分配用“指针碰撞”还是“空闲列表”就看用那种垃圾收集器。为了保证不出现并发问题：有两种方案。1）CAS+失败重试。2）给线程自己预先分配本地线程分配缓冲。（TLAB）\n对象的内存布局\n每一个对象在堆里面分为三块：对象头、实例数据、对其填充。\n对象头是markword+类型指针+数组长度（如果是数组的话），\n\nmarkword就是记录哈希码、gc分代、锁标志、锁id，偏向锁。\n类型指针就是指向类型元数据的指针\n\n实例数据：\n对象真正存储的有效信息。无论是父类继承的还是子类\n对其填充：\nHotSpot要求对象的起始地址是8字节的整数倍。\n对象的访问定位\n1、句柄方法。reference放的是存储的是句柄地址，句柄包含对象实例数据和类型数据，各自的具体位置。句柄最大的优势就是即使在垃圾收集的时候对象被移动了，只用修改句柄中的指针就好，不用修改reference。\n2、直接指针。存储的就是对象地址。他的优势是少一次间接访问的消耗。\n2、内存溢出异常除了程序计数器之外，其他几个运行时区域都有可能发生oom异常。\n1、堆溢出oom\n不断创建对象，然后避免垃圾回收\n2、虚拟机栈和本地方法栈溢出sof\n栈的深度超过最大深度，或者栈的容量无法申请到内存\n3、方法区和运行时常量池溢出oom\n4、直接内存oom\n5\n","dateCreated":"2023-04-04T00:00:00+08:00","dateModified":"2023-10-15T23:45:19+08:00","datePublished":"2023-04-04T00:00:00+08:00","description":"","headline":"JVM","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/04/JVM/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/04/JVM/","keywords":"JVM"}</script>
+    <meta name="description" content="1、Java内存区域主要有五大部分：程序计数器（私有）、虚拟机栈（私有）、本地方法栈（私有）、堆（公有）、方法区（公有），不过在8之后，方法区就已经被元空间代替了，而元空间在本地内存。  1、程序计数器  当前线程执行的字节码的行号指示器，什么循环、分支、线程恢复都靠这个。  2、虚拟机栈  每个方法调用的时候都会生成一个栈帧，栈帧里面存储了局部变量表，操作数栈、动态连接、方法出口等。局部变量表里">
 <meta property="og:type" content="blog">
-<meta property="og:title" content="章节：7-10，同时回顾一下4-6的内容">
-<meta property="og:url" content="http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/index.html">
+<meta property="og:title" content="JVM">
+<meta property="og:url" content="http://example.com/2023/04/04/JVM/index.html">
 <meta property="og:site_name" content="森">
-<meta property="og:description" content="7-10，同时回顾一下4-6的内容 第六节的重点是模版模式。 模版模式是定义一个算法的骨架，并允许子类为一个或多个步骤提供实现。在第六节中这个算法骨架（抽象模版类）是AbstractDrawBase，这个类中有通用的比如对于抽奖结果的包装，也有抽象方法比如执行抽奖算法（这个在子类中实现）。小傅哥在这个基础上又把一些一些通用的数据服务抽象出新的一层DrawStrategySupport，这个算是一种">
+<meta property="og:description" content="1、Java内存区域主要有五大部分：程序计数器（私有）、虚拟机栈（私有）、本地方法栈（私有）、堆（公有）、方法区（公有），不过在8之后，方法区就已经被元空间代替了，而元空间在本地内存。  1、程序计数器  当前线程执行的字节码的行号指示器，什么循环、分支、线程恢复都靠这个。  2、虚拟机栈  每个方法调用的时候都会生成一个栈帧，栈帧里面存储了局部变量表，操作数栈、动态连接、方法出口等。局部变量表里">
 <meta property="og:locale" content="zh_CH">
+<meta property="og:image" content="http://example.com/images/JVM/java-runtime-data-areas-jdk1.8.png">
+<meta property="og:image" content="http://example.com/images/JVM/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjg0MDA1,size_16,color_FFFFFF,t_70.png">
 <meta property="article:published_time" content="2023-04-03T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-04-12T04:30:29.188Z">
+<meta property="article:modified_time" content="2023-10-15T15:45:19.837Z">
 <meta property="article:author" content="CSEN">
-<meta property="article:tag" content="lucky项目">
+<meta property="article:tag" content="JVM">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/JVM/java-runtime-data-areas-jdk1.8.png">
     
     
         
@@ -233,7 +236,7 @@
         <div class="post-header main-content-wrap text-left">
     
         <h1 class="post-title">
-            章节：7-10，同时回顾一下4-6的内容
+            JVM
         </h1>
     
     
@@ -246,7 +249,7 @@
     
         <span>in </span>
         
-    <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
+    <a class="category-link" href="/categories/Java/">Java</a>
 
 
     
@@ -258,27 +261,51 @@
     
     <div class="post-content markdown">
         <div class="main-content-wrap">
-            <p>7-10，同时回顾一下4-6的内容</p>
-<p>第六节的重点是模版模式。</p>
-<p>模版模式是定义一个算法的骨架，并允许子类为一个或多个步骤提供实现。在第六节中这个算法骨架（抽象模版类）是AbstractDrawBase，这个类中有通用的比如对于抽奖结果的包装，也有抽象方法比如执行抽奖算法（这个在子类中实现）。小傅哥在这个基础上又把一些一些通用的数据服务抽象出新的一层DrawStrategySupport，这个算是一种优化，但是他本质也属于抽象模版类的一部分。</p>
-<p>而我们抽奖则需要抽奖策略（怎么个抽法），这就是第五节的东西—策略模式：</p>
-<p>对象的某个行为，在不同场景中有不同的实现方式，这样就可以将这些实现方式定义成一组策略，每个实现类对应一个策略，在不同的场景就使用不同的实现类，并且可以自由切换策略。</p>
-<p>其实看完第六节会发现第五节和第六节很像，也是抽象出了一个接口和一个抽象模版类，其他的子类继承抽象模版类实现randomDraw（）方法，不同的实现对应不同的算法，具体算法我们自己可以修改逻辑、补充内容等操作。</p>
-<p>在这时候我们发现策略模式和模版模式很像，但是是有一些区别的：</p>
-<p>模板模式：问题处理的流程已经被定义好，父类实现通用的逻辑（当然你也可以再抽象出一层），子类实现个性化逻辑。</p>
-<p>策略模式：父类定义一组抽象算法，子类自己实现自己的。每个策略完成的功能是重复的，同一时间，只能选择其中的一种，即互斥的</p>
-<p>策略模式核心在使用者的策略，按照自己的策略去替换。模板方法模式核心在子类的怎么实现。</p>
-<p>举个例子：</p>
-<p>模版模式： 父类：早上6点吃饭，晚上6点吃面。子类1：早上6点吃稀饭，晚上6点吃泡面。子类2：早上6点吃干饭，晚上6点吃挂面。</p>
-<p>策略模式：父类：早晚进食。子类1:早上5点吃面，晚上5点吃面。子类2:早上7点吃饭，晚上7点吃饭。子类3:早上不吃，晚上不吃…</p>
-<p>第八节：状态模式</p>
-<p>当一个对象的内在状态改变时，允许改变其行为，把不同状态当做一个类，解决对象在多种状态转换时，需要对外输出不同的行为的问题。</p>
-<p>同样的有抽象模版类（AbstractState，当然你要自己提炼一个接口大概也没什么问题），多个具体实现的子类。要有一个Context类，这个类持有State，负责保持并切换当前的状态，当状态变化时，修改这个State。在项目中应该是活动创建的时候初始化状态，后续收到一些通知（比如：快递公司揽件，发送目的地，菜鸟驿站收到快递）修改活动中的状态变量就可以，非常方面。</p>
-<p>第九节：ID生成策略</p>
-<p>也是策略模型，因为目前就一个id生成的要求，也无需什么流程啊，也不涉及什么状态改变，不同情境下使用不同类型的id，所以策略模式最佳。</p>
-<p>第十节：分库分表</p>
-<p>内容多，也是这几天最花时间的，bug奇多，自己不小心把application.yml文件里面的配置写错了，然后报空指针，找不到bean，我还以为自己打包有问题呢；因为自己的版本和傅哥的不太一样，总报一些依赖错误，还有什么commons-lang、commons-beanutils依赖缺失。自己的的项目工程包名是自定义的，和傅哥的cn.itedus.lottery和那个cn.bugstack不一样，中途修改的时候感觉对理解还是有益处的。</p>
-<p>之后再对第十节做一次总结，加深感悟。</p>
+            <h1 id="1、Java内存区域"><a href="#1、Java内存区域" class="headerlink" title="1、Java内存区域"></a>1、Java内存区域</h1><p>主要有五大部分：程序计数器（私有）、虚拟机栈（私有）、本地方法栈（私有）、堆（公有）、方法区（公有），不过在8之后，方法区就已经被元空间代替了，而元空间在本地内存。</p>
+<p><img src="/../images/JVM/java-runtime-data-areas-jdk1.8.png" alt="Java 运行时数据区域（JDK1.8 ）"></p>
+<p>1、程序计数器</p>
+<blockquote>
+<p>当前线程执行的字节码的行号指示器，什么循环、分支、线程恢复都靠这个。</p>
+</blockquote>
+<p>2、虚拟机栈</p>
+<blockquote>
+<p>每个方法调用的时候都会生成一个栈帧，栈帧里面存储了局部变量表，操作数栈、动态连接、方法出口等。局部变量表里面放了基本类型的引用，对象引用，</p>
+</blockquote>
+<p>3、本地方法栈</p>
+<p>和虚拟机栈很像，区别是为了虚拟机使用本地native方法服务的。</p>
+<p>4、堆</p>
+<p>虚拟机管理的内存中最大的一块，几乎所有的对象实例都在这里。这里有一块是字符串常量池，存的是堆String实例的引用。</p>
+<p>5、方法区</p>
+<p>存储被虚拟机加载的类型信息、常量、静态变量，编译后的代码缓存。不过在8之后就移到元空间了。</p>
+<p>运行时常量池：</p>
+<p>Class文件除了类的版本字段方法接口描述外，还有一个常量池，用于存放编译期间生成的字面量和符号引用，而当类加载到内存中后，jvm把符号引用换成直接引用，将class常量池中的内容存放到运行时常量池中。</p>
+<p><img src="/../images/JVM/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjg0MDA1,size_16,color_FFFFFF,t_70.png" alt="img"></p>
+<p><strong>对象的创建</strong></p>
+<p>1、当遇到new，先去检查这个指令的参数能不能再常量池找到类的符号引用，然后去检查是不是已经类加载、解析、初始化。</p>
+<p>2、如果没有，就先执行类加载。</p>
+<p>3、然后分配内存，内存的大小在类加载的时候就确认了。具体分配用“指针碰撞”还是“空闲列表”就看用那种垃圾收集器。为了保证不出现并发问题：有两种方案。1）CAS+失败重试。2）给线程自己预先分配本地线程分配缓冲。（TLAB）</p>
+<p><strong>对象的内存布局</strong></p>
+<p>每一个对象在堆里面分为三块：对象头、实例数据、对其填充。</p>
+<p>对象头是markword+类型指针+数组长度（如果是数组的话），</p>
+<ul>
+<li>markword就是记录哈希码、gc分代、锁标志、锁id，偏向锁。</li>
+<li>类型指针就是指向类型元数据的指针</li>
+</ul>
+<p>实例数据：</p>
+<p>对象真正存储的有效信息。无论是父类继承的还是子类</p>
+<p>对其填充：</p>
+<p>HotSpot要求对象的起始地址是8字节的整数倍。</p>
+<p><strong>对象的访问定位</strong></p>
+<p>1、句柄方法。reference放的是存储的是句柄地址，句柄包含对象实例数据和类型数据，各自的具体位置。句柄最大的优势就是即使在垃圾收集的时候对象被移动了，只用修改句柄中的指针就好，不用修改reference。</p>
+<p>2、直接指针。存储的就是对象地址。他的优势是少一次间接访问的消耗。</p>
+<h1 id="2、内存溢出异常"><a href="#2、内存溢出异常" class="headerlink" title="2、内存溢出异常"></a>2、内存溢出异常</h1><p>除了程序计数器之外，其他几个运行时区域都有可能发生oom异常。</p>
+<p>1、堆溢出oom</p>
+<p>不断创建对象，然后避免垃圾回收</p>
+<p>2、虚拟机栈和本地方法栈溢出sof</p>
+<p>栈的深度超过最大深度，或者栈的容量无法申请到内存</p>
+<p>3、方法区和运行时常量池溢出oom</p>
+<p>4、直接内存oom</p>
+<p>5</p>
 
             
 
@@ -290,7 +317,7 @@
             <div class="post-footer-tags">
                 <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
-    <a class="tag tag--primary tag--small t-none-link" href="/tags/lucky%E9%A1%B9%E7%9B%AE/" rel="tag">lucky项目</a>
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/JVM/" rel="tag">JVM</a>
 
             </div>
         
@@ -303,9 +330,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                    data-tooltip="章节：10"
-                    aria-label="FRÜHER: 章节：10"
+                    href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+                    data-tooltip="章节：7-10，同时回顾一下4-6的内容"
+                    aria-label="FRÜHER: 章节：7-10，同时回顾一下4-6的内容"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
@@ -317,9 +344,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/04/04/JVM/"
-                    data-tooltip="JVM"
-                    aria-label="NÄCHSTER: JVM"
+                    href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A11-13/"
+                    data-tooltip="章节：11-13"
+                    aria-label="NÄCHSTER: 章节：11-13"
                 >
                     
                         <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
@@ -344,7 +371,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/JVM/"
                     title="Teilen auf Facebook"
                     aria-label="Teilen auf Facebook"
                 >
@@ -357,7 +384,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/JVM/"
                     title="Teilen auf Twitter"
                     aria-label="Teilen auf Twitter"
                 >
@@ -370,7 +397,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/04/JVM/"
                     title="Teilen auf Google Plus"
                     aria-label="Teilen auf Google Plus"
                 >
@@ -418,9 +445,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                    data-tooltip="章节：10"
-                    aria-label="FRÜHER: 章节：10"
+                    href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+                    data-tooltip="章节：7-10，同时回顾一下4-6的内容"
+                    aria-label="FRÜHER: 章节：7-10，同时回顾一下4-6的内容"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
@@ -432,9 +459,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/04/04/JVM/"
-                    data-tooltip="JVM"
-                    aria-label="NÄCHSTER: JVM"
+                    href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A11-13/"
+                    data-tooltip="章节：11-13"
+                    aria-label="NÄCHSTER: 章节：11-13"
                 >
                     
                         <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
@@ -459,7 +486,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/JVM/"
                     title="Teilen auf Facebook"
                     aria-label="Teilen auf Facebook"
                 >
@@ -472,7 +499,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/JVM/"
                     title="Teilen auf Twitter"
                     aria-label="Teilen auf Twitter"
                 >
@@ -485,7 +512,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/04/JVM/"
                     title="Teilen auf Google Plus"
                     aria-label="Teilen auf Google Plus"
                 >
@@ -519,7 +546,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/JVM/"
                         aria-label="Teilen auf Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
@@ -532,7 +559,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/JVM/"
                         aria-label="Teilen auf Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
@@ -545,7 +572,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+                        href="https://plus.google.com/share?url=http://example.com/2023/04/04/JVM/"
                         aria-label="Teilen auf Google Plus"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
