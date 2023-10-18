@@ -1306,6 +1306,79 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 <p>灰色：已经被访问过了，但是至少有一个引用没有被扫描。</p>
 <h4 id="记忆集和卡表。"><a href="#记忆集和卡表。" class="headerlink" title="记忆集和卡表。"></a>记忆集和卡表。</h4><p>为了解决对象跨代，需要在新生代建立名为记忆集的数据结构。记忆集是一种用于记录从非收集区指向收集区域的指针集合的数据结构。为了节省记忆集的存储和维护成本，我们选用了一种叫卡表的精度。就是每个记录精确到一块内存区域，这个区域里面有对象含有跨代指针。</p>
 <p>为了维护这个记忆集，如果有其他代的的对象引用了本区域的对象，为了保证在引用的一瞬间记录下来，我们是在机器码层面做了操作，就是加一个写屏障，在写屏障中去更新卡表。</p>
+<h2 id="3、垃圾回收器"><a href="#3、垃圾回收器" class="headerlink" title="3、垃圾回收器"></a>3、垃圾回收器</h2><h3 id="新生代"><a href="#新生代" class="headerlink" title="新生代"></a><strong>新生代</strong></h3><h4 id="1、Serial收集器"><a href="#1、Serial收集器" class="headerlink" title="1、Serial收集器"></a>1、Serial收集器</h4><p>单线程，暂停其他线程。现在用的人比较少，但是优点是简单高效，对内存消耗最少。</p>
+<p>策略：标记-复制</p>
+<h4 id="2、ParNew收集器"><a href="#2、ParNew收集器" class="headerlink" title="2、ParNew收集器"></a>2、ParNew收集器</h4><p>本质是Serial的多线程并行版本。</p>
+<p>策略：标记-复制</p>
+<h4 id="3、Parrallel-Scanvenge"><a href="#3、Parrallel-Scanvenge" class="headerlink" title="3、Parrallel Scanvenge"></a>3、Parrallel Scanvenge</h4><p>吞吐量优先收集器</p>
+<p>Parrallel很多特性和ParNew一样，但是Parallel Scanvenge 的关键点在于它关注的是吞吐量，吞吐量 &#x3D; 用户代码运行时间 &#x2F; （用户代码运行时间 + 垃圾收集时间）</p>
+<p>策略：标记-复制</p>
+<p>-XX:MaxGcPauserMillis：收集器尽可能保证内存回收花费时间不超过设定值，但也不是越小越好，会牺牲吞吐量和新生代空间</p>
+<p>-XX:GCTimeRatio：吞吐量的倒数，比如 如果是 19 那么允许的最大GC时间比例为 1&#x2F;（1 + 19） &#x3D;5 %</p>
+<p>-XX:+UseAdaptiveSizePolicy：不需要手动指定新生代大小，虚拟机会自动调整参数（GC自适应）</p>
+<h3 id="老生代"><a href="#老生代" class="headerlink" title="老生代"></a>老生代</h3><h4 id="1、Serial-Old"><a href="#1、Serial-Old" class="headerlink" title="1、Serial Old"></a>1、Serial Old</h4><p>Serial的老年代版本，</p>
+<p>收集策略：标记-整理</p>
+<h4 id="2、Parallel-Old-收集器"><a href="#2、Parallel-Old-收集器" class="headerlink" title="2、Parallel Old 收集器"></a>2、Parallel Old 收集器</h4><p>策略：标记-整理</p>
+<h4 id="3、CMS收集器"><a href="#3、CMS收集器" class="headerlink" title="3、CMS收集器"></a>3、CMS收集器</h4><p>它是一种获取最短回收停顿时间的收集器，就是希望stw的时间越短越好。</p>
+<p>策略：标记-清除</p>
+<p>因为回收过程和用户线程一起进行，所以有四个步骤。</p>
+<p>1）初始标记，只是标记一下GC Roots，这个之前讲过，</p>
+<p>2）并发标记，从GC Roots遍历对象的过程，这个是和用户线程一起进行的</p>
+<p>3）重新标记，因为和用户线程一起进行，所以引用会发生变化，所以修正一下。</p>
+<p>4）并发清除，清除对象，因为策略是标记-清除，不需要移动所以同样选择了并发的方式。</p>
+<p>缺点：</p>
+<p>1）对处理资源敏感</p>
+<p>2）无法处理浮动垃圾，有可能触发full gc</p>
+<p>3）用的是标记清楚，会有内存碎片</p>
+<h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><p>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region，每一个region都可以是eden，suvivor，老年代。对不同的角色采取不同的策略处理。</p>
+<p>然后他把region作为单次回收的最小单元，那每次回收都是region的整数倍。然后跟踪每一个region的回收价值（空间大小和回收所需时间），在后台维护一个优先级列表。</p>
+<p>1、初始标记，只是标记一下GC Roots，这个之前讲过，</p>
+<p>2、并发标记，扫描对象图</p>
+<p>3、最终标记，短暂的停顿，处理最后少量的SATB记录</p>
+<p>4、筛选回收，短暂的停顿，把回收region中存活对象复制到空的region，清除旧的。</p>
+<p>优点：可以指定最大停顿时间，不会产生内存碎片，按收益回收，分region的内存布局。</p>
+<p>缺点：内存占用和负载都比较高。</p>
+<h4 id="2、ZGC"><a href="#2、ZGC" class="headerlink" title="2、ZGC"></a>2、ZGC</h4><p>也是使用分区的内存分布，但是它有三种不同的区。小型、中型、大型。</p>
+<p>然后传统垃圾回收器是在markwork里面有个字段去标记的，但是ZGC标记是使用一种叫着色指针的机制。现在的计算机大多数64位，但是64肯定用不满，所以就把高位那一块拿出3位来实现着色机制的标记。</p>
+<p><img src="/../images/JVM/image-20231018155448410.png" alt="image-20231018155448410"></p>
+<p><strong>标记过程</strong></p>
+<ul>
+<li><p><strong>初始标记（STW，时间很短，小于1mm）</strong></p>
+<ul>
+<li>初始标记就是去扫GC Roots直接关联的对象，标记就是把蓝色变成绿色（44位置0,42位置1）</li>
+</ul>
+</li>
+<li><p><strong>并发标记（并发）</strong></p>
+<ul>
+<li>继续遍历对象图，把蓝色变成绿色（44位置0,42位置1）</li>
+<li>这里要用到<strong>三色标记</strong></li>
+<li>但是三色标记会存在漏标的问题，为了解决这个问题，我们在并发标记后面还回去加上一个再标记的过程，为了再标记的时候去找到可能修改的地方，这里会使用一个<strong>读屏障（这个屏障会把读出的指针更新到对象的新地址上，aop）</strong>，把读引用记录下来</li>
+<li>这里还有一个作用就是</li>
+</ul>
+</li>
+<li><h2 id="再标记（STW，时间很短，小于1mm，小于初始标记）"><a href="#再标记（STW，时间很短，小于1mm，小于初始标记）" class="headerlink" title="再标记（STW，时间很短，小于1mm，小于初始标记）"></a><strong>再标记</strong>（<strong>STW，时间很短，小于1mm，小于初始标记</strong>）</h2></li>
+</ul>
+<p><strong>转移过程</strong></p>
+<ul>
+<li><strong>并发转移准备（并发）</strong><ul>
+<li>统计处本次收集过程要清理哪些region，颜色从绿色回到蓝色，（44位置为1,42位置为0）</li>
+</ul>
+</li>
+<li><strong>初始转移（STW，和初始标记差不多）</strong><ul>
+<li>把GC Roots直接关联的进行转移</li>
+</ul>
+</li>
+<li><strong>并发转移</strong><ul>
+<li>这里要维护转发表，记录老对象和新对象的转向关系。</li>
+<li>如果在这个阶段访问，那就依赖读屏障，去完成新老指针的修正。</li>
+<li><strong>其他指针的修正就依赖于并发标记这个阶段</strong></li>
+</ul>
+</li>
+</ul>
+<h3 id="三色标记"><a href="#三色标记" class="headerlink" title="三色标记"></a>三色标记</h3><p>三色标记在并发会出现问题。</p>
+<p>CMS解决这种浮动垃圾或者对象消失问题，用的是写屏障+增量更新（黑色对象插入新的白色对象，就把这个新插入的引用记录下来，等并发扫描结束，再重新扫一次）</p>
+<p>G1用的是，写屏障+STAB。（灰色对象要删除指向白色对象的引用关系的时候，就把这个删除的引用记录下来，等并发扫描结束，再重新扫一次）</p>
+<p>ZGC用的是，读屏障+再标记</p>
 
                     
                         
