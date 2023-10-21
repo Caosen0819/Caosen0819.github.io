@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"学习于《Java并发编程的艺术》多线程一定比单线程快吗？\n不一定，因为还有线程上下文切换的消耗\n那如何减少上下文切换？无锁并发、CAS\nJava\n1、并发机制的底层原理这里我们先讲一下：volatile和synchronized的底层原理。\n1、volatile可见性：对一个volatile变量的读，①总是能看到（任意线程）对这个volatile变量最后的写入。\n原子性：对任意单个volatile变量的读&#x2F;写具有原子性，但类似于volatile++这种复合操作不具有原子性（基于这点，我们通过会认为volatile不具备原子性）。volatile仅仅保证对单个volatile变量 的读&#x2F;写具有原子性，而锁的互斥执行的特性可以确保对整个临界区代码的执行具有原子性。\n64位的long型和double型变量，只要它是volatile变量，对该变量的读&#x2F;写就具有原子性。\n有序性：对volatile修饰的变量的读写操作前后加上各种特定的②内存屏障来禁止③指令重排序来保障有序性。\n那volatile加上之后到底发生了什么呢？\n有volatile修饰的变量，他会比其他的变量多一行lock的汇编代码。\n然后这个lock前缀的指令，他就做了两件事情：\n1）把当前这个处理器缓存的数据写会系统内存。（总线锁、缓存锁）缓存锁其实是一种实现的效果，它是通过缓存一致性协议来实现的，\n\n2）写回内存的操作会使其他cpu缓存该内存地址的数据无效。（这个用的是 嗅探机制）\n有序性\n数据一致性怎么保证呢？MESI，CPU缓存架构为了效率进入了Store Buffers，在多线程环境下可能出现重排序的问题的\n解决办法就是 Memory Barrier（内存屏障）。借助内存屏障可以很好地保证了顺序一致性。\nJMM就是有4种屏障，\n\n\n在每个volatile写操作的前面插入一个StoreStore屏障。\n在每个volatile写操作的后面插入一个StoreLoad屏障。\n在每个volatile读操作的后面插入一个LoadLoad屏障。\n在每个volatile读操作的后面插入一个LoadStore屏障。\n\n\n然而这4种内存屏障只是抽象层面的，实际上这四种内存屏障在不同平台下的具体映射的指令是不一样的，而这也恰恰是 JVM 跨平台的优势所在。\n我们举一个x86作为例子，只有 StoreLoad 才有具体的指令对应，在x86处理器里面，像mfence lock都可以实现这个而这个StoreLoad的要求，实际上HotSpot关于volatile的实现就是使用的lock指令：\nlock addl $0x0,(%rsp)\n\n这个指令具体语义是：\n\n执行 a 的写操作后执行到 StoreLoad 内存屏障；\n发出 Lock 指令，锁总线 或 a 的缓存行，那么其他 CPU 不能对已上锁的缓存行有任何操作；\n让其他 CPU 持有的 a 的缓存行失效；\n将 a 的变更写回主内存，保证全局可见；\n\nlock前缀指令的作用\n\n确保后续指令执行的原子性。在Pentium及之前的处理器中，带有lock前缀的指令在执行期间会锁住总线，使得其它处理器暂时无法通过总线访问内存，很显然，这个开销很大。在新的处理器中，Intel使用缓存锁定来保证指令执行的原子性，缓存锁定将大大降低lock前缀指令的执行开销。\n\nLOCK前缀指令具有类似于内存屏障的功能，禁止该指令与前面和后面的读写指令重排序。\n\nLOCK前缀指令会等待它之前所有的指令完成、并且所有缓冲的写操作写回内存(也就是将store buffer中的内容写入内存)之后才开始执行，并且根据缓存一致性协议，刷新store buffer的操作会导致其他cache中的副本失效。\n\n\n为什么不保证原子性：\n在执行内存屏障之前，不同 CPU 依旧可以对同一个缓存行持有，一个 CPU 对同一个缓存行的修改不能让另一个 CPU 及时感知，因此出现并发冲突。\nhttps://blog.csdn.net/qq_38322527/article/details/119937531\n内存语义：\nvolatile写：当写一个volatile变量，jmm会把该线程对应的本地内存中共享变量刷新到主内存\nvolatile读：当读一个volatile变量，jmm会把该线程对应的本地内存置为无效，然后从主内存里面读\n重排序分为编译器重排序和处理器重排序。\n编译器方面有这么一个规定\n\n当第二个操作是volatile写时，不管第一个操作是什么，都不能重排序。这个规则确保volatile写之前的操作不会被编译器重排序到volatile写之后。\n当第一个操作是volatile读时，不管第二个操作是什么，都不能重排序。这个规则确保volatile读之后的操作不会被编译器重排序到volatile读之前。\n当第一个操作是volatile写，第二个操作是volatile读时，不能重排序。\n缓存一致性原则：\nS to M，Shared的状态下，某个CPU发起了对该缓存行的原子性 read-modify-write 操作，但需要发出 Invalidate 消息，并等待一系列的 Invalidate Acknowledge 反馈后才能对缓存行修改；\n2、Synchronized锁有3种形式：普通方法（锁是当前实例对象）、静态方法（锁是当前类的Class对象）、方法块（括号里的对象）\n可见性\t\n\n线程解锁前，必须把共享变量的最新值刷新到主内存中。\n线程加锁前，将清空工作内存中共享变量的值，从而使用共享变量时需要从主内存中重新读取最新的值。\nvolatile 的可见性都是通过内存屏障（Memnory Barrier）（生成字节码的时候插入）来实现的。\nsynchronized 靠操作系统内核的Mutex Lock（互斥锁）实现，相当于 JMM 中的 lock、unlock。退出代码块时刷新变量到主内存。\n\n实现原理\n\njvm基于进入和退出Monitor对象来实现方法同步和代码块同步，但是这两个的具体实现是不一样的，一个是monitorenter和monitorexit；一个是ACC_SYNCHRONIZED,\t但是这个标识符会去隐式调用这两个指令：monitorenter和monitorexit。\n\n底层实现\n\n而这个锁，是存在于Java对象头里面的，对象在内存中存储的布局可以分为三块区域：对象头（Header）、实例数据（Instance Data）和对齐填充（Padding）。\n对象头一般有三部分：Mark Word、对象类型数据的指针、数组长度。\n而这个Mark Word存储了指向堆中的Monitor对象的指针\nmonitor由ObjectMonitor实现，他有两个队列，一个是waitset一个是entrylist，用来保存 等待锁的线程\t\n_owner指向持有ObjectMonitor对象的线程，当多个线程同时访问一段同步代码时，首先会进入 _EntryList 集合，当线程获取到对象的monitor 后把monitor中的owner变量设置为当前线程同时monitor中的计数器count加1，若线程调用 wait() 方法，将释放当前持有的monitor，owner变量恢复为null，count自减1，同时该线程进入 WaitSet集合中等待被唤醒。若当前线程执行完毕也将释放monitor(锁)并复位变量的值，以便其他线程进入获取monitor(锁)。\n\n3、锁锁的内存语义\n释放锁的时候，jmm把该线程对应的本地内存中的共享变量刷新到主内存，加锁的时候把该线程对应的本地内存置为无效。\nps：\n之前靠synchronized实现锁功能，se5之后新增了Lock接口，他提供了和synchronized类似的同步功能，知识需要显式的获取锁释放锁，但是他的灵活性可操作性都要比synchronized强。锁和volatile是一样的内存语义。实现LOCK的关键就是聚合一个同步器AQS，所以分析这个aqs大概率能理解锁机制怎么实现线程同步的\n锁内存语义的实现\n分为公平锁和非公平锁\nReentrantLock的实现依赖于AbstractQueuedSynchronizer（AQS），AQS使用一个整形的volatile变量（state）来维护同步状态。这个volatile变量是ReentrantLock实现的关键。AQS提供了compareAndSetState()方法来对state进行原子操作。编译器不会对volatile读与其后的任意内存操作重排序，不会对volatile写与其前的任意操作重排序。CAS同时具有volatile读和写的内存语义，编译器不会对CAS前和后的任意内存操作重排序，其是通过底层处理器缓存锁定实现原子性的。\n1、AQS本质是一个抽象类，用来构造锁或其他同步组件的基础框架\n用state表示同步状态（volatile）\t\n同步器实现线程同步主要包括：同步队列，独占式的同步状态获取释放，共享式同步状态获取释放，以及超市获取同步状态。\n1、同步队列：\n一个双向列表，获取失败的线程会被构造成一个节点通过加入到这个队列。尾结点的加入是cas的，头结点是普通，因为只有一个线程能获得同步状态。\n2、独占式：\n首先调用tryAcquire，获取失败构造节点通过加入队列尾部进入一个自旋的过程，停止的条件是前驱节点是头结点且成功获取同步状态，。释放同步状态的时候会调用tryRelease，唤醒后面的后继结点。\n3、共享式\n共享式就是在同一时间能有多个线程同时获取到同步状态，，在共享式获取的自旋过程中，成功获取的条件是tryAcquireShared这个结果大于等于0。释放的时候也会唤醒后续节点，他有一个和独占式比较大的区别就是释放的时候通过循环和CAS保证。\n2、ReentrantLock原理用这个之前需要先创建 ReentrantLock 对象，然后使用 lock 方法进行加锁，使用完之后再调用 unlock 方法释放锁\nsynchronized 是 JVM 层面通过监视器（Monitor）实现的，而 ReentrantLock 是通过 AQS（AbstractQueuedSynchronizer）程序级别的 API 实现\n公平锁和非公平锁区别: 非公平锁在tryacquire的时候，里面有一个步骤是获取同步状态，如果这个同步状态是0的话，说明现在没人拿，我可以去直接去拿，公平锁这里会多一个判断hasQueuedPredecessors，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。\n用state表示同步状态，state&#x3D;0表示初始状态可以占有锁，state&#x3D;1表示已有线程占有，大于1是重入锁。\n用一个同步队列来管理同步状态fifo双向队列，\n解锁的时候将state减一，看其是否为0，如果是的话将空闲标志置为true，将持有锁的线程设置为null。然后设置state。当这个线程已经没有持有state的时候就要唤醒下一个节点。\n3、CASCAS 是原子性操作操作，是解决多线程并发安全问题的一种乐观锁算法\n它的作用是将指定内存地址A的内容与所给的旧值B相比，如果相等，则将其内容替换为指令中提供的新值C；如果不等，循环执行（称为自旋锁），直到当前值与更新前的值一致为止，才执行更新。\n3、锁升级而Java1.6为了减少性能消耗，引入了“偏向锁”“轻量级锁”。\n偏向锁\n\njava对象头后三位是101，然后把对象头的偏向线程id改为自己就好就代表自己获得了锁。当偏向锁的获取出现竞争，则偏向锁可能会升级为轻量级锁。\n线程查看若锁标志位是为01，如果是01，并且偏向锁标志1的话。不是1直接升级轻量级，是1的话我们去看threadid，如果是本线程id，那就获得锁。如果不是，这时候CAS操作尝试将mark word的threadid改成线程A的id，如果当前threadid是0，那就替换成功获得锁，如果是线程B的id。这时候要去撤销偏向锁。先查看线程b的存活状态，如果存活并且还在执行，那就升级为轻量级，如果未存活或者没有在执行，那么我们就尝试重偏向。可以的话就让threadid偏向我们线程A，否则升级为轻量级锁。\n\n偏向锁适合无竞争、竞争小的场景，理想的情况为总是由同一个线程去访问同步块、获取某个对象的锁。\n轻量级锁\n\n轻量级锁由偏向锁升级而来，特点是获取轻量级锁的是通过CAS原子操作进行的\n1 在当前线程的栈帧中创建锁记录2 将锁对象中的markword复制到锁记录中3 通过CAS方式将markword设置成指向锁记录的指针。\n失败的线程不会进入阻塞，而是自旋尝试再次CAS去获取锁。若失败的次数过多，则轻量级锁会膨胀为重量级锁。因为自旋也是要消耗cpu的，不能让线程一直自旋下去。\n根据这些，可以看出 轻量级锁最适合场景是追求响应时间的情景，理想的情况是少量线程交替访问同步块、获取锁。若多个线程访问同步块的时间重合的比骄密集就会发生很多自旋造成cpu资源浪费。\n\n重量级锁\n重量级锁是轻量级锁受到激烈竞争时，为防止cpu被自旋的线程浪费膨胀而来，因此重量级锁肯定是应付大量线程同时访问同步块的情景。让申请锁失败的线程阻塞后，cpu的负担会减小不少，因此数据的吞吐量也就上来了。\n4、原子操作的实现原理我们是使用对缓存加锁或者总线加锁来实现多处理器的原子操作。\n1、处理器如何实现原子操作？总线锁：使用LOCK 信号，其他请求都被阻塞，独占共享内存\n缓存锁：所谓缓存锁定是指内存被缓存在处理器的缓存中，当他执行锁操作写回内存的时候，而是修改内部的内存地址，并允许他缓存一致性保证操作原子性。\n2、Java怎么实现原子操作锁–JVM实现锁的方式其实都用到了循环CAS\n循环CAS –版本号解决ABA，\n2、JAVA内存模型1、定义理解JMM定义了线程和主线程之间的抽象关系，解决的就是线程之间如何通信和线程之间的同步问题。java的并发用的是共享内存模型，通信是隐式的进行的。他也定义了线程和主内存之间的抽象关系。所以总而言之，就是一个管理内存和线程的模型。\n2、重排序重排序分为3种：1是编译器。2,3是处理器。（要求满足as if serial）\n1、编译器优化的重排序，在不改变单线程语义的前提下，可以改变\n2、指令级别的，\n3、内存系统的重排序。由于处理器用到了缓存和读、写缓冲，而缓冲只对自己的处理器可见，他认为修改顺序没什么问题，所以这使得加载和存储看起来是乱序的。\n为了保证内存可见，不出现上面的问题，那么Java编译器在生成指令的时候会插入内存屏障禁止这种重排序。\n涉及到内存屏障 重排序等问题。它的基本方针就是：正确同步的情况下，尽可能为处理器打开方面之门。没有正确同步的情况下不保证执行结果和顺序一致性是一样的。\n对于程序员来说，直接能感触到的是happers-before规则，包括程序规则、锁规则、volatile规则。而JMM实现这些规则依靠的就是处理器的重排序规则（禁止重排序）。重排序是一种优化性能的手段。它要求前一个操作的结果对后一个操作可见并且在前一个操作按顺序排在后一个操作前。\nJMM如何解决重排序问题JMM处理重排序问题：\n1）对于编译器，JMM的编译器重排序规则会禁止特定类型的编译器重排序（不是所有的编译器重排序都要禁止）。\n2）对于处理器重排序，JMM的处理器重排序规则会要求Java编译器在生成指令序列时，插入特定类型的内存屏障指令，来禁止特定类型的处理器重排序。\n3）JMM根据代码中的关键字（如：synchronized、volatile）和J.U.C包下的一些具体类来插入内存屏障。\n顺序一致性也有个理想的模式叫做顺序一致性内存模型，一个线程中的操作完全是顺序的，所有线程只能看到一个单一的操作顺序。\n如果程序的执行结果和顺序一致性模型相同，那么就叫做具备顺序一致性。\n我们的JMM对于正确同步的 程序是具备顺序一致性的，虽然一个线程内部可能做了重排序，但是结果是不变的。但是对于未同步的程序只提供最小安全保障：读到的值要么是之前写入的，要么是默认值。\n如果你想要达到正确同步，那么就可以使用（synchronized、volatile、final）\n3、happens-beforeJava内存模型（JMM）可见性的更高级的语言层面的一组原则，用这个原则解决并发环境下两个操作之间的可见性问题，而一个原则可能就对应一个或者多个编译器和处理器重排序规则。\n程序次序规则（Program Order Rule）：在一个线程内，按照控制流顺序，书写在前面的操作先行发生于书写在后面的操作。\n管程锁定规则（Monitor Lock Rule）：一个unlock操作先行发生于后面对同一个锁的lock操作。\nvolatile变量规则（Volatile Variable Rule）：对一个volatile变量的写操作先行发生于后面对这个变量的读操作。\n总是就是前一个操作的结果对后一个操作是可见的，同时按照顺序在第二个操作前\nsynchronized特性\n方法级的同步是隐式，即无需通过字节码指令来控制的，它实现在方法调用和返回操作之中。JVM可以从方法常量池中的方法表结构中的 ACC_SYNCHRONIZED 访问标志区分一个方法是否同步方法。当方法调用时，调用指令将会常量池里面检查方法的 ACC_SYNCHRONIZED 访问标志是否被设置，如果设置了，执行线程将先持有monitor（虚拟机规范中用的是管程一词）， 然后再执行方法，方法完成释放monitor。\n代码块的同步是利用monitorenter和monitorexit这两个字节码指令。它们分别位于同步代码块的开始和结束位置。当jvm执行到monitorenter指令时，当前线程试图获取monitor对象的所有权，如果未加锁或者已经被当前线程所持有，就把锁的计数器+1；当执行monitorexit指令时，锁计数器-1；当锁计数器为0时，该锁就被释放了。如果获取monitor对象失败，该线程则会进入阻塞状态，直到其他线程释放锁。\n前面已经分析了Monitor的机制，那么在Java中是如何实现的呢？即通过synchronized关键字实现线程同步来获取对象的Monitor。实现方式为：ACC_SYNCHRONIZED和monitorenter&#x2F;monitorexit *ACC_SYNCHRONIZED标识符会去隐式调用这两个指令：monitorenter和monitorexit\n","dateCreated":"2023-09-08T00:00:00+08:00","dateModified":"2023-10-13T21:20:46+08:00","datePublished":"2023-09-08T00:00:00+08:00","description":"","headline":"Java并发知识","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/09/08/Java%E5%B9%B6%E5%8F%91/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/09/08/Java%E5%B9%B6%E5%8F%91/","keywords":"Java并发"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"学习于《Java并发编程的艺术》多线程一定比单线程快吗？\n不一定，因为还有线程上下文切换的消耗\n那如何减少上下文切换？无锁并发、CAS\nJava\n1、并发机制的底层原理这里我们先讲一下：volatile和synchronized的底层原理。\n1、volatile可见性：对一个volatile变量的读，①总是能看到（任意线程）对这个volatile变量最后的写入。\n原子性：对任意单个volatile变量的读&#x2F;写具有原子性，但类似于volatile++这种复合操作不具有原子性（基于这点，我们通过会认为volatile不具备原子性）。volatile仅仅保证对单个volatile变量 的读&#x2F;写具有原子性，而锁的互斥执行的特性可以确保对整个临界区代码的执行具有原子性。\n64位的long型和double型变量，只要它是volatile变量，对该变量的读&#x2F;写就具有原子性。\n有序性：对volatile修饰的变量的读写操作前后加上各种特定的②内存屏障来禁止③指令重排序来保障有序性。\n那volatile加上之后到底发生了什么呢？\n有volatile修饰的变量，他会比其他的变量多一行lock的汇编代码。\n然后这个lock前缀的指令，他就做了两件事情：\n1）把当前这个处理器缓存的数据写会系统内存。（总线锁、缓存锁）缓存锁其实是一种实现的效果，它是通过缓存一致性协议来实现的，\n\n2）写回内存的操作会使其他cpu缓存该内存地址的数据无效。（这个用的是 嗅探机制）\n有序性\n数据一致性怎么保证呢？MESI，CPU缓存架构为了效率进入了Store Buffers，在多线程环境下可能出现重排序的问题的\n解决办法就是 Memory Barrier（内存屏障）。借助内存屏障可以很好地保证了顺序一致性。\nJMM就是有4种屏障，\n\n\n在每个volatile写操作的前面插入一个StoreStore屏障。\n在每个volatile写操作的后面插入一个StoreLoad屏障。\n在每个volatile读操作的后面插入一个LoadLoad屏障。\n在每个volatile读操作的后面插入一个LoadStore屏障。\n\n\n然而这4种内存屏障只是抽象层面的，实际上这四种内存屏障在不同平台下的具体映射的指令是不一样的，而这也恰恰是 JVM 跨平台的优势所在。\n我们举一个x86作为例子，只有 StoreLoad 才有具体的指令对应，在x86处理器里面，像mfence lock都可以实现这个而这个StoreLoad的要求，实际上HotSpot关于volatile的实现就是使用的lock指令：\nlock addl $0x0,(%rsp)\n\n这个指令具体语义是：\n\n执行 a 的写操作后执行到 StoreLoad 内存屏障；\n发出 Lock 指令，锁总线 或 a 的缓存行，那么其他 CPU 不能对已上锁的缓存行有任何操作；\n让其他 CPU 持有的 a 的缓存行失效；\n将 a 的变更写回主内存，保证全局可见；\n\nlock前缀指令的作用\n\n确保后续指令执行的原子性。在Pentium及之前的处理器中，带有lock前缀的指令在执行期间会锁住总线，使得其它处理器暂时无法通过总线访问内存，很显然，这个开销很大。在新的处理器中，Intel使用缓存锁定来保证指令执行的原子性，缓存锁定将大大降低lock前缀指令的执行开销。\n\nLOCK前缀指令具有类似于内存屏障的功能，禁止该指令与前面和后面的读写指令重排序。\n\nLOCK前缀指令会等待它之前所有的指令完成、并且所有缓冲的写操作写回内存(也就是将store buffer中的内容写入内存)之后才开始执行，并且根据缓存一致性协议，刷新store buffer的操作会导致其他cache中的副本失效。\n\n\n为什么不保证原子性：\n在执行内存屏障之前，不同 CPU 依旧可以对同一个缓存行持有，一个 CPU 对同一个缓存行的修改不能让另一个 CPU 及时感知，因此出现并发冲突。\nhttps://blog.csdn.net/qq_38322527/article/details/119937531\n内存语义：\nvolatile写：当写一个volatile变量，jmm会把该线程对应的本地内存中共享变量刷新到主内存\nvolatile读：当读一个volatile变量，jmm会把该线程对应的本地内存置为无效，然后从主内存里面读\n重排序分为编译器重排序和处理器重排序。\n编译器方面有这么一个规定\n\n当第二个操作是volatile写时，不管第一个操作是什么，都不能重排序。这个规则确保volatile写之前的操作不会被编译器重排序到volatile写之后。\n当第一个操作是volatile读时，不管第二个操作是什么，都不能重排序。这个规则确保volatile读之后的操作不会被编译器重排序到volatile读之前。\n当第一个操作是volatile写，第二个操作是volatile读时，不能重排序。\n缓存一致性原则：\nS to M，Shared的状态下，某个CPU发起了对该缓存行的原子性 read-modify-write 操作，但需要发出 Invalidate 消息，并等待一系列的 Invalidate Acknowledge 反馈后才能对缓存行修改；\n2、Synchronized锁有3种形式：普通方法（锁是当前实例对象）、静态方法（锁是当前类的Class对象）、方法块（括号里的对象）\n可见性\t\n\n线程解锁前，必须把共享变量的最新值刷新到主内存中。\n线程加锁前，将清空工作内存中共享变量的值，从而使用共享变量时需要从主内存中重新读取最新的值。\nvolatile 的可见性都是通过内存屏障（Memnory Barrier）（生成字节码的时候插入）来实现的。\nsynchronized 靠操作系统内核的Mutex Lock（互斥锁）实现，相当于 JMM 中的 lock、unlock。退出代码块时刷新变量到主内存。\n\n实现原理\n\njvm基于进入和退出Monitor对象来实现方法同步和代码块同步，但是这两个的具体实现是不一样的，一个是monitorenter和monitorexit；一个是ACC_SYNCHRONIZED,\t但是这个标识符会去隐式调用这两个指令：monitorenter和monitorexit。\n\n底层实现\n\n而这个锁，是存在于Java对象头里面的，对象在内存中存储的布局可以分为三块区域：对象头（Header）、实例数据（Instance Data）和对齐填充（Padding）。\n对象头一般有三部分：Mark Word、对象类型数据的指针、数组长度。\n而这个Mark Word存储了指向堆中的Monitor对象的指针\nmonitor由ObjectMonitor实现，他有两个队列，一个是waitset一个是entrylist，用来保存 等待锁的线程\t\n_owner指向持有ObjectMonitor对象的线程，当多个线程同时访问一段同步代码时，首先会进入 _EntryList 集合，当线程获取到对象的monitor 后把monitor中的owner变量设置为当前线程同时monitor中的计数器count加1，若线程调用 wait() 方法，将释放当前持有的monitor，owner变量恢复为null，count自减1，同时该线程进入 WaitSet集合中等待被唤醒。若当前线程执行完毕也将释放monitor(锁)并复位变量的值，以便其他线程进入获取monitor(锁)。\n\n3、锁锁的内存语义\n释放锁的时候，jmm把该线程对应的本地内存中的共享变量刷新到主内存，加锁的时候把该线程对应的本地内存置为无效。\nps：\n之前靠synchronized实现锁功能，se5之后新增了Lock接口，他提供了和synchronized类似的同步功能，知识需要显式的获取锁释放锁，但是他的灵活性可操作性都要比synchronized强。锁和volatile是一样的内存语义。实现LOCK的关键就是聚合一个同步器AQS，所以分析这个aqs大概率能理解锁机制怎么实现线程同步的\n锁内存语义的实现\n分为公平锁和非公平锁\nReentrantLock的实现依赖于AbstractQueuedSynchronizer（AQS），AQS使用一个整形的volatile变量（state）来维护同步状态。这个volatile变量是ReentrantLock实现的关键。AQS提供了compareAndSetState()方法来对state进行原子操作。编译器不会对volatile读与其后的任意内存操作重排序，不会对volatile写与其前的任意操作重排序。CAS同时具有volatile读和写的内存语义，编译器不会对CAS前和后的任意内存操作重排序，其是通过底层处理器缓存锁定实现原子性的。\n1、AQS本质是一个抽象类，用来构造锁或其他同步组件的基础框架\n用state表示同步状态（volatile）\t\n同步器实现线程同步主要包括：同步队列，独占式的同步状态获取释放，共享式同步状态获取释放，以及超市获取同步状态。\n1、同步队列：\n一个双向列表，获取失败的线程会被构造成一个节点通过加入到这个队列。尾结点的加入是cas的，头结点是普通，因为只有一个线程能获得同步状态。\n2、独占式：\n首先调用tryAcquire，获取失败构造节点通过加入队列尾部进入一个自旋的过程，停止的条件是前驱节点是头结点且成功获取同步状态，。释放同步状态的时候会调用tryRelease，唤醒后面的后继结点。\n3、共享式\n共享式就是在同一时间能有多个线程同时获取到同步状态，，在共享式获取的自旋过程中，成功获取的条件是tryAcquireShared这个结果大于等于0。释放的时候也会唤醒后续节点，他有一个和独占式比较大的区别就是释放的时候通过循环和CAS保证。\n2、ReentrantLock原理用这个之前需要先创建 ReentrantLock 对象，然后使用 lock 方法进行加锁，使用完之后再调用 unlock 方法释放锁\nsynchronized 是 JVM 层面通过监视器（Monitor）实现的，而 ReentrantLock 是通过 AQS（AbstractQueuedSynchronizer）程序级别的 API 实现\n公平锁和非公平锁区别: 非公平锁在tryacquire的时候，里面有一个步骤是获取同步状态，如果这个同步状态是0的话，说明现在没人拿，我可以去直接去拿，公平锁这里会多一个判断hasQueuedPredecessors，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。\n用state表示同步状态，state&#x3D;0表示初始状态可以占有锁，state&#x3D;1表示已有线程占有，大于1是重入锁。\n用一个同步队列来管理同步状态fifo双向队列，\n解锁的时候将state减一，看其是否为0，如果是的话将空闲标志置为true，将持有锁的线程设置为null。然后设置state。当这个线程已经没有持有state的时候就要唤醒下一个节点。\n3、CASCAS 是原子性操作操作，是解决多线程并发安全问题的一种乐观锁算法\n它的作用是将指定内存地址A的内容与所给的旧值B相比，如果相等，则将其内容替换为指令中提供的新值C；如果不等，循环执行（称为自旋锁），直到当前值与更新前的值一致为止，才执行更新。\n3、锁升级而Java1.6为了减少性能消耗，引入了“偏向锁”“轻量级锁”。\n偏向锁\n\njava对象头后三位是101，然后把对象头的偏向线程id改为自己就好就代表自己获得了锁。当偏向锁的获取出现竞争，则偏向锁可能会升级为轻量级锁。\n线程查看若锁标志位是为01，如果是01，并且偏向锁标志1的话。不是1直接升级轻量级，是1的话我们去看threadid，如果是本线程id，那就获得锁。如果不是，这时候CAS操作尝试将mark word的threadid改成线程A的id，如果当前threadid是0，那就替换成功获得锁，如果是线程B的id。这时候要去撤销偏向锁。先查看线程b的存活状态，如果存活并且还在执行，那就升级为轻量级，如果未存活或者没有在执行，那么我们就尝试重偏向。可以的话就让threadid偏向我们线程A，否则升级为轻量级锁。\n\n偏向锁适合无竞争、竞争小的场景，理想的情况为总是由同一个线程去访问同步块、获取某个对象的锁。\n轻量级锁\n\n轻量级锁由偏向锁升级而来，特点是获取轻量级锁的是通过CAS原子操作进行的\n1 在当前线程的栈帧中创建锁记录2 将锁对象中的markword复制到锁记录中3 通过CAS方式将markword设置成指向锁记录的指针。\n失败的线程不会进入阻塞，而是自旋尝试再次CAS去获取锁。若失败的次数过多，则轻量级锁会膨胀为重量级锁。因为自旋也是要消耗cpu的，不能让线程一直自旋下去。\n根据这些，可以看出 轻量级锁最适合场景是追求响应时间的情景，理想的情况是少量线程交替访问同步块、获取锁。若多个线程访问同步块的时间重合的比骄密集就会发生很多自旋造成cpu资源浪费。\n\n重量级锁\n重量级锁是轻量级锁受到激烈竞争时，为防止cpu被自旋的线程浪费膨胀而来，因此重量级锁肯定是应付大量线程同时访问同步块的情景。让申请锁失败的线程阻塞后，cpu的负担会减小不少，因此数据的吞吐量也就上来了。\n4、原子操作的实现原理我们是使用对缓存加锁或者总线加锁来实现多处理器的原子操作。\n1、处理器如何实现原子操作？总线锁：使用LOCK 信号，其他请求都被阻塞，独占共享内存\n缓存锁：所谓缓存锁定是指内存被缓存在处理器的缓存中，当他执行锁操作写回内存的时候，而是修改内部的内存地址，并允许他缓存一致性保证操作原子性。\n2、Java怎么实现原子操作锁–JVM实现锁的方式其实都用到了循环CAS\n循环CAS –版本号解决ABA，\n2、JAVA内存模型1、定义理解JMM定义了线程和主线程之间的抽象关系，解决的就是线程之间如何通信和线程之间的同步问题。java的并发用的是共享内存模型，通信是隐式的进行的。他也定义了线程和主内存之间的抽象关系。所以总而言之，就是一个管理内存和线程的模型。\n2、重排序重排序分为3种：1是编译器。2,3是处理器。（要求满足as if serial）\n1、编译器优化的重排序，在不改变单线程语义的前提下，可以改变\n2、指令级别的，\n3、内存系统的重排序。由于处理器用到了缓存和读、写缓冲，而缓冲只对自己的处理器可见，他认为修改顺序没什么问题，所以这使得加载和存储看起来是乱序的。\n为了保证内存可见，不出现上面的问题，那么Java编译器在生成指令的时候会插入内存屏障禁止这种重排序。\n涉及到内存屏障 重排序等问题。它的基本方针就是：正确同步的情况下，尽可能为处理器打开方面之门。没有正确同步的情况下不保证执行结果和顺序一致性是一样的。\n对于程序员来说，直接能感触到的是happers-before规则，包括程序规则、锁规则、volatile规则。而JMM实现这些规则依靠的就是处理器的重排序规则（禁止重排序）。重排序是一种优化性能的手段。它要求前一个操作的结果对后一个操作可见并且在前一个操作按顺序排在后一个操作前。\nJMM如何解决重排序问题JMM处理重排序问题：\n1）对于编译器，JMM的编译器重排序规则会禁止特定类型的编译器重排序（不是所有的编译器重排序都要禁止）。\n2）对于处理器重排序，JMM的处理器重排序规则会要求Java编译器在生成指令序列时，插入特定类型的内存屏障指令，来禁止特定类型的处理器重排序。\n3）JMM根据代码中的关键字（如：synchronized、volatile）和J.U.C包下的一些具体类来插入内存屏障。\n顺序一致性也有个理想的模式叫做顺序一致性内存模型，一个线程中的操作完全是顺序的，所有线程只能看到一个单一的操作顺序。\n如果程序的执行结果和顺序一致性模型相同，那么就叫做具备顺序一致性。\n我们的JMM对于正确同步的 程序是具备顺序一致性的，虽然一个线程内部可能做了重排序，但是结果是不变的。但是对于未同步的程序只提供最小安全保障：读到的值要么是之前写入的，要么是默认值。\n如果你想要达到正确同步，那么就可以使用（synchronized、volatile、final）\n3、happens-beforeJava内存模型（JMM）可见性的更高级的语言层面的一组原则，用这个原则解决并发环境下两个操作之间的可见性问题，而一个原则可能就对应一个或者多个编译器和处理器重排序规则。\n程序次序规则（Program Order Rule）：在一个线程内，按照控制流顺序，书写在前面的操作先行发生于书写在后面的操作。\n管程锁定规则（Monitor Lock Rule）：一个unlock操作先行发生于后面对同一个锁的lock操作。\nvolatile变量规则（Volatile Variable Rule）：对一个volatile变量的写操作先行发生于后面对这个变量的读操作。\n总是就是前一个操作的结果对后一个操作是可见的，同时按照顺序在第二个操作前\nsynchronized特性\n方法级的同步是隐式，即无需通过字节码指令来控制的，它实现在方法调用和返回操作之中。JVM可以从方法常量池中的方法表结构中的 ACC_SYNCHRONIZED 访问标志区分一个方法是否同步方法。当方法调用时，调用指令将会常量池里面检查方法的 ACC_SYNCHRONIZED 访问标志是否被设置，如果设置了，执行线程将先持有monitor（虚拟机规范中用的是管程一词）， 然后再执行方法，方法完成释放monitor。\n代码块的同步是利用monitorenter和monitorexit这两个字节码指令。它们分别位于同步代码块的开始和结束位置。当jvm执行到monitorenter指令时，当前线程试图获取monitor对象的所有权，如果未加锁或者已经被当前线程所持有，就把锁的计数器+1；当执行monitorexit指令时，锁计数器-1；当锁计数器为0时，该锁就被释放了。如果获取monitor对象失败，该线程则会进入阻塞状态，直到其他线程释放锁。\n前面已经分析了Monitor的机制，那么在Java中是如何实现的呢？即通过synchronized关键字实现线程同步来获取对象的Monitor。实现方式为：ACC_SYNCHRONIZED和monitorenter&#x2F;monitorexit *ACC_SYNCHRONIZED标识符会去隐式调用这两个指令：monitorenter和monitorexit\n","dateCreated":"2023-09-08T00:00:00+08:00","dateModified":"2023-10-18T20:30:53+08:00","datePublished":"2023-09-08T00:00:00+08:00","description":"","headline":"Java并发知识","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/09/08/Java%E5%B9%B6%E5%8F%91/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/09/08/Java%E5%B9%B6%E5%8F%91/","keywords":"Java并发"}</script>
     <meta name="description" content="学习于《Java并发编程的艺术》多线程一定比单线程快吗？ 不一定，因为还有线程上下文切换的消耗 那如何减少上下文切换？无锁并发、CAS Java 1、并发机制的底层原理这里我们先讲一下：volatile和synchronized的底层原理。 1、volatile可见性：对一个volatile变量的读，①总是能看到（任意线程）对这个volatile变量最后的写入。 原子性：对任意单个volatile">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Java并发知识">
@@ -22,7 +22,7 @@
 <meta property="og:image" content="http://example.com/images/Java%E5%B9%B6%E5%8F%91/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAQWxhbjA1MTc=,size_20,color_FFFFFF,t_70,g_se,x_16.png">
 <meta property="og:image" content="http://example.com/images/%E5%B9%B6%E5%8F%91/image-20230919132522971.png">
 <meta property="article:published_time" content="2023-09-07T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-10-13T13:20:46.968Z">
+<meta property="article:modified_time" content="2023-10-18T12:30:53.533Z">
 <meta property="article:author" content="CSEN">
 <meta property="article:tag" content="Java并发">
 <meta name="twitter:card" content="summary">
@@ -78,11 +78,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -101,9 +101,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
         <div class="post-meta">
     <time datetime="2023-09-08T00:00:00+08:00">
 	
-		    08 Sep 2023
+		    Sep 08, 2023
     	
     </time>
     
@@ -421,7 +421,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">GETAGGT IN</span><br/>
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/Java%E5%B9%B6%E5%8F%91/" rel="tag">Java并发</a>
 
@@ -438,11 +438,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/09/30/shua/"
                     data-tooltip="Java刷题"
-                    aria-label="FRÜHER: Java刷题"
+                    aria-label="PREVIOUS: Java刷题"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
                     </a>
             </li>
             <li class="post-action">
@@ -452,10 +452,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
                     data-tooltip="Java基础知识"
-                    aria-label="NÄCHSTER: Java基础知识"
+                    aria-label="NEXT: Java基础知识"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -466,7 +466,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
+                aria-label="Share this post"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -478,8 +478,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
-                    title="Teilen auf Facebook"
-                    aria-label="Teilen auf Facebook"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -491,8 +491,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
-                    title="Teilen auf Twitter"
-                    aria-label="Teilen auf Twitter"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -504,8 +504,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
-                    title="Teilen auf Google Plus"
-                    aria-label="Teilen auf Google Plus"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -516,7 +516,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -553,11 +553,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/09/30/shua/"
                     data-tooltip="Java刷题"
-                    aria-label="FRÜHER: Java刷题"
+                    aria-label="PREVIOUS: Java刷题"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
                     </a>
             </li>
             <li class="post-action">
@@ -567,10 +567,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
                     data-tooltip="Java基础知识"
-                    aria-label="NÄCHSTER: Java基础知识"
+                    aria-label="NEXT: Java基础知识"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -581,7 +581,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
+                aria-label="Share this post"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -593,8 +593,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
-                    title="Teilen auf Facebook"
-                    aria-label="Teilen auf Facebook"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -606,8 +606,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
-                    title="Teilen auf Twitter"
-                    aria-label="Teilen auf Twitter"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -619,8 +619,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
-                    title="Teilen auf Google Plus"
-                    aria-label="Teilen auf Google Plus"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -631,7 +631,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -653,9 +653,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
-                        aria-label="Teilen auf Facebook"
+                        aria-label="Share on Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
                     </a>
                 </li>
             
@@ -666,9 +666,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
-                        aria-label="Teilen auf Twitter"
+                        aria-label="Share on Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
                     </a>
                 </li>
             
@@ -679,9 +679,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
-                        aria-label="Teilen auf Google Plus"
+                        aria-label="Share on Google+"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
                     </a>
                 </li>
             
@@ -704,7 +704,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

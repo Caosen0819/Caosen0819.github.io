@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv: 2023 - 森</title>
+    <title>Archives: 2023 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -366,7 +366,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -395,7 +395,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -429,7 +429,7 @@
 <p>每秒都会进行一次操作：重做日志缓冲刷新、合并insertbuffer ，脏页刷新被放到了page clean 线程</p>
 <p>每十秒会进行的操作：重做日志缓冲刷新、合并insertbuffer、脏页刷新被放到了page clean 线程、删除无用的undo 页</p>
 <h2 id="2、内存"><a href="#2、内存" class="headerlink" title="2、内存"></a>2、内存</h2><p>内存方面就是缓冲池、lrulist freelist flushlist、redo log buffer 三块，还有一些额外内存池</p>
-<h3 id="1、缓冲池"><a href="#1、缓冲池" class="headerlink" title="1、缓冲池"></a>1、缓冲池</h3><p>本质就是一块内存，就是为了缓解cpu和磁盘的差距，缓冲池里面有数据页、索引页、undo 页、insert buffer、自适应哈希索引、锁信息、数据字典。</p>
+<h3 id="1、缓冲池"><a href="#1、缓冲池" class="headerlink" title="1、缓冲池"></a>1、缓冲池</h3><p>本质就是一块内存，缓冲池里面有数据页、索引页、undo 页、insert buffer、自适应哈希索引、锁信息、数据字典。</p>
 <p>所以修改操作，基本都是现修改缓冲池里面的数据，然后按照一定频率通过checkpoint刷回磁盘。</p>
 <h3 id="2、List"><a href="#2、List" class="headerlink" title="2、List"></a>2、List</h3><p>缓冲池是通过改进的LRU算法（在原本的基础上加了midpoint，新加入的页放到这里，默认5&#x2F;8）进行管理的，方法就是LRUlist、freelist flushlist。如果缓冲池不能放新的，就把lru里面末尾的释放掉。</p>
 <p>改进lru的原因：有可能新页仅仅是这次查询需要用到，并不是真正的热点数据，这样反而有可能将真正的热点数据淘汰。</p>
@@ -456,14 +456,14 @@
 <p>sharp checkpoint就是在关闭的时候全部刷新到磁盘</p>
 <p>fuzzy checkpoint是刷新部分脏页？刷新到时机如下：</p>
 <p>master thread checkpoint</p>
-<p>flushlrulist checkpoint：这饿是lru列表需要有100个空闲的页，否则一处lru末尾的页，如果有脏页就checkpoint</p>
-<p>async sycn flush checkpoint：这个是重做日志i文件不可用的情况，需要强制将一些刷新回磁盘  </p>
+<p>flushlrulist checkpoint：这饿是lru列表需要有100个空闲的页，否则移除lru末尾的页，如果有脏页就checkpoint</p>
+<p>async sycn flush checkpoint：这个是重做日志文件不可用的情况，需要强制将一些刷新回磁盘  </p>
 <p>dirty page too much：这个是脏页数量太多了，强制checkpoint 75%</p>
 <h3 id="3、Redo-log-buffer"><a href="#3、Redo-log-buffer" class="headerlink" title="3、Redo log buffer"></a>3、Redo log buffer</h3><p>这个是innodb独有的，重做日志信息 -&gt;Redo log buffer -〉 重做日志文件，为重做日志文件服务，重做日志文件本身是为了数据库的恢复功能，但是同样的，为了环节和磁盘的差距，我们给他加一个buffer。</p>
 <p>刷回时机：</p>
 <p>master thread 每秒</p>
 <p>每个事务提交的时候</p>
-<p>重做日志缓冲 剩余空间小雨1&#x2F;2</p>
+<p>重做日志缓冲 剩余空间小于1&#x2F;2</p>
 <h1 id="关键特性"><a href="#关键特性" class="headerlink" title="关键特性"></a>关键特性</h1><p>1、插入缓冲</p>
 <p>2、两次写</p>
 <p>3、自适应哈希</p>
@@ -480,6 +480,7 @@
 <p>2、辅助索引页被读到缓冲池里去，然后这个是要执行正常的查询语句了，就去检查这个insert buffer bitmap，确认这个该辅助索引是不是在insert buffer b+书里面，如果有，就把树里面的记录查到辅助索引里面。</p>
 <h2 id="2、两次写"><a href="#2、两次写" class="headerlink" title="2、两次写"></a>2、两次写</h2><p>doublewrite的目的是为了数据的可靠性。</p>
 <p>具体实现的话，是依赖于两个部分，一个是内存中的doublewrite buffer，2m。另一部分是磁盘里的共享表空间里面有一个连续的128页，也是2m。然后我们对脏页进行刷新到磁盘里面，我先不直接写磁盘，我先复制到这个内存的doublewrite buffer里面，然后分两次写入，每次1m写入共享表空间的物理磁盘，然后马上调用fsync函数，同步磁盘。所以，如果写的时候崩溃了，那就把这个共享表空间里面的副本拿出来配合redo log进行恢复。</p>
+<p>![image-20231021153343267](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231021153343267.png)</p>
 <h2 id="3、自适应哈希"><a href="#3、自适应哈希" class="headerlink" title="3、自适应哈希"></a>3、自适应哈希</h2><p>InnoDB会自动为某些访问频率非常高的页建立哈希索引，而哈希索引比起b+树更快，所以也是一种提高性能手段。</p>
 <p>但是有一个比较大的痛点就是他只能用于做 等值查询，如果遇到范围查到，就无能为力。</p>
 <h1 id="文件"><a href="#文件" class="headerlink" title="文件"></a>文件</h1><p>文件包括mysql文件和innodb文件</p>
@@ -526,15 +527,12 @@
 <p>虚记录：分为最大虚记录与最小虚记录，<strong>它俩把这页里面存储的数据的范围框住了。</strong>那怎么比较谁大谁小？用的是主键去比较：最大虚记录比页内最大主键还大，最小虚记录比页内最小主键还小<strong>。</strong>那主键到底是怎么存的呢？InnoDB用的是聚簇索引——<strong>数据和主键存到一起、数据和索引存到一起，数据按主键顺序存储。</strong></p>
 <p>记录堆：<strong>这部分就是存储记录的区域</strong>，分为有效记录和已删除记录。已被删除的记录构成一个链表，叫做自由空间链表<strong>，</strong>如图蓝色已经被删除的数据，<strong>用一个链表把它们连起来</strong>。</p>
 <p>未分配空间：页面未使用的存储空间，除了用了一部分的橙色的区域和已删除的蓝色的数据，剩下的就是未分配空间了，<strong>后面有新的数据插入，往里放就行了</strong>。</p>
-<p>Slog区：<strong>这一块对数据检索非常有用</strong>，卖个关子，后面详细说。</p>
+<p>Slot：<strong>这一块对数据检索非常有用</strong>，卖个关子，后面详细说。</p>
 <p>页尾（Page Tailer）：页面的最后部分，占8个字节，主要存储页面的校验信息。<strong>这一页如果写坏了，数据不对了，通过校验位可以检查出来。</strong></p>
 <p>好了，到这里一个页面咱们了解了，了解数据大概是怎么分布的，<strong>那接下来需要考虑哪些点呢？</strong>我们接下来研究一下——页面记录是怎么维护的</p>
-<h3 id="穿上第二件：聚簇索引"><a href="#穿上第二件：聚簇索引" class="headerlink" title="穿上第二件：聚簇索引"></a>穿上第二件：聚簇索引</h3><p>刚刚提到了主键顺序这个词，那这个顺序是怎么保证的？这里说的按什么顺序存储，不是说升序、降序这些，这些没有意义，实际上说的是<strong>在页里面数据是怎么组织起来的</strong>，还有就是插入数据的策略，<strong>我怎么插入数据</strong>，还有就是<strong>页内的查询是怎样的</strong>。</p>
-<p>我们先来看看聚簇索引：</p>
+<h3 id="穿上第二件：聚簇索引"><a href="#穿上第二件：聚簇索引" class="headerlink" title="穿上第二件：聚簇索引"></a>穿上第二件：聚簇索引</h3><p>针对第二个问题，我们这里看一下主键索引，他是一颗b+书，<strong>数据和主键存到一起，主键是按照树的顺序去组织的，这个结构就叫聚簇</strong>。</p>
 <p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;c9fcc3cec3fdfc032a5c874b6446949da5c2269b.jpeg)</p>
-<p>首先，聚簇索引是一棵B+树，那什么是聚簇呢？</p>
-<p>图中下面绿色的部分是咱们的数据区域，数据是基于紫色部分的主键顺序去存储的，<strong>数据和主键存到一起没毛病，主键是按照树的顺序去组织的，这个结构就叫聚簇</strong>。</p>
-<p>我们再看每一个Page，刚刚说到，Page里面有最大虚记录、最小虚记录，最大、最小这数据肯定是有个范围，<strong>那这个数据在里边到底是怎么存的</strong>？换个说法——数据的顺序是怎么保证的？<strong>到底是物理有序，还是逻辑有序？</strong></p>
+<p><strong>那这个数据在里边到底是怎么存的</strong>？换个说法——数据的顺序是怎么保证的？<strong>到底是物理有序，还是逻辑有序？</strong></p>
 <p>我们再回顾一下大学的知识——<strong>物理有序写入不友好，查询友好；逻辑有序查询不友好，插入友好</strong>，两者优缺点互补。</p>
 <p>再回到正题，了解了这两种不同存储方式的特性，反观页面是怎么做的。</p>
 <p>先看下面这幅图，思考一下插入主键为10，9，8的数据，是按物理有序存储还是逻辑有序存储：</p>
@@ -567,8 +565,8 @@
 <h4 id="2、旋转"><a href="#2、旋转" class="headerlink" title="2、旋转"></a>2、旋转</h4><p>旋转发生在leaf page已经满了，但是左右兄弟还没有满，这时候会把记录平移到兄弟结点上面，左兄弟优先</p>
 <h4 id="3、删除"><a href="#3、删除" class="headerlink" title="3、删除"></a>3、删除</h4><p>![image-20231005202324173](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231005202324173.png)</p>
 <h3 id="2、分类"><a href="#2、分类" class="headerlink" title="2、分类"></a>2、分类</h3><p>b+树可以分成聚集索引、辅助索引，这两个到区别就是叶子结点放的到底是不是一行信息</p>
-<h4 id="1、聚集索引"><a href="#1、聚集索引" class="headerlink" title="1、聚集索引"></a>1、聚集索引</h4><p>innodb引擎是索引组织表，按照主键顺序存放，而聚集索引就是按照主键构造的索引b+树，所以叶子结点存放的就是整张表的数据，叶子结点也叫做数据页。非叶子结点的索引页存放的仅仅是键值和指向数据页的偏移量。</p>
-<h4 id="2、辅助索引"><a href="#2、辅助索引" class="headerlink" title="2、辅助索引"></a>2、辅助索引</h4><p>辅助索引的叶子结点不包含行记录的全部数据。叶子结点包含键值和书签，书签用来告诉引擎哪里能找到真正的行数据。由于innodb是索引组织表，所以辅助索引的书签就是行记录的聚集索引键。比如（文件名：页号：槽号），所以辅助索引就是包含了索引那列的值和主键的值</p>
+<h4 id="1、聚集索引"><a href="#1、聚集索引" class="headerlink" title="1、聚集索引"></a>1、聚集索引</h4><p>聚集索引就是按照主键构造的索引b+树，所以叶子结点存放的就是整张表的数据，叶子结点也叫做数据页。非叶子结点的索引页存放的仅仅是键值和指向数据页的偏移量。</p>
+<h4 id="2、辅助索引"><a href="#2、辅助索引" class="headerlink" title="2、辅助索引"></a>2、辅助索引</h4><p>辅助索引的叶子结点不包含行记录的全部数据。叶子结点包含键值和书签，书签用来告诉引擎哪里能找到真正的行数据。由于innodb是索引组织表，所以辅助索引的书签就是行记录的聚集索引键。所以辅助索引就是包含了索引那列的值和主键的值。</p>
 <h3 id="3、B-树索引的管理"><a href="#3、B-树索引的管理" class="headerlink" title="3、B+树索引的管理"></a>3、B+树索引的管理</h3><h4 id="1、索引管理"><a href="#1、索引管理" class="headerlink" title="1、索引管理"></a>1、索引管理</h4><p>创建和删除可以通过两种方法。一种是alter table。另一种是create&#x2F;drop index。</p>
 <p>查看：show index from XX</p>
 <h4 id="2、fast-index-create"><a href="#2、fast-index-create" class="headerlink" title="2、fast index create"></a>2、fast index create</h4><p>对于一张大表进行索引的添加和删除操作，这会需要很长时间。所以就提出了这个快速创建索引的方式。只限制于辅助索引。</p>
@@ -618,7 +616,7 @@
 <h4 id="6、自适应哈希索引"><a href="#6、自适应哈希索引" class="headerlink" title="6、自适应哈希索引"></a>6、自适应哈希索引</h4><p>InnoDB中的哈希用的字典进行查找，冲突用链表解决，哈希函数用除法散列</p>
 <p>自适应哈希索引就是用的这种方法。</p>
 <h4 id="7、全文检索"><a href="#7、全文检索" class="headerlink" title="7、全文检索"></a>7、全文检索</h4><p>全文检索一般使用倒排索引。</p>
-<h5 id="1、倒排索引"><a href="#1、倒排索引" class="headerlink" title="1、倒排索引"></a>1、倒排索引</h5><p>它在辅助表（auxiliary table）中存储了单词与单词自身在一个或多个文档中所在位置之间的映射。这通常利用关键数组实现，其拥有两种表现形式：<br>inverted file index：其表现形式为{单词，单词所在文档的ID}<br>full inverted index：其表现形式为{单词，(单词所在文档的ID，在文档中的具体位置)}</p>
+<h5 id="x2F-x2F-1、倒排索引"><a href="#x2F-x2F-1、倒排索引" class="headerlink" title="&#x2F;&#x2F;1、倒排索引"></a>&#x2F;&#x2F;1、倒排索引</h5><p>它在辅助表（auxiliary table）中存储了单词与单词自身在一个或多个文档中所在位置之间的映射。这通常利用关键数组实现，其拥有两种表现形式：<br>inverted file index：其表现形式为{单词，单词所在文档的ID}<br>full inverted index：其表现形式为{单词，(单词所在文档的ID，在文档中的具体位置)}</p>
 <h5 id="2、InnoDB全文检索的实现"><a href="#2、InnoDB全文检索的实现" class="headerlink" title="2、InnoDB全文检索的实现"></a>2、InnoDB全文检索的实现</h5><p><strong>InnoDB全文索引有3个非常重要的东西，一个是辅助表，一个是FTS Index Cache、一个是FTS DOUCUMENT id</strong></p>
 <h6 id="1、Auxiliary-Table（辅助表）"><a href="#1、Auxiliary-Table（辅助表）" class="headerlink" title="1、Auxiliary Table（辅助表）"></a><strong>1、Auxiliary Table（辅助表）</strong></h6><p>辅助表是把文档，分词然后规范化后的白哦，</p>
 <p>辅助表的话采用“full inverted index”的方式有两个列：<br>一个是word字段。在word字段上有设有索引，另一个是ilist字段，（DocumentId,Position）</p>
@@ -630,7 +628,7 @@
 <p>对于InnoDB来说，其总是在事务提交时将分词写入到FTS Index Cache。</p>
 <h6 id="3、FTS-DOUCUMENT-ID"><a href="#3、FTS-DOUCUMENT-ID" class="headerlink" title="3、FTS DOUCUMENT ID"></a>3、FTS DOUCUMENT ID</h6><p>为了支持全文检索，<strong>必须有一个列与word进行映射：</strong></p>
 <ul>
-<li>在InnoDB中这个列<strong>被命名为FTS_DOC_ID</strong></li>
+<li>在InnoDB中这个列<strong>被命名为FTS_DOC_ID</strong>，他是自动创建的</li>
 <li>其<strong>类型必须是</strong>bigint unsigned not null</li>
 <li>并且InnoDB自动会在该列上加入一个<strong>名为FTS_DOC_ID_INDEX的unique index索引</strong></li>
 <li><strong>用户也可以在建表时自动添加FTS_DOC_ID，以及相应的Unique Index</strong></li>
@@ -650,6 +648,7 @@
 <li>表锁</li>
 <li>元数据锁（meta data lock，MDL）</li>
 <li>意向锁</li>
+<li>自增锁</li>
 </ul>
 <h4 id="1、表锁"><a href="#1、表锁" class="headerlink" title="1、表锁"></a>1、表锁</h4><p>对于表锁，又可以分为2类：</p>
 <ul>
@@ -657,7 +656,7 @@
 <li>表独占写锁（write lock）</li>
 </ul>
 <p>结论: 读锁不会阻塞其他客户端的读，但是会阻塞写。写锁既会阻塞其他客户端的读，又会阻塞 其他客户端的写。</p>
-<h4 id="2、、元数据锁"><a href="#2、、元数据锁" class="headerlink" title="2、、元数据锁"></a>2、、元数据锁</h4><p>再来说说<strong>元数据锁</strong>（MDL）。</p>
+<h4 id="2、元数据锁"><a href="#2、元数据锁" class="headerlink" title="2、元数据锁"></a>2、元数据锁</h4><p>再来说说<strong>元数据锁</strong>（MDL）。</p>
 <p>我们不需要显示的使用 MDL，因为当我们对数据库表进行操作时，会自动给这个表加上 MDL：</p>
 <ul>
 <li>对一张表进行 CRUD 操作时，加的是 <strong>MDL 读锁</strong>；</li>
@@ -669,7 +668,7 @@
 </blockquote>
 <p>MDL 是在事务提交后才会释放，这意味着<strong>事务执行期间，MDL 是一直持有的</strong>。</p>
 <p>MDL 加锁过程是系统自动控制，无需显式使用，在访问一张表的时候会自动加上。MDL 锁主要作用是维 护表元数据的数据一致性，在表上有活动事务的时候，不可以对元数据进行写入操作。为了避免DML与 DDL冲突，保证读写的正确性。</p>
-<h4 id="3、意向锁"><a href="#3、意向锁" class="headerlink" title="3、意向锁"></a>3、意向锁</h4><p>我觉得意向锁主要还是解决行锁和表锁之间的冲突问题。</p>
+<h4 id="3、意向锁"><a href="#3、意向锁" class="headerlink" title="3、意向锁"></a>3、意向锁</h4><p><strong>我觉得意向锁主要还是解决行锁和表锁之间的冲突问题。</strong></p>
 <ul>
 <li>在使用 InnoDB 引擎的表里对某些记录加上「共享锁」之前，需要先在表级别加上一个「意向共享锁」；</li>
 <li>在使用 InnoDB 引擎的表里对某些纪录加上「独占锁」之前，需要先在表级别加上一个「意向独占锁」；</li>
@@ -680,7 +679,7 @@
 <p>所以，<strong>意向锁的目的是为了快速判断表里是否有记录被加锁</strong>。</p>
 <h4 id="4、自增锁"><a href="#4、自增锁" class="headerlink" title="4、自增锁"></a>4、自增锁</h4><p>主键设置成自增之后，在插入数据时，可以不指定主键的值，数据库会自动给主键赋值递增的值，这主要是通过 <strong>AUTO-INC 锁</strong>实现的。</p>
 <p><strong>在插入数据时，会加一个表级别的 AUTO-INC 锁</strong>，<strong>不是再一个事务提交后才释放，而是再执行完插入语句后就会立即释放</strong>。</p>
-<p>但是， AUTO-INC 锁再对大量数据进行插入的时候，会影响插入性能，因为另一个事务中的插入会被阻塞。</p>
+<p>但是，对大量数据进行插入的时候，会影响插入性能，因为另一个事务中的插入会被阻塞。</p>
 <p>因此， 在 MySQL 5.1.22 版本开始，InnoDB 存储引擎提供了一种<strong>轻量级的锁</strong>来实现自增</p>
 <p>InnoDB 存储引擎提供了个 innodb_autoinc_lock_mode 的系统变量，是用来控制选择用 AUTO-INC 锁，还是轻量级的锁。</p>
 <ul>
@@ -688,7 +687,8 @@
 <li>当 innodb_autoinc_lock_mode &#x3D; 2，就采用轻量级锁，申请自增主键后就释放锁，并不需要等语句执行后才释放。</li>
 <li>当 innodb_autoinc_lock_mode &#x3D; 1：<ul>
 <li>普通 insert 语句，自增锁在申请之后就马上释放；</li>
-<li>类似 insert … select 这样的批量插入数据的语句，自增锁还是要等语句结束后才被释放；</li>
+<li>类似 insert … select 这样的批量插入数据的语句，自增锁还是要等语句结束后才被释放</li>
+<li>原因如下：</li>
 </ul>
 </li>
 </ul>
@@ -814,7 +814,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -843,7 +843,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-27T00:00:00+08:00">
 	
-		    27 Apr 2023
+		    Apr 27, 2023
     	
     </time>
     
@@ -898,7 +898,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -927,7 +927,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-27T00:00:00+08:00">
 	
-		    27 Apr 2023
+		    Apr 27, 2023
     	
     </time>
     
@@ -960,7 +960,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -989,7 +989,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-26T00:00:00+08:00">
 	
-		    26 Apr 2023
+		    Apr 26, 2023
     	
     </time>
     
@@ -1045,7 +1045,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1074,7 +1074,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-22T00:00:00+08:00">
 	
-		    22 Apr 2023
+		    Apr 22, 2023
     	
     </time>
     
@@ -1124,7 +1124,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1153,7 +1153,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-11T00:00:00+08:00">
 	
-		    11 Apr 2023
+		    Apr 11, 2023
     	
     </time>
     
@@ -1230,7 +1230,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1259,7 +1259,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-11T00:00:00+08:00">
 	
-		    11 Apr 2023
+		    Apr 11, 2023
     	
     </time>
     
@@ -1291,7 +1291,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1320,7 +1320,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-11T00:00:00+08:00">
 	
-		    11 Apr 2023
+		    Apr 11, 2023
     	
     </time>
     
@@ -1569,7 +1569,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1598,7 +1598,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    04 Apr 2023
+		    Apr 04, 2023
     	
     </time>
     
@@ -1626,7 +1626,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1643,10 +1643,10 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             <a
                 class="btn btn--default btn--small"
                 href="/archives/2023/"
-                aria-label="NEUERE BEITRÄGE"
+                aria-label="NEWER POSTS"
             >
               <i class="fa fa-angle-left text-base icon-mr"></i>
-              <span>NEUERE BEITRÄGE</span>
+              <span>NEWER POSTS</span>
             </a>
           </li>
         
@@ -1655,14 +1655,14 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             <a
                 class="btn btn--default btn--small"
                 href="/archives/2023/page/3/"
-                aria-label="ÄLTERE BEITRÄGE"
+                aria-label="OLDER POSTS"
             >
-              <span>ÄLTERE BEITRÄGE</span>
+              <span>OLDER POSTS</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">Seite 2 von 3</li>
+        <li class="pagination-number">page 2 of 3</li>
     </ul>
 </div>
 
@@ -1692,7 +1692,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
