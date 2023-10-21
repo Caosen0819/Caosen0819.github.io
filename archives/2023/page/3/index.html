@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archives: 2023 - 森</title>
+    <title>Archiv: 2023 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -287,7 +287,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -316,7 +316,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -365,7 +365,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -394,7 +394,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -429,7 +429,7 @@
 <p>4、堆</p>
 <p>虚拟机管理的内存中最大的一块，几乎所有的对象实例都在这里。这里有一块是字符串常量池，存的是堆String实例的引用。</p>
 <p>5、方法区</p>
-<p>存储被虚拟机加载的类型信息、常量、静态变量，编译后的代码缓存。不过在8之后就移到元空间了。</p>
+<p>存储被虚拟机加载的类型信息、常量、编译后的代码缓存。不过在8之后就移到元空间了。</p>
 <p>运行时常量池：</p>
 <p>Class文件除了类的版本字段方法接口描述外，还有一个常量池，用于存放编译期间生成的字面量和符号引用，而当类加载到内存中后，jvm把符号引用换成直接引用，将class常量池中的内容存放到运行时常量池中。</p>
 <p><img src="/../images/JVM/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjg0MDA1,size_16,color_FFFFFF,t_70.png" alt="img"></p>
@@ -485,9 +485,9 @@
 <p>3、字节码校验。最复杂的阶段。通过数据流分析和控制流分析程序语义是否合法，主要就是检查方法体</p>
 <p>4、符号引用验证。符号引用验证发生在解析阶段，就是把符号引用转化为直接引用的时候去验证的。</p>
 <h2 id="3、准备阶段"><a href="#3、准备阶段" class="headerlink" title="3、准备阶段"></a>3、准备阶段</h2><p>为静态变量分配内存，并设置初始值的阶段。这里如果是通常阶段，这里的初始值是默认的，不是你定义的什么1,2,3这类，实则是0。如果用final修饰了，那就是你自己定义的了。</p>
-<h2 id="4、解析"><a href="#4、解析" class="headerlink" title="4、解析"></a>4、解析</h2><p>把常量池中的符号引用转化为直接引用的阶段。有类和方法解析，字段解析，方法解析等。实际上就是先把类加载到方法区里面，然后返回直接引用。</p>
+<h2 id="4、解析"><a href="#4、解析" class="headerlink" title="4、解析"></a>4、解析</h2><p>把常量池中的符号引用转化为直接引用的阶段。有类和接口解析，字段解析，方法解析等。实际上就是先把类加载到方法区里面，然后返回直接引用。</p>
 <p>解析的步骤就是：</p>
-<p>在类C中查找有没有与目标匹配的简单名称和表舒服。如果有就直接返回。</p>
+<p>在类C中查找有没有与目标匹配的简单名称和表。如果有就直接返回。</p>
 <p>否则，就在类C的父类中递归查找自下而上。</p>
 <p>否则，在类C的接口中基付接口查找是否有匹配的。</p>
 <p>否则失败。</p>
@@ -536,7 +536,7 @@
 <blockquote>
 <p>GC Roots可以包括：</p>
 <p>本地变量表里面的参数，局部变量，临时变量。</p>
-<p>方法区静态属性引用的对象，</p>
+<p>方法区静态属性引用的对象</p>
 <p>字符串常量池的引用</p>
 <p>基本数据类型对应的Class，异常对象，系统类加载器等等</p>
 </blockquote>
@@ -595,20 +595,20 @@
 <h4 id="3、CMS收集器"><a href="#3、CMS收集器" class="headerlink" title="3、CMS收集器"></a>3、CMS收集器</h4><p>它是一种获取最短回收停顿时间的收集器，就是希望stw的时间越短越好。</p>
 <p>策略：标记-清除</p>
 <p>因为回收过程和用户线程一起进行，所以有四个步骤。</p>
-<p>1）初始标记，只是标记一下GC Roots，这个之前讲过，</p>
+<p>1）初始标记，只是标记一下GC Roots，这个之前讲过，（STW）</p>
 <p>2）并发标记，从GC Roots遍历对象的过程，这个是和用户线程一起进行的</p>
-<p>3）重新标记，因为和用户线程一起进行，所以引用会发生变化，所以修正一下。</p>
+<p>3）重新标记，因为和用户线程一起进行，所以引用会发生变化，所以修正一下。（STW）</p>
 <p>4）并发清除，清除对象，因为策略是标记-清除，不需要移动所以同样选择了并发的方式。</p>
 <p>缺点：</p>
 <p>1）对处理资源敏感</p>
-<p>2）无法处理浮动垃圾，有可能触发full gc</p>
+<p>2）无法处理浮动垃圾（从可达到不可达，但是没扫出来），有可能触发full gc</p>
 <p>3）用的是标记清楚，会有内存碎片</p>
-<h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><p>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region，每一个region都可以是eden，suvivor，老年代。对不同的角色采取不同的策略处理。</p>
+<h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><p>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region，每一个region都可以是eden，suvivor，老年代。</p>
 <p>然后他把region作为单次回收的最小单元，那每次回收都是region的整数倍。然后跟踪每一个region的回收价值（空间大小和回收所需时间），在后台维护一个优先级列表。</p>
-<p>1、初始标记，只是标记一下GC Roots，这个之前讲过，</p>
+<p>1、初始标记，只是标记一下GC Roots，这个之前讲过（STW）</p>
 <p>2、并发标记，扫描对象图</p>
-<p>3、最终标记，短暂的停顿，处理最后少量的SATB记录</p>
-<p>4、筛选回收，短暂的停顿，把回收region中存活对象复制到空的region，清除旧的。</p>
+<p>3、最终标记，短暂的停顿，处理最后少量的SATB记录（STW）</p>
+<p>4、筛选回收，短暂的停顿，把回收region中存活对象复制到空的region，清除旧的。（STW）</p>
 <p>优点：可以指定最大停顿时间，不会产生内存碎片，按收益回收，分region的内存布局。</p>
 <p>缺点：内存占用和负载都比较高。</p>
 <h4 id="2、ZGC"><a href="#2、ZGC" class="headerlink" title="2、ZGC"></a>2、ZGC</h4><p>也是使用分区的内存分布，但是它有三种不同的区。小型、中型、大型。</p>
@@ -625,20 +625,22 @@
 <ul>
 <li>继续遍历对象图，把蓝色变成绿色（44位置0,42位置1）</li>
 <li>这里要用到<strong>三色标记</strong></li>
-<li>但是三色标记会存在漏标的问题，为了解决这个问题，我们在并发标记后面还回去加上一个再标记的过程，为了再标记的时候去找到可能修改的地方，这里会使用一个<strong>读屏障（这个屏障会把读出的指针更新到对象的新地址上，aop）</strong>，把读引用记录下来</li>
-<li>这里还有一个作用就是</li>
 </ul>
 </li>
-<li><h2 id="再标记（STW，时间很短，小于1mm，小于初始标记）"><a href="#再标记（STW，时间很短，小于1mm，小于初始标记）" class="headerlink" title="再标记（STW，时间很短，小于1mm，小于初始标记）"></a><strong>再标记</strong>（<strong>STW，时间很短，小于1mm，小于初始标记</strong>）</h2></li>
+<li><p><strong>再标记</strong>（<strong>STW，时间很短，小于1mm，小于初始标记</strong>）</p>
+<ul>
+<li>三色标记会存在漏标的问题，重新标记<strong>并发标记阶段</strong>发生变化的对象，使用读屏障+SATB算法解决</li>
+</ul>
+</li>
 </ul>
 <p><strong>转移过程</strong></p>
 <ul>
 <li><strong>并发转移准备（并发）</strong><ul>
-<li>统计处本次收集过程要清理哪些region，颜色从绿色回到蓝色，（44位置为1,42位置为0）</li>
+<li>统计处本次收集过程要清理哪些region</li>
 </ul>
 </li>
 <li><strong>初始转移（STW，和初始标记差不多）</strong><ul>
-<li>把GC Roots直接关联的进行转移</li>
+<li>把GC Roots直接关联的进行转移，颜色从绿色回到蓝色，（44位置为1,42位置为0）</li>
 </ul>
 </li>
 <li><strong>并发转移</strong><ul>
@@ -649,9 +651,9 @@
 </li>
 </ul>
 <h3 id="三色标记"><a href="#三色标记" class="headerlink" title="三色标记"></a>三色标记</h3><p>三色标记在并发会出现问题。</p>
-<p>CMS解决这种浮动垃圾或者对象消失问题，用的是写屏障+增量更新（黑色对象插入新的白色对象，就把这个新插入的引用记录下来，等并发扫描结束，再重新扫一次）</p>
+<p>CMS解决对象消失问题，用的是写屏障+增量更新（黑色对象插入新的白色对象，就把这个新插入的引用记录下来，等并发扫描结束，再重新扫一次）</p>
 <p>G1用的是，写屏障+STAB。（灰色对象要删除指向白色对象的引用关系的时候，就把这个删除的引用记录下来，等并发扫描结束，再重新扫一次）</p>
-<p>ZGC用的是，读屏障+再标记</p>
+<p>ZGC用的是，读屏障+STAB</p>
 
                     
                         
@@ -665,7 +667,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -694,7 +696,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-03T00:00:00+08:00">
 	
-		    Apr 03, 2023
+		    03 Apr 2023
     	
     </time>
     
@@ -730,7 +732,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -759,7 +761,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-03T00:00:00+08:00">
 	
-		    Apr 03, 2023
+		    03 Apr 2023
     	
     </time>
     
@@ -834,7 +836,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -851,15 +853,15 @@
             <a
                 class="btn btn--default btn--small"
                 href="/archives/2023/page/2/"
-                aria-label="NEWER POSTS"
+                aria-label="NEUERE BEITRÄGE"
             >
               <i class="fa fa-angle-left text-base icon-mr"></i>
-              <span>NEWER POSTS</span>
+              <span>NEUERE BEITRÄGE</span>
             </a>
           </li>
         
         
-        <li class="pagination-number">page 3 of 3</li>
+        <li class="pagination-number">Seite 3 von 3</li>
     </ul>
 </div>
 
@@ -889,7 +891,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
