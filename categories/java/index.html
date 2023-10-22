@@ -258,7 +258,7 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h1><h2 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h2><p>是把使用算法的责任和算法本身分割开来，用一句话来说，就是：“准备一组算法，并将每一个算法封装起来，使得它们可以互换。<strong>翻译一下就是</strong>，运行时我给你这个类的方法传不同的“key”，你这个方法会执行不同的业务逻辑。<strong>细品一下，这不就是 if else 干的事吗？</strong></p>
+                    <h1 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h1><h2 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h2><p>就是：“准备一组算法，并将每一个算法封装起来，使得它们可以互换。<strong>翻译一下就是</strong>，运行时我给你这个类的方法传不同的“key”，你这个方法会执行不同的业务逻辑。<strong>细品一下，这不就是 if else 干的事吗？</strong></p>
 <p>但是原始的策略模式，他如果遇到参数是可变的，那他依旧会尽力if else的阶段，那就意义不大。所以我们的</p>
 <p>优化方法就是枚举类+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的，</p>
 <p>抽奖的时候根据抽奖算法的id是1还是2，直接去map里面get就可以；生成订单id的时候用雪花还是美团哪一种方法，直接去map里面找</p>
@@ -266,7 +266,7 @@
 <h2 id="工厂模式"><a href="#工厂模式" class="headerlink" title="工厂模式"></a>工厂模式</h2><p>工厂模式有三种，简单工厂、工厂模式、抽象工厂模式。</p>
 <p>简单工厂只适合单一产品的生产，他的思路很简单，就是根据不同信息new出来不同的对象。比如车 </p>
 <p>工厂模式是把原来的工厂作为抽象模型创建不同的子类工厂生产不同的商品。</p>
-<p><strong>抽象工厂模式</strong>就考虑了多等级产品的生产，将同一个具体工厂所生产的<strong>位于不同等级（种类）的一组产品称为一个产品族</strong>。而抽象工厂模式就是对产品种类做了抽象。</p>
+<p><strong>抽象工厂模式</strong>就考虑了多等级产品的生产，将同一个具体工厂所生产的<strong>位于不同等级（种类）的一组产品称为一个产品族</strong>。而抽象工厂模式就是对产品种类做了抽象。说得简单点就是在抽象工厂里面增加生产其他产品的接口，子类去实现它</p>
 <p>抽象工厂是需要理解产品族和产品等级两个概念。</p>
 <h2 id="组合模式"><a href="#组合模式" class="headerlink" title="组合模式"></a>组合模式</h2><p>组合模式一般用来描述整体与部分的关系 ，它将对象组织到树形结构中 ，最顶层的节点称为根节点 ，根节点下面可以包含树枝节点和叶子节点 ，树枝节点下面又可以包含树枝节点和叶子节点。宗旨是通过将单个对象（叶子节点）和组合对象（树枝节点）用相同的接口进行表示 ，使得客户对单个对象和组合对象的使用具有一致性</p>
 <h2 id="代理模式"><a href="#代理模式" class="headerlink" title="代理模式"></a>代理模式</h2><p>代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。</p>
@@ -274,7 +274,7 @@
 <p>动态代理有两种方式一种是jdk方法，一种是cglib方法</p>
 <p><strong>我们先来讲jdk代理：</strong></p>
 <p>在java的<strong>java.lang.reflect包下提供了一个Proxy类和一个InvocationHandler接口</strong>，<strong>通过这个类和这个接口可以生成JDK动态代理类和动态代理对象</strong>。</p>
-<p>而代理类就需要一个执行器去帮你做这些事情，那这个执行器就是InvocationHandler接口，他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组</p>
+<p>InvocationHandler接口，他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组</p>
 <p>而这三个参数其实是可以变化的，被代理方法参数组是可以变化的，这三个参数里面代理方法和参数组其实我们可以依赖于最基础反射得到。那这样就成功的实现了动态的含义。</p>
 <p>那我们怎么去调用这个方法呢？依赖于Proxy类和他的方法newproxyInstance，getProxyClass0(loader, intfs)这个类的产生就是整个动态代理的关键，产生的类反编译之后得到，调用代理对象的方法其实会直接调用我们InvocationHandler接口的invoke方法，在invoke方法中调用了被代理对象的相应方法。</p>
 <p><strong>下面来讲CGLIB代理</strong></p>
@@ -307,21 +307,6 @@
 <li><h2 id="讲一讲组合模式以及在项目中的应用"><a href="#讲一讲组合模式以及在项目中的应用" class="headerlink" title="讲一讲组合模式以及在项目中的应用"></a><strong>讲一讲组合模式以及在项目中的应用</strong></h2></li>
 </ul>
 <p>组合模式一般用来描述整体与部分的关系 ，它将对象组织到树形结构中 ，最顶层的节点称为根节点 ，根节点下面可以包含树枝节点和叶子节点 ，树枝节点下面又可以包含树枝节点和叶子节点。宗旨是通过将单个对象（叶子节点）和组合对象（树枝节点）用相同的接口进行表示 ，使得客户对单个对象和组合对象的使用具有一致性</p>
-<h2 id="享元模式"><a href="#享元模式" class="headerlink" title="享元模式"></a>享元模式</h2><blockquote>
-<p>享元模式的本质:分离与共享。</p>
-</blockquote>
-<p>享元模式的关键之处就在于分离变和不变，把不变的部分作为享元对象的内部状态，而变化部分则作为外部状态，由外部来维护，这样享元对象就能够被共享，从而减少对象数量，并节省大量的内存空间。</p>
-<ul>
-<li>Flyweight:享元接口，通过这个接口 Flyweight可以接受并作用于外部状态。通过这个接口传入外部的状态，在享元对象的方法处理中可能会使用这些外部的数据。</li>
-<li>ConcreteFlyweight:具体的享元实现对象</li>
-<li>FlyweightFactory:享元工厂，主要用来创建并管理共享的享元对象，并对外提供访问共享享元的接口。</li>
-</ul>
-<p>你要得到一个共享的类，先去享元池里面找，找得到就返回享元池里面的那个实例。找不到就创建加入享元池。</p>
-<p>如果你要得到一个不共享的，因为是不共享的每次都返回一个新的类。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 1.抽象享元类（FlyWeight）：单车</span></span><br><span class="line"><span class="comment"> * 单车有很多共同的信息比如：价格、颜色</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Bike</span> &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> String color;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> <span class="type">int</span> price;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Bike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">this</span>.color=color;</span><br><span class="line">        <span class="built_in">this</span>.price=price;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">//展示单车信息</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span>;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 2.具体享元类（ConcreteFlyWeight）：摩拜单车</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Mobike</span> <span class="keyword">extends</span> <span class="title class_">Bike</span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Mobike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">super</span>(color,price);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;生产成功：摩拜单车——&quot;</span>+color+<span class="string">&quot;,&quot;</span>+<span class="string">&quot;起步价&quot;</span>+price+<span class="string">&quot;元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 2.具体享元类（ConcreteFlyWeight）：美团单车</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MTBike</span> <span class="keyword">extends</span> <span class="title class_">Bike</span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MTBike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">super</span>(color,price);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;生产成功：小黄车——&quot;</span>+color+<span class="string">&quot;,&quot;</span>+<span class="string">&quot;起步价&quot;</span>+price+<span class="string">&quot;元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 3.享元工厂类（FlyWeightFactory）：单车工厂</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BikeFactory</span> &#123;</span><br><span class="line">    <span class="comment">//map缓存</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Map&lt;String,Bike&gt; bikeMap=<span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Bike <span class="title function_">getBike</span><span class="params">(String color,String type)</span>&#123;</span><br><span class="line">        String key=color+<span class="string">&quot;_&quot;</span>+type;</span><br><span class="line">        <span class="keyword">if</span>(bikeMap.containsKey(key))&#123;</span><br><span class="line">            <span class="comment">//如果已经有该颜色和类型的单车，直接返回</span></span><br><span class="line">            <span class="keyword">return</span> bikeMap.get(key);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            Bike bike=<span class="literal">null</span>;</span><br><span class="line">            <span class="comment">//没有，创建并放入缓存</span></span><br><span class="line">            <span class="keyword">if</span>(<span class="string">&quot;mobike&quot;</span>.equals(type))&#123;</span><br><span class="line">                bike=<span class="keyword">new</span> <span class="title class_">Mobike</span>(color,<span class="number">1</span>);</span><br><span class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">&quot;MT&quot;</span>.equals(type))&#123;</span><br><span class="line">                bike=<span class="keyword">new</span> <span class="title class_">MTBike</span>(color,<span class="number">2</span>);</span><br><span class="line">            &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;抛异常！没有该类型的单车&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//放入缓存</span></span><br><span class="line">            bikeMap.put(key,bike);</span><br><span class="line">            <span class="keyword">return</span> bike;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
 <h2 id="装饰器模式"><a href="#装饰器模式" class="headerlink" title="装饰器模式"></a>装饰器模式</h2><p>装饰器模式的核心就是不改原有类的基础上给类新增功能。其实说白了就是在原本类的基础上包装一个装饰器类，这个类在执行源类的行为的前后再加入一些新的逻辑。</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">抽象组件</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Component</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line">具体组件（需要被装饰的组件）</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConcreteComponent</span> <span class="keyword">extends</span> <span class="title class_">Component</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;具体组件处理业务逻辑&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">抽象装饰器（继承、实现抽象组件，并持有抽象组件）</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Decorator</span> <span class="keyword">extends</span> <span class="title class_">Component</span> &#123;</span><br><span class="line"></span><br><span class="line">     * 抽象组件</span><br><span class="line">    <span class="keyword">public</span> Component component;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Decorator</span><span class="params">(Component component)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.component = component;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        component.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">具体装饰器A继承抽象装饰器</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConcreteDecorator</span> <span class="keyword">extends</span> <span class="title class_">Decorator</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ConcreteDecorator</span><span class="params">(Component component)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(component);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">before</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;ConcreteDecorator前置操作....&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">after</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;ConcreteDecorator后置操作....&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">组件本身执行的动作</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        before();</span><br><span class="line">        component.execute();</span><br><span class="line">        after();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">decorator 通用写法测试</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">//创建需要被装饰的组件</span></span><br><span class="line">        <span class="type">Component</span> <span class="variable">component</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConcreteComponent</span>();</span><br><span class="line">        <span class="comment">//给对象透明的增加功能并调用</span></span><br><span class="line">        <span class="type">Decorator</span> <span class="variable">decorator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConcreteDecorator</span>(component);</span><br><span class="line">        decorator.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -346,12 +331,23 @@
 
 
 
-<h2 id="桥接模式"><a href="#桥接模式" class="headerlink" title="桥接模式"></a>桥接模式</h2><p>1、将抽象部分与实体部分分离</p>
-<p>2、处理多个独立变化的维度，在抽象层建立关联，其中抽象类作为桥</p>
-<p>3、通过构造函数的方式将接口传入实现联系</p>
+<h2 id="桥接模式"><a href="#桥接模式" class="headerlink" title="桥接模式"></a>桥接模式</h2><p><strong>桥接模式通过将继承改为组合的方式来解决这个问题</strong>。具体来说，就是抽取其中一个维度并使之成为独立的类层次，这样就可以在初始类中引用这个新层次的对象，从而使得一个类不必拥有所有的状态和行为。	</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">支付接口 </span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">IPay</span> &#123;</span><br><span class="line">     <span class="keyword">void</span> <span class="title function_">pay</span><span class="params">()</span>;</span><br><span class="line"> &#125;</span><br><span class="line">wx支付</span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WXPay</span> <span class="keyword">implements</span> <span class="title class_">IPay</span> &#123;</span><br><span class="line">     <span class="meta">@Override</span></span><br><span class="line">     <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">pay</span><span class="params">()</span> &#123;</span><br><span class="line">         System.out.println(<span class="string">&quot;wx支付&quot;</span>);</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br><span class="line">zfb支付</span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ZFBPay</span> <span class="keyword">implements</span> <span class="title class_">IPay</span> &#123;</span><br><span class="line">     <span class="meta">@Override</span></span><br><span class="line">     <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">pay</span><span class="params">()</span> &#123;</span><br><span class="line">         System.out.println(<span class="string">&quot;支付宝支付&quot;</span>);</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br><span class="line">解锁抽象类</span><br><span class="line">   <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">PayType</span> &#123;</span><br><span class="line">     <span class="keyword">protected</span> IPay iPay;</span><br><span class="line">     <span class="keyword">public</span> <span class="title function_">PayType</span><span class="params">(IPay iPay)</span> &#123;</span><br><span class="line">         <span class="built_in">this</span>.iPay = iPay;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">pay</span><span class="params">()</span>;</span><br><span class="line"> &#125;</span><br><span class="line">人脸解锁</span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FacePay</span> <span class="keyword">extends</span> <span class="title class_">PayType</span> &#123;</span><br><span class="line"> </span><br><span class="line">     <span class="keyword">public</span> <span class="title function_">FacePay</span><span class="params">(IPay iPay)</span> &#123;</span><br><span class="line">         <span class="built_in">super</span>(iPay);</span><br><span class="line">     &#125;</span><br><span class="line"> </span><br><span class="line">     <span class="meta">@Override</span></span><br><span class="line">     <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">pay</span><span class="params">()</span> &#123;</span><br><span class="line">         iPay.pay();</span><br><span class="line">         System.out.println(<span class="string">&quot;人脸识别&quot;</span>);</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br><span class="line">指纹解锁</span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FingerPay</span> <span class="keyword">extends</span> <span class="title class_">PayType</span> &#123;</span><br><span class="line"> </span><br><span class="line">     <span class="keyword">public</span> <span class="title function_">FingerPay</span><span class="params">(IPay iPay)</span> &#123;</span><br><span class="line">         <span class="built_in">super</span>(iPay);</span><br><span class="line">     &#125;</span><br><span class="line"> </span><br><span class="line">     <span class="meta">@Override</span></span><br><span class="line">     <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">pay</span><span class="params">()</span> &#123;</span><br><span class="line">         iPay.pay();</span><br><span class="line">         System.out.println(<span class="string">&quot;指纹识别&quot;</span>);</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
 
 <h2 id="外观模式"><a href="#外观模式" class="headerlink" title="外观模式"></a>外观模式</h2><p>外观模式可以理解为转换一群接口，客户只要调用这一个接口而不用调用多个接口才能达到目的，也不需关心这个子系统的内部细节。就是解决多个复杂接口带来的使用困难，起到简化用户操作的作用。</p>
+<h2 id="享元模式"><a href="#享元模式" class="headerlink" title="享元模式"></a>享元模式</h2><blockquote>
+<p>享元模式的本质:分离与共享。</p>
+</blockquote>
+<p>享元模式的关键之处就在于分离变和不变，把不变的部分作为享元对象的内部状态，而变化部分则作为外部状态，由外部来维护，这样享元对象就能够被共享，从而减少对象数量，并节省大量的内存空间。</p>
+<ul>
+<li>Flyweight:享元接口，通过这个接口 Flyweight可以接受并作用于外部状态。通过这个接口传入外部的状态，在享元对象的方法处理中可能会使用这些外部的数据。</li>
+<li>ConcreteFlyweight:具体的享元实现对象</li>
+<li>FlyweightFactory:享元工厂，主要用来创建并管理共享的享元对象，并对外提供访问共享享元的接口。</li>
+</ul>
+<p>你要得到一个共享的类，先去享元池里面找，找得到就返回享元池里面的那个实例。找不到就创建加入享元池。</p>
+<p>如果你要得到一个不共享的，因为是不共享的每次都返回一个新的类。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 1.抽象享元类（FlyWeight）：单车</span></span><br><span class="line"><span class="comment"> * 单车有很多共同的信息比如：价格、颜色</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Bike</span> &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> String color;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> <span class="type">int</span> price;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Bike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">this</span>.color=color;</span><br><span class="line">        <span class="built_in">this</span>.price=price;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">//展示单车信息</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span>;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 2.具体享元类（ConcreteFlyWeight）：摩拜单车</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Mobike</span> <span class="keyword">extends</span> <span class="title class_">Bike</span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Mobike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">super</span>(color,price);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;生产成功：摩拜单车——&quot;</span>+color+<span class="string">&quot;,&quot;</span>+<span class="string">&quot;起步价&quot;</span>+price+<span class="string">&quot;元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 2.具体享元类（ConcreteFlyWeight）：美团单车</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MTBike</span> <span class="keyword">extends</span> <span class="title class_">Bike</span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MTBike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">super</span>(color,price);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;生产成功：小黄车——&quot;</span>+color+<span class="string">&quot;,&quot;</span>+<span class="string">&quot;起步价&quot;</span>+price+<span class="string">&quot;元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 3.享元工厂类（FlyWeightFactory）：单车工厂</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BikeFactory</span> &#123;</span><br><span class="line">    <span class="comment">//map缓存</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Map&lt;String,Bike&gt; bikeMap=<span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Bike <span class="title function_">getBike</span><span class="params">(String color,String type)</span>&#123;</span><br><span class="line">        String key=color+<span class="string">&quot;_&quot;</span>+type;</span><br><span class="line">        <span class="keyword">if</span>(bikeMap.containsKey(key))&#123;</span><br><span class="line">            <span class="comment">//如果已经有该颜色和类型的单车，直接返回</span></span><br><span class="line">            <span class="keyword">return</span> bikeMap.get(key);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            Bike bike=<span class="literal">null</span>;</span><br><span class="line">            <span class="comment">//没有，创建并放入缓存</span></span><br><span class="line">            <span class="keyword">if</span>(<span class="string">&quot;mobike&quot;</span>.equals(type))&#123;</span><br><span class="line">                bike=<span class="keyword">new</span> <span class="title class_">Mobike</span>(color,<span class="number">1</span>);</span><br><span class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">&quot;MT&quot;</span>.equals(type))&#123;</span><br><span class="line">                bike=<span class="keyword">new</span> <span class="title class_">MTBike</span>(color,<span class="number">2</span>);</span><br><span class="line">            &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;抛异常！没有该类型的单车&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//放入缓存</span></span><br><span class="line">            bikeMap.put(key,bike);</span><br><span class="line">            <span class="keyword">return</span> bike;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 
                     
                         
@@ -696,23 +692,24 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="学习于《Java并发编程的艺术》"><a href="#学习于《Java并发编程的艺术》" class="headerlink" title="学习于《Java并发编程的艺术》"></a>学习于《Java并发编程的艺术》</h1><p>多线程一定比单线程快吗？</p>
-<p>不一定，因为还有线程上下文切换的消耗</p>
+                    <h1 id="学习于《Java并发编程的艺术》"><a href="#学习于《Java并发编程的艺术》" class="headerlink" title="学习于《Java并发编程的艺术》"></a>学习于《Java并发编程的艺术》</h1><p>多线程一定比单线程快吗？不一定，因为还有线程上下文切换的消耗</p>
 <p>那如何减少上下文切换？无锁并发、CAS</p>
-<p>Java</p>
-<h1 id="1、并发机制的底层原理"><a href="#1、并发机制的底层原理" class="headerlink" title="1、并发机制的底层原理"></a>1、并发机制的底层原理</h1><p>这里我们先讲一下：volatile和synchronized的底层原理。</p>
-<h3 id="1、volatile"><a href="#1、volatile" class="headerlink" title="1、volatile"></a>1、volatile</h3><p>可见性：对一个volatile变量的读，①总是能看到（任意线程）对这个volatile变量最后的写入。</p>
-<p>原子性：对任意单个volatile变量的读&#x2F;写具有原子性，但类似于volatile++这种复合操作不具有原子性（基于这点，我们通过会认为volatile不具备原子性）。volatile仅仅保证对单个volatile变量 的读&#x2F;写具有原子性，而锁的互斥执行的特性可以确保对整个临界区代码的执行具有原子性。</p>
-<p>64位的long型和double型变量，只要它是volatile变量，对该变量的读&#x2F;写就具有原子性。</p>
-<p>有序性：对volatile修饰的变量的读写操作前后加上各种特定的②内存屏障来禁止③指令重排序来保障有序性。</p>
-<p>那volatile加上之后到底发生了什么呢？</p>
-<p>有volatile修饰的变量，他会比其他的变量多一行lock的汇编代码。</p>
-<p>然后这个lock前缀的指令，他就做了两件事情：</p>
-<p>1）把当前这个处理器缓存的数据写会系统内存。（总线锁、缓存锁）<strong>缓存锁其实是一种实现的效果</strong>，它是通过<strong>缓存一致性协议</strong>来实现的，</p>
+<h1 id="1、并发机制的底层原理"><a href="#1、并发机制的底层原理" class="headerlink" title="1、并发机制的底层原理"></a>1、并发机制的底层原理</h1><h3 id="0、乐观锁和悲观锁"><a href="#0、乐观锁和悲观锁" class="headerlink" title="0、乐观锁和悲观锁"></a>0、乐观锁和悲观锁</h3><p><strong>悲观锁：</strong></p>
+<p>共享资源每次被访问的时候就会被修改)，所以每次在获取资源操作的时候都会上锁。</p>
+<p><strong>乐观锁：</strong></p>
+<p>认为共享资源每次被访问的时候不会被，无需加锁也无需等待，只是在提交修改的时候去验证对应的资源（也就是数据）是否被其它线程修改了（ CAS 算法）。</p>
+<p>CAS 是原子性操作操作，是解决多线程并发安全问题的一种乐观锁算法</p>
+<p>它的作用是将指定内存地址A的内容与所给的旧值B相比，如果相等，则将其内容替换为指令中提供的新值C；如果不等，循环执行（称为自旋锁），直到当前值与更新前的值一致为止，才执行更新。</p>
+<p>对ABA<strong>的解决方法就是在变量前面加上版本号</strong></p>
+<p>缺点：<strong>是一次性只能保证一个共享变量的原子性</strong></p>
+<h3 id="1、volatile"><a href="#1、volatile" class="headerlink" title="1、volatile"></a>1、volatile</h3><p><strong>内存语义：</strong></p>
+<p>volatile写：当写一个volatile变量，jmm会把该线程对应的本地内存中共享变量刷新到主内存</p>
+<p>volatile读：当读一个volatile变量，jmm会把该线程对应的本地内存置为无效，然后从主内存里面读</p>
+<p><strong>可见性：</strong>对一个volatile变量的读，①总是能看到（任意线程）对这个volatile变量最后的写入。</p>
+<p><strong>原子性</strong>：对任意单个volatile变量的读&#x2F;写具有原子性，但类似于volatile++这种复合操作不具有原子性（基于这点，我们通过会认为volatile不具备原子性）。volatile仅仅保证对单个volatile变量 的读&#x2F;写具有原子性，而锁的互斥执行的特性可以确保对整个临界区代码的执行具有原子性。</p>
+<p><strong>有序性：</strong>对volatile修饰的变量的读写操作前后加上各种特定的内存屏障来禁止指令重排序来保障有序性。</p>
 <p><img src="/../images/Java%E5%B9%B6%E5%8F%91/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAQWxhbjA1MTc=,size_20,color_FFFFFF,t_70,g_se,x_16.png" alt="在这里插入图片描述"></p>
-<p>2）写回内存的操作会使其他cpu缓存该内存地址的数据无效。（这个用的是 嗅探机制）</p>
-<p><strong>有序性</strong></p>
-<p>数据一致性怎么保证呢？MESI，CPU缓存架构为了效率进入了Store Buffers，在多线程环境下可能出现重排序的问题的</p>
+<p>我们知道单线程下，asifserial的存在，指令执行结果是具备顺序一致性。但是在多线程环境下可能出现重排序的问题的</p>
 <p>解决办法就是 Memory Barrier（内存屏障）。借助内存屏障可以很好地保证了顺序一致性。</p>
 <p>JMM就是有4种屏障，</p>
 <blockquote>
@@ -724,16 +721,19 @@
 </ul>
 </blockquote>
 <p>然而这4种内存屏障只是抽象层面的，实际上这四种内存屏障在不同平台下的具体映射的指令是不一样的，而这也恰恰是 JVM 跨平台的优势所在。</p>
-<p>我们举一个x86作为例子，只有 StoreLoad 才有具体的指令对应，在x86处理器里面，像mfence lock都可以实现这个而这个StoreLoad的要求，实际上HotSpot关于volatile的实现就是使用的lock指令：</p>
+<p>我们举一个x86作为例子，只有 StoreLoad 才有具体的指令对应，在x86处理器里面，像mfence lock都可以实现这个而这个StoreLoad的要求，实际上HotSpot关于volatile的实现就是使用的lock前缀指令：</p>
 <figure class="highlight text"><table><tr><td class="code"><pre><span class="line">lock addl $0x0,(%rsp)</span><br></pre></td></tr></table></figure>
 
 <p>这个指令具体语义是：</p>
 <ol>
 <li>执行 a 的写操作后执行到 StoreLoad 内存屏障；</li>
-<li>发出 Lock 指令，锁总线 或 a 的缓存行，那么其他 CPU 不能对已上锁的缓存行有任何操作；</li>
-<li>让其他 CPU 持有的 a 的缓存行失效；</li>
-<li>将 a 的变更写回主内存，保证全局可见；</li>
+<li><strong>发出 Lock 指令，锁总线 或 a 的缓存行，那么其他 CPU 不能对已上锁的缓存行有任何操作；</strong></li>
+<li><strong>让其他 CPU 持有的 a 的缓存行失效；</strong></li>
+<li><strong>将 a 的变更写回主内存，保证全局可见；</strong></li>
 </ol>
+<p>1）把当前这个处理器缓存的数据写会系统内存。（总线锁、缓存锁）<strong>缓存锁其实是一种实现的效果</strong>，它是通过<strong>缓存一致性协议</strong>来实现的，</p>
+<p>2）写回内存的操作会使其他cpu缓存该内存地址的数据无效。（这个用的是 嗅探机制）</p>
+<hr>
 <p>lock前缀指令的作用</p>
 <ol>
 <li><p>确保后续指令执行的原子性。在Pentium及之前的处理器中，带有lock前缀的指令在执行期间会锁住总线，使得其它处理器暂时无法通过总线访问内存，很显然，这个开销很大。在新的处理器中，Intel使用缓存锁定来保证指令执行的原子性，缓存锁定将大大降低lock前缀指令的执行开销。</p>
@@ -743,12 +743,11 @@
 <li><p>LOCK前缀指令会等待它之前所有的指令完成、并且所有缓冲的写操作写回内存(也就是将store buffer中的内容写入内存)之后才开始执行，并且根据缓存一致性协议，刷新store buffer的操作会导致其他cache中的副本失效。</p>
 </li>
 </ol>
+<hr>
 <p>为什么不保证原子性：</p>
-<p>在执行内存屏障之前，不同 CPU 依旧可以对同一个缓存行持有，一个 CPU 对同一个缓存行的修改不能让另一个 CPU 及时感知，因此出现并发冲突。</p>
+<p>在执行内存屏障之前，不同 CPU 依旧可以对同一个缓存行持有，一个 CPU 对同一个缓存行的修改不能让另一个 CPU 及时感知，因此出现并发冲突。这里我看到一篇博客，他的意思是刚刚好计算的过程在寄存器执行。</p>
 <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_38322527/article/details/119937531">https://blog.csdn.net/qq_38322527/article/details/119937531</a></p>
-<p><strong>内存语义：</strong></p>
-<p>volatile写：当写一个volatile变量，jmm会把该线程对应的本地内存中共享变量刷新到主内存</p>
-<p>volatile读：当读一个volatile变量，jmm会把该线程对应的本地内存置为无效，然后从主内存里面读</p>
+<hr>
 <p>重排序分为编译器重排序和处理器重排序。</p>
 <p>编译器方面有这么一个规定</p>
 <p><img src="/../images/%E5%B9%B6%E5%8F%91/image-20230919132522971.png" alt="image-20230919132522971"></p>
@@ -760,14 +759,20 @@
 <h3 id="2、Synchronized"><a href="#2、Synchronized" class="headerlink" title="2、Synchronized"></a>2、Synchronized</h3><p>锁有3种形式：普通方法（锁是当前实例对象）、静态方法（锁是当前类的Class对象）、方法块（括号里的对象）</p>
 <p><strong>可见性</strong>	</p>
 <ol>
-<li>线程解锁前，必须把共享变量的最新值刷新到主内存中。</li>
-<li>线程加锁前，将清空工作内存中共享变量的值，从而使用共享变量时需要从主内存<br>中重新读取最新的值。</li>
-<li>volatile 的可见性都是通过内存屏障（Memnory Barrier）（生成字节码的时候插入）来实现的。</li>
-<li>synchronized 靠操作系统内核的Mutex Lock（互斥锁）实现，相当于 JMM 中的 lock、unlock。退出代码块时刷新变量到主内存。</li>
+<li><p>线程解锁前，必须把共享变量的最新值刷新到主内存中。</p>
+</li>
+<li><p>线程加锁前，将清空工作内存中共享变量的值，从而使用共享变量时需要从主内存<br>中重新读取最新的值。</p>
+</li>
+<li><p>volatile 的可见性都是通过内存屏障（Memnory Barrier）（生成字节码的时候插入）来实现的。</p>
+</li>
+<li><p>synchronized 靠操作系统内核的Mutex Lock（互斥锁）实现，相当于 JMM 中的 lock、unlock。退出代码块时刷新变量到主内存。</p>
+</li>
 </ol>
 <p><strong>实现原理</strong></p>
 <blockquote>
 <p>jvm基于进入和退出Monitor对象来实现方法同步和代码块同步，但是这两个的具体实现是不一样的，一个是monitorenter和monitorexit；一个是ACC_SYNCHRONIZED,	但是这个标识符会去隐式调用这两个指令：monitorenter和monitorexit。</p>
+<p>方法级的同步是隐式，即无需通过字节码指令来控制的，它实现在方法调用和返回操作之中。JVM可以从方法常量池中的方法表结构中的 ACC_SYNCHRONIZED 访问标志区分一个方法是否同步方法。当方法调用时，调用指令将会常量池里面检查方法的 ACC_SYNCHRONIZED 访问标志是否被设置，如果设置了，执行线程将先持有monitor（虚拟机规范中用的是管程一词）， 然后再执行方法，方法完成释放monitor。</p>
+<p>代码块的同步是利用monitorenter和monitorexit这两个字节码指令。它们分别位于同步代码块的开始和结束位置。当jvm执行到monitorenter指令时，当前线程试图获取monitor对象的所有权，如果未加锁或者已经被当前线程所持有，就把锁的计数器+1；当执行monitorexit指令时，锁计数器-1；当锁计数器为0时，该锁就被释放了。如果获取monitor对象失败，该线程则会进入阻塞状态，直到其他线程释放锁。</p>
 </blockquote>
 <p>底层实现</p>
 <blockquote>
@@ -777,31 +782,8 @@
 <p>monitor由ObjectMonitor实现，他有两个队列，一个是waitset一个是entrylist，用来保存 等待锁的线程	</p>
 <p>_owner指向持有ObjectMonitor对象的线程，当多个线程同时访问一段同步代码时，首先会进入 _EntryList 集合，当线程获取到对象的monitor 后把monitor中的owner变量设置为当前线程同时monitor中的计数器count加1，若线程调用 wait() 方法，将释放当前持有的monitor，owner变量恢复为null，count自减1，同时该线程进入 WaitSet集合中等待被唤醒。若当前线程执行完毕也将释放monitor(锁)并复位变量的值，以便其他线程进入获取monitor(锁)。</p>
 </blockquote>
-<h3 id="3、锁"><a href="#3、锁" class="headerlink" title="3、锁"></a><strong>3、锁</strong></h3><p><strong>锁的内存语义</strong></p>
-<p>释放锁的时候，jmm把该线程对应的本地内存中的共享变量刷新到主内存，加锁的时候把该线程对应的本地内存置为无效。</p>
-<p>ps：</p>
-<p>之前靠synchronized实现锁功能，se5之后新增了Lock接口，他提供了和synchronized类似的同步功能，知识需要显式的获取锁释放锁，但是他的灵活性可操作性都要比synchronized强。锁和volatile是一样的内存语义。实现LOCK的关键就是聚合一个同步器AQS，所以分析这个aqs大概率能理解锁机制怎么实现线程同步的</p>
-<p><strong>锁内存语义的实现</strong></p>
-<p>分为公平锁和非公平锁</p>
-<p>ReentrantLock的实现依赖于AbstractQueuedSynchronizer（AQS），AQS使用一个整形的volatile变量（state）来维护同步状态。这个volatile变量是ReentrantLock实现的关键。AQS提供了compareAndSetState()方法来对state进行原子操作。编译器<strong>不会对volatile读与其后的任意内存操作重排序</strong>，<strong>不会对volatile写与其前的任意操作重排序</strong>。CAS同时具有volatile读和写的内存语义，编译器<strong>不会对CAS前和后的任意内存操作重排序</strong>，其是通过底层处理器缓存锁定实现原子性的。</p>
-<h4 id="1、AQS"><a href="#1、AQS" class="headerlink" title="1、AQS"></a>1、AQS</h4><p>本质是一个抽象类，用来构造锁或其他同步组件的基础框架</p>
-<p>用state表示同步状态（volatile）	</p>
-<p>同步器实现线程同步主要包括：同步队列，独占式的同步状态获取释放，共享式同步状态获取释放，以及超市获取同步状态。</p>
-<p>1、同步队列：</p>
-<p>一个双向列表，获取失败的线程会被构造成一个节点通过加入到这个队列。尾结点的加入是cas的，头结点是普通，因为只有一个线程能获得同步状态。</p>
-<p>2、独占式：</p>
-<p>首先调用tryAcquire，获取失败构造节点通过加入队列尾部进入一个自旋的过程，停止的条件是前驱节点是头结点且成功获取同步状态，。释放同步状态的时候会调用tryRelease，唤醒后面的后继结点。</p>
-<p>3、共享式</p>
-<p>共享式就是在同一时间能有多个线程同时获取到同步状态，，在共享式获取的自旋过程中，成功获取的条件是tryAcquireShared这个结果大于等于0。释放的时候也会唤醒后续节点，他有一个和独占式比较大的区别就是释放的时候通过循环和CAS保证。</p>
-<h4 id="2、ReentrantLock原理"><a href="#2、ReentrantLock原理" class="headerlink" title="2、ReentrantLock原理"></a>2、ReentrantLock原理</h4><p>用这个之前需要先创建 ReentrantLock 对象，然后使用 lock 方法进行加锁，使用完之后再调用 unlock 方法释放锁</p>
-<p><strong>synchronized 是 JVM 层面通过监视器（Monitor）实现的，而 ReentrantLock 是通过 AQS（AbstractQueuedSynchronizer）程序级别的 API 实现</strong></p>
-<p>公平锁和非公平锁区别: 非公平锁在tryacquire的时候，里面有一个步骤是获取同步状态，如果这个同步状态是0的话，说明现在没人拿，我可以去直接去拿，公平锁这里会多一个判断hasQueuedPredecessors，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</p>
-<p>用state表示同步状态，state&#x3D;0表示初始状态可以占有锁，state&#x3D;1表示已有线程占有，大于1是重入锁。</p>
-<p>用一个同步队列来管理同步状态fifo双向队列，</p>
-<p>解锁的时候将state减一，看其是否为0，如果是的话将空闲标志置为true，将持有锁的线程设置为null。然后设置state。当这个线程已经没有持有state的时候就要唤醒下一个节点。</p>
-<h4 id="3、CAS"><a href="#3、CAS" class="headerlink" title="3、CAS"></a>3、CAS</h4><p>CAS 是原子性操作操作，是解决多线程并发安全问题的一种乐观锁算法</p>
-<p>它的作用是将指定内存地址A的内容与所给的旧值B相比，如果相等，则将其内容替换为指令中提供的新值C；如果不等，循环执行（称为自旋锁），直到当前值与更新前的值一致为止，才执行更新。</p>
-<h3 id="3、锁升级"><a href="#3、锁升级" class="headerlink" title="3、锁升级"></a>3、锁升级</h3><p>而Java1.6为了减少性能消耗，引入了“偏向锁”“轻量级锁”。</p>
+<p><strong>锁升级</strong></p>
+<p>而Java1.6为了减少性能消耗，引入了“偏向锁”“轻量级锁”。</p>
 <p><strong>偏向锁</strong></p>
 <blockquote>
 <p>java对象头后三位是101，然后把对象头的偏向线程id改为自己就好就代表自己获得了锁。当偏向锁的获取出现竞争，则偏向锁可能会升级为轻量级锁。</p>
@@ -817,37 +799,83 @@
 </blockquote>
 <p><strong>重量级锁</strong></p>
 <p>重量级锁是轻量级锁受到激烈竞争时，为防止cpu被自旋的线程浪费膨胀而来，因此重量级锁肯定是应付大量线程同时访问同步块的情景。让申请锁失败的线程阻塞后，cpu的负担会减小不少，因此数据的吞吐量也就上来了。</p>
-<h3 id="4、原子操作的实现原理"><a href="#4、原子操作的实现原理" class="headerlink" title="4、原子操作的实现原理"></a>4、原子操作的实现原理</h3><p>我们是使用对缓存加锁或者总线加锁来实现多处理器的原子操作。</p>
-<h4 id="1、处理器如何实现原子操作？"><a href="#1、处理器如何实现原子操作？" class="headerlink" title="1、处理器如何实现原子操作？"></a>1、处理器如何实现原子操作？</h4><p>总线锁：使用LOCK 信号，其他请求都被阻塞，独占共享内存</p>
+<h3 id="3、锁（LOCK接口）"><a href="#3、锁（LOCK接口）" class="headerlink" title="3、锁（LOCK接口）"></a><strong>3、锁（LOCK接口）</strong></h3><p><img src="/../images/Java%E5%B9%B6%E5%8F%91/image-20231022145201049.png" alt="image-20231022145201049"></p>
+<p>之前靠synchronized实现锁功能，se5之后新增了Lock接口，提供了一些api接口。</p>
+<p>优点；但是他的灵活性可操作性都要比synchronized强。</p>
+<p>缺点：使用复杂需要显式的获取锁释放锁，效率低一些</p>
+<hr>
+<p><strong>锁的内存语义</strong></p>
+<p>释放锁的时候，jmm把该线程对应的本地内存中的共享变量刷新到主内存，加锁的时候把该线程对应的本地内存置为无效。</p>
+<p><strong>锁内存语义的实现</strong></p>
+<p>ReentrantLock的实现依赖于AbstractQueuedSynchronizer（AQS），AQS使用一个整形的volatile变量（state）来维护同步状态。这个volatile变量是ReentrantLock实现的关键。AQS提供了compareAndSetState()方法来对state进行原子操作。编译器<strong>不会对volatile读与其后的任意内存操作重排序</strong>，<strong>不会对volatile写与其前的任意操作重排序</strong>。CAS同时具有volatile读和写的内存语义，编译器<strong>不会对CAS前和后的任意内存操作重排序</strong>，其是通过底层处理器缓存锁定实现原子性的。</p>
+<hr>
+<h4 id="1、AQS"><a href="#1、AQS" class="headerlink" title="1、AQS"></a>1、AQS</h4><p>本质是一个抽象类，用来构造锁或其他同步组件的基础框架。</p>
+<p>AQS有两个比较关键的东西，<font color='red'><u><em><strong>一个是volatile的state变量，一个是同步队列。</strong></em></u></font></p>
+<p><strong>state</strong>表示同步状态（volatile）</p>
+<p><strong>同步队列</strong>是一个双向列表，获取失败的线程会被构造成一个节点通过CAS的方式加入到这个队列尾部。</p>
+<p><font color='red'><u><em>*<em><strong>AQS</strong> <strong>资源共享方式</strong>：两种</em>*</em></u></font></p>
+<p><strong>1、独占式：</strong></p>
+<p>首先调用tryAcquire，获取失败构造节点通过加入队列尾部进入一个自旋的过程，停止的条件是前驱节点是头结点且成功获取同步状态	。释放同步状态的时候会调用tryRelease，唤醒后面的后继结点。</p>
+<p><strong>2、共享式</strong></p>
+<p>共享式就是在同一时间能有多个线程同时获取到同步状态，，在共享式获取的自旋过程中，成功获取的条件是tryAcquireShared这个结果大于等于0。释放的时候也会唤醒后续节点，他有一个和独占式比较大的区别就是释放的时候通过循环和CAS保证。</p>
+<p><strong>常见的实现工具类：</strong></p>
+<p><strong>信号量</strong>：可以设置同一时刻 N 个线程中只有 5多少个线程能获取到共享资源，如果设置成1个，那就退化成排他锁了。某个线程获取成功就CAS把state减1.</p>
+<p><strong>CountDownLatch</strong> （倒计时器）：等待前面N个线程执行完，计数器的值为0，那就唤醒某一线程。</p>
+<hr>
+<h4 id="2、ReentrantLock原理"><a href="#2、ReentrantLock原理" class="headerlink" title="2、ReentrantLock原理"></a>2、ReentrantLock原理</h4><p>然后有一个Sync内部类，这个类继承了AQS，添加锁和释放锁的大部分操作实际上都是在这里操作的，Sync有公平锁 和非公平锁，公平锁和非公平锁区别: 非公平锁在tryacquire的时候，里面有一个步骤是获取同步状态，如果这个同步状态是0的话，说明现在没人拿，我可以去直接去拿，公平锁这里会多一个判断hasQueuedPredecessors，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</p>
+<p>用state表示同步状态，state&#x3D;0表示初始状态可以占有锁，state&#x3D;1表示已有线程占有，大于1是重入锁。</p>
+<p>用一个同步队列来管理同步状态fifo双向队列，</p>
+<p>解锁的时候将state减一，看其是否为0，如果是的话将空闲标志置为true，将持有锁的线程设置为null。然后设置state。当这个线程已经没有持有state的时候就要唤醒下一个节点。</p>
+<p><strong>和synchronized的区别？</strong></p>
+<p>1、需要先创建 ReentrantLock 对象，然后使用 lock 方法进行加锁，使用完之后再调用 unlock 方法释放锁</p>
+<p>2、<strong>synchronized 是 JVM 层面通过监视器（Monitor）实现的，而 ReentrantLock 是通过 AQS（AbstractQueuedSynchronizer）程序级别的 API 实现</strong></p>
+<p>3、更加灵活，等待可中断，可以实现公平锁。</p>
+<hr>
+<h3 id="4、原子操作的实现原理"><a href="#4、原子操作的实现原理" class="headerlink" title="4、原子操作的实现原理"></a>4、原子操作的实现原理</h3><h4 id="1、处理器如何实现原子操作？"><a href="#1、处理器如何实现原子操作？" class="headerlink" title="1、处理器如何实现原子操作？"></a>1、处理器如何实现原子操作？</h4><p>总线锁：使用LOCK 信号，其他请求都被阻塞，独占共享内存</p>
 <p>缓存锁：所谓缓存锁定是指内存被缓存在处理器的缓存中，当他执行锁操作写回内存的时候，而是修改内部的内存地址，并允许他缓存一致性保证操作原子性。</p>
 <h4 id="2、Java怎么实现原子操作"><a href="#2、Java怎么实现原子操作" class="headerlink" title="2、Java怎么实现原子操作"></a>2、Java怎么实现原子操作</h4><p>锁–JVM实现锁的方式其实都用到了循环CAS</p>
 <p>循环CAS –版本号解决ABA，</p>
 <h1 id="2、JAVA内存模型"><a href="#2、JAVA内存模型" class="headerlink" title="2、JAVA内存模型"></a>2、JAVA内存模型</h1><h2 id="1、定义理解"><a href="#1、定义理解" class="headerlink" title="1、定义理解"></a>1、定义理解</h2><p>JMM定义了线程和主线程之间的抽象关系，解决的就是线程之间如何通信和线程之间的同步问题。java的并发用的是<strong>共享内存</strong>模型，通信是隐式的进行的。他也定义了线程和主内存之间的抽象关系。所以总而言之，就是一个管理内存和线程的模型。</p>
-<h2 id="2、重排序"><a href="#2、重排序" class="headerlink" title="2、重排序"></a>2、重排序</h2><p>重排序分为3种：1是编译器。2,3是处理器。（要求满足as if serial）</p>
-<p>1、编译器优化的重排序，在不改变单线程语义的前提下，可以改变</p>
-<p>2、指令级别的，</p>
+<h2 id="2、重排序"><a href="#2、重排序" class="headerlink" title="2、重排序"></a>2、重排序</h2><p>JMM的基本方针就是：正确同步的情况下，尽可能为处理器打开方面之门。没有正确同步的情况下不保证执行结果和顺序一致性是一样的。</p>
+<p>重排序分为3种：1是编译器。2,3是处理器。（要求满足as if serial）</p>
+<p>1、编译器优化的重排序。在不改变单线程语义的前提下，可以改变</p>
+<p>2、指令级别的。如果不存在数据依赖，处理器可以改变语句对应机器指令的执行顺序。</p>
 <p>3、内存系统的重排序。<strong>由于处理器用到了缓存和读、写缓冲，而缓冲只对自己的处理器可见，他认为修改顺序没什么问题，所以这使得加载和存储看起来是乱序的。</strong></p>
-<p>为了保证内存可见，不出现上面的问题，那么Java编译器在生成指令的时候会插入内存屏障禁止这种重排序。</p>
-<p>涉及到内存屏障 重排序等问题。它的基本方针就是：正确同步的情况下，尽可能为处理器打开方面之门。没有正确同步的情况下不保证执行结果和顺序一致性是一样的。</p>
+<p>在多线程的情况下，就会出现结果不一致的问题，那我们要做同步就要加synchronized，</p>
 <p>对于程序员来说，直接能感触到的是happers-before规则，包括程序规则、锁规则、volatile规则。而JMM实现这些规则依靠的就是处理器的重排序规则（禁止重排序）。重排序是一种优化性能的手段。它要求前一个操作的结果对后一个操作可见并且在前一个操作按顺序排在后一个操作前。</p>
-<h4 id="JMM如何解决重排序问题"><a href="#JMM如何解决重排序问题" class="headerlink" title="JMM如何解决重排序问题"></a>JMM如何解决重排序问题</h4><p>JMM处理重排序问题：</p>
-<p>1）对于编译器，JMM的编译器重排序规则会禁止特定类型的编译器重排序（不是所有的编译器重排序都要禁止）。</p>
-<p>2）对于处理器重排序，JMM的处理器重排序规则会要求Java编译器在生成指令序列时，插入特定类型的内存屏障指令，来禁止特定类型的处理器重排序。</p>
-<p>3）JMM根据代码中的关键字（如：synchronized、volatile）和J.U.C包下的一些具体类来插入内存屏障。</p>
+<h4 id="如何解决重排序问题"><a href="#如何解决重排序问题" class="headerlink" title="如何解决重排序问题"></a>如何解决重排序问题</h4><p><font color='red'><u><em><strong>内存屏障</strong></em></u></font></p>
+<p>Java编译器会在生成指令系列时在适当的位置会插入内存屏障指令来禁止特定类型的处理器重排序。</p>
+<p><font color='red'><u><em><strong>那重排序的原则是什么？</strong></em></u></font></p>
+<p>就是那四种什么loadstore啊这些</p>
+<p>倘若在程序开发中，仅靠sychronized和volatile关键字来保证原子性、可见性以及有序性，那么编写并发程序可能会显得十分麻烦，幸运的是，在Java内存模型中，还提供了happens-before 原则</p>
+<p><font color='red'><u><em><strong>happens-before 原则</strong></em></u></font></p>
+<p>定义：如果一个操作happens-before另一个操作，那么第一个操作的执行结果将对第二个操作可见，而且第一个操作的执行顺序排在第二个操作之前。</p>
+<p>Java内存模型（JMM）可见性的更高级的语言层面的一组原则，用这个原则解决并发环境下两个操作之间的可见性问题，而一个原则可能就对应一个或者多个编译器和处理器重排序规则。</p>
+<p><strong>程序次序规则（Program Order Rule）</strong>：在一个线程内，按照控制流顺序，书写在前面的操作先行发生于书写在后面的操作。</p>
+<p><strong>管程锁定规则（Monitor Lock Rule）</strong>：一个unlock操作先行发生于后面对同一个锁的lock操作。</p>
+<p><strong>volatile变量规则（Volatile Variable Rule）</strong>：对一个volatile变量的写操作先行发生于后面对这个变量的读操作。</p>
+<p><font color='red'><u><em><strong>as-if-serial与happens-before的区别</strong></em></u></font></p>
+<ol>
+<li><strong>as-if-serial语义保证单线程内程序的执行结果不被改变，happens-before关系保证正确同步的多线程程序的执行结果不被改变</strong></li>
+</ol>
+<p><font color='red'><u><em><strong>JMM</strong>设计</em>****</u></font>:<font color='red'><u><em><strong>一方面，要为程序员提供足够强的内存可见性保证；另一方面，对编译器和处理器的限制要尽可能地放松 。</strong></em></u></font></p>
+<ul>
+<li><p>会改变程序执行结果的重排序。</p>
+</li>
+<li><p>不会改变程序执行结果的重排序。</p>
+</li>
+</ul>
+<p>JMM对这两种不同性质的重排序，采取了不同的策略，如下</p>
+<ul>
+<li>对于会改变程序执行结果的重排序，JMM要求<font color='red'><u><em><strong><strong>编译器和处理器</strong></strong></em></u></font>必须禁止这种重排序</li>
+<li>对于不会改变程序执行结果的重排序，JMM对编译器和处理器不做要求（JMM允许这种重排序）。</li>
+</ul>
+<p><img src="/../images/Java%E5%B9%B6%E5%8F%91/image-20231022163941964.png" alt="image-20231022163941964"></p>
 <h4 id="顺序一致性"><a href="#顺序一致性" class="headerlink" title="顺序一致性"></a>顺序一致性</h4><p>也有个理想的模式叫做顺序一致性内存模型，一个线程中的操作完全是顺序的，所有线程只能看到一个单一的操作顺序。</p>
 <p>如果程序的执行结果和顺序一致性模型相同，那么就叫做具备顺序一致性。</p>
 <p>我们的JMM对于正确同步的 程序是具备顺序一致性的，虽然一个线程内部可能做了重排序，但是结果是不变的。但是对于未同步的程序只提供最小安全保障：读到的值要么是之前写入的，要么是默认值。</p>
 <p>如果你想要达到正确同步，那么就可以使用（synchronized、volatile、final）</p>
-<h2 id="3、happens-before"><a href="#3、happens-before" class="headerlink" title="3、happens-before"></a>3、happens-before</h2><p>Java内存模型（JMM）可见性的更高级的语言层面的一组原则，用这个原则解决并发环境下两个操作之间的可见性问题，而一个原则可能就对应一个或者多个编译器和处理器重排序规则。</p>
-<p><strong>程序次序规则（Program Order Rule）</strong>：在一个线程内，按照控制流顺序，书写在前面的操作先行发生于书写在后面的操作。</p>
-<p><strong>管程锁定规则（Monitor Lock Rule）</strong>：一个unlock操作先行发生于后面对同一个锁的lock操作。</p>
-<p><strong>volatile变量规则（Volatile Variable Rule）</strong>：对一个volatile变量的写操作先行发生于后面对这个变量的读操作。</p>
-<p>总是就是前一个操作的结果对后一个操作是可见的，同时按照顺序在第二个操作前</p>
-<h3 id=""><a href="#" class="headerlink" title=""></a></h3><h2 id="synchronized"><a href="#synchronized" class="headerlink" title="synchronized"></a>synchronized</h2><p><strong>特性</strong></p>
-<p>方法级的同步是隐式，即无需通过字节码指令来控制的，它实现在方法调用和返回操作之中。JVM可以从方法常量池中的方法表结构中的 ACC_SYNCHRONIZED 访问标志区分一个方法是否同步方法。当方法调用时，调用指令将会常量池里面检查方法的 ACC_SYNCHRONIZED 访问标志是否被设置，如果设置了，执行线程将先持有monitor（虚拟机规范中用的是管程一词）， 然后再执行方法，方法完成释放monitor。</p>
-<p>代码块的同步是利用monitorenter和monitorexit这两个字节码指令。它们分别位于同步代码块的开始和结束位置。当jvm执行到monitorenter指令时，当前线程试图获取monitor对象的所有权，如果未加锁或者已经被当前线程所持有，就把锁的计数器+1；当执行monitorexit指令时，锁计数器-1；当锁计数器为0时，该锁就被释放了。如果获取monitor对象失败，该线程则会进入阻塞状态，直到其他线程释放锁。</p>
-<p>前面已经分析了Monitor的机制，那么在Java中是如何实现的呢？<br><strong>即通过synchronized关键字实现线程同步来获取对象的Monitor。</strong><br>实现方式为：<strong>ACC_SYNCHRONIZED和monitorenter&#x2F;monitorexit</strong> *ACC_SYNCHRONIZED标识符会去隐式调用这两个指令：monitorenter和monitorexit</p>
-
+<h1 id="3、ThreadLocal"><a href="#3、ThreadLocal" class="headerlink" title="3、ThreadLocal"></a>3、ThreadLocal</h1>
                     
                         
 

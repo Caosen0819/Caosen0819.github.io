@@ -232,79 +232,6 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                            aria-label=": 章节：10"
-                        >
-                            章节：10
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-04-04T00:00:00+08:00">
-	
-		    04 Apr 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <p>第十节我们可以从注解出发看项目。<br>DBRouter注解写好后，肯定要配备切面类DBRouterJoinPoint（这里面包括了路由策略和路由配置几库几表），里面有一个@Around注解，表示包围一个函数，也就是可以在函数执行前做一些事情，也可以在函数执行后做一些事情。</p>
-<p>项目中是先拿到Key字段（uId），判断是不是空，是的话Runtime异常，不是的话就去拿uId这个字段对应的值，按照例子就是Uhdgkw766120d。</p>
-<p>拿到值之后，那么下面就是拿着这个值去做路由了（该怎么走），这部分内容被写在DBRouterStrategyHashCode的doRouter里面。其实就是hash的扰动函数，通过设定的算法得到去拿个库哪个表，把这两个信息交给DBContextHolder（一个标识类，用来存储当前数据源的key及状态判断），下面就要向数据集里面写东西了，jp.process(),接下去就是mybatis拦截器的任务了。</p>
-<p>自定义拦截器需要实现org.apache.ibatis.plugin.Interceptor接口, 并在接口上添加@Intercepts注解。<br>@Intercepts注解是通过一个@Signature注解(拦截点),来指定拦截那个对象里面的某个方法。<br>@Signature注解需要定义三个东西：</p>
-<p>定义拦截的类 Executor、ParameterHandler、StatementHandler、ResultSetHandler当中的一个<br>Class&lt;?&gt; type();</p>
-<p>在定义拦截类的基础之上，在定义拦截的方法<br>String method();</p>
-<p>在定义拦截方法的基础之上在定义拦截的方法对应的参数，<br>因方法里面可能重载，不指定参数列表，不能确定是对应拦截的方法<br>Class&lt;?&gt;[] args();</p>
-<p>我们查看代码，发现拦截的类选择的是StatementHandler，目前不太了解mybatis的源码，但是查询资料之后发现毫无疑问是四大对象最重要的一个，它的任务就是和数据库对话。在它这里会使用parameterHandler和ResultSetHandler对象为我们绑定SQL参数和组装最后的结果返回。</p>
-<p>拦截的方法是prepare，预编译阶段</p>
-<p>参数是{Connection.class, Integer.class}</p>
-<p>回到那个自定义拦截器类 继承了Interceptor。intercept里面就放着怎么把sql变成我们想要的那种动态分库分表的逻辑。<br>首先几行代码拿到dbRouterStrategy注解，看他是不是true<br>如果是，我们去拿sql语句，如下所示：</p>
-<p>INSERT INTO user_strategy_export<br>        (u_id, activity_id, order_id, strategy_id, strategy_mode,<br>         grant_type, grant_date, grant_state, award_id, award_type,<br>         award_name, award_content, uuid, create_time, update_time)<br>        VALUES<br>        (?,?,?,?,?,<br>         ?,?,?,?,?,<br>         ?,?,?,now(),now())</p>
-<p>他利用一个matcher找到 INTO user_strategy_export这段语句。为什么？因为INTO后面跟着的就是表，至于是哪个表，在上面已经提到了，就是DBContextHolder。这里就实现了分表。</p>
-<p>至于分库，我们重写了determineCurrentLookupKey方法，这个方法被determineTargetDataSource调用，determineTargetDataSource被getConnection调用，getConection可以追溯到DataSource接口的getConnection抽象方法。但是我还不知道determineCurrentLookupKey什么时候被调用？？</p>
-<p>所以就去查了查多数据源的处理机制的一些文章，发现和自己想的有区别，我一直以为调用DAO层的方法，应该先切面再切换数据源最后才是DAO的逻辑（毕竟我看不到什么时候切换数据源，但是DBRouter注解就是直勾勾的放在DAO方法上面的），结果文章中提到其实是先切换数据源，然后切面方法，最后DAO逻辑。文章给出的原因是事务中不支持数据源切换。<br>但是我打断点还是没找到调用determineCurrentLookupKey的那段代码，可惜。</p>
-<p>最后就是把这些配置到DataSourceAutoConfig，打包给我们的项目。</p>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Kommentieren und teilen
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
                             href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
                             aria-label=": 章节：7-10，同时回顾一下4-6的内容"
                         >
@@ -663,6 +590,63 @@
                         <p>
                             <a
                                 href="/2023/04/04/JVM/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Kommentieren und teilen
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/04/04/New%20page/"
+                            aria-label=": 待定"
+                        >
+                            待定
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-04-04T00:00:00+08:00">
+	
+		    04 Apr 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/new/">new</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/04/04/New%20page/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
