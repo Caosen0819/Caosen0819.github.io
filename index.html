@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -242,7 +242,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-10T00:00:00+08:00">
 	
-		    10 Oct 2023
+		    Oct 10, 2023
     	
     </time>
     
@@ -335,16 +335,9 @@
 
 <h2 id="外观模式"><a href="#外观模式" class="headerlink" title="外观模式"></a>外观模式</h2><p>外观模式可以理解为转换一群接口，客户只要调用这一个接口而不用调用多个接口才能达到目的，也不需关心这个子系统的内部细节。就是解决多个复杂接口带来的使用困难，起到简化用户操作的作用。</p>
 <h2 id="享元模式"><a href="#享元模式" class="headerlink" title="享元模式"></a>享元模式</h2><blockquote>
-<p>享元模式的本质:分离与共享。</p>
+<p><strong>其本质就是缓存共享对象，降低内存消耗</strong>。</p>
 </blockquote>
-<p>享元模式的关键之处就在于分离变和不变，把不变的部分作为享元对象的内部状态，而变化部分则作为外部状态，由外部来维护，这样享元对象就能够被共享，从而减少对象数量，并节省大量的内存空间。</p>
-<ul>
-<li>Flyweight:享元接口，通过这个接口 Flyweight可以接受并作用于外部状态。通过这个接口传入外部的状态，在享元对象的方法处理中可能会使用这些外部的数据。</li>
-<li>ConcreteFlyweight:具体的享元实现对象</li>
-<li>FlyweightFactory:享元工厂，主要用来创建并管理共享的享元对象，并对外提供访问共享享元的接口。</li>
-</ul>
-<p>你要得到一个共享的类，先去享元池里面找，找得到就返回享元池里面的那个实例。找不到就创建加入享元池。</p>
-<p>如果你要得到一个不共享的，因为是不共享的每次都返回一个新的类。</p>
+<p>**享元模式其实就是工厂模式的一个改进机制，享元模式同样要求创建一个或一组对象，并且就是通过**工厂方法**生成对象的，不同的地方在于享元模式增加了*<em>缓存*<em>的功能</em></em></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 1.抽象享元类（FlyWeight）：单车</span></span><br><span class="line"><span class="comment"> * 单车有很多共同的信息比如：价格、颜色</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Bike</span> &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> String color;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> <span class="type">int</span> price;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Bike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">this</span>.color=color;</span><br><span class="line">        <span class="built_in">this</span>.price=price;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">//展示单车信息</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span>;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 2.具体享元类（ConcreteFlyWeight）：摩拜单车</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Mobike</span> <span class="keyword">extends</span> <span class="title class_">Bike</span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Mobike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">super</span>(color,price);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;生产成功：摩拜单车——&quot;</span>+color+<span class="string">&quot;,&quot;</span>+<span class="string">&quot;起步价&quot;</span>+price+<span class="string">&quot;元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 2.具体享元类（ConcreteFlyWeight）：美团单车</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MTBike</span> <span class="keyword">extends</span> <span class="title class_">Bike</span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MTBike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">super</span>(color,price);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;生产成功：小黄车——&quot;</span>+color+<span class="string">&quot;,&quot;</span>+<span class="string">&quot;起步价&quot;</span>+price+<span class="string">&quot;元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 3.享元工厂类（FlyWeightFactory）：单车工厂</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BikeFactory</span> &#123;</span><br><span class="line">    <span class="comment">//map缓存</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Map&lt;String,Bike&gt; bikeMap=<span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Bike <span class="title function_">getBike</span><span class="params">(String color,String type)</span>&#123;</span><br><span class="line">        String key=color+<span class="string">&quot;_&quot;</span>+type;</span><br><span class="line">        <span class="keyword">if</span>(bikeMap.containsKey(key))&#123;</span><br><span class="line">            <span class="comment">//如果已经有该颜色和类型的单车，直接返回</span></span><br><span class="line">            <span class="keyword">return</span> bikeMap.get(key);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            Bike bike=<span class="literal">null</span>;</span><br><span class="line">            <span class="comment">//没有，创建并放入缓存</span></span><br><span class="line">            <span class="keyword">if</span>(<span class="string">&quot;mobike&quot;</span>.equals(type))&#123;</span><br><span class="line">                bike=<span class="keyword">new</span> <span class="title class_">Mobike</span>(color,<span class="number">1</span>);</span><br><span class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">&quot;MT&quot;</span>.equals(type))&#123;</span><br><span class="line">                bike=<span class="keyword">new</span> <span class="title class_">MTBike</span>(color,<span class="number">2</span>);</span><br><span class="line">            &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;抛异常！没有该类型的单车&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//放入缓存</span></span><br><span class="line">            bikeMap.put(key,bike);</span><br><span class="line">            <span class="keyword">return</span> bike;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
@@ -360,7 +353,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -389,7 +382,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-09T00:00:00+08:00">
 	
-		    09 Oct 2023
+		    Oct 09, 2023
     	
     </time>
     
@@ -404,24 +397,15 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="1、Redis数据结构"><a href="#1、Redis数据结构" class="headerlink" title="1、Redis数据结构"></a>1、Redis数据结构</h1><h1 id="2、Redis线程模型"><a href="#2、Redis线程模型" class="headerlink" title="2、Redis线程模型"></a>2、Redis线程模型</h1><h2 id="1、Redis是不是单线程的？"><a href="#1、Redis是不是单线程的？" class="headerlink" title="1、Redis是不是单线程的？"></a>1、Redis是不是单线程的？</h2><p>1、他有后台线程</p>
-<p>2、Redis6之后，用 多IO线程 来处理网络请求的</p>
-<p>所以他不是单线程的。</p>
+                    <h1 id="1、Redis数据结构"><a href="#1、Redis数据结构" class="headerlink" title="1、Redis数据结构"></a>1、Redis数据结构</h1><h1 id="2、Redis线程模型"><a href="#2、Redis线程模型" class="headerlink" title="2、Redis线程模型"></a>2、Redis线程模型</h1><h2 id="1、Redis是不是单线程的？"><a href="#1、Redis是不是单线程的？" class="headerlink" title="1、Redis是不是单线程的？"></a>1、Redis是不是单线程的？</h2><p>这种说法<strong>并不严谨</strong>，Redis的版本有非常多，3.x、4.x、6.x，版本不同架构也是<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E4%B8%8D%E5%90%8C%E7%9A%84&spm=1001.2101.3001.7020">不同的</a>，<strong>不限定版本问是否单线程</strong>不太严谨。</p>
+<p>1）以前严格意义上来说也不是单线程，而是负责<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%AE%A2%E6%88%B7%E7%AB%AF&spm=1001.2101.3001.7020">客户端</a>处理请求的线程是单线程，还有后台线程<br>3）最新版本的6.0.x后，告别了刻板印象中的单线程，<strong>而采用了一种全新的多线程来解决问题</strong></p>
 <p>而我们之前说的单线程其实指的是：Redis在处理客户端的请求时包括获取 (socket 读)、解析、执行、内容返回 (socket 写) 等都由一个顺序串行的主线程处理</p>
-<p><img src="/../images/Redis/70ca1c2378d64deb942e3dea580ceb7e~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp" alt="image.png"></p>
-<h2 id="2、单线程是怎么样子的"><a href="#2、单线程是怎么样子的" class="headerlink" title="2、单线程是怎么样子的"></a>2、单线程是怎么样子的</h2><p>网络请求过来，会先创建一个服务端socket，然后把这个socket加入到epoll里面，让epoll去监听这个socket哪个有事件产生，一旦发现事件产生，就交给事件分发器，事件分发器会根据事件的类型调用不同的事件处理器。</p>
-<h2 id="3、为什么这么快？"><a href="#3、为什么这么快？" class="headerlink" title="3、为什么这么快？"></a>3、为什么这么快？</h2><p>基于内存</p>
-<p>单线程避免了上下文竞争</p>
-<p>io多路复用</p>
-<p>高效的数据结构</p>
-<h2 id="4、采用单线程原因"><a href="#4、采用单线程原因" class="headerlink" title="4、采用单线程原因"></a>4、采用单线程原因</h2><ul>
-<li>使用单线程模型是 Redis 的开发和维护更简单</li>
-<li>即使使用单线程模型也并发的处理多客户端的请求，主要使用的是多路复用IO</li>
-<li>对于 Redis 系统来说， 主要的<code>性能瓶颈是内存或者网络带宽而并非 CPU</code>。</li>
-</ul>
-<h2 id="5、引入多线程原因"><a href="#5、引入多线程原因" class="headerlink" title="5、引入多线程原因"></a>5、引入多线程原因</h2><p>内存问题比较好解决，因此Redis的瓶颈原因为网络IO</p>
+<p><img src="/../images/Redis/image-20231023163943658.png" alt="image-20231023163943658"></p>
+<p>在以前，Redis的网络IO和键值对的读写<strong>都是由一个线程来完成的</strong>，Redis的请求时包括获<strong>取（Socket读），解析，执行，内容返回（socket写）等都是由一个顺序串行的主线程处理</strong>，这就是所谓的<strong>单线程</strong>。</p>
+<p>但此时，Redis的瓶颈就出现了：<br>I&#x2F;O的读写本身是阻塞的，比如当socket中有数据的时候，Redis会通过调用先将数据从内核态空间拷贝到用户态空间，再交给Redis调用，而这个拷贝的过程就是阻塞的，当数据量越大时拷贝所需要的时间就越多，而这些操作都是基于单线程完成的。</p>
+<p>在Redis6.0中新增加了多线程的功能来提高I&#x2F;O读写性能，他的主要实现思路是将主线程的IO读写任务拆分给<strong>一组</strong>独立的线程去执行，这样就可以使多个socket的读写并行化了，采用<strong>I&#x2F;O多路复用</strong>技术可以让单个线程高效处理多个连接请求（尽量减少网络IO的时间消耗），将最耗时的socket读取，请求解析，写入单独外包出去，剩下的命令执行任然是由主线程串行执行和内存的数据交互。</p>
 <h2 id="多线程工作原理"><a href="#多线程工作原理" class="headerlink" title="多线程工作原理"></a>多线程工作原理</h2><p>I&#x2F;O 的读和写本身是堵塞的，比如当 socket 中有数据时，Redis 会通过调用先将数据从内核态空间拷贝到用户态空间，再交给 Redis 调用，而这个拷贝的过程就是阻塞的，当数据量越大时拷贝所需要的时间就越多，而这些操作都是基于单线程完成的。</p>
-<p><img src="/../images/Redis/1f56d21bf7c44aec872e391ea1f052bc~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp" alt="image.png"></p>
+<p><img src="/../images/Redis/image-20231023164739702.png" alt="image-20231023164739702"></p>
 <p>在 Redis 6.0 中新增了<strong>多线程的功能来提高 I&#x2F;O 的读写性能</strong>，将最耗时的Socket的读取、请求解析、写入单独外包给一组线程，剩下的命令执行仍然由主线程串行执行并和内存的数据交互。</p>
 <p><img src="/../images/Redis/41070392631d4818a730d02b957517ae~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp" alt="image.png"></p>
 <p>流程简述如下：</p>
@@ -432,10 +416,28 @@
 <li>主线程执行命令 - <code>单线程</code>（如果命令没有接收完毕，会等 IO 下次继续）</li>
 <li>主线程<code>阻塞等待 IO 线程(多线程)</code>将数据回写 socket 完毕（一次没写完，会等下次再写）</li>
 </ul>
-<p><img src="/../images/Redis/75394f2582e145fa842e31cdf3be550b~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp" alt="img.png"></p>
-<p>Redis自身出道就是优秀，基于内存操作、数据结构简单、多路复用和非阻塞 I&#x2F;O、避免了不必要的线程上下文切换等特性，在单线程的环境下依然很快；</p>
-<p>但对于大数据的 key 删除还是卡顿厉害，因此在 Redis 4.0 引入了多线程unlink key&#x2F;flushall async 等命令，主要用于 Redis 数据的异步删除；</p>
-<p>而在 Redis 6.0 中引入了 I&#x2F;O 多线程的读写，这样就可以更加高效的处理更多的任务了， Redis 只是<code>将 I/O 读写变成了多线程</code> ，而 <code>命令的执行依旧是由主线程串行执行的</code> ，因此在多线程下操作 Redis <code>不会出现线程安全的问题</code>。 </p>
+<h2 id="2、单线程是怎么样子的"><a href="#2、单线程是怎么样子的" class="headerlink" title="2、单线程是怎么样子的"></a>2、单线程是怎么样子的</h2><p>其实redis的单线程是先初始化后一直走一个循环处理。初始化的时候就做了三件事情：</p>
+<p><img src="/../images/Redis/image-20231023173508951.png" alt="image-20231023173508951"></p>
+<ul>
+<li>创建一个 epoll 对象，就是我们的io多路复用的实现</li>
+<li>对配置的监听端口进行 listen</li>
+<li>把 listen socket 让 epoll 给管理起来，注册accept处理函数。</li>
+</ul>
+<p>做完这些之前之后就要真正处理用户请求，他会调用 epoll_wait 函数等待事件的到来，交给事件分发器。</p>
+<ul>
+<li>若发现 listen socket 上有新连接到达，就调用我们刚刚注册的那个accept函数，并追加到 epoll 中进行管理</li>
+<li>若发现其它 socket 上的读写请求，那就调用相应的读事件处理，和写事件处理。</li>
+</ul>
+<h2 id="3、为什么这么快？"><a href="#3、为什么这么快？" class="headerlink" title="3、为什么这么快？"></a>3、为什么这么快？</h2><p>基于内存</p>
+<p>单线程避免了上下文竞争</p>
+<p>io多路复用</p>
+<p>高效的数据结构</p>
+<h2 id="4、采用单线程原因"><a href="#4、采用单线程原因" class="headerlink" title="4、采用单线程原因"></a>4、采用单线程原因</h2><ul>
+<li>使用单线程模型是 Redis 的开发和维护更简单</li>
+<li>即使使用单线程模型也并发的处理多客户端的请求，主要使用的是多路复用IO</li>
+<li>对于 Redis 系统来说， 主要的<code>性能瓶颈是内存或者网络带宽而并非 CPU</code>。</li>
+</ul>
+<h2 id="5、引入多线程原因"><a href="#5、引入多线程原因" class="headerlink" title="5、引入多线程原因"></a>5、引入多线程原因</h2><p>内存问题比较好解决，因此Redis的瓶颈原因为网络IO</p>
 <h1 id="3、Redis持久化"><a href="#3、Redis持久化" class="headerlink" title="3、Redis持久化"></a>3、Redis持久化</h1><p>Redis 共有三种数据持久化的方式：</p>
 <ul>
 <li><strong>AOF 日志</strong>：每执行一条写操作命令，就把该命令以追加的方式写入到一个文件里；</li>
@@ -459,17 +461,76 @@
 <p>这里有一个问题，就是如果aof重写过程中，主进程对内存进行了修改，怎么办？会触发写时复制</p>
 <p>当aof重写过程中父进程修改内存，那我们执行一个写命令后，会写到aof缓冲区和aof重写缓冲区里面。当子进程完成重写，再去吧重写缓冲区里面的内容追加到aof文件</p>
 <h2 id="2、RDB快照"><a href="#2、RDB快照" class="headerlink" title="2、RDB快照"></a>2、RDB快照</h2><p>快照就是记录一瞬间的意思。记录的是当前的实际数据。</p>
-<p>有两种启动的方式，一个save阻塞住线程，一种bgsave，不阻塞主线程。</p>
+<p>有两种启动的方式，一个save阻塞住线程，一种bgsave，后台线程。</p>
 <p>所以rdb快照不会想aof那样开辟一个缓冲区用于记录新操作。这里rdb用的是全量快照数据。</p>
 <p>如果在rdb快照的时候，主线程修改了内容，那么这时候会出发写保护中断，写时复制，原本的物理内存A，复制一份A‘，然后主线程修改A’就好了</p>
 <h2 id="3、混合持久化"><a href="#3、混合持久化" class="headerlink" title="3、混合持久化"></a>3、混合持久化</h2><p>混合持久化就是合并了aof和rdb的两个优点，rdb恢复数据块，aof丢失数据少</p>
 <p>混合持久化，fork出来的子进程先去把共享内存以rdb的格式写入到aof文件里面，然后写入过程中主进程执行的命令会被记录到重写缓冲区里面，然后这些增量命令最后会以aof的格式增加到aof文件里面，所以aof文件里面前一部分时rdb，后一部分是aof。</p>
-<h1 id="4、Redis集群"><a href="#4、Redis集群" class="headerlink" title="4、Redis集群"></a>4、Redis集群</h1><h1 id="5、Redis-过期删除与内存淘汰"><a href="#5、Redis-过期删除与内存淘汰" class="headerlink" title="5、Redis 过期删除与内存淘汰"></a>5、Redis 过期删除与内存淘汰</h1><h2 id="1、Redis过期策略"><a href="#1、Redis过期策略" class="headerlink" title="1、Redis过期策略"></a>1、Redis过期策略</h2><p>Redis 使用的过期删除策略是「<strong>惰性删除+定期删除</strong>」这两种策略配和使用。</p>
+<h1 id="4、Redis主从复制"><a href="#4、Redis主从复制" class="headerlink" title="4、Redis主从复制"></a>4、Redis主从复制</h1><p>主服务器可以进行读写操作，当发生写操作时自动将写操作同步给从服务器，而从服务器一般是只读，并接受主服务器同步过来写操作命令，然后执行这条命令。</p>
+<p>主从服务器间的第一次同步是全量同步，分为三个阶段：</p>
+<blockquote>
+<ul>
+<li>第一阶段是建立链接、协商同步；</li>
+</ul>
+<p> 建立链接的时候会给主服务器发送psync，然后带上主服务器的runID和复制进度</p>
+<p> 主服务器收到后会返回一个FULLRESYNC响应，主服务器的runID和目前的复制进度</p>
+<ul>
+<li><p>第二阶段是主服务器同步数据给从服务器；</p>
+</li>
+<li><p>接着主服务器就执行bgsave生产rdb文件，发给从服务器</p>
+</li>
+<li><p>从服务器收到rdb文件，会清空当前自己的数据，然后载入rdb文件</p>
+</li>
+<li><p>并且把新增的写操作写入到replication buffer缓冲区</p>
+</li>
+<li><p>第三阶段是主服务器发送新写操作命令给从服务器</p>
+</li>
+<li><p>把repliacation buffer缓冲区里面的写操作发给从服务器</p>
+</li>
+</ul>
+</blockquote>
+<p>第一次同步完成后，双方会维护一个TCP链接。</p>
+<p><strong>增量复制</strong></p>
+<p>网络断开又恢复后，从主从服务器会采用<strong>增量复制</strong>的方式继续同步，也就是只会把网络断开期间主服务器接收到的写操作命令，同步给从服务器。</p>
+<p>主要有三个步骤：</p>
+<ul>
+<li>从服务器在恢复网络后，会发送 psync 命令给主服务器，此时的 psync 命令里的 offset 参数不是 -1（slave_repl_offset）</li>
+<li>主服务器收到该命令后，然后用 CONTINUE 响应命令告诉从服务器接下来采用增量复制的方式同步数据；</li>
+<li>然后主服务将主从服务器断线期间，所执行的写命令发送给从服务器，然后从服务器执行这些命令。</li>
+</ul>
+<p><strong>主服务器怎么知道要将哪些增量数据发送给从服务器呢？</strong></p>
+<ul>
+<li><p><strong>repl_backlog_buffer</strong>，是一个「<strong>环形</strong>」缓冲区，用于主从服务器断连后，从中找到差异的数据。（主服务器进行命令传播时，不仅会将写命令发送给从服务器，还会将写命令写入到 repl_backlog_buffer 缓冲区里。）</p>
+</li>
+<li><p><strong>replication offset</strong>，标记上面那个缓冲区的同步进度，主从服务器都有各自的偏移量，主服务器使用 master_repl_offset 来记录自己「<em>写</em>」到的位置，从服务器使用 slave_repl_offset 来记录自己「<em>读</em>」到的位置。</p>
+</li>
+<li><p>如果判断出从服务器要读取的数据还在 repl_backlog_buffer 缓冲区里，那么主服务器将采用<strong>增量同步</strong>的方式；</p>
+</li>
+<li><p>相反，如果判断出从服务器要读取的数据已经不存在 repl_backlog_buffer 缓冲区里，那么主服务器将采用<strong>全量同步</strong>的方式。</p>
+</li>
+</ul>
+<p><strong>主从切换如何减少数据丢失</strong>？</p>
+<blockquote>
+<p>主从切换有两种情况会数据丢失</p>
+<ul>
+<li>异步复制同步丢失。</li>
+<li>集群产生脑裂数据丢失。</li>
+</ul>
+<p>第一种情况的解决方法：</p>
+<p>Redis 配置里有一个参数 min-slaves-max-lag，表示一旦所有的从节点数据复制和同步的延迟都超过了 min-slaves-max-lag 定义的值，那么主节点就会拒绝接收任何请求。</p>
+<p>第二种情况的解决方法：</p>
+<p>当主节点发现「从节点下线的数量太多」，或者「网络延迟太大」的时候，那么主节点会禁止写操作，直接把错误返回给客户端。</p>
+<ul>
+<li>min-slaves-to-write x，主节点必须要有<strong>至少 x 个从节点连接</strong>，如果小于这个数，主节点会禁止写数据。</li>
+<li>min-slaves-max-lag x，主从数据复制和同步的延迟<strong>不能超过 x 秒</strong>，如果主从同步的延迟超过 x 秒，主节点会禁止写数据</li>
+</ul>
+</blockquote>
+<h1 id="5、Redis-过期删除与内存淘汰"><a href="#5、Redis-过期删除与内存淘汰" class="headerlink" title="5、Redis 过期删除与内存淘汰"></a>5、Redis 过期删除与内存淘汰</h1><h2 id="1、Redis过期策略"><a href="#1、Redis过期策略" class="headerlink" title="1、Redis过期策略"></a>1、Redis过期策略</h2><p>Redis 使用的过期删除策略是「<strong>惰性删除+定期删除</strong>」这两种策略配和使用。</p>
 <blockquote>
 <p>什么是惰性删除？</p>
 <p>我不主动的删除，每当访问key的时候，我去判断一下是否过期，如果过期那么就删除该key</p>
 <p>优点：占用比较少的资源，对cpu时间最友好</p>
-<p>缺点：会导致缓存污染，浪费内存空间，对内存友好</p>
+<p>缺点：会导致缓存污染，浪费内存空间，对内存不友好</p>
 </blockquote>
 <blockquote>
 <p>什么是定期删除策略？</p>
@@ -478,20 +539,25 @@
 <p>1、从过期字典里面随机找20个</p>
 <p>2、然后判断是否过期，并删除已经过期的key</p>
 <p>3、如果过期的key超过了25%，那么就重复这个过程，如果没有，那就等待下一轮的抽查</p>
-<p>优点：通过限制删除操作的时长的频率可以减少一些无用的占用</p>
+<p>优点：通过调整删除操作的时长的频率可以减少一些无用的占用</p>
 <p>缺点：很难确定删除的时长和频率，太频繁对cpu不好，太少又和惰性删除一样。</p>
 </blockquote>
 <h3 id="1、Redis-持久化时，对过期键会如何处理的？"><a href="#1、Redis-持久化时，对过期键会如何处理的？" class="headerlink" title="1、Redis 持久化时，对过期键会如何处理的？"></a>1、Redis 持久化时，对过期键会如何处理的？</h3><p>持久化有两种 aof和rdb</p>
 <p>对于rdb，考虑生成和加载阶段</p>
+<blockquote>
 <p>生成阶段：对于过期的key不写入rdb文件里面</p>
 <p>加载阶段：这里分两种情况，一种是主服务器，另一种是从服务器。</p>
 <p>​	主服务器：加载阶段回去判断key是不是过期了，如果过期了那我就不加载这个</p>
 <p>​	从服务器：不管key是不是过期，全部加载。</p>
+</blockquote>
 <p>aof：考虑aof写入阶段和重写阶段</p>
+<blockquote>
 <p>写入阶段：如果这个key过期了，但是没有被删除，那么aof文件就会保留这个key，如果这个key被过期策略删除了，那么就会往aof文件里面追加一条del语句</p>
 <p>重写阶段：重写阶段如果过期了，那么就直接删除，不会保留在新的aof文件里面</p>
+</blockquote>
 <h3 id="2、Redis-主从模式中，对过期键会如何处理？"><a href="#2、Redis-主从模式中，对过期键会如何处理？" class="headerlink" title="2、Redis 主从模式中，对过期键会如何处理？"></a>2、Redis 主从模式中，对过期键会如何处理？</h3><p>主从模式中，从数据库完全依赖于主数据库，所以即使从库的key过期了，但是你查询，依旧能查到。只有主数据库在key到期的时候往aof文件里面增加del语句，同步到所有的从库，从库才会删除这个key。</p>
-<h2 id="2、Redis-内存淘汰"><a href="#2、Redis-内存淘汰" class="headerlink" title="2、Redis 内存淘汰"></a>2、Redis 内存淘汰</h2><p>在 Redis 的运行内存达到了某个阀值，就会触发<strong>内存淘汰机制</strong>，这个阀值就是我们设置的最大运行内存，此值在 Redis 的配置文件中可以找到，配置项为 maxmemory。</p>
+<h2 id="2、Redis-内存淘汰"><a href="#2、Redis-内存淘汰" class="headerlink" title="2、Redis 内存淘汰"></a>2、Redis 内存淘汰</h2><p><font color='red'><u><em><strong>在 Redis 的运行内存达到了某个阀值，就会触发</strong>内存淘汰机制</em>****</u></font></p>
+<p>这个阀值就是我们设置的最大运行内存，此值在 Redis 的配置文件中可以找到，配置项为 maxmemory。</p>
 <p>内存淘汰机制分为两类：一类是对有过期时间的内存淘汰机制；一类是对所有数据的淘汰机制。</p>
 <p>对过期时间的内存淘汰机制可以分成四种：</p>
 <p>1、volatile random</p>
@@ -503,16 +569,21 @@
 <p>2、volatile lru 最近最少使用</p>
 <p>3、volatile lfu <strong>最近最不常用的</strong></p>
 <h3 id="LRU-算法和-LFU-算法有什么区别？"><a href="#LRU-算法和-LFU-算法有什么区别？" class="headerlink" title="LRU 算法和 LFU 算法有什么区别？"></a>LRU 算法和 LFU 算法有什么区别？</h3><p>传统的lru算法依赖于一个链表，，数据被访问时候，链表中的节点会出现很多的移动操作，降低性能</p>
+<p>LRU</p>
+<blockquote>
 <p>Redis实现lru是在RedisObject里面新增一个字段，记录最后一次访问时间</p>
 <p>进行淘汰的时候，随机选取五个，然后淘汰访问时间最早的</p>
 <p>优点：节省空间，提高性能</p>
 <p>缺点：无法解决缓存污染</p>
+</blockquote>
 <p>LFU</p>
+<blockquote>
 <p>lfu在RedisObject的基础上新增了一个字段，用于记录数据的访问频次。24位</p>
 <p>高16位记录时间戳，后8位记录访问频次，默认5，会随着时间衰减</p>
 <p>数据每次被访问的时候：</p>
 <p>先做一个衰减操作，根据时间和上一次访问时间的差</p>
 <p>然后做一次增加的操作，这个是基于一定的概率</p>
+</blockquote>
 <p><img src="/../images/Redis/%E8%BF%87%E6%9C%9F%E5%88%A0%E9%99%A4%E7%AD%96%E7%95%A5.jpg" alt="img"></p>
 <p><img src="/../images/Redis/%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5.jpg" alt="img"></p>
 <h1 id="6、Redis缓存设计"><a href="#6、Redis缓存设计" class="headerlink" title="6、Redis缓存设计"></a>6、Redis缓存设计</h1><h2 id="1、如何避免缓存雪崩？"><a href="#1、如何避免缓存雪崩？" class="headerlink" title="1、如何避免缓存雪崩？"></a>1、如何避免缓存雪崩？</h2><p>缓存雪崩是指在同一时间大量的key同时过期了</p>
@@ -527,7 +598,8 @@
 <p>1、非法请求的限制</p>
 <p>2、空值或者默认值</p>
 <p>3、布隆过滤器</p>
-<h3 id="4、说说常见的缓存更新策略？"><a href="#4、说说常见的缓存更新策略？" class="headerlink" title="4、说说常见的缓存更新策略？"></a>4、说说常见的缓存更新策略？</h3><blockquote>
+<p>布隆过滤器的主要原理是使用一组哈希函数，将元素映射成一组位数组中的索引位置。当要检查一个元素是否在集合中时，将该元素进行哈希处理，然后查看哈希值对应的位数组的值是否为1。如果哈希值对应的位数组的值都为1，那么这个元素可能在集合中，否则这个元素肯定不在集合中。</p>
+<h2 id="4、说说常见的缓存更新策略？"><a href="#4、说说常见的缓存更新策略？" class="headerlink" title="4、说说常见的缓存更新策略？"></a>4、说说常见的缓存更新策略？</h2><blockquote>
 <p>常见的缓存更新策略共有2种：</p>
 </blockquote>
 <ul>
@@ -535,8 +607,11 @@
 </li>
 <li><p>Read&#x2F;Write Through（读穿 &#x2F; 写穿）策略；</p>
 </li>
+<li><p>Write Back（写回）策略</p>
+</li>
 </ul>
-<p>Read&#x2F;Write Through（读穿 &#x2F; 写穿）策略</p>
+<blockquote>
+<p>旁路缓存策略</p>
 <p><strong>写策略的步骤：</strong></p>
 <ul>
 <li>先更新数据库中的数据，再删除缓存中的数据。</li>
@@ -544,21 +619,33 @@
 <p><strong>读策略的步骤：</strong></p>
 <ul>
 <li>如果读取的数据命中了缓存，则直接返回数据；</li>
-<li>如果读取的数据没有命中缓存，则从数据库中读取数据，然后将数据写入到缓存，并且返回给用户。</li>
+<li>如果读取的数据没有命中缓存，则从数据库中读取数据，然后将数据写入到缓存，并且返回给用户</li>
 </ul>
-<blockquote>
-<p>Read&#x2F;Write Through（读穿 &#x2F; 写穿）策略</p>
 </blockquote>
-<p>Read&#x2F;Write Through（读穿 &#x2F; 写穿）策略原则是应用程序只和缓存交互，不再和数据库交互，而是由缓存和数据库交互，相当于更新数据库的操作由缓存自己代理了。</p>
-<p><em><strong>1、Read Through 策略</strong></em></p>
-<p>先查询缓存中数据是否存在，如果存在则直接返回，如果不存在，则由缓存组件负责从数据库查询数据，并将结果写入到缓存组件，最后缓存组件将数据返回给应用。</p>
-<p><em><strong>2、Write Through 策略</strong></em></p>
-<p>当有数据更新的时候，先查询要写入的数据在缓存中是否已经存在：</p>
+<blockquote>
+<p>读穿 &#x2F; 写穿）策略</p>
+<p>策略原则是应用程序只和缓存交互，不再和数据库交互，而是由缓存和数据库交互，相当于更新数据库的操作由缓存自己代理了。</p>
+<p><strong>1、Read Through 策略</strong></p>
+<ul>
+<li>先查询缓存中数据是否存在，如果存在则直接返回，如果不存在，则由缓存组件负责从数据库查询数据，并将结果写入到缓存组件，最后缓存组件将数据返回给应用。</li>
+</ul>
+<p><strong>2、Write Through 策略</strong></p>
+<ul>
+<li><p>当有数据更新的时候，先查询要写入的数据在缓存中是否已经存在：</p>
 <ul>
 <li>如果缓存中数据已经存在，则更新缓存中的数据，并且由缓存组件同步更新到数据库中，然后缓存组件告知应用程序更新完成。</li>
 <li>如果缓存中数据不存在，直接更新数据库，然后返回；</li>
 </ul>
-
+</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>Write Back（写回）策略</p>
+<p>写回在更新数据的时候，只更新缓存，同时将缓存数据设置为脏的，然后立马返回，并不会更新数据库。对于数据库的更新，会通过批量异步更新的方式进行。</p>
+<p>实际上，Write Back（写回）策略也不能应用到我们常用的数据库和缓存的场景中，因为 Redis 并没有异步更新数据库的功能。</p>
+<p>Write Back 是计算机体系结构中的设计，比如 CPU 的缓存、操作系统中文件系统的缓存都采用了 Write Back（写回）策略。</p>
+</blockquote>
+<h2 id="5、怎么保证数据一致性"><a href="#5、怎么保证数据一致性" class="headerlink" title="5、怎么保证数据一致性"></a>5、怎么保证数据一致性</h2>
                     
                         
 
@@ -571,7 +658,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -600,7 +687,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-09-30T00:00:00+08:00">
 	
-		    30 Sep 2023
+		    Sep 30, 2023
     	
     </time>
     
@@ -647,7 +734,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -676,7 +763,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-09-08T00:00:00+08:00">
 	
-		    08 Sep 2023
+		    Sep 08, 2023
     	
     </time>
     
@@ -887,7 +974,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -916,7 +1003,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    07 Aug 2023
+		    Aug 07, 2023
     	
     </time>
     
@@ -1053,7 +1140,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1082,7 +1169,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -1341,7 +1428,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1370,7 +1457,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -1528,7 +1615,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1557,7 +1644,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -1612,7 +1699,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1641,7 +1728,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -1748,7 +1835,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1777,7 +1864,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -1978,7 +2065,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1996,14 +2083,14 @@
             <a
                 class="btn btn--default btn--small"
                 href="/page/2/"
-                aria-label="ÄLTERE BEITRÄGE"
+                aria-label="OLDER POSTS"
             >
-              <span>ÄLTERE BEITRÄGE</span>
+              <span>OLDER POSTS</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">Seite 1 von 4</li>
+        <li class="pagination-number">page 1 of 4</li>
     </ul>
 </div>
 
@@ -2032,7 +2119,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

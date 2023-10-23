@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-10T00:00:00+08:00">
 	
-		    10 Oct 2023
+		    Oct 10, 2023
     	
     </time>
     
@@ -336,16 +336,9 @@
 
 <h2 id="外观模式"><a href="#外观模式" class="headerlink" title="外观模式"></a>外观模式</h2><p>外观模式可以理解为转换一群接口，客户只要调用这一个接口而不用调用多个接口才能达到目的，也不需关心这个子系统的内部细节。就是解决多个复杂接口带来的使用困难，起到简化用户操作的作用。</p>
 <h2 id="享元模式"><a href="#享元模式" class="headerlink" title="享元模式"></a>享元模式</h2><blockquote>
-<p>享元模式的本质:分离与共享。</p>
+<p><strong>其本质就是缓存共享对象，降低内存消耗</strong>。</p>
 </blockquote>
-<p>享元模式的关键之处就在于分离变和不变，把不变的部分作为享元对象的内部状态，而变化部分则作为外部状态，由外部来维护，这样享元对象就能够被共享，从而减少对象数量，并节省大量的内存空间。</p>
-<ul>
-<li>Flyweight:享元接口，通过这个接口 Flyweight可以接受并作用于外部状态。通过这个接口传入外部的状态，在享元对象的方法处理中可能会使用这些外部的数据。</li>
-<li>ConcreteFlyweight:具体的享元实现对象</li>
-<li>FlyweightFactory:享元工厂，主要用来创建并管理共享的享元对象，并对外提供访问共享享元的接口。</li>
-</ul>
-<p>你要得到一个共享的类，先去享元池里面找，找得到就返回享元池里面的那个实例。找不到就创建加入享元池。</p>
-<p>如果你要得到一个不共享的，因为是不共享的每次都返回一个新的类。</p>
+<p>**享元模式其实就是工厂模式的一个改进机制，享元模式同样要求创建一个或一组对象，并且就是通过**工厂方法**生成对象的，不同的地方在于享元模式增加了*<em>缓存*<em>的功能</em></em></p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 1.抽象享元类（FlyWeight）：单车</span></span><br><span class="line"><span class="comment"> * 单车有很多共同的信息比如：价格、颜色</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Bike</span> &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> String color;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> <span class="type">int</span> price;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Bike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">this</span>.color=color;</span><br><span class="line">        <span class="built_in">this</span>.price=price;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">//展示单车信息</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span>;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 2.具体享元类（ConcreteFlyWeight）：摩拜单车</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Mobike</span> <span class="keyword">extends</span> <span class="title class_">Bike</span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Mobike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">super</span>(color,price);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;生产成功：摩拜单车——&quot;</span>+color+<span class="string">&quot;,&quot;</span>+<span class="string">&quot;起步价&quot;</span>+price+<span class="string">&quot;元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 2.具体享元类（ConcreteFlyWeight）：美团单车</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MTBike</span> <span class="keyword">extends</span> <span class="title class_">Bike</span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MTBike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">super</span>(color,price);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;生产成功：小黄车——&quot;</span>+color+<span class="string">&quot;,&quot;</span>+<span class="string">&quot;起步价&quot;</span>+price+<span class="string">&quot;元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 3.享元工厂类（FlyWeightFactory）：单车工厂</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BikeFactory</span> &#123;</span><br><span class="line">    <span class="comment">//map缓存</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Map&lt;String,Bike&gt; bikeMap=<span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Bike <span class="title function_">getBike</span><span class="params">(String color,String type)</span>&#123;</span><br><span class="line">        String key=color+<span class="string">&quot;_&quot;</span>+type;</span><br><span class="line">        <span class="keyword">if</span>(bikeMap.containsKey(key))&#123;</span><br><span class="line">            <span class="comment">//如果已经有该颜色和类型的单车，直接返回</span></span><br><span class="line">            <span class="keyword">return</span> bikeMap.get(key);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            Bike bike=<span class="literal">null</span>;</span><br><span class="line">            <span class="comment">//没有，创建并放入缓存</span></span><br><span class="line">            <span class="keyword">if</span>(<span class="string">&quot;mobike&quot;</span>.equals(type))&#123;</span><br><span class="line">                bike=<span class="keyword">new</span> <span class="title class_">Mobike</span>(color,<span class="number">1</span>);</span><br><span class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">&quot;MT&quot;</span>.equals(type))&#123;</span><br><span class="line">                bike=<span class="keyword">new</span> <span class="title class_">MTBike</span>(color,<span class="number">2</span>);</span><br><span class="line">            &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;抛异常！没有该类型的单车&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//放入缓存</span></span><br><span class="line">            bikeMap.put(key,bike);</span><br><span class="line">            <span class="keyword">return</span> bike;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
@@ -361,7 +354,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -375,7 +368,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -404,7 +397,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
