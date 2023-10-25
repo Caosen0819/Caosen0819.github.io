@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archives - 森</title>
+    <title>Archiv - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -262,8 +262,8 @@
 <p>主要应用场景包括：<strong>缓存消峰</strong>、<strong>解耦</strong>和<strong>异步通信。</strong></p>
 <p>消息队列有两种模式：</p>
 <ul>
-<li>点对点模式：一个主题，一个消费者，消费者主动拉取数据后，确认收到后会删除数据</li>
-<li>发布订阅模式：多个主题，多个消费者独立，不会删除</li>
+<li>点对点模式：一个消费者消费一个主题，数据被消费后会删除</li>
+<li>发布订阅模式：多个消费者消费多个主题，数据被消费不会删除</li>
 </ul>
 <p><strong>基础架构</strong>：</p>
 <p><img src="/../images/Kafka/708e86e70504f41234b05cb3cc30dea7.png" alt="image-20220902125656203"></p>
@@ -277,45 +277,123 @@
 <p>（8）Leader：每个分区多个副本的“主”，生产者发送数据的对象，以及消费者消费数据的对象都是 Leader。</p>
 <p>（9）Follower：每个分区多个副本中的“从”，实时从 Leader 中同步数据，保持和Leader 数据的同步。Leader 发生故障时，某个 Follower 会成为新的 Leader。</p>
 <p>其实总的流程就是生产者发送数据到kafka，然后消费者从kafka拉取数据。所以架构中最主要的就是生产者、kafka集群和消费者这三个，其他的很多知识都是为了这三个服务的。</p>
-<h1 id="2、生产者"><a href="#2、生产者" class="headerlink" title="2、生产者"></a>2、生产者</h1><p> 在消息发送的过程中，涉及到两个线程，main线程和sender线程，其中main线程是消息的生产线程，而sender线程是jvm单例的线程，专门用于消息的发送。</p>
-<p> 在jvm的内存中开辟了一块缓存空间叫RecordAccumulator（消息累加器），用于将多条消息合并成一个批次，然后由sender线程发送给kafka集群。<br><img src="/../images/Kafka/cd41370a872e70b75435f35692925370.png" alt="image-20220902155220662"></p>
-<p>当双端队列中的DQueue满足 batch.size 或者 linger.ms 条件时触发sender线程。</p>
-<p>这里我们一步一步看</p>
-<p>producer没什么意外，就是生产者，配置好就可以</p>
-<p>然后拦截器，就是对这个消息做一个操作，末尾也会有一个，也没什么，相当于留了一个供我们修改的接口</p>
-<p>序列化器：这个也没什么奇怪，发送消息，总要给消息一种形式，kafka有自带的</p>
-<p>Partitioner：这个需要着重讲一下，我们事先其实是分好了区，但是发送消息的时候发送到那一个区？</p>
-<p>这就涉及到发送消息分区策略：</p>
+<h1 id="2、生产者"><a href="#2、生产者" class="headerlink" title="2、生产者"></a>2、生产者</h1><p> 在消息发送的过程中，涉及到两个线程，<font color='red'><u><em><strong>main线程和sender线程。</strong></em></u></font></p>
+<p>main线程的流程就是<strong>producer</strong>（就是生产者）、然后拦截器（相当于留了一个供我们修改的接口）、<strong>序列化器</strong>（消息发送总要有一种形式，什么json啊）、分区器（我们事先其实是分好了区，但是发送消息的时候发送到那一个区？<strong>分区器</strong>，他有一个默认的分区器DefaultPartitioner，支持三种分区策略 1) 指定分区； 2）指定key，计算hash得分区； 3）指定随机粘性分区；（4）还可以自定义分区器（见代码）（下图））<img src="/../images/Kafka/18a0b6ba56db8e5b16b3d6fac9ba7fb7.png" alt="image-20220902163808502"></p>
+<p>但是，并不是来一条消息就发一次，他是把多条消息合并成一个批次放到一个缓存里面，这里就要依赖一个叫消息累加器的东西，32M大小的内存。 我看了下代码，就是 累加器的存储形式为ConcurrentMap&lt;TopicPartition, Deque<ProducerBatch>&gt;，一个分区对应一个双端队列，队列中存储的是ProducerBatch一般大小是16k根据batch.size配置，新的消息会append到ProducerBatch中，满16k就会创建新的ProducerBatch。</p>
+<p>然后由sender线程发送给kafka集群。发送的时机是：当双端队列中的DQueue满足 batch.size 或者 linger.ms 条件时触发sender线程。</p>
+<p><img src="/../images/Kafka/cd41370a872e70b75435f35692925370.png" alt="image-20220902155220662"></p>
+<hr>
+<p> 消息保存在内存后，Sender线程就会把符合条件的消息按照批次进行发送， Sender线程默认每个分区容纳5个未确认的消息，消息发送失败后会进行重试。</p>
+<p>消息发送就会涉及到可靠性和幂等性的问题。</p>
+<p><font color='red'><u><em><strong>可靠性用的是ACK消息确认机制</strong></em></u></font></p>
+<blockquote>
+<p>producer提供了<strong>三种</strong>消息确认的模式，通过配置acks来实现</p>
+<p>acks为0时， 表示生产者将数据发送出去就不管了，不等待任何返回。这种情况下数据传输效率最高，但是数据可靠性最低，当 server挂掉的时候就会丢数据；</p>
+<p>acks为1时（默认），表示数据发送到Kafka后，经过leader成功接收消息的的确认，才算发送成功，如果leader宕机了，就会丢失数据。</p>
+<p>acks为-1&#x2F;all时，表示生产者需要等待ISR中的所有follower都确认接收到数据后才算发送完成，这样数据不会丢失，因此可靠性最高，性能最低。</p>
+</blockquote>
+<p><img src="/../images/Kafka/a5c1a40450861d56bfc5cce44746a8a6.png" alt="image-20220902172535966"></p>
+<blockquote>
+<p>AR &#x3D; ISR + ORS</p>
+<p>ISR 表示在指定时间内和leader保存数据同步的集合；</p>
+<p>ORS表示不能在指定的时间内和leader保持数据同步集合，称为OSR(Out-Sync Relipca set)。</p>
+</blockquote>
+<p><strong>数据完全可靠条件 &#x3D; ACK级别设置为-1 + 分区副本大于等于2 + ISR里应答的最小副本数量大于等于2</strong></p>
+<hr>
+<p><font color='red'><u><em><strong>到这里可以保证数据可靠性，但是不能保证数据不重复，kafka的解决方法是 保证幂等性  + 事务，kafka</strong></em></u></font></p>
+<p><img src="/../images/Kafka/image-20231024141535944.png" alt="image-20231024141535944"></p>
+<blockquote>
+<p><font color='red'><u><em><strong>保证幂等性怎么保证？</strong></em></u></font></p>
+<p>生产者发送消息给broker的时候会携带PID和sequence number，一个是生产者的id，一个是消息的序列号。</p>
+<p>broker中会在内存维护一个pid+分区对应的序列号。如果收到的序列号正好比内存序列号大一，才存储消息，如果小于内存序列号，意味着消息重复，那么会丢弃消息，并应答。如果远大于内存序列号，意味着消息丢失，会抛出异常。</p>
+<p>了解：</p>
+<p>至少一次（At Least Once）： ACK级别设置为-1 + 分区副本大于等于2 + ISR里应答的最小副本数量&gt;&#x3D;2。可以保证数据不丢失，但是不能保证数据不重复。<br>最多一次（At Most Once）：ACK级别设置为0 。可以保证数据不重复，但是不能保证数据不丢失。<br>精确一次（Exactly Once）：至少一次 + 幂等性 。 Kafka 0.11版本引入一项重大特性：幂等性和事务。</p>
+</blockquote>
+<blockquote>
+<p>幂等性只能保证的是在单分区单会话内不重复。由于幂等性不能跨分区运作，为了保证同时发的多条消息，要么全成功，要么全失败。kafka引入了事务</p>
+<p>开启事务需要producer设置transactional.id的值并同时开启幂等性。</p>
+<h2 id="定位事务协调器"><a href="#定位事务协调器" class="headerlink" title="定位事务协调器"></a>定位事务协调器</h2><p>其本质也是一个后端的broker，只是这个broker起到了针对当前事务的协调作用，它是在transaction_state特殊主题里面根据transcationid%50在一个特殊主题里面选出对应节点。</p>
+<p>事务初始化</p>
+<p>事务启动，消息发送</p>
+<p>事务提交</p>
+</blockquote>
+<p>通过事务协调器，来实现事务，工作流程如下：</p>
+<p><img src="/../images/Kafka/4d210e935a7af0d15c3caa53e08f4e9e.png" alt="image-20220902183826203"></p>
+<p>消息顺序</p>
+<p>kafka只能保证单分区下的消息顺序性，为了保证消息的顺序性，需要做到如下几点。</p>
+<p>如果未开启幂等性，需要 max.in.flight.requests.per.connection 设置为1。（缓冲队列最多放置1个请求）</p>
+<p>如果开启幂等性，需要 max.in.flight.requests.per.connection 设置为小于5。</p>
+<p>这是因为broker端会缓存producer主题分区下的五个request，保证最近5个request是有序的。</p>
+<h1 id="3、Broker"><a href="#3、Broker" class="headerlink" title="3、Broker"></a>3、Broker</h1><h2 id="Broker架构"><a href="#Broker架构" class="headerlink" title="Broker架构"></a>Broker架构</h2><p>一台机器一个broker</p>
+<p><img src="/../images/Kafka/image-20231024150746020.png" alt="image-20231024150746020"></p>
+<p><strong>Zookeeper</strong></p>
+<p>Zookeeper在Kafka中扮演了重要的角色，kafka使用zookeeper进行元数据管理，保存broker注册信息，包括主题（Topic）、分区（Partition）信息等，选择分区leader。</p>
+<p><img src="/../images/Kafka/b1f0ebc535b00384be6bf81540c5f416.png" alt="image-20220902200249692"></p>
+<h2 id="Broker选举Leader"><a href="#Broker选举Leader" class="headerlink" title="Broker选举Leader"></a>Broker选举Leader</h2><p>Kafka由三个方面会涉及到选举：</p>
 <ul>
-<li><p>他有一个默认的分区器DefaultPartitioner，支持三种分区策略 1) 指定分区； 2）指定key，计算hash得分区； 3）指定随机粘性分区（下图）；<img src="/../images/Kafka/18a0b6ba56db8e5b16b3d6fac9ba7fb7.png" alt="image-20220902163808502"></p>
-</li>
-<li><p>还可以自定义分区器（见代码）</p>
-</li>
-<li><p>~~~<br>public class MyPartitioner implements Partitioner {<br>&#x2F;**<br> * @param topic 主题<br> * @param key 消息的 key<br> * @param keyBytes 消息的 key 序列化后的字节数组<br> * @param value 消息的 value<br> * @param valueBytes 消息的 value 序列化后的字节数组<br> * @param cluster 集群元数据可以查看分区信息<br> *&#x2F;<br>@Override<br>public int partition(String topic, Object key, byte[] keyBytes, Object value, byte[] valueBytes, Cluster cluster) {<br>    String string &#x3D; value.toString();<br>    if (string.contains(“vi”)){<br>        return 2;<br>    }else{<br>        return 1;<br>    }<br>}<br>}</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">然后我们就要依赖</span><br><span class="line"></span><br><span class="line">## **消息累加器（RecordAccumulator）**</span><br><span class="line"></span><br><span class="line">![image-20220902174419992](../images/Kafka/f20e0b29414b41978048b0c263c2f6a4.png)</span><br><span class="line"></span><br><span class="line"> 为了提高生产者的吞吐量，我们通过累加器将多条消息合并成一批统一发送。在broker中将消息批量存入。减少多次的网络IO。</span><br><span class="line"></span><br><span class="line"> 消息累加器默认32m，如果生产者的发送速率大于sender发送的速率，消息就会堆满累加器。生产者就会阻塞，或者报错，报错取决于阻塞时间的配置。</span><br><span class="line"></span><br><span class="line"> 累加器的存储形式为ConcurrentMap&lt;TopicPartition, Deque&lt;ProducerBatch&gt;&gt;，可以看出来就是一个分区对应一个双端队列，队列中存储的是ProducerBatch一般大小是16k根据batch.size配置，新的消息会append到ProducerBatch中，满16k就会创建新的ProducerBatch，并且触发sender线程进行发送。</span><br><span class="line"></span><br><span class="line"> 如果消息量非常大，生成了大量的ProducerBatch，在发送后，又需要JVM通过GC回收这些ProducerBatch就变得非常影响性能，所以kafka通过 BufferPool作为内存池来管理ProducerBatch的创建和回收，需要申请一个新的ProducerBatch空间时，调用 free.allocate(size, maxTimeToBlock)找内存池申请空间。</span><br><span class="line"></span><br><span class="line">如果单条消息大于16k，那么就不会复用内存池了，会生成一个更大的ProducerBatch专门存放大消息，发送完后GC回收该内存空间。</span><br><span class="line"></span><br><span class="line">接着就是</span><br><span class="line"></span><br><span class="line">## **消息发送线程（Sender）**</span><br><span class="line"></span><br><span class="line"> 消息保存在内存后，Sender线程就会把符合条件的消息按照批次进行发送， Sender线程默认容纳5个未确认的消息，消息发送失败后会进行重试。</span><br><span class="line"></span><br><span class="line">## 生产者提高吞吐量</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p> &#x2F;&#x2F; batch.size：批次大小，默认 16K<br>properties.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);<br>&#x2F;&#x2F; linger.ms：等待时间，默认 0<br>properties.put(ProducerConfig.LINGER_MS_CONFIG, 1);<br>&#x2F;&#x2F; RecordAccumulator：缓冲区大小，默认 32M：buffer.memory<br>properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG,33554432);</p>
-</li>
+<li>broker（控制器）选leader</li>
 </ul>
-<p>&#x2F;&#x2F; compression.type：压缩，默认 none，可配置值 gzip、snappy、lz4 和 zstd<br>properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, “snappy”);</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">发送方发送消息到kafka集群，这一段路 也保证数据的可靠性</span><br><span class="line"></span><br><span class="line">## 生产经验—数据可靠性</span><br><span class="line"></span><br><span class="line">### 消息确认机制-ACK</span><br><span class="line"></span><br><span class="line">producer提供了三种消息确认的模式，通过配置acks来实现</span><br><span class="line"></span><br><span class="line">acks为0时， 表示生产者将数据发送出去就不管了，不等待任何返回。这种情况下数据传输效率最高，但是数据可靠性最低，当 server挂掉的时候就会丢数据；</span><br><span class="line"></span><br><span class="line">acks为1时（默认），表示数据发送到Kafka后，经过leader成功接收消息的的确认，才算发送成功，如果leader宕机了，就会丢失数据。</span><br><span class="line"></span><br><span class="line">acks为-1/all时，表示生产者需要等待ISR中的所有follower都确认接收到数据后才算发送完成，这样数据不会丢失，因此可靠性最高，性能最低。</span><br><span class="line"></span><br><span class="line">数据完全可靠条件 = ACK级别设置为-1 + 分区副本大于等于2 + ISR里应答的最小副本数量大于等于2</span><br><span class="line"></span><br><span class="line">![image-20220902172535966](../images/Kafka/a5c1a40450861d56bfc5cce44746a8a6.png)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">AR = ISR + ORS</span><br><span class="line"></span><br><span class="line">ISR 表示在指定时间内和leader保存数据同步的集合；</span><br><span class="line"></span><br><span class="line">ORS表示不能在指定的时间内和leader保持数据同步集合，称为OSR(Out-Sync Relipca set)。</span><br><span class="line"></span><br><span class="line">### 数据去重-幂等性</span><br><span class="line"></span><br><span class="line">1）幂等性原理</span><br><span class="line"></span><br><span class="line">在一般的MQ模型中，常有以下的消息通信概念</span><br><span class="line"></span><br><span class="line">至少一次（At Least Once）： ACK级别设置为-1 + 分区副本大于等于2 + ISR里应答的最小副本数量&gt;=2。可以保证数据不丢失，但是不能保证数据不重复。</span><br><span class="line">最多一次（At Most Once）：ACK级别设置为0 。可以保证数据不重复，但是不能保证数据不丢失。•</span><br><span class="line">精确一次（Exactly Once）：至少一次 + 幂等性 。 Kafka 0.11版本引入一项重大特性：幂等性和事务。</span><br><span class="line"> 幂等性，简单地说就是对接口的多次调用所产生的结果和调用一次是一致的。生产者在进行重试的时候有可能会重复写入消息，而使用Kafka 的幂等性功能之后就可以避免这种情况。（不产生重复数据）</span><br><span class="line"></span><br><span class="line"> 重复数据的判断标准：具有&lt;PID, Partition, SeqNumber&gt;相同主键的消息提交时，Broker只会持久化一条。其</span><br><span class="line"></span><br><span class="line">中ProducerId（pid）是Kafka每次重启都会分配一个新的；Partition 表示分区号；Sequence Number 序列化号，是单调自增的。</span><br><span class="line"></span><br><span class="line"> broker中会在内存维护一个pid+分区对应的序列号。如果收到的序列号正好比内存序列号大一，才存储消息，如果小于内存序列号，意味着消息重复，那么会丢弃消息，并应答。如果远大于内存序列号，意味着消息丢失，会抛出异常。</span><br><span class="line"></span><br><span class="line">所以幂等解决的是sender到broker间，由于网络波动可能造成的重发问题。用幂等来标识唯一消息。</span><br><span class="line"></span><br><span class="line">并且幂等性只能保证的是在单分区单会话内不重复。</span><br><span class="line"></span><br><span class="line">2）如何使用幂等性</span><br><span class="line"></span><br><span class="line"> 开启幂等性功能的方式很简单，只需要显式地将生产者客户端参数enable.idempotence设置为true即可(这个参数的默认值为true)，并且还需要确保生产者客户端的retries、acks、max.in.filght.request.per.connection参数不被配置错，默认值就是对的。</span><br><span class="line"></span><br><span class="line">### 消息事务</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">由于幂等性不能跨分区运作，为了保证同时发的多条消息，要么全成功，要么全失败。kafka引入了事务的概念。</span><br><span class="line"></span><br><span class="line">开启事务需要producer设置transactional.id的值并同时开启幂等性。</span><br><span class="line"></span><br><span class="line">通过事务协调器，来实现事务，工作流程如下：</span><br><span class="line"></span><br><span class="line">![image-20220902183826203](../images/Kafka/4d210e935a7af0d15c3caa53e08f4e9e.png)</span><br><span class="line"></span><br><span class="line">### 消息顺序</span><br><span class="line"></span><br><span class="line">kafka只能保证单分区下的消息顺序性，为了保证消息的顺序性，需要做到如下几点。</span><br><span class="line"></span><br><span class="line">如果未开启幂等性，需要 max.in.flight.requests.per.connection 设置为1。（缓冲队列最多放置1个请求）</span><br><span class="line"></span><br><span class="line">如果开启幂等性，需要 max.in.flight.requests.per.connection 设置为小于5。</span><br><span class="line"></span><br><span class="line">这是因为broker端会缓存producer主题分区下的五个request，保证最近5个request是有序的。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># 3、Broker</span><br><span class="line"></span><br><span class="line">## Broker设计</span><br><span class="line"></span><br><span class="line"> 我们都知道kafka能堆积非常大的数据，一台服务器，肯定是放不下的。由此出现的集群的概念，集群不仅可以让消息负载均衡，还能提高消息存取的吞吐量。kafka集群中，会有多台broker，每台broker分别在不同的机器上。为了提高吞吐量，每个topic也会都多个分区，同时为了保持可靠性，每个分区还会有多个副本。这些分区副本被均匀的散落在每个broker上，其中每个分区副本中有一个副本为leader，其他的为follower。</span><br><span class="line"></span><br><span class="line">![image-20220902195939625](../images/Kafka/37643c8b56fe0f32a3b9d7c803f85b0b.png)</span><br><span class="line"></span><br><span class="line">## Zookeeper</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Zookeeper在Kafka中扮演了重要的角色，kafka使用zookeeper进行元数据管理，保存broker注册信息，包括主题（Topic）、分区（Partition）信息等，选择分区leader。</span><br><span class="line"></span><br><span class="line">![image-20220902200249692](../images/Kafka/b1f0ebc535b00384be6bf81540c5f416.png)</span><br><span class="line"></span><br><span class="line">## Broker选举Leader</span><br><span class="line"></span><br><span class="line">Kafka由三个方面会涉及到选举：</span><br><span class="line"></span><br><span class="line">- broker（控制器）选leader</span><br><span class="line"></span><br><span class="line">- 分区多副本选leader</span><br><span class="line">- 消费者选Leader</span><br><span class="line"></span><br><span class="line"> 在kafka集群中由很多的broker（也叫做控制器），但是他们之间需要选举出一个leader，其他的都是follower。broker的leader有很重要的作用，诸如：创建、删除主题、增加分区并分配leader分区；集群broker管理，包括新增、关闭和故障处理；分区重分配（auto.leader.rebalance.enable=true，后面会介绍），分区leader选举。</span><br><span class="line"></span><br><span class="line"> 每个broker都有唯一的brokerId，他们在启动后会去竞争注册zookeeper上的Controller结点，谁先抢到，谁就是broker leader。而其他broker会监听该结点事件，以便后续leader下线后触发重新选举。</span><br><span class="line"></span><br><span class="line">- broker（控制器）选leader</span><br><span class="line"></span><br><span class="line">![image-20220902200901222](../images/Kafka/12b4f076e8f82c66b00ec8782433649f.png)</span><br><span class="line"></span><br><span class="line">- 分区多副本选leader![image-20220902201352868](../images/Kafka/e5c14b9c17123faf3eefa58a22ab0668-20230928225949575.png)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">## 副本机制</span><br><span class="line"></span><br><span class="line">- replica ：副本，同一分区的不同副本保存的是相同的消息，为保证集群中的某个节点发生故障时，该节点上的 partition 数据不丢失 ，提高副本可靠性，且 kafka 仍然能够继续工作，kafka 提供了副本机制，一个 topic 的每个分区都有若干个副本，一个 leader 和若干个 follower。</span><br><span class="line"></span><br><span class="line">- Leader ：每个分区的多个副本中的&quot;主副本&quot;，生产者以及消费者只与 Leader 交互。</span><br><span class="line">- Follower ：每个分区的多个副本中的&quot;从副本&quot;，负责实时从 Leader 中同步数据，保持和 Leader 数据的同步。Leader 发生故障时，从 Follower 副本中重新选举新的 Leader 副本对外提供服务。</span><br><span class="line">- **LEO**:每个副本都有内部的LEO，代表当前队列消息的最后一条偏移量offset + 1。</span><br><span class="line">- **HW**:高水位，代表所有ISR中的LEO最低的那个offset，也是消费者可见的最大消息offset。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">![image-20220902201925254](../images/Kafka/1c5cd091fee1ef3c76fcc1c13dccf7de.png)</span><br><span class="line"></span><br><span class="line"> Kafka 集群中有一个 broker 的 Controller 会被选举为 Controller Leader (4.2.2) ，负责管理集群Broker 的上下线，所有 topic 的分区副本分配和 Leader 选举等工作</span><br><span class="line"></span><br><span class="line"> Broker中Controller 的信息同步工作是依赖于 Zookeeper 的 ./broker/topic 目录下的信息。</span><br><span class="line"></span><br><span class="line">## 副本故障处理</span><br><span class="line"></span><br><span class="line">### **1.follower故障流程**</span><br><span class="line"></span><br><span class="line">![image-20220902210759125](../images/Kafka/b01dad78f006b40d82e719fe71caeb78.png)</span><br><span class="line"></span><br><span class="line">### 2.leader故障流程</span><br><span class="line"></span><br><span class="line">旧Leader先被从ISR队列中踢出，然后从ISR中选出一个新的Leader来；此时为了保证多个副本之间的数据一致性，其他的follower会先将各自的log文件中高于HW的部分截取掉，然后从新的leader同步数据（由此可知这只能保证副本之间数据一致性，并不能保证数据不丢失或者不重复）。体现了设置ACK-all的重要性。</span><br><span class="line">![image-20220902210830344](../images/Kafka/1f96e55810be5ff8cbf64c04b5d37315.png)</span><br><span class="line"></span><br><span class="line">## kafka分区策略</span><br><span class="line"></span><br><span class="line">如果 kafka 服务器只有 4 个节点，那么设置 kafka 的分区数大于服务器台数，在 kafka底层如何分配存储副本呢？</span><br><span class="line"></span><br><span class="line">- 这里如果用默认的就是如下</span><br><span class="line"></span><br><span class="line">![image-20220902211334365](../images/Kafka/15514da0f22aca9e3017fa2305733ba4.png)</span><br><span class="line"></span><br><span class="line">- 也可以手动指定~~~</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>$ vim increase-replication-factor.json<br>输入如下内容：<br>{<br>“version”:1,<br>“partitions”:[<br>{“topic”:”three”,”partition”:0,”replicas”:[0,1]},<br>{“topic”:”three”,”partition”:1,”replicas”:[0,1]},<br>{“topic”:”three”,”partition”:2,”replicas”:[1,0]},<br>{“topic”:”three”,”partition”:3,”replicas”:[1,0]}]<br>}</p>
-<p>~~~</p>
-<h4 id="分区自动调整"><a href="#分区自动调整" class="headerlink" title="分区自动调整"></a><strong>分区自动调整</strong></h4><p>随着一些broker故障，会慢慢出现leader集中在某台broker上的情况，造成集群负载不均衡，这时候就需要分区平衡。</p>
+<blockquote>
+<p>集群中由很多的broker选出一个leader，其他事follower。负责主题创建删除，管理broker，分区重分配，分区leader选举等等</p>
+<p>方法简单粗暴：</p>
+<p>每个broker都有唯一的brokerId，他们在启动后会去竞争注册zookeeper上的Controller结点，谁先抢到，谁就是broker leader。而其他broker会监听该结点事件，以便后续leader下线后触发重新选举。</p>
+<p><img src="/../images/Kafka/12b4f076e8f82c66b00ec8782433649f.png" alt="image-20220902200901222"></p>
+</blockquote>
+<ul>
+<li>分区多副本选leader</li>
+</ul>
+<blockquote>
+<p><img src="/../images/Kafka/e5c14b9c17123faf3eefa58a22ab0668-20230928225949575.png" alt="image-20220902201352868"></p>
+</blockquote>
+<ul>
+<li>消费者选Leader</li>
+</ul>
+<p> 在kafka，但是他们之间需要选举出一个leader，其他的都是follower。broker的leader有很重要的作用，诸如：创建、删除主题、增加分区并分配leader分区；集群broker管理，包括新增、关闭和故障处理；分区重分配（auto.leader.rebalance.enable&#x3D;true，后面会介绍），分区leader选举。</p>
+<h2 id="副本故障处理"><a href="#副本故障处理" class="headerlink" title="副本故障处理"></a>副本故障处理</h2><h3 id="1-follower故障流程"><a href="#1-follower故障流程" class="headerlink" title="1.follower故障流程"></a><strong>1.follower故障流程</strong></h3><p><img src="/../images/Kafka/b01dad78f006b40d82e719fe71caeb78.png" alt="image-20220902210759125"></p>
+<h3 id="2-leader故障流程"><a href="#2-leader故障流程" class="headerlink" title="2.leader故障流程"></a>2.leader故障流程</h3><p><img src="/../images/Kafka/1f96e55810be5ff8cbf64c04b5d37315.png" alt="image-20220902210830344"></p>
+<h2 id="kafka分区策略"><a href="#kafka分区策略" class="headerlink" title="kafka分区策略"></a>kafka分区策略</h2><p>如果 kafka 服务器只有 4 个节点，那么设置 kafka 的分区数大于服务器台数，在 kafka底层如何分配存储副本呢？</p>
+<ul>
+<li>这里如果用默认的就是如下</li>
+</ul>
+<p><img src="/../images/Kafka/15514da0f22aca9e3017fa2305733ba4.png" alt="image-20220902211334365"></p>
+<ul>
+<li>也可以手动指定</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ vim increase-replication-factor.json</span><br><span class="line">输入如下内容：</span><br><span class="line">&#123;</span><br><span class="line">&quot;version&quot;:1,</span><br><span class="line">&quot;partitions&quot;:[</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[0,1]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[0,1]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:2,&quot;replicas&quot;:[1,0]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:3,&quot;replicas&quot;:[1,0]&#125;]</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="1、分区自动调整"><a href="#1、分区自动调整" class="headerlink" title="1、分区自动调整"></a><strong>1、分区自动调整</strong></h3><p>随着一些broker故障，会慢慢出现leader集中在某台broker上的情况，造成集群负载不均衡，这时候就需要分区平衡。</p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16.png" alt="在这里插入图片描述"></p>
-<h2 id="文件存储"><a href="#文件存储" class="headerlink" title="文件存储"></a>文件存储</h2><h5 id="①文件存储机制"><a href="#①文件存储机制" class="headerlink" title="①文件存储机制"></a>①文件存储机制</h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928232748011.png" alt="在这里插入图片描述"></p>
-<h5 id="②思考：Topic-数据到底存储-在什么位置？"><a href="#②思考：Topic-数据到底存储-在什么位置？" class="headerlink" title="②思考：Topic 数据到底存储 在什么位置？"></a>②思考：Topic 数据到底存储 在什么位置？</h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928232838576.png" alt="在这里插入图片描述"></p>
-<h5 id="③index-文件和-log-文件详解"><a href="#③index-文件和-log-文件详解" class="headerlink" title="③index 文件和 log 文件详解"></a>③index 文件和 log 文件详解</h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928233003817.png" alt="在这里插入图片描述"></p>
-<h2 id="文件清理策略"><a href="#文件清理策略" class="headerlink" title="文件清理策略"></a>文件清理策略</h2><p>Kafka将消息存储在磁盘中，为了控制磁盘占用空间的不断增加就需要对消息做一定的清理操作。Kafka 中每一个分区副本都对应一个Log，而Log又可以分为多个日志分段，这样也便于日志的清理操作。Kafka提供了两种日志清理策略。</p>
-<p>日志删除(delete) :按照一定的保留策略直接删除不符合条件的日志分段。<br>日志压缩(compact) :针对每个消息的key进行整合，对于有相同key的不同value值，只保留最后一个版本。</p>
+<h2 id="文件存储和清理"><a href="#文件存储和清理" class="headerlink" title="文件存储和清理"></a>文件存储和清理</h2><p>一个partition对应多个segment，一个segment里面有log index timeindex。producer的数据会追加到log里面，每次往log里面写4k数据，就会到index文件写一条索引。</p>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928232748011.png" alt="在这里插入图片描述"></p>
+<h3 id="1、存储"><a href="#1、存储" class="headerlink" title="1、存储"></a>1、存储</h3><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928233003817.png" alt="在这里插入图片描述"></p>
+<h3 id="2、清理"><a href="#2、清理" class="headerlink" title="2、清理"></a>2、清理</h3><p>Kafka将消息存储在磁盘中，为了控制磁盘占用空间的不断增加就需要对消息做一定的清理操作。Kafka 中每一个分区副本都对应一个Log，而Log又可以分为多个日志分段，这样也便于日志的清理操作。Kafka提供了两种日志清理策略。</p>
+<p>日志删除(delete) :按照一定的保留策略直接删除不符合条件的日志分段。默认七天<br>日志压缩(compact) :针对每个消息的key进行整合，对于有相同key的不同value值，只保留最后一个版本。</p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928233204011.png" alt="在这里插入图片描述"></p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928233315113.png" alt="在这里插入图片描述"></p>
-<h2 id="Kafka高效读数据"><a href="#Kafka高效读数据" class="headerlink" title="Kafka高效读数据"></a><strong>Kafka高效读数据</strong></h2><p>kafka之所以可以快速读写的原因如下：</p>
+<h2 id="Kafka高效读写数据"><a href="#Kafka高效读写数据" class="headerlink" title="Kafka高效读写数据"></a><strong>Kafka高效读写数据</strong></h2><p>kafka之所以可以快速读写的原因如下：</p>
 <ol>
-<li>kafka是分布式集群，采用分区方式，并行操作</li>
+<li>采用分区方式，并行操作</li>
 <li>读取数据采用稀疏索引，可以快速定位消费数据</li>
 <li>顺序写磁盘</li>
 <li>页缓冲和零拷贝</li>
 </ol>
+<p>读的话：1）分区可以并行操作。2）稀疏索引快速定位。</p>
+<p>写的话：Kafka 会把收到的消息都写入到硬盘中，它绝对不会丢失数据。为了优化写入速度 Kafka 采用了两个技术， 顺序写入和 MMFile（Memory Mapped File）。</p>
+<h4 id="Memory-Mapped-Files"><a href="#Memory-Mapped-Files" class="headerlink" title="Memory Mapped Files"></a><strong>Memory Mapped Files</strong></h4><p>即便是顺序写入硬盘，速度还是不可能追上内存，所以不是实时的写入硬盘 。内存映射文件MMF它的工作原理是直接利用操作系统的 Page 来实现文件到物理内存的直接映射。</p>
+<h4 id="零拷贝："><a href="#零拷贝：" class="headerlink" title="零拷贝："></a>零拷贝：</h4><p>传统的io，先读取、再发送，实际经过 1~4 四次 copy。</p>
+<p>分别是：</p>
+<ol>
+<li>第一次：将磁盘文件，读取到操作系统内核缓冲区；</li>
+<li>第二次：将内核缓冲区的数据，copy 到 application 应用程序的 buffer；</li>
+<li>第三步：将 application 应用程序 buffer 中的数据，copy 到 socket 网络发送缓冲区(属于操作系统内核的缓冲区)；</li>
+<li>第四次：将 socket buffer 的数据，copy 到网卡，由网卡进行网络传输。</li>
+</ol>
+<p>但是broker不关心数据，也不对这个数据做什么操作。</p>
+<ul>
+<li>Sendfile 系统调用，文件数据被 Copy 至内核缓冲区。</li>
+<li>再从内核缓冲区 Copy 至内核中 Socket 相关的缓冲区。</li>
+<li>最后再 Socket 相关的缓冲区 Copy 到协议引擎。</li>
+</ul>
 <p><img src="/../images/Kafka/eeb8531c34ed091d57d9be10590839c5.png" alt="image-20220902214803709"></p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928233417216.png" alt="在这里插入图片描述"></p>
 <h1 id="4、kafka消费者"><a href="#4、kafka消费者" class="headerlink" title="4、kafka消费者"></a>4、kafka消费者</h1><h2 id="1、Kafka-消费方式"><a href="#1、Kafka-消费方式" class="headerlink" title="1、Kafka 消费方式"></a>1、Kafka 消费方式</h2><p>​	<img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928234825729.png" alt="在这里插入图片描述"></p>
@@ -323,6 +401,8 @@
 <h5 id="②消费者组原理"><a href="#②消费者组原理" class="headerlink" title="②消费者组原理"></a>②消费者组原理</h5><p> <img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235013969.png" alt="在这里插入图片描述"></p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235020544.png" alt="在这里插入图片描述"></p>
 <p><strong>消费者组初始化流程</strong></p>
+<p><a target="_blank" rel="noopener" href="https://baijiahao.baidu.com/s?id=1767477534734641183&amp;wfr=spider&amp;for=pc">https://baijiahao.baidu.com/s?id=1767477534734641183&amp;wfr=spider&amp;for=pc</a></p>
+<p>多个消费者像协调器发送JoinGroup请求，然后协调器选一个消费者leader，消费者leader指定消费方案，并发送给协调器，协调器把这个方案通知到每一个消费者。</p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235058845.png" alt="在这里插入图片描述"></p>
 <p><strong>消费者组详细消费流程</strong></p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235306060.png" alt="在这里插入图片描述"></p>
@@ -366,7 +446,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -395,7 +475,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -814,7 +894,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -843,7 +923,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-27T00:00:00+08:00">
 	
-		    Apr 27, 2023
+		    27 Apr 2023
     	
     </time>
     
@@ -898,7 +978,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -927,7 +1007,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-27T00:00:00+08:00">
 	
-		    Apr 27, 2023
+		    27 Apr 2023
     	
     </time>
     
@@ -960,7 +1040,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -989,7 +1069,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-26T00:00:00+08:00">
 	
-		    Apr 26, 2023
+		    26 Apr 2023
     	
     </time>
     
@@ -1045,7 +1125,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1074,7 +1154,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-22T00:00:00+08:00">
 	
-		    Apr 22, 2023
+		    22 Apr 2023
     	
     </time>
     
@@ -1124,7 +1204,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1153,7 +1233,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-11T00:00:00+08:00">
 	
-		    Apr 11, 2023
+		    11 Apr 2023
     	
     </time>
     
@@ -1230,7 +1310,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1259,7 +1339,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-11T00:00:00+08:00">
 	
-		    Apr 11, 2023
+		    11 Apr 2023
     	
     </time>
     
@@ -1291,7 +1371,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1320,7 +1400,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-11T00:00:00+08:00">
 	
-		    Apr 11, 2023
+		    11 Apr 2023
     	
     </time>
     
@@ -1569,7 +1649,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1598,7 +1678,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -1642,7 +1722,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1659,10 +1739,10 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             <a
                 class="btn btn--default btn--small"
                 href="/archives/"
-                aria-label="NEWER POSTS"
+                aria-label="NEUERE BEITRÄGE"
             >
               <i class="fa fa-angle-left text-base icon-mr"></i>
-              <span>NEWER POSTS</span>
+              <span>NEUERE BEITRÄGE</span>
             </a>
           </li>
         
@@ -1671,14 +1751,14 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             <a
                 class="btn btn--default btn--small"
                 href="/archives/page/3/"
-                aria-label="OLDER POSTS"
+                aria-label="ÄLTERE BEITRÄGE"
             >
-              <span>OLDER POSTS</span>
+              <span>ÄLTERE BEITRÄGE</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">page 2 of 4</li>
+        <li class="pagination-number">Seite 2 von 4</li>
     </ul>
 </div>
 
@@ -1708,7 +1788,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

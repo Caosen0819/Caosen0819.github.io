@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-09T00:00:00+08:00">
 	
-		    Oct 09, 2023
+		    09 Oct 2023
     	
     </time>
     
@@ -357,7 +357,7 @@
 <ul>
 <li>从服务器在恢复网络后，会发送 psync 命令给主服务器，此时的 psync 命令里的 offset 参数不是 -1（slave_repl_offset）</li>
 <li>主服务器收到该命令后，然后用 CONTINUE 响应命令告诉从服务器接下来采用增量复制的方式同步数据；</li>
-<li>然后主服务将主从服务器断线期间，所执行的写命令发送给从服务器，然后从服务器执行这些命令。</li>
+<li>主服务将主从服务器断线期间，所执行的写命令发送给从服务器，然后从服务器执行这些命令。</li>
 </ul>
 <p><strong>主服务器怎么知道要将哪些增量数据发送给从服务器呢？</strong></p>
 <ul>
@@ -385,6 +385,17 @@
 <li>min-slaves-to-write x，主节点必须要有<strong>至少 x 个从节点连接</strong>，如果小于这个数，主节点会禁止写数据。</li>
 <li>min-slaves-max-lag x，主从数据复制和同步的延迟<strong>不能超过 x 秒</strong>，如果主从同步的延迟超过 x 秒，主节点会禁止写数据</li>
 </ul>
+</blockquote>
+<p><strong>如何如何应对主从数据不一致？</strong></p>
+<blockquote>
+<p>第一种方法，尽量保证主从节点间的网络连接状况良好，避免主从节点在不同的机房。</p>
+<p>第二种方法，可以开发一个外部程序来监控主从节点间的复制进度。具体做法：得到主从的复制差距，如果过大，就不再和这个从节点进行数据同步</p>
+</blockquote>
+<p><strong>怎么判断 Redis 某个节点是否正常工作？</strong></p>
+<blockquote>
+<p>基本都是通过互相的 ping-pong 心态检测机制,</p>
+<p>Redis 主节点默认每隔 10 秒对从节点发送 ping 命令</p>
+<p>Redis 从节点每隔 1 秒上报自身当前的复制偏移量</p>
 </blockquote>
 <h1 id="5、Redis-过期删除与内存淘汰"><a href="#5、Redis-过期删除与内存淘汰" class="headerlink" title="5、Redis 过期删除与内存淘汰"></a>5、Redis 过期删除与内存淘汰</h1><h2 id="1、Redis过期策略"><a href="#1、Redis过期策略" class="headerlink" title="1、Redis过期策略"></a>1、Redis过期策略</h2><p>Redis 使用的过期删除策略是「<strong>惰性删除+定期删除</strong>」这两种策略配和使用。</p>
 <blockquote>
@@ -519,7 +530,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -533,7 +544,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -562,7 +573,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
