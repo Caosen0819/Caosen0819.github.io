@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv: 2023 - 森</title>
+    <title>Archivos: 2023 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Abre el enlace: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Leer más sobre el autor."
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -247,7 +247,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -354,7 +354,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -387,7 +387,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -670,7 +670,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -703,7 +703,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -746,7 +746,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -779,7 +779,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -910,7 +910,7 @@
 <h4 id="1、AQS"><a href="#1、AQS" class="headerlink" title="1、AQS"></a>1、AQS</h4><p>本质是一个抽象类，用来构造锁或其他同步组件的基础框架。</p>
 <p>AQS有两个比较关键的东西，<font color='red'><u><em><strong>一个是volatile的state变量，一个是同步队列。</strong></em></u></font></p>
 <p><strong>state</strong>表示同步状态（volatile）</p>
-<p><strong>同步队列</strong>是一个双向列表，获取失败的线程会被构造成一个节点通过CAS的方式加入到这个队列尾部。</p>
+<p><strong>同步队列</strong>是一个双向列表，获取失败的线程会被构造成一个节点通过CAS的方式加入到这个队列尾部。一个节点保存着线程的引用，状态，前驱节点，后继结点。</p>
 <p><font color='red'><u><em>*<em><strong>AQS</strong> <strong>资源共享方式</strong>：两种</em>*</em></u></font></p>
 <p><strong>1、独占式：</strong></p>
 <p>首先调用tryAcquire，获取失败构造节点通过加入队列尾部进入一个自旋的过程，停止的条件是前驱节点是头结点且成功获取同步状态	。释放同步状态的时候会调用tryRelease，唤醒后面的后继结点。</p>
@@ -918,7 +918,8 @@
 <p>共享式就是在同一时间能有多个线程同时获取到同步状态，，在共享式获取的自旋过程中，成功获取的条件是tryAcquireShared这个结果大于等于0。释放的时候也会唤醒后续节点，他有一个和独占式比较大的区别就是释放的时候通过循环和CAS保证。</p>
 <p><strong>常见的实现工具类：</strong></p>
 <p><strong>信号量</strong>：可以设置同一时刻 N 个线程中只有 5多少个线程能获取到共享资源，如果设置成1个，那就退化成排他锁了。某个线程获取成功就CAS把state减1.</p>
-<p><strong>CountDownLatch</strong> （倒计时器）：等待前面N个线程执行完，计数器的值为0，那就唤醒某一线程。</p>
+<p><strong>CountDownLatch</strong> （倒计时器，共享锁）：这个是一次性的，等待前面N个线程执行完，计数器的值为0，那就唤醒某一线程。</p>
+<p><strong>CyclicBarrier</strong>（）：让一组线程到达一个屏障（也可以叫同步点）时被阻塞，直到最后一个线程到达屏障时</p>
 <hr>
 <h4 id="2、ReentrantLock原理"><a href="#2、ReentrantLock原理" class="headerlink" title="2、ReentrantLock原理"></a>2、ReentrantLock原理</h4><p>然后有一个Sync内部类，这个类继承了AQS，添加锁和释放锁的大部分操作实际上都是在这里操作的，Sync有公平锁 和非公平锁，公平锁和非公平锁区别: 非公平锁在tryacquire的时候，里面有一个步骤是获取同步状态，如果这个同步状态是0的话，说明现在没人拿，我可以去直接去拿，公平锁这里会多一个判断hasQueuedPredecessors，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</p>
 <p>用state表示同步状态，state&#x3D;0表示初始状态可以占有锁，state&#x3D;1表示已有线程占有，大于1是重入锁。</p>
@@ -939,8 +940,6 @@
 <p>1、编译器优化的重排序。在不改变单线程语义的前提下，可以改变</p>
 <p>2、指令级别的。如果不存在数据依赖，处理器可以改变语句对应机器指令的执行顺序。</p>
 <p>3、内存系统的重排序。<strong>由于处理器用到了缓存和读、写缓冲，而缓冲只对自己的处理器可见，他认为修改顺序没什么问题，所以这使得加载和存储看起来是乱序的。</strong></p>
-<p>在多线程的情况下，就会出现结果不一致的问题，那我们要做同步就要加synchronized，</p>
-<p>对于程序员来说，直接能感触到的是happers-before规则，包括程序规则、锁规则、volatile规则。而JMM实现这些规则依靠的就是处理器的重排序规则（禁止重排序）。重排序是一种优化性能的手段。它要求前一个操作的结果对后一个操作可见并且在前一个操作按顺序排在后一个操作前。</p>
 <h4 id="如何解决重排序问题"><a href="#如何解决重排序问题" class="headerlink" title="如何解决重排序问题"></a>如何解决重排序问题</h4><p><font color='red'><u><em><strong>内存屏障</strong></em></u></font></p>
 <p>Java编译器会在生成指令系列时在适当的位置会插入内存屏障指令来禁止特定类型的处理器重排序。</p>
 <p><font color='red'><u><em><strong>那重排序的原则是什么？</strong></em></u></font></p>
@@ -952,6 +951,8 @@
 <p><strong>程序次序规则（Program Order Rule）</strong>：在一个线程内，按照控制流顺序，书写在前面的操作先行发生于书写在后面的操作。</p>
 <p><strong>管程锁定规则（Monitor Lock Rule）</strong>：一个unlock操作先行发生于后面对同一个锁的lock操作。</p>
 <p><strong>volatile变量规则（Volatile Variable Rule）</strong>：对一个volatile变量的写操作先行发生于后面对这个变量的读操作。</p>
+<p>在多线程的情况下，就会出现结果不一致的问题，那我们要做同步就要加synchronized，</p>
+<p>对于程序员来说，直接能感触到的是happers-before规则，包括程序规则、锁规则、volatile规则。而JMM实现这些规则依靠的就是处理器的重排序规则（禁止重排序）。重排序是一种优化性能的手段。它要求前一个操作的结果对后一个操作可见并且在前一个操作按顺序排在后一个操作前。</p>
 <p><font color='red'><u><em><strong>as-if-serial与happens-before的区别</strong></em></u></font></p>
 <ol>
 <li><strong>as-if-serial语义保证单线程内程序的执行结果不被改变，happens-before关系保证正确同步的多线程程序的执行结果不被改变</strong></li>
@@ -973,7 +974,63 @@
 <p>如果程序的执行结果和顺序一致性模型相同，那么就叫做具备顺序一致性。</p>
 <p>我们的JMM对于正确同步的 程序是具备顺序一致性的，虽然一个线程内部可能做了重排序，但是结果是不变的。但是对于未同步的程序只提供最小安全保障：读到的值要么是之前写入的，要么是默认值。</p>
 <p>如果你想要达到正确同步，那么就可以使用（synchronized、volatile、final）</p>
-<h1 id="3、ThreadLocal"><a href="#3、ThreadLocal" class="headerlink" title="3、ThreadLocal"></a>3、ThreadLocal</h1>
+<h1 id="3、ThreadLocal"><a href="#3、ThreadLocal" class="headerlink" title="3、ThreadLocal"></a>3、ThreadLocal</h1><p>多个线程访问同一个共享变量时，通常会使用synchronized关键字加锁来解决，ThreadLocal则换了一个思路。每个线程存一个副本</p>
+<p>threadlocal需要理解这张图片，线程里面有一个ThreadLocalMap，map的每一个Entry的key是r的弱引用，value是指向一个值的强引用。然后ThreadLocal的set方法，是先获取当前线程的ThreadLocalMap，然后调用ThreadLocalMap的set方法。</p>
+<p><img src="/../images/Java%E5%B9%B6%E5%8F%91/image-20231027153110006.png" alt="image-20231027153110006"></p>
+<p><font color='red'><u><strong>内存泄漏：</strong></u></font></p>
+<p>在垃圾回收的时候，key到ThreadLocal是弱引用， 会被清理掉,而 value 不会被清理掉。问题是key被清理了就没有指向value的强引用，发生内存泄漏。</p>
+<p><font color='red'><u><strong>弱引用是原罪吗？</strong></u></font></p>
+<blockquote>
+<p>不是，如果是弱引用，栈方法执行结束，变量名立即回收，垃圾回收机制就可以正常的去回收这个threadlocal对象。如果是强引用的话，key是在entry里面，entry在map里面，map又是属于线程的，所以等同于和Thread生命周期绑定了。只有线程结束的时候才可以释放，如果线程生命周期比较短的话，那线程销毁的时候value也会收回。如果线程周期比较长的话，那么内存泄露的问题就会比较严重。其实设计者也考虑到到key被收到时导致内存泄漏问题，在调用ThreadLocal中set、remove、rehash时会扫描key为null的entry，并将value置为null，避免内存泄漏	</p>
+</blockquote>
+<blockquote>
+<p>强引用(Strongly Reference)<br>指代码中普遍存在的赋值行为，如：Object o &#x3D; new Object()，只要强引用关系还在，对象就永远不会被回收。<br>软引用(Soft Reference)<br>还有用处，但是非必须存活的对象，JVM会在内存溢出前对其进行回收，例如：缓存。<br>弱引用(Weak Reference)<br>非必须存活的对象，引用关系比软引用还弱，不管内存是否够用，下次GC一定回收。<br>虚引用(Phantom Reference)<br>也称“幽灵引用”、“幻影引用”，最弱的引用关系，完全不影响对象的回收，等同于没有引用，虚引用的唯一的目的是对象被回收时会收到一个系统通知。</p>
+</blockquote>
+<hr>
+<h1 id="4、线程池"><a href="#4、线程池" class="headerlink" title="4、线程池"></a>4、线程池</h1><p><font color='red'><u><em><strong>线程池就是管理线程的资源池。当有任务要处理时，直接从线程池中获取线程来处理，处理完之后线程并不会立即被销毁，而是等待下一个任务。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>处理流程：</strong></em></u></font></p>
+<p>1）先看核心线程池，有没有都在执行任务。如果不是都在执行，就创建一个工作线程执行任务，否则就看工作列表。</p>
+<p>2）线程池判断工作列表有没有满，如果没有满，就把新提交的任务存到这个工作队列里面，</p>
+<p>3）如果满了判断线程池里面的线程是否都在工作状态，如果没有就创建一个新的工作线程执行，如果满了，就交给饱和策略。</p>
+<p><font color='red'><u><em><strong>创建线程</strong></em></u></font></p>
+<p>有两种方式：</p>
+<blockquote>
+<p><strong>方式一：通过<code>ThreadPoolExecutor</code>构造函数来创建（推荐）。</strong></p>
+<p><strong>方式二：通过 <code>Executor</code> 框架的工具类 <code>Executors</code> 来创建。</strong></p>
+<p>为什么不推荐？我觉得就是Executors提供的创建的几个线程池都有点局限性，都有不足的地方。它有两个ThreadpoolExecutor和scheduledThreadPpplExecutor两种Executor，可以尝试4种线程池，Fixed、single、Cached，Scheduled。</p>
+<p>这些创建方法<strong>缺乏对线程池的精细控制</strong>。然后像Fixed和Single用的<font color='red'><u><em><strong>工作队列是无界队列</strong></em></u></font>，如果任务提交速度比我们执行速度还快，那就可能对内存造成巨大压力。</p>
+<p>还有<font color='red'><u><em><strong>最大的线程数量是Integer.MAX_VALUE</strong></em></u></font>， 随着执行线程数量的增多 和 线程没有及时结束，最终会将内存撑爆。**<font color='red'><u><em><strong>不支持线程池的动态调整</strong></em></u></font>**</p>
+</blockquote>
+<p><font color='red'><u><em><strong>线程池核心参数</strong></em></u></font></p>
+<p>从他的处理流程就能知道，像核心线程数、最大线程数、工作队列，饱和策略。</p>
+<blockquote>
+<p>饱和策略</p>
+<p><strong><code>AbortPolicy</code>：</strong> 抛出 <code>RejectedExecutionException</code>来拒绝新任务的处理。</p>
+<p><code>CallerRunsPolicy</code> :既不会抛弃任务，也不会抛出异常，而是将任务回退给调用者，使用调用者的线程来执行任务</p>
+<p><strong><code>DiscardPolicy</code></strong>:不处理新任务，直接丢弃掉。</p>
+<p><strong><code>iscardOldestPolicy</code>：</strong> 此策略将丢弃最早的未处理的任务请求</p>
+</blockquote>
+<p><strong>怎么给线程命名：</strong></p>
+<blockquote>
+<p><strong>1、利用 guava 的 <code>ThreadFactoryBuilder</code></strong></p>
+<p><strong>2、自己实现 <code>ThreadFactory</code>。</strong></p>
+</blockquote>
+<p><strong>如何设定线程池的大小？</strong></p>
+<blockquote>
+<p>最佳线程数 &#x3D; N（CPU 核心数）∗（1+WT（线程等待时间）&#x2F;ST（线程计算时间</p>
+<p>反正和cpu核数和线程等待时间计算时间有关。</p>
+</blockquote>
+<p><strong>如何动态修改线程池的参数？</strong></p>
+<blockquote>
+<p>线程池的参数主要就是那三个，</p>
+</blockquote>
+<p><strong>如何设计一个能够根据任务的优先级来执行的线程池？</strong></p>
+<blockquote>
+<p>队伍队列用一个优先级的队列</p>
+</blockquote>
+<h3 id="Future"><a href="#Future" class="headerlink" title="Future"></a><strong>Future</strong></h3><p>主线程处理一些耗时的任务的时候，可以把这个交给子线程，然后子线程解决后返回结果给主线程。</p>
+<p>future就是一个用于处理异步任务的接口，futuretask实现了runnable和future，他有三个状态，未启动、启动、完成。如果在未启动和启动的时候执行get方法，就会阻塞调用get方法的线程。</p>
+
                     
                         
 
@@ -986,7 +1043,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -1019,7 +1076,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1152,7 +1209,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -1185,7 +1242,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1498,7 +1555,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -1531,7 +1588,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1685,7 +1742,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -1718,7 +1775,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1769,7 +1826,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -1802,7 +1859,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1905,7 +1962,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -1938,7 +1995,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -2122,7 +2179,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -2140,14 +2197,14 @@
             <a
                 class="btn btn--default btn--small"
                 href="/archives/2023/page/2/"
-                aria-label="ÄLTERE BEITRÄGE"
+                aria-label="ARTÍCULOS ANTERIORES"
             >
-              <span>ÄLTERE BEITRÄGE</span>
+              <span>ARTÍCULOS ANTERIORES</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">Seite 1 von 3</li>
+        <li class="pagination-number">página 1 de 3</li>
     </ul>
 </div>
 
@@ -2177,7 +2234,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
