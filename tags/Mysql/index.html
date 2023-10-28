@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Etiqueta: Mysql - 森</title>
+    <title>Tag: Mysql - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Abre el enlace: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Leer más sobre el autor."
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -233,21 +233,21 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/07/08/MYSQL%E5%A4%8D%E4%B9%A01/"
-                            aria-label=": Mysql复习1"
+                            href="/2023/10/28/MYSQL45%E8%AE%B2/"
+                            aria-label=": MYSQL45讲"
                         >
-                            Mysql复习1
+                            MYSQL45讲
                         </a>
                     
                 </h1>
                 <div class="postShorten-meta">
-    <time datetime="2023-07-08T00:00:00+08:00">
+    <time datetime="2023-10-28T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    28 Oct 2023
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -258,28 +258,35 @@
             </div>
             
                 <div class="postShorten-content">
-                    <p>执行一个mysql语句会发生什么？</p>
-<h3 id="连接器"><a href="#连接器" class="headerlink" title="连接器"></a>连接器</h3><p>你要有一个和数据库的连接，这时候，接待你的就是连接器</p>
-<p>mysql -h ip -P port -u user -p</p>
-<p>然后这个连接是tcp连接，所以会比较麻烦，那这样子的话，我就们尽量使用长连接</p>
-<p>然而在mysql在执行过程中临时使用的内内存是管理在连接对象里面的，这些资源只有在连接断开的时候才会释放，如果长连接一直进行，可能导致内存占用过大，被系统强行杀掉OOM，可以考虑两种方式解决：</p>
-<p>1、定期的断开长连接，比如在程序中加一个判断内存是否占用过大的查询</p>
-<p>2、如果你用的是 MySQL 5.7 或更新版本，可以在每次执行一个比较大的操作后，通过执行 mysql_reset_connection 来重新初始化连接资源。这个过程不需要重连和重新做权限验证，但是会将连接恢复到刚刚创建完时的状态。</p>
-<h3 id=""><a href="#" class="headerlink" title=""></a></h3><h3 id="查询缓存"><a href="#查询缓存" class="headerlink" title="查询缓存"></a>查询缓存</h3><p>对于更新比较频繁的表，查询缓存的命中率很低的，</p>
-<h3 id="分析器"><a href="#分析器" class="headerlink" title="分析器"></a>分析器</h3><p>包括词法分析和语法分析</p>
-<p>词法分析就是分析是什么，代表什么意思</p>
-<p>语法分析就是分析符不符合语法要求，如果没有问题会构造出SQL 语法树</p>
-<h3 id="优化器"><a href="#优化器" class="headerlink" title="优化器"></a>优化器</h3><p>优化器就是确定一个执行效率高的执行方案，比如选择索引、连接表的顺序等等</p>
-<h3 id="执行器"><a href="#执行器" class="headerlink" title="执行器"></a>执行器</h3><p>真正的执行</p>
-<p>但是更新操作还会涉及两个表的操作，一个是redo log 一个是binlog</p>
+                    <h4 id="执行一个MYSQL查询语句会发生什么？"><a href="#执行一个MYSQL查询语句会发生什么？" class="headerlink" title="执行一个MYSQL查询语句会发生什么？"></a>执行一个MYSQL查询语句会发生什么？</h4><blockquote>
+<p><strong>连接器</strong></p>
+<p>**查询缓存:**对于更新比较频繁的表，查询缓存的命中率很低的，在MYSQL8被移除。</p>
+<p><strong>分析器：</strong>包括<font color='red'><u><em><strong>词法分析和语法分析</strong></em></u></font>，语法分析就是分析符不符合语法要求，如果没有问题会构造出SQL 语法树</p>
+<p><strong>优化器</strong>：优化器就是确定一个执行效率高的<font color='red'><u><em><strong>执行方案</strong></em></u></font>，比如选择索引、连接表的顺序等等</p>
+<p><strong>执行器</strong>：</p>
+</blockquote>
+<h4 id="执行一个MYSQL更新操作有什么不同？"><a href="#执行一个MYSQL更新操作有什么不同？" class="headerlink" title="执行一个MYSQL更新操作有什么不同？"></a>执行一个MYSQL更新操作有什么不同？</h4><blockquote>
+<p>更新操作还会涉及两个表的操作，<font color='red'><u><em><strong>一个是redo log（解决崩溃恢复） 一个是binlog（备份）</strong></em></u></font></p>
 <p>这两种日志有以下三点不同。</p>
 <ol>
 <li>redo log 是 InnoDB 引擎特有的；binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。</li>
 <li>redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如“给 ID&#x3D;2 这一行的 c 字段加 1 ”。</li>
 <li>redo log 是循环写的，空间固定会用完；binlog 是可以追加写入的。“追加写”是指 binlog 文件写到一定大小后会切换到下一个，并不会覆盖以前的日志。</li>
 </ol>
+<p><img src="/../images/MYSQL%E5%A4%8D%E4%B9%A01/image-20231028134812838.png" alt="image-20231028134812838"></p>
+<p>write pos 是当前记录的位置,checkpoint 是当前要擦除的位置</p>
+<p>我们举一个例子来演示一下（<font color='red'><u><em><strong>两阶段提交</strong></em></u></font>）：</p>
+<ol>
+<li>执行器先找引擎取 ID&#x3D;2 这一行。ID 是主键，引擎直接用树搜索找到这一行。如果 ID&#x3D;2 这一行所在的数据页本来就在内存中，就直接返回给执行器；否则，需要先从磁盘读入内存，然后再返回。</li>
+<li>执行器拿到引擎给的行数据，把这个值加上 1，比如原来是 N，现在就是 N+1，得到新的一行数据，再调用引擎接口写入这行新数据。</li>
+<li>引擎将这行新数据更新到内存中，同时将这个更新操作记录到 redo log 里面，<font color='red'><u><em><strong>此时 redo log 处于 prepare 状态</strong></em></u></font>。然后告知执行器执行完成了，随时可以提交事务。</li>
+<li>执行器生成这个操作的 binlog，并把 binlog 写入磁盘。</li>
+<li>执行器调用引擎的<font color='red'><u><em><strong>提交事务接口，引擎把刚刚写入的 redo log 改成提交（commit）状态</strong></em></u></font>，更新完成。</li>
+</ol>
+</blockquote>
 <p>这两个日志的配合是使用两阶段提交</p>
-<p><img src="/Users/csen/Documents/Amusement/Sen-Blog/source/images/MYSQL1/image-20230805142953314.png" alt="image-20230805142953314"></p>
+<p><img src="/Users/csen/Documents/Amusement/Sen-Blog/source/images/MYSQL1/image-20230805142953314.png"></p>
+<blockquote>
 <p>可以发现将redo log的写入分成了两个阶段，一个是prepare 一个commit</p>
 <p>在两阶段提交的情况下，是怎么实现崩溃恢复的呢？<br>首先比较重要的一点是，在写入redo log时，会顺便记录XID，即当前事务id。在写入binlog时，也会写入XID。</p>
 <p>如果在写入redo log之前崩溃，那么此时redo log与binlog中都没有，是一致的情况，崩溃也无所谓。</p>
@@ -287,11 +294,17 @@
 <p>如果在写入binlog后立马崩溃，在恢复时，由redo log中的XID可以找到对应的binlog，这个时候直接提交即可。</p>
 <p>总的来说，在崩溃恢复后，只要redo log不是处于commit阶段，那么就拿着redo log中的XID去binlog中寻找，找得到就提交，否则就回滚。</p>
 <p>在这样的机制下，两阶段提交能在崩溃恢复时，能够对提交中断的事务进行补偿，来确保redo log与binlog的数据一致性。</p>
-<h3 id="binlog-记录内容"><a href="#binlog-记录内容" class="headerlink" title="binlog 记录内容"></a>binlog <strong>记录内容</strong></h3><p>binlog应该说是Mysql里最核心的日志， 它记录了除了查询语句(select、show)之外的所有的 <code>DDL</code> 和 <code>DML</code> 语句,也就意味着我们基本上所有对数据库的操作变更都会记录到binlog里面。binlog以事件形式记录，不仅记录了操作的语句，同时还记录了语句所执行的消耗的时间。 binlog 有三种记录格式，分别是ROW、STATEMENT、MIXED。</p>
-<p><strong>1、ROW：</strong> 基于变更的数据行进行记录，如果一个update语句修改一百行数据，那么这种模式下就会记录100行对应的记录日志。</p>
-<p><strong>2、STATEMENT：</strong>基于SQL语句级别的记录日志，相对于ROW模式，STATEMENT模式下只会记录这个update 的语句。所以此模式下会非常节省日志空间，也避免着大量的IO操作。</p>
-<p><strong>3、MIXED：</strong> 混合模式，此模式是ROW模式和STATEMENT模式的混合体，一般的语句修改使用statment格式保存binlog，如一些函数，statement无法完成主从复制的操作，则采用row格式保存binlog。</p>
-<p>这三种模式需要注意的是：使用 row 格式的 binlog 时，在进行数据同步或恢复的时候不一致的问题更容易被发现，因为它是基于数据行记录的。而使用 mixed 或者 statement 格式的 binlog 时，很多事务操作都是基于SQL逻辑记录，我们都知道一个SQL在不同的时间点执行它们产生的数据变化和影响是不一样的，所以这种情况下，数据同步或恢复的时候就容易出现不一致的情况。</p>
+</blockquote>
+<p><strong>索引</strong></p>
+<p>所以，从性能和存储空间方面考量，<font color='red'><u><em><strong>自增主键</strong></em></u></font>往往是更合理的选择。<strong>主键长度越小，普通索引的叶子节点就越小，普通索引占用的空间也就越小。</strong></p>
+<p>有没有什么场景适合用业务字段直接做主键的呢？还是有的。比如，有些业务的场景需求是这样的：</p>
+<ol>
+<li>只有一个索引；</li>
+<li>该索引必须是唯一索引。</li>
+</ol>
+<p>索引建立的准则：</p>
+<p>1、尽量少维护索引，</p>
+<p>2、空间</p>
 <h2 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h2><h3 id="全局锁"><a href="#全局锁" class="headerlink" title="全局锁"></a>全局锁</h3><p>典型的使用场景就是做全库的逻辑备份，对所有的表进行 行锁定，从而获取一致性视图，保证数据的完整性。加了全局锁就是只能读</p>
 <ul>
 <li><p>一旦加了全局锁之后，其他的DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句，也就是处于只读状态，而数据备份就是查询操作。 那么数据在进行逻辑备份的过程中，数据库中的数据就是不会发生变化的，这样就保证了数据的一致性 和完整性 .</p>
@@ -397,11 +410,11 @@
                     
                         <p>
                             <a
-                                href="/2023/07/08/MYSQL%E5%A4%8D%E4%B9%A01/#post-footer"
+                                href="/2023/10/28/MYSQL45%E8%AE%B2/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comentar y compartir
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -434,7 +447,7 @@
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -486,6 +499,7 @@
 <p>重做日志两个文件是循环使用，为了不让他一直无限变大，不可用是指重做日志已经不被需要了可以被覆盖。如果宕机，数据库恢复操作不需要这部分的重做日志就可以覆盖重用。如果此时重做日志还需要用，就必须强制产生checkpoint将讲缓冲池的页至少刷新到当前重做日志的位置</p>
 <p>所以总归checkpoint做的事情就是把脏页刷回磁盘。那怎么刷新？什么时候刷新？</p>
 <p>这里有两种checkpoint，分别是：</p>
+<blockquote>
 <p>sharp checkpoint</p>
 <p>fuzzy checkpoint</p>
 <p>sharp checkpoint就是在关闭的时候全部刷新到磁盘</p>
@@ -494,6 +508,7 @@
 <p>flushlrulist checkpoint：这饿是lru列表需要有100个空闲的页，否则移除lru末尾的页，如果有脏页就checkpoint</p>
 <p>async sycn flush checkpoint：这个是重做日志文件不可用的情况，需要强制将一些刷新回磁盘  </p>
 <p>dirty page too much：这个是脏页数量太多了，强制checkpoint 75%</p>
+</blockquote>
 <h3 id="3、Redo-log-buffer"><a href="#3、Redo-log-buffer" class="headerlink" title="3、Redo log buffer"></a>3、Redo log buffer</h3><p>这个是innodb独有的，重做日志信息 -&gt;Redo log buffer -〉 重做日志文件，为重做日志文件服务，重做日志文件本身是为了数据库的恢复功能，但是同样的，为了环节和磁盘的差距，我们给他加一个buffer。</p>
 <p>刷回时机：</p>
 <p>master thread 每秒</p>
@@ -506,6 +521,7 @@
 <p>5、刷新邻接页</p>
 <h2 id="1、插入缓冲"><a href="#1、插入缓冲" class="headerlink" title="1、插入缓冲"></a>1、插入缓冲</h2><h3 id="1、insert-buffer"><a href="#1、insert-buffer" class="headerlink" title="1、insert buffer"></a>1、insert buffer</h3><p>插入缓冲是针对辅助索引的，数据在真正存放的时候还是按照主键顺序插入的，但是这个表如果有辅助索引，那么这条记录也会插入辅助索引，但是这时候他就不是顺序插入了，而是离散的插入访问。</p>
 <p>为此，InnoDB开创性的提出了Insert buffer，insertbuffer不是缓存，而是实实在在的物理页。我们在对非聚集索引的插入的时候不会实时的插入，而是先判断有没有在缓冲池里面，有的话直接插入，没有的话，先放到一个insert buffer里面。后面再以一定的频率进行insertbuffer和非聚集索页子节点的merge操作。</p>
+<p><strong>changebuffer的存在让普通索引优于唯一索引。</strong>普通索引和唯一索引的查询效率差不多，对于已经在内存的数据更新也差不多。但是对于没有在内存的数据更新操作差很多，因为唯一索引为了保证唯一性，会把数据从磁盘读到内存，这一步是数据库成本最高的操作之一。</p>
 <h3 id="2、change-buffer"><a href="#2、change-buffer" class="headerlink" title="2、change buffer"></a>2、change buffer</h3><p>insert buffer 升级为了 change buffer，对插入更新删除操作都准备了缓冲</p>
 <h3 id="3、insert-buffer的内部实现"><a href="#3、insert-buffer的内部实现" class="headerlink" title="3、insert buffer的内部实现"></a>3、insert buffer的内部实现</h3><p>全局唯一的b+树的形式，负责对所有表的辅助索引进行insert buffer，存放在共享表空间，就是ibdata1。但是我们知道，我们可以有独立表ibdata，但是恢复的时候最好用共享表里面的。</p>
 <p>因为是树，所以有非叶子结点和叶子结点。</p>
@@ -589,7 +605,29 @@
 <p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;3b87e950352ac65c1fead4dc4c8ba11892138a30.jpeg)</p>
 <p>如图，最小虚记录和最大虚记录之间形成一个链表，这时候Slot区就派上用场了，每个Slot槽指向链表中的某一个位置，每个槽的大小一样，可以理解为一个指针，<strong>这样我们只需要用一个算法把每个子链表的长度拆成差不多大小就行了</strong>。</p>
 <p>在查找的时候，先基于Sn、S0找到指向的最大最小虚记录，在Slot区进行二分：<strong>先找到Sn和S0的中间位置，中间找到某个Slot，然后再一步步进行比较，通过几次二分后找到具体的子链表，最后，在子链表内进行遍历找到最终的记录</strong>。这样我们借助Slot区实现了一个近似二分查找的方法。这特别像Java里面的跳表结构，一次查找跳一次，再一次查找再跳一次，效率就特别高了</p>
-<h1 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h1><p>innodb最常见的索引就是：</p>
+<h1 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h1><p><strong>普通索引和唯一索引，应该怎么选择？</strong>查询和对已经在内存的更新差距不大。但是对于不在内存的数据，唯一索引有唯一性要求，要先加到内存（相当于用不了changebuffer），但是普通索引不需要，只需要存到change buffer里面就可以。</p>
+<p><strong>MySQL为什么有时候会选错索引？</strong></p>
+<blockquote>
+<p>优化器是找到一个最优的方案，以最小的代价去执行。</p>
+<p>1)我们是根据基数来估计记录数，那基数是怎么得到的？是通过采样统计。InnoDB 默认会选择 N 个数据页，统计这些页面上的不同值，得到一个平均值，然后乘以这个索引的页面数，就得到了基数。</p>
+<p>2)优化器还要判断，执行这个语句本身要扫描多少行，</p>
+<p>解决方法？</p>
+<p>1）forceindex</p>
+<p>2）<strong>修改语句，引导 MySQL 使用我们期望的索引</strong></p>
+<p>3）新建索引</p>
+</blockquote>
+<p> <strong>怎么给字符串字段加索引？</strong></p>
+<blockquote>
+<p>1、前缀索引。这里要关注的区分度，就是前缀索引是几个字符的时候区分度较大，又能节省空间，这个可能需要用到count函数去比较一下。</p>
+<p>Ps：用前缀索引就用不上覆盖索引对查询性能的优化了，都要回表</p>
+<p>其他方法？</p>
+<p>2、倒序存储</p>
+<p>3、hash</p>
+<p>差别在于，空间，查询效率，区间查找</p>
+</blockquote>
+<p><strong>对于函数操作，不管有没有改变有序性，都不走索引。</strong></p>
+<p>由于上面这条规则， 所以一些在索引字段上面做隐式转换和隐式编码转换，也不走索引。P：在mysql里面字符串和数字的隐式转换是<font color='red'><u><em><strong>字符串转成数字</strong></em></u></font>，字符编码从少的往多的转。</p>
+<p>innodb最常见的索引就是：</p>
 <p>b+树索引 （b+树只能找到数据行所在的页，然后把页读到内存里面，进行查找）</p>
 <p>哈希索引（自动生成）</p>
 <p>全文索引</p>
@@ -609,7 +647,7 @@
 <h4 id="3、Online-Schema-Change在线架构改变OSC"><a href="#3、Online-Schema-Change在线架构改变OSC" class="headerlink" title="3、Online Schema Change在线架构改变OSC"></a>3、Online Schema Change在线架构改变OSC</h4><p>在线的意思其实就是在DDL的过程中，可以有读写事务对表进行操作</p>
 <h4 id="4、Online-DDL"><a href="#4、Online-DDL" class="headerlink" title="4、Online DDL"></a>4、Online DDL</h4><p>允许在辅助索引创建的同时，还允许insert update等DML操作</p>
 <p>原理是：执行insert update delete这些操作的时候，先把操作日志写入一个缓存里面，然后，索引建立后重做表上面</p>
-<p>新的alter table语法中，通过algorithm如果是 copy还是通过建立临时表的方式，如果是replace就是不需要临时表，如果是default，那就是根据old_alter_table判断，如果是off，那就是replace。</p>
+<p>新的alter table语法中，通过algorithm如果是 copy还是通过建立临时表的方式，如果是replace就是不需要临时表，是在InnoDB引擎内部完成，但是还是需要临时空间的。如果是default，那就是根据old_alter_table判断，如果是off，那就是replace。</p>
 <h4 id="5、cardinality值"><a href="#5、cardinality值" class="headerlink" title="5、cardinality值"></a>5、cardinality值</h4><p>优化器会根据这个值来判断我们用不用索引。表示索引中唯一值的数据的估计值，如果是性别这种，重复的非常多，我们叫低选择性，不适合做索引。反之高选择性就比较适合，尤其是在高选择性属性字段里面取出一小部分数据，那就更有必要了。</p>
 <ul>
 <li><strong>统计的方式</strong>？</li>
@@ -751,14 +789,19 @@
 <p>但不论是哪一种，这个 binlog 拿去「从库」执行，这时从库是按「顺序」执行语句的，只有当执行完一条 SQL 语句后，才会执行下一条 SQL。因此，在<strong>从库上「不会」发生像主库那样两个 session 「同时」执行向表 t2 中插入数据的场景。所以，在备库上执行了 session B 的 insert 语句，生成的结果里面，id 都是连续的。这时，主从库就发生了数据不一致</strong>。</p>
 <p>要解决这问题，binlog 日志格式要设置为 row，这样在 binlog 里面记录的是主库分配的自增值，到备库执行的时候，主库的自增值是什么，从库的自增值就是什么。</p>
 <p>所以，<strong>当 innodb_autoinc_lock_mode &#x3D; 2 时，并且 binlog_format &#x3D; row，既能提升并发性，又不会出现数据一致性问题</strong>。</p>
-<h3 id="3、行锁"><a href="#3、行锁" class="headerlink" title="3、行锁"></a>3、行锁</h3><p>InnoDB实现了以下两种类型的行锁：</p>
+<h3 id="3、行锁"><a href="#3、行锁" class="headerlink" title="3、行锁"></a>3、行锁</h3><p><strong>MySQL 的行锁是在引擎层由各个引擎自己实现的。</strong></p>
+<p><strong>两阶段锁协议</strong>：</p>
+<blockquote>
+<p><strong>在 InnoDB 事务中，行锁是在需要的时候才加上的，但并不是不需要了就立刻释放，而是要等到事务结束时才释放。</strong></p>
+</blockquote>
+<p>InnoDB实现了以下两种类型的行锁：</p>
 <ul>
 <li>共享锁（S）：允许一个事务去读一行，阻止其他事务获得相同数据集的排它锁。</li>
 <li>排他锁（X）：允许获取排他锁的事务更新数据，阻止其他事务获得相同数据集的共享锁和排他 锁</li>
 </ul>
 <p>![image-20230805221422216](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20230805221422216.png)</p>
 <h2 id="2、一致性非锁定读（快照读）"><a href="#2、一致性非锁定读（快照读）" class="headerlink" title="2、一致性非锁定读（快照读）"></a>2、一致性非锁定读（快照读）</h2><p>一致性非锁定读是指InnoDb通过多版本控制（MVCC）的方式读取当前执行时间里面数据库的数据。如果读取的那一行正在做一些dml操作，但是我不会去等，我会直接去读一个快照数据。不需要等待X锁的释放，那这个数据是哪里来的呢？这个快照数据是指该行之前版本的数据，他的实现是通过undo页完成的，而一个行记录它对应的可能不只有一个快照数据，所以我们把对于这些快照数据的管理，叫做多版本控制MVCC。当然这里提一嘴就是,读已提交和可重复读这两种级别是可以用一致性非锁定读，但是对于快照数据的定义不一样，读已提交总是读区被锁定行的最新的一份快照，可重复读总是读事务开始时候的数据版本，</p>
-<h2 id="3、一致性锁定读（当前读）"><a href="#3、一致性锁定读（当前读）" class="headerlink" title="3、一致性锁定读（当前读）"></a>3、一致性锁定读（当前读）</h2><p>有时候用户需要些显式的对读操作进行加锁保证一致性。</p>
+<h2 id="3、一致性锁定读（当前读）"><a href="#3、一致性锁定读（当前读）" class="headerlink" title="3、一致性锁定读（当前读）"></a>3、一致性锁定读（当前读）</h2><p>有时候用户需要些显式的对读操作进行加锁保证一致性。<font color='red'><u><em><strong>还有update也是当前读</strong></em></u></font></p>
 <h2 id="4、锁的算法"><a href="#4、锁的算法" class="headerlink" title="4、锁的算法"></a>4、锁的算法</h2><p>InnoDB有三种行锁的算法：</p>
 <p>Record Lock：单个行记录的锁</p>
 <p>Gap Lock：间隙锁，锁定一个范围，但不包括记录本身</p>
@@ -766,15 +809,16 @@
 <p>InnoDB就是用Next-Key去解决幻想问题（同一事务下，连续执行两次相同的sql语句可能导致不同的结果，第二次sql可能会返回之前不存在的行）</p>
 <p>查询的索引如果是唯一性质，那么降级为Record Lock</p>
 <h2 id="5、锁问题"><a href="#5、锁问题" class="headerlink" title="5、锁问题"></a>5、锁问题</h2><h3 id="1、脏读"><a href="#1、脏读" class="headerlink" title="1、脏读"></a>1、脏读</h3><p>读到了其他事务没有提交的数据，违反了隔离性。但是脏读发生的隔离级别最少也得是read uncommitted，而我们的数据库默认是可重复读，所以一般在生产环境中，发生的并不多。</p>
-<h3 id="2、不可重复读"><a href="#2、不可重复读" class="headerlink" title="2、不可重复读"></a>2、不可重复读</h3><p>就是一个事务读两次，另一个事务在两次读之间作出修改，因为读是mvcc，不加锁，所以会出现不可重复读。innoDB的解决方法：</p>
+<h3 id="2、不可重复读-or-幻读"><a href="#2、不可重复读-or-幻读" class="headerlink" title="2、不可重复读 or 幻读"></a>2、不可重复读 or 幻读</h3><p>幻读：一个事务在前后两次查询同一个范围的时候，后一次查询看到了前一次查询没有看到的行。说白了就是另一个事物插入了新的数据，但是没办法拒绝。</p>
+<p>不可重复读：就是一个事务读两次，另一个事务在两次读之间作出修改，因为读是mvcc，不加锁，所以会出现不可重复读。innoDB的解决方法：</p>
 <ul>
 <li>针对<strong>快照读</strong>（普通 select 语句），是<strong>通过 MVCC 方式解决了幻读</strong>，因为可重复读隔离级别下，事务执行过程中看到的数据，一直跟这个事务启动时看到的数据是一致的，即使中途有其他事务插入了一条数据，是查询不出来这条数据的，所以就很好了避免幻读问题。</li>
-<li>针对<strong>当前读</strong>（select … for update 等语句），是<strong>通过 next-key lock（记录锁+间隙锁）方式解决了幻读</strong>，因为当执行 select … for update 语句的时候，会加上 next-key lock，如果有其他事务在 next-key lock 锁范围内插入了一条记录，那么这个插入语句就会被阻塞，无法成功插入，所以就很好了避免幻读问题。</li>
+<li>针对<strong>当前读</strong>（select … for update 等语句），是<font color='red'><u><em><strong>通过 next-key lock（记录锁+间隙锁）（前开后闭区间）</strong></em></u></font><strong>方式解决了幻读</strong>，因为当执行 select … for update 语句的时候，会加上 next-key lock，如果有其他事务在 next-key lock 锁范围内插入了一条记录，那么这个插入语句就会被阻塞，无法成功插入，所以就很好了避免幻读问题。</li>
 </ul>
 <h3 id="3、丢失更新"><a href="#3、丢失更新" class="headerlink" title="3、丢失更新"></a>3、丢失更新</h3><p>是指一个事务的操作被另一个事务的操作覆盖了，但是当前数据库的任何隔离级别都对行或者粗粒度的对象加锁，所以还是比较难发生。</p>
 <h2 id="6、死锁"><a href="#6、死锁" class="headerlink" title="6、死锁"></a>6、死锁</h2><p>死锁是指两个或以上的事务争夺资源造成的一种互相等待的现象</p>
 <p>解决方法：</p>
-<p>1、设置超时的阈值，回滚一个事务</p>
+<p>1、设置超时的阈值，回滚一个死锁的事务</p>
 <p>2、wait-for-graph 等待图。检测是否有回路。通常用深度优先。1.2版本开始就变成非递归</p>
 <p>如果有死锁，那就回归undo量最少的</p>
 <h2 id="7、锁升级"><a href="#7、锁升级" class="headerlink" title="7、锁升级"></a>7、锁升级</h2><p>InnoDB中不存在锁升级的问题，因为InnoDB不是更具每个记录来产生锁的，相反，其根据每个事务访问的每个页对锁进行管理，采用的是位图的方式。所以不管你锁住的是页中的一个记录或者多个记录，开销一样</p>
@@ -832,10 +876,11 @@
 <p>一个是min_trx_id，就是m_ids里最小的事务id的值；</p>
 <p>一个是max_trx_id，就是此刻mysql下一个要生成的事务id，就是最大事务id；</p>
 <p>一个是creator_trx_id，就是你这个事务的id。</p>
-<p>那我们只要对比mintexid，如果说比他小，说明已经事务已经提交了，我们可以看得见。</p>
+<p>如果比mintexid小或者等于creatoridexid，我们可以看得见。</p>
 <p>比如一条记录旧版本里面有三条记录：10，20，30。然后我们的事务id是15，m_ids里面有20，30。这里的min_trx_id就是20，我们的15比她小，说明还没有提交。因为隔离性所以肯定是看不到的，然后再去找更前面版本，我们就找到了10，发现10可以，所以我们这次读到的数据就是事务id为10的那一个版本。</p>
 <p>rr：事务启动的时候创建readview</p>
 <p>rc：每次查询都会创建一个readview</p>
+<p>mvcc是快照读，update是当前读，但是要注意两阶段锁协议</p>
 
                     
                         
@@ -849,7 +894,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comentar y compartir
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -863,7 +908,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">página 1 de 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -892,7 +937,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
