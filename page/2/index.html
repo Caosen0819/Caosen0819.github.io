@@ -686,35 +686,39 @@
 <p><font color='red'><u><em><strong>b+树索引 （b+树只能找到数据行所在的页，然后把页读到内存里面，进行查找）</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>哈希索引（自动生成）</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>全文索引</strong></em></u></font></p>
-<h2 id="1、B-树索引"><a href="#1、B-树索引" class="headerlink" title="1、B+树索引"></a>1、B+树索引</h2><p>二叉查找树（左小于中小于右）-》平衡二叉树，任何结点的两个子树高度差小于等于1（性能比较高，但不是最高）（需要左旋右旋等等）</p>
+<h2 id="1、B-树索引"><a href="#1、B-树索引" class="headerlink" title="1、B+树索引"></a>1、B+树索引</h2><p>了解 ：二叉查找树（左小于中小于右）-&gt;平衡二叉树，任何结点的两个子树高度差小于等于1（性能比较高，但不是最高）（需要左旋右旋等等）</p>
+<blockquote>
 <p>b+树是为了磁盘或其他直接存取辅助设备设计的一种平衡查找树</p>
 <p>b+树的所有记录结点都是按照键值的大小顺序存放到同一层的叶子结点，他们之间通过叶子结点指针进行连接，中间的都是searchkey</p>
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3></blockquote>
 <h3 id="1、操作"><a href="#1、操作" class="headerlink" title="1、操作"></a>1、操作</h3><h4 id="1、插入"><a href="#1、插入" class="headerlink" title="1、插入"></a>1、插入</h4><p>![image-20231005201534270](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231005201534270.png)</p>
 <h4 id="2、旋转"><a href="#2、旋转" class="headerlink" title="2、旋转"></a>2、旋转</h4><p>旋转发生在leaf page已经满了，但是左右兄弟还没有满，这时候会把记录平移到兄弟结点上面，左兄弟优先</p>
 <h4 id="3、删除"><a href="#3、删除" class="headerlink" title="3、删除"></a>3、删除</h4><p>![image-20231005202324173](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231005202324173.png)</p>
 <h3 id="2、分类"><a href="#2、分类" class="headerlink" title="2、分类"></a>2、分类</h3><p>b+树可以分成聚集索引、辅助索引，这两个到区别就是叶子结点放的到底是不是一行信息</p>
-<h4 id="1、聚集索引"><a href="#1、聚集索引" class="headerlink" title="1、聚集索引"></a>1、聚集索引</h4><p>聚集索引就是按照主键构造的索引b+树，所以叶子结点存放的就是整张表的数据，叶子结点也叫做数据页。非叶子结点的索引页存放的仅仅是键值和指向数据页的偏移量。</p>
-<h4 id="2、辅助索引"><a href="#2、辅助索引" class="headerlink" title="2、辅助索引"></a>2、辅助索引</h4><p>辅助索引的叶子结点不包含行记录的全部数据。叶子结点包含键值和书签，书签用来告诉引擎哪里能找到真正的行数据。由于innodb是索引组织表，所以辅助索引的书签就是行记录的聚集索引键。所以辅助索引就是包含了索引那列的值和主键的值。</p>
-<h3 id="3、B-树索引的管理"><a href="#3、B-树索引的管理" class="headerlink" title="3、B+树索引的管理"></a>3、B+树索引的管理</h3><h4 id="1、索引管理"><a href="#1、索引管理" class="headerlink" title="1、索引管理"></a>1、索引管理</h4><p>创建和删除可以通过两种方法。一种是alter table。另一种是create&#x2F;drop index。</p>
+<h4 id="1、聚集索引"><a href="#1、聚集索引" class="headerlink" title="1、聚集索引"></a>1、聚集索引</h4><blockquote>
+<p><font color='red'><u><em><strong>聚集索引就是按照主键构造的索引b+树，所以叶子结点存放的就是整张表的数据</strong></em></u></font>，叶子结点也叫做数据页。非叶子结点的索引页存放的仅仅是键值和指向数据页的偏移量。</p>
+</blockquote>
+<h4 id="2、辅助索引"><a href="#2、辅助索引" class="headerlink" title="2、辅助索引"></a>2、辅助索引</h4><blockquote>
+<p><font color='red'><u><em><strong>辅助索引的叶子结点不包含行记录的全部数据。叶子结点包含键值和书签，书签用来告诉引擎哪里能找到真正的行数据。</strong></em></u></font>由于innodb是索引组织表，所以辅助索引的书签就是行记录的聚集索引键。所以辅助索引就是包含了索引那列的值和主键的值。</p>
+</blockquote>
+<h3 id="3、B-树索引的管理"><a href="#3、B-树索引的管理" class="headerlink" title="3、B+树索引的管理"></a>3、B+树索引的管理</h3><blockquote>
+<h4 id="1、索引管理"><a href="#1、索引管理" class="headerlink" title="1、索引管理"></a>1、索引管理</h4><p>创建和删除可以通过两种方法。一种是alter table。另一种是create&#x2F;drop index。</p>
 <p>查看：show index from XX</p>
-<h4 id="2、fast-index-create"><a href="#2、fast-index-create" class="headerlink" title="2、fast index create"></a>2、fast index create</h4><p>对于一张大表进行索引的添加和删除操作，这会需要很长时间。所以就提出了这个快速创建索引的方式。只限制于辅助索引。</p>
-<p>在创建索引的表加上一个S锁不需要重建表，删除索引只需要更新内部视图。</p>
-<h4 id="3、Online-Schema-Change在线架构改变OSC"><a href="#3、Online-Schema-Change在线架构改变OSC" class="headerlink" title="3、Online Schema Change在线架构改变OSC"></a>3、Online Schema Change在线架构改变OSC</h4><p>在线的意思其实就是在DDL的过程中，可以有读写事务对表进行操作</p>
-<h4 id="4、Online-DDL"><a href="#4、Online-DDL" class="headerlink" title="4、Online DDL"></a>4、Online DDL</h4><p>允许在辅助索引创建的同时，还允许insert update等DML操作</p>
-<p>原理是：执行insert update delete这些操作的时候，先把操作日志写入一个缓存里面，然后，索引建立后重做表上面</p>
-<p>新的alter table语法中，通过algorithm如果是 copy还是通过建立临时表的方式，如果是replace就是不需要临时表，是在InnoDB引擎内部完成，但是还是需要临时空间的。如果是default，那就是根据old_alter_table判断，如果是off，那就是replace。</p>
-<h4 id="5、cardinality值"><a href="#5、cardinality值" class="headerlink" title="5、cardinality值"></a>5、cardinality值</h4><p>优化器会根据这个值来判断我们用不用索引。表示索引中唯一值的数据的估计值，如果是性别这种，重复的非常多，我们叫低选择性，不适合做索引。反之高选择性就比较适合，尤其是在高选择性属性字段里面取出一小部分数据，那就更有必要了。</p>
+<h4 id="2、fast-index-create"><a href="#2、fast-index-create" class="headerlink" title="2、fast index create"></a><font color='red'><u><em><strong>2、fast index create</strong></em></u></font></h4><p>在创建索引的表加上一个S锁不需要重建表，删除索引只需要更新内部视图。<font color='red'><u><em><strong>但是不能做一些更新操作。</strong></em></u></font></p>
+<h4 id="3、Online-Schema-Change在线架构改变OSC"><a href="#3、Online-Schema-Change在线架构改变OSC" class="headerlink" title="3、Online Schema Change在线架构改变OSC"></a>3、Online Schema Change在线架构改变OSC</h4><p>osc了解即可：在线的意思其实就是在DDL的过程中，可以有读写事务对表进行操作</p>
+<h4 id="4、Online-DDL"><a href="#4、Online-DDL" class="headerlink" title="4、Online DDL"></a><font color='red'><u><em><strong>4、Online DDL</strong></em></u></font></h4><p>允许在辅助索引创建的同时，还允许insert update等DML操作</p>
+<p>原理是：执行insert update delete这些操作的时候，<font color='red'><u><em><strong>先把操作日志写入一个缓存里面，然后，索引建立后重做表上面</strong></em></u></font></p>
+<p>新的alter table语法中，通过<font color='red'><u><em><strong>algorithm如果是 copy还是通过建立临时表的方式，如果是replace就是不需要临时表，</strong></em></u></font>是在InnoDB引擎内部完成，但是还是需要临时空间的。如果是default，那就是根据old_alter_table判断，如果是off，那就是replace。</p>
+<h4 id="5、cardinality值"><a href="#5、cardinality值" class="headerlink" title="5、cardinality值"></a><font color='red'><u><em><strong>5、cardinality值</strong></em></u></font></h4><p>他是一个统计信息，优化器会根据这个值来判断我们用不用索引，表示索引中唯一值的数据的估计值，如果是性别这种，重复的非常多，我们叫低选择性，不适合做索引。反之高选择性就比较适合，尤其是在高选择性属性字段里面取出一小部分数据，那就更有必要了。</p>
 <ul>
 <li><strong>统计的方式</strong>？</li>
 </ul>
-<p>一张大表，每次统计的时间很长，这是不能接受的，所以我们用的是采样的方法。cardinality值的更新发生在insert和update操作，但是肯定不是每一次insertupdate都去更新，具体策略如下：</p>
+<p>所以我们用的是<font color='red'><u><em><strong>采样</strong></em></u></font>的方法（<font color='red'><u><em><strong>（对8或20个叶子结点进行采样预估，取出平均值）</strong></em></u></font>）。cardinality值的<font color='red'><u><em><strong>更新</strong></em></u></font>发生在insert和update操作，但是肯定不是每一次inser tupdate都去更新，具体策略如下：</p>
 <p>1、表中1&#x2F;16数据发生了变化</p>
 <p>2、计数器超过20亿</p>
-<ul>
-<li><strong>采样的方法：</strong></li>
-</ul>
-<p>对八个叶子结点进行采样预估，取出平均值</p>
-<h3 id="4、B-树索引的使用"><a href="#4、B-树索引的使用" class="headerlink" title="4、B+树索引的使用"></a>4、B+树索引的使用</h3><h4 id="1、联合索引"><a href="#1、联合索引" class="headerlink" title="1、联合索引"></a>1、联合索引</h4><p>本质也是一颗二叉树，之前是a,b,c,d现在是（a,b）(c,d)</p>
+</blockquote>
+<h3 id="4、B-树索引的使用"><a href="#4、B-树索引的使用" class="headerlink" title="4、B+树索引的使用"></a>4、B+树索引的使用</h3><blockquote>
+<h4 id="1、联合索引"><a href="#1、联合索引" class="headerlink" title="1、联合索引"></a>1、联合索引</h4><p>本质也是一颗二叉树，之前是a,b,c,d现在是（a,b）(c,d)</p>
 <p>第一个好处：对于联合查询和单列的第一列的查询都可以用联合查询</p>
 <p>第二个好处：一句对第二个键值进行了排序处理，可以缩短某些情况的查询时间</p>
 <h4 id="2、覆盖索引"><a href="#2、覆盖索引" class="headerlink" title="2、覆盖索引"></a>2、覆盖索引</h4><p>覆盖索引的意思是，从辅助索引中就直接可以得到想要查询的记录，不需要回表。</p>
@@ -724,10 +728,11 @@
 <h4 id="4、MRR优化（只支持非聚集索引）（离散读变成顺序读）"><a href="#4、MRR优化（只支持非聚集索引）（离散读变成顺序读）" class="headerlink" title="4、MRR优化（只支持非聚集索引）（离散读变成顺序读）"></a>4、MRR优化（只支持非聚集索引）（离散读变成顺序读）</h4><p>工作方式：</p>
 <ul>
 <li>把辅助索引读出来放到一个缓存里面</li>
-<li>把缓存中的键值更具rowid进行排序</li>
+<li>把缓存中根据rowid进行排序</li>
 <li>然后根据rowid去找数据</li>
 </ul>
-<p>他还可以进行某些范围查找，就是把范围查找拆分成键值对的等值查找。直接就过滤了一些不符合条件的数据。</p>
+<p>他适用于某些范围查找，</p>
+<p>而且还可以对某些范围查找进行拆分，变成成键值对的等值查找。直接就过滤了一些不符合条件的数据。</p>
 <p>好处：</p>
 <ul>
 <li>数据访问更加顺序，</li>
@@ -741,20 +746,23 @@
 <p>假设满足C1&#x3D;’XXX’条件的数据行为100000条，而满足C1&#x3D;’XXX’ AND C3&#x3D;’XXX’的数据行为100条，则：</p>
 <p>1、在MySQL 5.5版本中，需要对TB1的聚集索引进行100000次Index Seek操作，Innodb存储引擎层向MySQL Server层传递100000行数据。</p>
 <p>2、在MySQL 5.6版本中，使用ICP仅需要对TB1的聚集索引进行100次的Index Seek操作，Innodb存储引擎层向MySQL Server层传递100行数据。</p>
-<h4 id="6、自适应哈希索引"><a href="#6、自适应哈希索引" class="headerlink" title="6、自适应哈希索引"></a>6、自适应哈希索引</h4><p>InnoDB中的哈希用的字典进行查找，冲突用链表解决，哈希函数用除法散列</p>
+</blockquote>
+<h3 id="5、自适应哈希索引"><a href="#5、自适应哈希索引" class="headerlink" title="5、自适应哈希索引"></a>5、自适应哈希索引</h3><p>InnoDB中的哈希用的字典进行查找，冲突用链表解决，哈希函数用除法散列</p>
 <p>自适应哈希索引就是用的这种方法。</p>
-<h4 id="7、全文检索"><a href="#7、全文检索" class="headerlink" title="7、全文检索"></a>7、全文检索</h4><p>全文检索一般使用倒排索引。</p>
-<h5 id="x2F-x2F-1、倒排索引"><a href="#x2F-x2F-1、倒排索引" class="headerlink" title="&#x2F;&#x2F;1、倒排索引"></a>&#x2F;&#x2F;1、倒排索引</h5><p>它在辅助表（auxiliary table）中存储了单词与单词自身在一个或多个文档中所在位置之间的映射。这通常利用关键数组实现，其拥有两种表现形式：<br>inverted file index：其表现形式为{单词，单词所在文档的ID}<br>full inverted index：其表现形式为{单词，(单词所在文档的ID，在文档中的具体位置)}</p>
-<h5 id="2、InnoDB全文检索的实现"><a href="#2、InnoDB全文检索的实现" class="headerlink" title="2、InnoDB全文检索的实现"></a>2、InnoDB全文检索的实现</h5><p><strong>InnoDB全文索引有3个非常重要的东西，一个是辅助表，一个是FTS Index Cache、一个是FTS DOUCUMENT id</strong></p>
-<h6 id="1、Auxiliary-Table（辅助表）"><a href="#1、Auxiliary-Table（辅助表）" class="headerlink" title="1、Auxiliary Table（辅助表）"></a><strong>1、Auxiliary Table（辅助表）</strong></h6><p>辅助表是把文档，分词然后规范化后的白哦，</p>
-<p>辅助表的话采用“full inverted index”的方式有两个列：<br>一个是word字段。在word字段上有设有索引，另一个是ilist字段，（DocumentId,Position）</p>
-<h6 id="2、FTS-INDEX-Cache（全文检索缓存）"><a href="#2、FTS-INDEX-Cache（全文检索缓存）" class="headerlink" title="2、FTS INDEX Cache（全文检索缓存）"></a><strong>2、FTS INDEX Cache（全文检索缓存）</strong></h6><p>他是一个红黑树的结构：我执行插入操作，插入的数据已经更新了对应的表，但是我们的辅助表可能还没更新，这个更新还停留在FTS cache里面。如果没插一次就更新这是不合理的，那具体同步到辅助表的时机：</p>
+<h3 id="6、全文检索"><a href="#6、全文检索" class="headerlink" title="6、全文检索"></a>6、全文检索</h3><blockquote>
+<p>全文检索一般使用倒排索引。</p>
+<h5 id="1、倒排索引"><a href="#1、倒排索引" class="headerlink" title="1、倒排索引"></a>1、倒排索引</h5><p>它在辅助表（auxiliary table）中存储了单词与单词自身在一个或多个文档中所在位置之间的映射。这通常利用关键数组实现，其拥有两种表现形式：<br>inverted file index：其表现形式为{单词，单词所在文档的ID}<br>full inverted index：其表现形式为{单词，(单词所在文档的ID，在文档中的具体位置)}</p>
+<h5 id="2、InnoDB全文检索的实现"><a href="#2、InnoDB全文检索的实现" class="headerlink" title="2、InnoDB全文检索的实现"></a>2、InnoDB全文检索的实现</h5><p><font color='red'><u><em><strong><strong>InnoDB全文索引有3个非常重要的东西，一个是辅助表，一个是FTS Index Cache、一个是FTS DOUCUMENT id</strong></strong></em></u></font></p>
+<h6 id="1、Auxiliary-Table（辅助表）"><a href="#1、Auxiliary-Table（辅助表）" class="headerlink" title="1、Auxiliary Table（辅助表）"></a><strong>1、Auxiliary Table（辅助表）</strong></h6><p><font color='red'><u><em><strong>辅助表是把文档，分词然后规范化后的结果，</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>辅助表的话采用“full inverted index”的方式有两个列：</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>一个是word字段。在word字段上有设有索引，另一个是ilist字段，（DocumentId,Position）</strong></em></u></font></p>
+<h6 id="2、FTS-INDEX-Cache（全文检索缓存）"><a href="#2、FTS-INDEX-Cache（全文检索缓存）" class="headerlink" title="2、FTS INDEX Cache（全文检索缓存）"></a><strong>2、FTS INDEX Cache（全文检索缓存）</strong></h6><p>他是一个红黑树的结构：<font color='red'><u><em><strong>我执行插入操作，插入的数据已经更新了对应的表，但是我们的辅助表可能还没更新，这个更新还停留在FTS cache里面</strong></em></u></font>。如果没插一次就更新这是不合理的，那具体同步到辅助表的时机：</p>
 <p>1、在我进行全文检索查询的时候，我把FTS INDEX cache里的word字段合并到辅助表，然后查询。有点类似于insert buffer</p>
 <p>2、数据库关闭的时候会同步</p>
 <p>3、cache满了	</p>
 <p>数据库宕机时：一些FTS InDEX Cache中的数据库可能未被同步到磁盘上。那么下次重启时，当用户对表进行全文检索（查询或者插入操作）时，InnoDB会自动读取未完成的文档，然后进行分词操作，再将分词的结果放入到FTS Index Cache中</p>
 <p>对于InnoDB来说，其总是在事务提交时将分词写入到FTS Index Cache。</p>
-<h6 id="3、FTS-DOUCUMENT-ID"><a href="#3、FTS-DOUCUMENT-ID" class="headerlink" title="3、FTS DOUCUMENT ID"></a>3、FTS DOUCUMENT ID</h6><p>为了支持全文检索，<strong>必须有一个列与word进行映射：</strong></p>
+<h6 id="3、FTS-DOUCUMENT-ID"><a href="#3、FTS-DOUCUMENT-ID" class="headerlink" title="3、FTS DOUCUMENT ID"></a>3、FTS DOUCUMENT ID</h6><p><font color='red'><u><em><strong>为了支持全文检索，必须有一个列与word进行映射：</strong></em></u></font></p>
 <ul>
 <li>在InnoDB中这个列<strong>被命名为FTS_DOC_ID</strong>，他是自动创建的</li>
 <li>其<strong>类型必须是</strong>bigint unsigned not null</li>
@@ -763,7 +771,8 @@
 </ul>
 <p>Deleted auxiliary table<br>文档中分词的插入操作是在事务提交时完成的，然而对于删除操作，其在事务提交时不删除磁盘Auxiliary Table中的记录，而只是删除FTS Index Cache中的记录。对于Auxiliary Table中被删除的记录，InnoDB会记录其FTS Document ID，并将其保存在Deleted auxiliary table中</p>
 <p>由于文档的DML操作实际并不删除索引中的数据，相反还会在对应的DELETED表中插入记录，因此随着应用程序的允许，索引会变得非常大，即使索引列中的有些数据已经被删除，查询也不会使用到。为了，InnoDB存储引擎提供了一种方式，允许用户手动地将已删除的记录从索引中彻底删除，该命令就是OPTIMIZE TABLE</p>
-<h2 id=""><a href="#" class="headerlink" title=""></a></h2><p>事务级别</p>
+</blockquote>
+<p>事务级别</p>
 <p><strong>类型一：RU（READ-UNCOMMITTED 表示读未提交）</strong></p>
 <p>可以读取到事务未提交的数据，隔离性差，会出现脏读（当前内存读），不可重复读，幻读问题;</p>
 <p><strong>类型二：RC（READ-COMMITTED 表示读已提交）</strong>可用</p>
@@ -775,14 +784,19 @@
 <p>隔离性比较高，可以实现串行化读取数据，但是事务的并发度就没有了；</p>
 <p>这是事务的最高级别，在每条读的数据上，加上锁，使之不可能相互冲突</p>
 <h1 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h1><p>锁机制是用于管理对共享资源的并发访问，保证数据的完整性和一致性。</p>
-<h2 id="1、锁的类型"><a href="#1、锁的类型" class="headerlink" title="1、锁的类型"></a>1、锁的类型</h2><h3 id="1、全局锁"><a href="#1、全局锁" class="headerlink" title="1、全局锁"></a>1、全局锁</h3><p>典型的使用场景就是做全库的逻辑备份</p>
+<h2 id="1、锁的类型"><a href="#1、锁的类型" class="headerlink" title="1、锁的类型"></a>1、锁的类型</h2><h3 id="1、全局锁"><a href="#1、全局锁" class="headerlink" title="1、全局锁"></a>1、全局锁</h3><blockquote>
+<p><font color='red'><u><em><strong>典型的使用场景就是做全库的逻辑备份</strong></em></u></font></p>
 <ul>
 <li><p>一旦加了全局锁之后，其他的DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句，也就是处于只读状态</p>
 </li>
 <li><p>语法</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">flush tables <span class="keyword">with</span> read lock;<span class="number">1</span>、加全局锁</span><br><span class="line">mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>pxxx db_name <span class="operator">-</span><span class="operator">&gt;</span> xxx.sql;<span class="number">2</span>、数据备份</span><br><span class="line">unlock tables;<span class="number">3</span>、释放锁</span><br></pre></td></tr></table></figure></li>
+</li>
 </ul>
-<h3 id="2、表级锁"><a href="#2、表级锁" class="headerlink" title="2、表级锁"></a>2、表级锁</h3><p>表级锁，主要分为3类：</p>
+ <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">flush tables <span class="keyword">with</span> read lock;<span class="number">1</span>、加全局锁</span><br><span class="line">mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>pxxx db_name <span class="operator">-</span><span class="operator">&gt;</span> xxx.sql;<span class="number">2</span>、数据备份</span><br><span class="line">unlock tables;<span class="number">3</span>、释放锁</span><br></pre></td></tr></table></figure>
+
+
+</blockquote>
+<h3 id="2、表级锁"><a href="#2、表级锁" class="headerlink" title="2、表级锁"></a>2、表级锁</h3><p>表级锁，主要分为4类：</p>
 <ul>
 <li>表锁</li>
 <li>元数据锁（meta data lock，MDL）</li>
@@ -795,42 +809,42 @@
 <li>表独占写锁（write lock）</li>
 </ul>
 <p>结论: 读锁不会阻塞其他客户端的读，但是会阻塞写。写锁既会阻塞其他客户端的读，又会阻塞 其他客户端的写。</p>
-<h4 id="2、元数据锁"><a href="#2、元数据锁" class="headerlink" title="2、元数据锁"></a>2、元数据锁</h4><p>再来说说<strong>元数据锁</strong>（MDL）。</p>
-<p>我们不需要显示的使用 MDL，因为当我们对数据库表进行操作时，会自动给这个表加上 MDL：</p>
+<h4 id="2、元数据锁"><a href="#2、元数据锁" class="headerlink" title="2、元数据锁"></a>2、元数据锁</h4><blockquote>
+<p>再来说说<strong>元数据锁</strong>（MDL）,<font color='red'><u><em><strong>它 是为了保证当用户对表执行 CRUD 操作时，防止其他线程对这个表结构做了变更。我们不需要显示的使用 MDL，会自动给这个表加上 MDL：</strong></em></u></font></p>
 <ul>
 <li>对一张表进行 CRUD 操作时，加的是 <strong>MDL 读锁</strong>；</li>
 <li>对一张表做结构变更操作的时候，加的是 <strong>MDL 写锁</strong>；</li>
 </ul>
-<p>MDL 是为了保证当用户对表执行 CRUD 操作时，防止其他线程对这个表结构做了变更。</p>
+</blockquote>
 <blockquote>
 <p>MDL 不需要显示调用，那它是在什么时候释放的?</p>
 </blockquote>
 <p>MDL 是在事务提交后才会释放，这意味着<strong>事务执行期间，MDL 是一直持有的</strong>。</p>
-<p>MDL 加锁过程是系统自动控制，无需显式使用，在访问一张表的时候会自动加上。MDL 锁主要作用是维 护表元数据的数据一致性，在表上有活动事务的时候，不可以对元数据进行写入操作。为了避免DML与 DDL冲突，保证读写的正确性。</p>
-<h4 id="3、意向锁"><a href="#3、意向锁" class="headerlink" title="3、意向锁"></a>3、意向锁</h4><p><strong>我觉得意向锁主要还是解决行锁和表锁之间的冲突问题。</strong></p>
+<h4 id="3、意向锁"><a href="#3、意向锁" class="headerlink" title="3、意向锁"></a>3、意向锁</h4><blockquote>
+<p><font color='red'><u><strong>我觉得意向锁主要还是解决行锁和表锁之间的冲突问题</strong></u></font></p>
 <ul>
 <li>在使用 InnoDB 引擎的表里对某些记录加上「共享锁」之前，需要先在表级别加上一个「意向共享锁」；</li>
 <li>在使用 InnoDB 引擎的表里对某些纪录加上「独占锁」之前，需要先在表级别加上一个「意向独占锁」；</li>
 </ul>
+</blockquote>
 <p>也就是，当执行插入、更新、删除操作，需要先对表加上「意向独占锁」，然后对该记录加行级独占锁。</p>
 <p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;20e0f35589584352bd15e817668a0886.png)</p>
 <p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;6e6b275c2d6d4dfcbbb338be4f61bee9.png)</p>
 <p>所以，<strong>意向锁的目的是为了快速判断表里是否有记录被加锁</strong>。</p>
-<h4 id="4、自增锁"><a href="#4、自增锁" class="headerlink" title="4、自增锁"></a>4、自增锁</h4><p>主键设置成自增之后，在插入数据时，可以不指定主键的值，数据库会自动给主键赋值递增的值，这主要是通过 <strong>AUTO-INC 锁</strong>实现的。</p>
-<p><strong>在插入数据时，会加一个表级别的 AUTO-INC 锁</strong>，<strong>不是再一个事务提交后才释放，而是再执行完插入语句后就会立即释放</strong>。</p>
+<h4 id="4、自增锁"><a href="#4、自增锁" class="headerlink" title="4、自增锁"></a>4、自增锁</h4><blockquote>
+<p>主键设置成自增之后，会自动给主键赋 递增的值.</p>
+<p>然后这里有两种方式一种是，AUTO-INC 锁<strong>，</strong>不是一个事务提交后才释放，而是在执行完插入语句后就会立即释放。</p>
 <p>但是，对大量数据进行插入的时候，会影响插入性能，因为另一个事务中的插入会被阻塞。</p>
-<p>因此， 在 MySQL 5.1.22 版本开始，InnoDB 存储引擎提供了一种<strong>轻量级的锁</strong>来实现自增</p>
-<p>InnoDB 存储引擎提供了个 innodb_autoinc_lock_mode 的系统变量，是用来控制选择用 AUTO-INC 锁，还是轻量级的锁。</p>
+<p>所以后面InnoDB 存储引擎提供了一种<strong>轻量级的锁</strong>，并且提供了一个参数，叫innodb autoinc lock mode</p>
 <ul>
 <li>当 innodb_autoinc_lock_mode &#x3D; 0，就采用 AUTO-INC 锁，语句执行结束后才释放锁；</li>
 <li>当 innodb_autoinc_lock_mode &#x3D; 2，就采用轻量级锁，申请自增主键后就释放锁，并不需要等语句执行后才释放。</li>
-<li>当 innodb_autoinc_lock_mode &#x3D; 1：<ul>
+<li>当 innodb_autoinc_lock_mode &#x3D; 1：</li>
 <li>普通 insert 语句，自增锁在申请之后就马上释放；</li>
-<li>类似 insert … select 这样的批量插入数据的语句，自增锁还是要等语句结束后才被释放</li>
+<li>类似 insert … select 这样的批量插入数据的语句，自增锁还是要等语句结束后才被释放<font color='red'><u><em><strong>（因为“不知道要预先申请多少个 id）</strong></em></u></font></li>
 <li>原因如下：</li>
 </ul>
-</li>
-</ul>
+</blockquote>
 <p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;innodb_autoinc_lock_mode&#x3D;2.png)</p>
 <p>session A 往表 t 中插入了 4 行数据，然后创建了一个相同结构的表 t2，然后<strong>两个 session 同时执行向表 t2 中插入数据</strong>。</p>
 <p>如果 innodb_autoinc_lock_mode &#x3D; 2，意味着「申请自增主键后就释放锁，不必等插入语句执行完」。那么就可能出现这样的情况：</p>
@@ -844,16 +858,18 @@
 <p>但不论是哪一种，这个 binlog 拿去「从库」执行，这时从库是按「顺序」执行语句的，只有当执行完一条 SQL 语句后，才会执行下一条 SQL。因此，在<strong>从库上「不会」发生像主库那样两个 session 「同时」执行向表 t2 中插入数据的场景。所以，在备库上执行了 session B 的 insert 语句，生成的结果里面，id 都是连续的。这时，主从库就发生了数据不一致</strong>。</p>
 <p>要解决这问题，binlog 日志格式要设置为 row，这样在 binlog 里面记录的是主库分配的自增值，到备库执行的时候，主库的自增值是什么，从库的自增值就是什么。</p>
 <p>所以，<strong>当 innodb_autoinc_lock_mode &#x3D; 2 时，并且 binlog_format &#x3D; row，既能提升并发性，又不会出现数据一致性问题</strong>。</p>
-<h3 id="3、行锁"><a href="#3、行锁" class="headerlink" title="3、行锁"></a>3、行锁</h3><p><strong>MySQL 的行锁是在引擎层由各个引擎自己实现的。</strong></p>
-<p><strong>两阶段锁协议</strong>：</p>
-<blockquote>
-<p><strong>在 InnoDB 事务中，行锁是在需要的时候才加上的，但并不是不需要了就立刻释放，而是要等到事务结束时才释放。</strong></p>
-</blockquote>
+<h3 id="3、行锁"><a href="#3、行锁" class="headerlink" title="3、行锁"></a>3、行锁</h3><blockquote>
 <p>InnoDB实现了以下两种类型的行锁：</p>
 <ul>
 <li>共享锁（S）：允许一个事务去读一行，阻止其他事务获得相同数据集的排它锁。</li>
 <li>排他锁（X）：允许获取排他锁的事务更新数据，阻止其他事务获得相同数据集的共享锁和排他 锁</li>
 </ul>
+<p><strong>MySQL 的行锁是在引擎层由各个引擎自己实现的。</strong></p>
+<p><strong>两阶段锁协议</strong>：</p>
+<blockquote>
+<p><strong>在 InnoDB 事务中，行锁是在需要的时候才加上的，但并不是不需要了就立刻释放，而是要等到事务结束时才释放。</strong></p>
+</blockquote>
+</blockquote>
 <p>![image-20230805221422216](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20230805221422216.png)</p>
 <h2 id="2、一致性非锁定读（快照读）"><a href="#2、一致性非锁定读（快照读）" class="headerlink" title="2、一致性非锁定读（快照读）"></a>2、一致性非锁定读（快照读）</h2><p>一致性非锁定读是指InnoDb通过多版本控制（MVCC）的方式读取当前执行时间里面数据库的数据。如果读取的那一行正在做一些dml操作，但是我不会去等，我会直接去读一个快照数据。不需要等待X锁的释放，那这个数据是哪里来的呢？这个快照数据是指该行之前版本的数据，他的实现是通过undo页完成的，而一个行记录它对应的可能不只有一个快照数据，所以我们把对于这些快照数据的管理，叫做多版本控制MVCC。当然这里提一嘴就是,读已提交和可重复读这两种级别是可以用一致性非锁定读，但是对于快照数据的定义不一样，读已提交总是读区被锁定行的最新的一份快照，可重复读总是读事务开始时候的数据版本，</p>
 <h2 id="3、一致性锁定读（当前读）"><a href="#3、一致性锁定读（当前读）" class="headerlink" title="3、一致性锁定读（当前读）"></a>3、一致性锁定读（当前读）</h2><p>有时候用户需要些显式的对读操作进行加锁保证一致性。<font color='red'><u><em><strong>还有update也是当前读</strong></em></u></font></p>
