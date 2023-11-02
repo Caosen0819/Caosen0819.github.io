@@ -1189,7 +1189,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 <p><img src="/../images/JVM/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjg0MDA1,size_16,color_FFFFFF,t_70.png" alt="img"></p>
 <p><strong>对象的创建</strong></p>
 <blockquote>
-<p>1、当遇到new，先去检查这个指令的参数能不能在常量池找到类的符号引用，然后去检查是不是已经类加载、解析、初始化。</p>
+<p>1、当遇到new，先去检查这个指令的参数能不能在常量池找到类的符号引用，检查是不是已经类加载、解析、初始化。</p>
 <p>2、如果没有，就先执行类加载。</p>
 <p>3、然后分配内存，内存的大小在类加载的时候就确认了。具体分配用“指针碰撞”还是“空闲列表”就看用那种垃圾收集器。为了保证不出现并发问题：有两种方案。<font color='red'><u><em><strong>1）CAS+失败重试。2）给线程自己预先分配本地线程分配缓冲。（TLAB）</strong></em></u></font></p>
 </blockquote>
@@ -1239,8 +1239,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 <li><p>属性表：太复杂了</p>
 </li>
 </ul>
-<h1 id="4、类加载机制"><a href="#4、类加载机制" class="headerlink" title="4、类加载机制"></a>4、类加载机制</h1><p>类加载就是把描述类的数据从Class文件里面加载到内存，并对其进行校验、连姐、解析、初始化，最终变成可以被虚拟机直接使用的Java类的原型-类模板对象。</p>
-<p>类加载分成三个阶段，加载、连接、初始化。连接可以分成，验证、准备、解析</p>
+<h1 id="4、类加载机制"><a href="#4、类加载机制" class="headerlink" title="4、类加载机制"></a>4、类加载机制</h1><p>类加载分成三个阶段，加载、连接、初始化。连接可以分成，验证、准备、解析</p>
 <h2 id="1、加载"><a href="#1、加载" class="headerlink" title="1、加载"></a>1、加载</h2><p>加载是类加载过程的第一步，主要完成下面 3 件事情：</p>
 <ol>
 <li>通过全类名获取定义此类的二进制字节流</li>
@@ -1366,8 +1365,8 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 <p>1）对处理资源敏感，而且大于1&#x2F;4。（处理器数量+3）&#x2F;4</p>
 <p>2）无法处理浮动垃圾（用户线程使得原来某些对象不是垃圾，但是当 CMS 进行清理的时候变成了垃圾，从可达到不可达，但是没扫出来），有可能触发full gc</p>
 <p>3）用的是标记清除，会有内存碎片</p>
-<h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><p>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。</p>
-<blockquote>
+<h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><blockquote>
+<p>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。</p>
 <p>为了加快搜索，G1是使用card table和RSet。</p>
 <p>card table是CMS的解决方案，他可以避免对老年代进行整个扫描。他的做法是把region分成一个个512字节的card，然后用一个位0或者1去标记他的状态，如果有指向年轻代的对象，就置为1，否则0。所以你扫描的时候直接找card状态是1的区域就可以找到gcroot，不用对老年代扫描。</p>
 <p>Rset是G1提出来的，每个region都有rset，它记录了哪些region引用了当前的region。他是一个键值对的形式，键就是这个region编号，值就是card编号的集合，这样就把card table和rset配合起来了。</p>

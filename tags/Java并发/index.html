@@ -258,7 +258,7 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="学习于《Java并发编程的艺术》"><a href="#学习于《Java并发编程的艺术》" class="headerlink" title="学习于《Java并发编程的艺术》"></a>学习于《Java并发编程的艺术》</h1><p>多线程一定比单线程快吗？不一定，因为还有线程上下文切换的消耗</p>
+                    <p>多线程一定比单线程快吗？不一定，因为还有线程上下文切换的消耗</p>
 <p>那如何减少上下文切换？无锁并发、CAS</p>
 <h1 id="1、并发机制的底层原理"><a href="#1、并发机制的底层原理" class="headerlink" title="1、并发机制的底层原理"></a>1、并发机制的底层原理</h1><h3 id="0、乐观锁和悲观锁"><a href="#0、乐观锁和悲观锁" class="headerlink" title="0、乐观锁和悲观锁"></a>0、乐观锁和悲观锁</h3><p><strong>悲观锁：</strong></p>
 <blockquote>
@@ -275,7 +275,7 @@
 <p><font color='red'><u>ABA<strong>的解决方法就是在变量前面加上版本号</strong></u></font></p>
 </blockquote>
 <h3 id="1、volatile"><a href="#1、volatile" class="headerlink" title="1、volatile"></a>1、volatile</h3><blockquote>
-<p><font color='blue'><u><em><strong>volatile具备可见性、有序性但是不具备原子性。他的内存语义是，当写一个volatile变量，jmm会把该线程对应的本地内存中共享变量刷新到主内存,读一个volatile变量，jmm会把该线程对应的本地内存置为无效，然后从主内存里面读.</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>volatile具备可见性、有序性但是不具备原子性。他的内存语义是，当写一个volatile变量，jmm会把该线程对应的本地内存中共享变量刷新到主内存,读一个volatile变量，jmm会把该线程对应的本地内存置为无效，然后从主内存里面读，他的实现依赖于一个lock指令，然后我们讲一下怎么用到这个lock。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>我们知道单线程下，由于asifserial的存在，指令执行结果是具备顺序一致性。但是在多线程环境下，重排序会导致各个线程看到的全局执行顺序不一致。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>1、第一个就是store buffer和invalid queue的原因，会出现脏读的问题，读到脏数据就代表其实在全局执行顺序上重排序了。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>2、第二个就是多线程的数据依赖性不被考虑，编译器和处理器会出现重排序。</strong></em></u></font></p>
@@ -414,8 +414,12 @@
 <p>缓存锁：所谓缓存锁定是指内存被缓存在处理器的缓存中，当他执行锁操作写回内存的时候，而是修改内部的内存地址，并允许他缓存一致性保证操作原子性。</p>
 <h4 id="2、Java怎么实现原子操作"><a href="#2、Java怎么实现原子操作" class="headerlink" title="2、Java怎么实现原子操作"></a>2、Java怎么实现原子操作</h4><p>锁–JVM实现锁的方式其实都用到了循环CAS</p>
 <p>循环CAS –版本号解决ABA，</p>
-<h1 id="2、JAVA内存模型"><a href="#2、JAVA内存模型" class="headerlink" title="2、JAVA内存模型"></a>2、JAVA内存模型</h1><h2 id="1、定义理解"><a href="#1、定义理解" class="headerlink" title="1、定义理解"></a>1、定义理解</h2><p>他也定义了线程和主内存之间的抽象关系，解决的就是线程之间如何通信和线程之间的同步问题。所以总而言之，就是一个管理内存和线程的模型。JMM的基本方针就是：正确同步的情况下，尽可能为处理器打开方面之门。没有正确同步的情况下不保证执行结果和顺序一致性是一样的。</p>
+<p>3、CAS：</p>
+<p>cas是旧值和获得的值进行对比，如果一样，认为没有被修改过，可以去改，如果不一样就不能修改。</p>
+<p>jdk提供的CAS方案是unsafe类的cas方法，他是调用了一个本地方法，本地方法会调cmpxchg方法，<strong>它是在汇编层级，会禁止变量两侧的指令优化，然后使用cmpxchg指令比较并更新变量值(原子性)，如果是多核则加一个lock锁定(缓存锁、MESI)</strong></p>
+<h1 id="2、JAVA内存模型"><a href="#2、JAVA内存模型" class="headerlink" title="2、JAVA内存模型"></a>2、JAVA内存模型</h1><h2 id="1、定义理解"><a href="#1、定义理解" class="headerlink" title="1、定义理解"></a>1、定义理解</h2><p>他定义了线程和主内存之间的抽象关系，解决的就是线程之间如何通信和线程之间的同步问题。所以总而言之，就是一个管理内存和线程的模型。</p>
 <h2 id="2、重排序"><a href="#2、重排序" class="headerlink" title="2、重排序"></a>2、重排序</h2><blockquote>
+<p>重排序可以分成三类</p>
 <ul>
 <li><strong>1、编译器重排序：</strong> 例如将循环内重复调用的操作提前到循环外执行；</li>
 <li><strong>2、处理器系统重排序：</strong> 例如指令并行技术将多条指令重叠执行，或者使用分支预测技术提前执行分支的指令，并把计算结果放到重排列缓冲区（Reorder Buffer）的硬件缓存中，当程序真的进入分支后直接使用缓存中的结算结果；</li>
@@ -434,7 +438,7 @@
 <h2 id="3、顺序一致性"><a href="#3、顺序一致性" class="headerlink" title="3、顺序一致性"></a>3、顺序一致性</h2><blockquote>
 <p><font color='red'><u><em><strong>有个理想的模式叫做顺序一致性内存模型，一个线程中的操作完全是顺序的，所有线程只能看到一个单一的操作顺序。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>如果程序的执行结果和顺序一致性模型相同，那么就叫做具备顺序一致性。</strong></em></u></font></p>
-<p>我们的JMM对于正确同步的 程序是具备顺序一致性的，虽然一个线程内部可能做了重排序，但是结果是不变的。</p>
+<p>JMM对于正确同步的 程序是保证顺序一致性的，虽然一个线程内部可能做了重排序，但是结果是不变的。</p>
 <p>但是对于未同步的程序只提供最小安全保障：读到的值要么是之前写入的，要么是默认值。</p>
 <p>如果你想要达到正确同步，那么就可以使用（synchronized、volatile、final）</p>
 <p><font color='red'><u><strong>JMM设计</strong></u></font>:<font color='red'><u><em><strong>一方面，要为程序员提供足够强的内存可见性保证；另一方面，对编译器和处理器的限制要尽可能地放松 。</strong></em></u></font></p>
@@ -442,20 +446,20 @@
 <h2 id="4、happens-before-原则"><a href="#4、happens-before-原则" class="headerlink" title="4、happens-before 原则"></a>4、<font color='red'><u><em><strong>happens-before 原则</strong></em></u></font></h2><blockquote>
 <p><font color='blue'><u><em><strong>Java内存模型（JMM）更高级的语言层面的一组原则，用这些原则解决并发多线程环境下两个操作之间的可见性问题。如果一个操作happens-before另一个操作，那么第一个操作的执行结果将对第二个操作可见，而且第一个操作的执行顺序排在第二个操作之前。</strong></em></u></font></p>
 <p>包括什么程序规则、锁规则、volatile规则、依赖规则</p>
-<p>不过这里我们要强调的一点是：<strong>程序规则和指令重排并不冲突，要不然就没有重排序这个问题了，如果我们要像认为的禁止重排序，就需要显示的建立happens-before的代码，比如synchronized、volatile、lock</strong></p>
+<p>不过这里我们要强调的一点是：<strong>程序规则和指令重排并不冲突，要不然就没有重排序这个问题了重排序分为两类，一类会改变结果，一类不改变结果，不改变结果我们是允许的，改变结果的我们不允许。如果我们要显示的禁止重排序，要让代码按照我们想的执行，就需要显示的建立遵循happens-before的代码，比如synchronized、volatile、lock</strong>。所以我们说happensbefore是给程序员提供的</p>
 <p><font color='red'><u><em><strong>as-if-serial与happens-before的区别</strong></em></u></font></p>
 <ol>
 <li><strong>as-if-serial语义保证单线程内程序的执行结果不被改变，happens-before关系保证正确同步的多线程程序的执行结果不被改变</strong></li>
 </ol>
 </blockquote>
 <h1 id="3、ThreadLocal"><a href="#3、ThreadLocal" class="headerlink" title="3、ThreadLocal"></a>3、ThreadLocal</h1><p>多个线程访问同一个共享变量时，通常会使用synchronized关键字加锁来解决，ThreadLocal则换了一个思路。每个线程存一个副本</p>
-<p>threadlocal需要理解这张图片，线程里面有一个ThreadLocalMap，map的每一个Entry的key是r的弱引用，value是指向一个值的强引用。然后ThreadLocal的set方法，是先获取当前线程的ThreadLocalMap，然后调用ThreadLocalMap的set方法。</p>
+<p>threadlocal需要理解这张图片，线程里面有一个ThreadLocalMap，map的每一个Entry的key是threadlocal的弱引用，value是指向一个值的强引用。然后ThreadLocal的set方法，是先获取当前线程的ThreadLocalMap，然后调用ThreadLocalMap的set方法。</p>
 <p><img src="/../images/Java%E5%B9%B6%E5%8F%91/image-20231027153110006.png" alt="image-20231027153110006"></p>
 <p><font color='red'><u><strong>内存泄漏：</strong></u></font></p>
 <p>在垃圾回收的时候，key到ThreadLocal是弱引用， 会被清理掉,而 value 不会被清理掉。问题是key被清理了就没有指向value的强引用，发生内存泄漏。</p>
 <p><font color='red'><u><strong>弱引用是原罪吗？</strong></u></font></p>
 <blockquote>
-<p>不是，如果是弱引用，栈方法执行结束，变量名立即回收，垃圾回收机制就可以正常的去回收这个threadlocal对象。如果是强引用的话，key是在entry里面，entry在map里面，map又是属于线程的，所以等同于和Thread生命周期绑定了。只有线程结束的时候才可以释放，如果线程生命周期比较短的话，那线程销毁的时候value也会收回。如果线程周期比较长的话，那么内存泄露的问题就会比较严重。其实设计者也考虑到到key被收到时导致内存泄漏问题，在调用ThreadLocal中set、remove、rehash时会扫描key为null的entry，并将value置为null，避免内存泄漏	</p>
+<p>不是，如果是弱引用，栈方法执行结束，变量名立即回收，垃圾回收机制<font color='red'><u><em><strong>等会</strong></em></u></font>就可以正常的去回收这个threadlocal对象。如果是强引用的话，key是在entry里面，entry在map里面，map又是属于线程的，所以等同于和Thread生命周期绑定了。只有线程结束的时候才可以释放，如果线程生命周期比较短的话，那线程销毁的时候value也会收回。如果线程周期比较长的话，那么内存泄露的问题就会比较严重。其实设计者也考虑到到key被收到时导致内存泄漏问题，在调用ThreadLocal中set、remove、rehash时会扫描key为null的entry，并将value置为null，避免内存泄漏	</p>
 </blockquote>
 <blockquote>
 <p>强引用(Strongly Reference)<br>指代码中普遍存在的赋值行为，如：Object o &#x3D; new Object()，只要强引用关系还在，对象就永远不会被回收。<br>软引用(Soft Reference)<br>还有用处，但是非必须存活的对象，JVM会在内存溢出前对其进行回收，例如：缓存。<br>弱引用(Weak Reference)<br>非必须存活的对象，引用关系比软引用还弱，不管内存是否够用，下次GC一定回收。<br>虚引用(Phantom Reference)<br>也称“幽灵引用”、“幻影引用”，最弱的引用关系，完全不影响对象的回收，等同于没有引用，虚引用的唯一的目的是对象被回收时会收到一个系统通知。</p>
@@ -465,7 +469,7 @@
 <p><font color='red'><u><em><strong>处理流程：</strong></em></u></font></p>
 <p>1）先看核心线程池，有没有都在执行任务。如果不是都在执行，就创建一个工作线程执行任务，否则就看工作列表。</p>
 <p>2）线程池判断工作列表有没有满，如果没有满，就把新提交的任务存到这个工作队列里面，</p>
-<p>3）如果满了判断线程池里面的线程是否都在工作状态，如果没有就创建一个新的工作线程执行，如果满了，就交给饱和策略。</p>
+<p>3）如果满了判断线程池里面的线程是否都在工作状态，如果没有就创建一个新的工作线程执行，如果满了，就交给饱和策略。（抛出异常、调用自己的线程执行、直接丢掉、丢掉队列中最早未处理的任务然后加进去）</p>
 <p><font color='red'><u><em><strong>创建线程</strong></em></u></font></p>
 <p>有两种方式：</p>
 <blockquote>
@@ -473,7 +477,7 @@
 <p><strong>方式二：通过 <code>Executor</code> 框架的工具类 <code>Executors</code> 来创建。</strong></p>
 <p>为什么不推荐？我觉得就是Executors提供的创建的几个线程池都有点局限性，都有不足的地方。它有两个ThreadpoolExecutor和scheduledThreadPpplExecutor两种Executor，可以尝试4种线程池，Fixed、single、Cached，Scheduled。</p>
 <p>这些创建方法<strong>缺乏对线程池的精细控制</strong>。然后像Fixed和Single用的<font color='red'><u><em><strong>工作队列是无界队列</strong></em></u></font>，如果任务提交速度比我们执行速度还快，那就可能对内存造成巨大压力。</p>
-<p>还有<font color='red'><u><em><strong>最大的线程数量是Integer.MAX_VALUE</strong></em></u></font>， 随着执行线程数量的增多 和 线程没有及时结束，最终会将内存撑爆。**<font color='red'><u><em><strong>不支持线程池的动态调整</strong></em></u></font>**</p>
+<p>还有<font color='red'><u><em><strong>cached和scheduled最大的线程数量是Integer.MAX_VALUE</strong></em></u></font>， 随着执行线程数量的增多 和 线程没有及时结束，最终会将内存撑爆</p>
 </blockquote>
 <p><font color='red'><u><em><strong>线程池核心参数</strong></em></u></font></p>
 <p>从他的处理流程就能知道，像核心线程数、最大线程数、工作队列，饱和策略。</p>
