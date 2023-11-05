@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-09-30T00:00:00+08:00">
 	
-		    Sep 30, 2023
+		    30 Sep 2023
     	
     </time>
     
@@ -272,9 +272,25 @@
 <p>2、主要函数操作，比如visit【】&#x3D;true</p>
 <p>3、列举 dfs</p>
 <p>如果是两个匹配，可以用被匹配的长度作为结束判断条件之一,比如两个字符都匹配完，某个字符匹配完某个字符没有匹配完</p>
-<h2 id="动态规划"><a href="#动态规划" class="headerlink" title="动态规划"></a>动态规划</h2><p>状态定义：</p>
-<p>状态转移函数：</p>
-<p>状态初始化 如果是两个数组，那辅助表就是二维数组，最好比原来的宽长都多1位 </p>
+<h2 id="动态规划"><a href="#动态规划" class="headerlink" title="动态规划"></a>动态规划</h2><p><font color='blue'><u><em><strong>状态定义</strong></em></u></font>：<font color='red'><u><em><strong>要么是以i结尾、要么是前i个、要么是从i到j</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>状态转移函数：</strong></em></u></font><font color='red'><u><em><strong>这个就是各种各样了</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>状态初始化</strong></em></u></font> ：<font color='red'><u>***如果是一维数组，可能初始前1个，也可能初始化前两个。如果是两个数组，可能初始化第一行第一列。那辅助表就是二维数组，最好比原来的宽长都多1位 ***</u></font></p>
+<p>例题:</p>
+<p><font color='green'><u><em><strong>最长回文子串</strong></em></u></font>：用两维度的数组，表示从j到i。最后放回最长的</p>
+<p> <font color='green'><u><em><strong>打家劫舍(一)</strong></em></u></font>：这个比较正常。数组的意思是前i个</p>
+<p><font color='green'><u>*** 打家劫舍(二)***</u></font>：多了一个环形的条件，其实就是分两种情形，第一类要第一个不要最后一个；第二不要第一个（dp[0] &#x3D; 0）要最后一个。数组的意义也是前i个。</p>
+<p><font color='green'><u><em><strong>最长公共子序列(二</strong></em></u></font>)：数组的意义：<font color='red'><u><em><strong>s1的前i个字符串和s2的前j个字符串的最长公共子序列</strong></em></u></font>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>(s1.charAt(i) == s2.charAt(j)) &#123;</span><br><span class="line">             array[i][j] = array[i - <span class="number">1</span>][j - <span class="number">1</span>] + String.valueOf(s2.charAt(j));                  </span><br><span class="line">              <span class="comment">// = min([i-1,j],[i-1][j-1]+1)</span></span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">              <span class="type">String</span> <span class="variable">temp</span> <span class="operator">=</span> array[i][j - <span class="number">1</span>];</span><br><span class="line">              <span class="keyword">if</span> (array[i][j-<span class="number">1</span>].length() &gt; array[i-<span class="number">1</span>][j].length()) &#123;</span><br><span class="line">                  array[i][j] = array[i][j-<span class="number">1</span>];</span><br><span class="line">              &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                  array[i][j] = array[i-<span class="number">1</span>][j];</span><br><span class="line">              &#125;</span><br><span class="line">              </span><br><span class="line">          &#125;</span><br></pre></td></tr></table></figure>
+
+<p><font color='green'><u><em><strong>最长公共子串</strong></em></u></font>：与上面的差别在于子串是连续的。<font color='red'><u><em><strong>这里就是以s1中以第i个字符结尾和s2中以第j个字符结尾的最长公共子串</strong></em></u></font>。判断更简单</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (str1.charAt(i) == str2.charAt(j)) &#123;                   </span><br><span class="line">            array[i][j] = array[i - <span class="number">1</span>][j - <span class="number">1</span>] + String.valueOf(str1.charAt(i));</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            array[i][j] = <span class="string">&quot;&quot;</span>;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p><font color='green'><u><em><strong>最长上升子序列</strong></em></u></font>：<font color='red'><u><em><strong>以第i个字符结尾的最长子序列</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>不同路径的数目(一)</strong></em></u></font> <font color='green'><u><em><strong>矩阵的最小路径和</strong></em></u></font> 这两个比较简单，就是得<font color='red'><u><em><strong>初始化第一列和第一行</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>兑换零钱(一)</strong></em></u></font>：这个就是两个循环，第二个循环遍历纸币集合。</p>
+<p><font color='green'><u><em><strong>连续子数组的最大和</strong></em></u></font>：前i个</p>
+<p><font color='green'><u><strong>跳台阶：</strong></u></font>数组的意义是第i个</p>
+<p><font color='green'><u><em><strong>最小花费爬楼梯</strong></em></u></font>：跳到第i个台阶最少花费跳几次。关键在于<font color='red'><u><em><strong>初始化两个0.</strong></em></u></font></p>
 <p>前面（第零列或者第零行 或者两个都）可能需要初始化</p>
 <p>然后真正匹配的是从1到n；</p>
 
@@ -290,7 +306,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -304,7 +320,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -333,7 +349,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
