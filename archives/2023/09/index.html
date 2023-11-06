@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv: 2023/9 - 森</title>
+    <title>Archives: 2023/9 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-09-30T00:00:00+08:00">
 	
-		    30 Sep 2023
+		    Sep 30, 2023
     	
     </time>
     
@@ -258,7 +258,18 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h2 id="TIPS"><a href="#TIPS" class="headerlink" title="TIPS"></a>TIPS</h2><p>注意Integer和Int，基础和引用的&#x3D;&#x3D;是不一样的，在此基础上形成的stack vector，List也是这样</p>
+                    <p>二叉树</p>
+<blockquote>
+<p><font color='red'><u><em><strong>前序遍历、中序遍历、后序遍历、最大深度（等于左右子树最大的+1）。</strong></em></u></font>全部都是递归解决，无非就是赋值和两个递归顺序换一下.</p>
+</blockquote>
+<blockquote>
+<p><font color='red'><u><em><strong>求二叉树的层序遍历、按之字形顺序打印二叉树</strong></em></u></font>。都是BFS广度搜索，不过代码值得一看</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;ArrayList&lt;Integer&gt;&gt; array = <span class="keyword">new</span> <span class="title class_">ArrayList</span>();</span><br><span class="line">        <span class="keyword">if</span> (root == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> array;</span><br><span class="line">        &#125;</span><br><span class="line">        Queue&lt;TreeNode&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;TreeNode&gt;();</span><br><span class="line">        list.add(root);</span><br><span class="line">        <span class="keyword">while</span> (!list.isEmpty()) &#123;</span><br><span class="line">            ArrayList&lt;Integer&gt; temp = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;Integer&gt;();</span><br><span class="line">            <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> list.size();</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">                <span class="type">TreeNode</span> <span class="variable">t</span> <span class="operator">=</span> list.poll();</span><br><span class="line">                temp.add(t.val);</span><br><span class="line">                <span class="keyword">if</span> (t.left != <span class="literal">null</span>) &#123;</span><br><span class="line">                    list.add(t.left);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (t.right != <span class="literal">null</span>) &#123;</span><br><span class="line">                    list.add(t.right);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            array.add(temp);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<blockquote>
+<p><font color='red'><u><em><strong>二叉树中和为某一值的路径(一)</strong></em></u></font>，深度搜索，比较简单。</p>
+</blockquote>
+<h2 id="TIPS"><a href="#TIPS" class="headerlink" title="TIPS"></a>TIPS</h2><p>注意Integer和Int，基础和引用的&#x3D;&#x3D;是不一样的，在此基础上形成的stack vector，List也是这样</p>
 <h2 id="递归"><a href="#递归" class="headerlink" title="递归"></a><strong>递归</strong></h2><p>递归判断两个值是否相等或者对称这种题目，或者先判断两个空，然后判断一个空</p>
 <p>if (root1 &#x3D;&#x3D; null &amp;&amp; root2 &#x3D;&#x3D; null) 两个都为空的情况</p>
 <p>if(root1 &#x3D;&#x3D; null || root2 &#x3D;&#x3D; null || root1.val !&#x3D; root2.val) 一个为空的情况</p>
@@ -315,7 +326,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -344,7 +355,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-09-08T00:00:00+08:00">
 	
-		    08 Sep 2023
+		    Sep 08, 2023
     	
     </time>
     
@@ -622,7 +633,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -636,7 +647,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -666,7 +677,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

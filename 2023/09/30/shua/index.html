@@ -11,17 +11,17 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"TIPS注意Integer和Int，基础和引用的&#x3D;&#x3D;是不一样的，在此基础上形成的stack vector，List也是这样\n递归递归判断两个值是否相等或者对称这种题目，或者先判断两个空，然后判断一个空\nif (root1 &#x3D;&#x3D; null &amp;&amp; root2 &#x3D;&#x3D; null) 两个都为空的情况\nif(root1 &#x3D;&#x3D; null || root2 &#x3D;&#x3D; null || root1.val !&#x3D; root2.val) 一个为空的情况\n结束条件判断中，建议判断已知的。\n结束标志一般一个是null，一个是结束值。\n递归中的凭据，如果是多个数组、Treenode、链表，用坐标也许会很麻烦，可以先尝试原本的类型，比如数组，就用子数组。因为数组如果用坐标判断长度是不是0会比较麻烦\n\n如果能做一次这种就好了\n递归函数体一般分三部分\n1、结束\n2、主要函数操作，比如visit【】&#x3D;true\n3、列举 dfs\n如果是两个匹配，可以用被匹配的长度作为结束判断条件之一,比如两个字符都匹配完，某个字符匹配完某个字符没有匹配完\n动态规划状态定义：要么是以i结尾、要么是前i个、要么是从i到j\n状态转移函数：这个就是各种各样了\n状态初始化 ：***如果是一维数组，可能初始前1个，也可能初始化前两个。如果是两个数组，可能初始化第一行第一列。那辅助表就是二维数组，最好比原来的宽长都多1位 ***\n例题:\n最长回文子串：用两维度的数组，表示从j到i。最后放回最长的\n 打家劫舍(一)：这个比较正常。数组的意思是前i个\n*** 打家劫舍(二)***：多了一个环形的条件，其实就是分两种情形，第一类要第一个不要最后一个；第二不要第一个（dp[0] &#x3D; 0）要最后一个。数组的意义也是前i个。\n最长公共子序列(二)：数组的意义：s1的前i个字符串和s2的前j个字符串的最长公共子序列。\nif(s1.charAt(i) == s2.charAt(j)) &#123;             array[i][j] = array[i - 1][j - 1] + String.valueOf(s2.charAt(j));                                // = min([i-1,j],[i-1][j-1]+1)          &#125; else &#123;              String temp = array[i][j - 1];              if (array[i][j-1].length() &gt; array[i-1][j].length()) &#123;                  array[i][j] = array[i][j-1];              &#125; else &#123;                  array[i][j] = array[i-1][j];              &#125;                        &#125;\n\n最长公共子串：与上面的差别在于子串是连续的。这里就是以s1中以第i个字符结尾和s2中以第j个字符结尾的最长公共子串。判断更简单\nif (str1.charAt(i) == str2.charAt(j)) &#123;                               array[i][j] = array[i - 1][j - 1] + String.valueOf(str1.charAt(i));        &#125; else &#123;            array[i][j] = &quot;&quot;;        &#125;\n\n最长上升子序列：以第i个字符结尾的最长子序列\n不同路径的数目(一) 矩阵的最小路径和 这两个比较简单，就是得初始化第一列和第一行\n兑换零钱(一)：这个就是两个循环，第二个循环遍历纸币集合。\n连续子数组的最大和：前i个\n跳台阶：数组的意义是第i个\n最小花费爬楼梯：跳到第i个台阶最少花费跳几次。关键在于初始化两个0.\n买卖股票的最好时机(一)：初始化一个二维的【i】【2】大小。只能买一次，所以和当前的比\nfor (int i = 1; i &lt; length; i++) &#123;            a[i][0] = Math.max(a[i - 1][0], a[i - 1][1] + prices[i]);            a[i][1] = Math.max(a[i - 1][1], -prices[i]);        &#125;\n\n买卖股票的最好时机(二)，初始化一样，但是可以买卖多次，不过必须先买后卖。\nfor (int i = 1; i &lt; length; i++) &#123;            dp[i][0] = Math.max(dp[i - 1][1] + prices[i], dp[i - 1][0]);            dp[i][1] = Math.max(dp[i - 1][0] - prices[i], dp[i - 1][1]);        &#125;\n\n\n\n买卖股票的最好时机(三)：这个初始化就不一样了，【i】【4】。可以考虑维度的问题\n前面（第零列或者第零行 或者两个都）可能需要初始化\n然后真正匹配的是从1到n；\n","dateCreated":"2023-09-30T00:00:00+08:00","dateModified":"2023-11-06T13:22:50+08:00","datePublished":"2023-09-30T00:00:00+08:00","description":"","headline":"Java刷题","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/09/30/shua/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/09/30/shua/","keywords":"刷题"}</script>
-    <meta name="description" content="TIPS注意Integer和Int，基础和引用的&#x3D;&#x3D;是不一样的，在此基础上形成的stack vector，List也是这样 递归递归判断两个值是否相等或者对称这种题目，或者先判断两个空，然后判断一个空 if (root1 &#x3D;&#x3D; null &amp;&amp; root2 &#x3D;&#x3D; null) 两个都为空的情况 if(root1 &#x3D;&amp;">
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"二叉树\n\n前序遍历、中序遍历、后序遍历、最大深度（等于左右子树最大的+1）。全部都是递归解决，无非就是赋值和两个递归顺序换一下.\n\n\n求二叉树的层序遍历、按之字形顺序打印二叉树。都是BFS广度搜索，不过代码值得一看\nArrayList&lt;ArrayList&lt;Integer&gt;&gt; array = new ArrayList();        if (root == null) &#123;            return array;        &#125;        Queue&lt;TreeNode&gt; list = new ArrayDeque&lt;TreeNode&gt;();        list.add(root);        while (!list.isEmpty()) &#123;            ArrayList&lt;Integer&gt; temp = new ArrayList&lt;Integer&gt;();            int n = list.size();            for (int i = 0; i &lt; n; i++) &#123;                TreeNode t = list.poll();                temp.add(t.val);                if (t.left != null) &#123;                    list.add(t.left);                &#125;                if (t.right != null) &#123;                    list.add(t.right);                &#125;            &#125;            array.add(temp);        &#125;\n\n\n二叉树中和为某一值的路径(一)，深度搜索，比较简单。\n\nTIPS注意Integer和Int，基础和引用的&#x3D;&#x3D;是不一样的，在此基础上形成的stack vector，List也是这样\n递归递归判断两个值是否相等或者对称这种题目，或者先判断两个空，然后判断一个空\nif (root1 &#x3D;&#x3D; null &amp;&amp; root2 &#x3D;&#x3D; null) 两个都为空的情况\nif(root1 &#x3D;&#x3D; null || root2 &#x3D;&#x3D; null || root1.val !&#x3D; root2.val) 一个为空的情况\n结束条件判断中，建议判断已知的。\n结束标志一般一个是null，一个是结束值。\n递归中的凭据，如果是多个数组、Treenode、链表，用坐标也许会很麻烦，可以先尝试原本的类型，比如数组，就用子数组。因为数组如果用坐标判断长度是不是0会比较麻烦\n\n如果能做一次这种就好了\n递归函数体一般分三部分\n1、结束\n2、主要函数操作，比如visit【】&#x3D;true\n3、列举 dfs\n如果是两个匹配，可以用被匹配的长度作为结束判断条件之一,比如两个字符都匹配完，某个字符匹配完某个字符没有匹配完\n动态规划状态定义：要么是以i结尾、要么是前i个、要么是从i到j\n状态转移函数：这个就是各种各样了\n状态初始化 ：***如果是一维数组，可能初始前1个，也可能初始化前两个。如果是两个数组，可能初始化第一行第一列。那辅助表就是二维数组，最好比原来的宽长都多1位 ***\n例题:\n最长回文子串：用两维度的数组，表示从j到i。最后放回最长的\n 打家劫舍(一)：这个比较正常。数组的意思是前i个\n*** 打家劫舍(二)***：多了一个环形的条件，其实就是分两种情形，第一类要第一个不要最后一个；第二不要第一个（dp[0] &#x3D; 0）要最后一个。数组的意义也是前i个。\n最长公共子序列(二)：数组的意义：s1的前i个字符串和s2的前j个字符串的最长公共子序列。\nif(s1.charAt(i) == s2.charAt(j)) &#123;             array[i][j] = array[i - 1][j - 1] + String.valueOf(s2.charAt(j));                                // = min([i-1,j],[i-1][j-1]+1)          &#125; else &#123;              String temp = array[i][j - 1];              if (array[i][j-1].length() &gt; array[i-1][j].length()) &#123;                  array[i][j] = array[i][j-1];              &#125; else &#123;                  array[i][j] = array[i-1][j];              &#125;                        &#125;\n\n最长公共子串：与上面的差别在于子串是连续的。这里就是以s1中以第i个字符结尾和s2中以第j个字符结尾的最长公共子串。判断更简单\nif (str1.charAt(i) == str2.charAt(j)) &#123;                               array[i][j] = array[i - 1][j - 1] + String.valueOf(str1.charAt(i));        &#125; else &#123;            array[i][j] = &quot;&quot;;        &#125;\n\n最长上升子序列：以第i个字符结尾的最长子序列\n不同路径的数目(一) 矩阵的最小路径和 这两个比较简单，就是得初始化第一列和第一行\n兑换零钱(一)：这个就是两个循环，第二个循环遍历纸币集合。\n连续子数组的最大和：前i个\n跳台阶：数组的意义是第i个\n最小花费爬楼梯：跳到第i个台阶最少花费跳几次。关键在于初始化两个0.\n买卖股票的最好时机(一)：初始化一个二维的【i】【2】大小。只能买一次，所以和当前的比\nfor (int i = 1; i &lt; length; i++) &#123;            a[i][0] = Math.max(a[i - 1][0], a[i - 1][1] + prices[i]);            a[i][1] = Math.max(a[i - 1][1], -prices[i]);        &#125;\n\n买卖股票的最好时机(二)，初始化一样，但是可以买卖多次，不过必须先买后卖。\nfor (int i = 1; i &lt; length; i++) &#123;            dp[i][0] = Math.max(dp[i - 1][1] + prices[i], dp[i - 1][0]);            dp[i][1] = Math.max(dp[i - 1][0] - prices[i], dp[i - 1][1]);        &#125;\n\n\n\n买卖股票的最好时机(三)：这个初始化就不一样了，【i】【4】。可以考虑维度的问题\n前面（第零列或者第零行 或者两个都）可能需要初始化\n然后真正匹配的是从1到n；\n","dateCreated":"2023-09-30T00:00:00+08:00","dateModified":"2023-11-06T16:36:38+08:00","datePublished":"2023-09-30T00:00:00+08:00","description":"","headline":"Java刷题","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/09/30/shua/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/09/30/shua/","keywords":"刷题"}</script>
+    <meta name="description" content="二叉树  前序遍历、中序遍历、后序遍历、最大深度（等于左右子树最大的+1）。全部都是递归解决，无非就是赋值和两个递归顺序换一下.   求二叉树的层序遍历、按之字形顺序打印二叉树。都是BFS广度搜索，不过代码值得一看 ArrayList&lt;ArrayList&lt;Integer&gt;&gt; array &#x3D; new ArrayList();        if (root &#x3D;&#x3D; null)">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Java刷题">
 <meta property="og:url" content="http://example.com/2023/09/30/shua/index.html">
 <meta property="og:site_name" content="森">
-<meta property="og:description" content="TIPS注意Integer和Int，基础和引用的&#x3D;&#x3D;是不一样的，在此基础上形成的stack vector，List也是这样 递归递归判断两个值是否相等或者对称这种题目，或者先判断两个空，然后判断一个空 if (root1 &#x3D;&#x3D; null &amp;&amp; root2 &#x3D;&#x3D; null) 两个都为空的情况 if(root1 &#x3D;&amp;">
+<meta property="og:description" content="二叉树  前序遍历、中序遍历、后序遍历、最大深度（等于左右子树最大的+1）。全部都是递归解决，无非就是赋值和两个递归顺序换一下.   求二叉树的层序遍历、按之字形顺序打印二叉树。都是BFS广度搜索，不过代码值得一看 ArrayList&lt;ArrayList&lt;Integer&gt;&gt; array &#x3D; new ArrayList();        if (root &#x3D;&#x3D; null)">
 <meta property="og:locale" content="zh_CH">
 <meta property="og:image" content="http://example.com/images/shua/image-20231001132922742.png">
 <meta property="article:published_time" content="2023-09-29T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-11-06T05:22:50.292Z">
+<meta property="article:modified_time" content="2023-11-06T08:36:38.324Z">
 <meta property="article:author" content="CSEN">
 <meta property="article:tag" content="刷题">
 <meta name="twitter:card" content="summary">
@@ -77,11 +77,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -100,9 +100,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -242,7 +242,7 @@
         <div class="post-meta">
     <time datetime="2023-09-30T00:00:00+08:00">
 	
-		    30 Sep 2023
+		    Sep 30, 2023
     	
     </time>
     
@@ -260,7 +260,18 @@
     
     <div class="post-content markdown">
         <div class="main-content-wrap">
-            <h2 id="TIPS"><a href="#TIPS" class="headerlink" title="TIPS"></a>TIPS</h2><p>注意Integer和Int，基础和引用的&#x3D;&#x3D;是不一样的，在此基础上形成的stack vector，List也是这样</p>
+            <p>二叉树</p>
+<blockquote>
+<p><font color='red'><u><em><strong>前序遍历、中序遍历、后序遍历、最大深度（等于左右子树最大的+1）。</strong></em></u></font>全部都是递归解决，无非就是赋值和两个递归顺序换一下.</p>
+</blockquote>
+<blockquote>
+<p><font color='red'><u><em><strong>求二叉树的层序遍历、按之字形顺序打印二叉树</strong></em></u></font>。都是BFS广度搜索，不过代码值得一看</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ArrayList&lt;ArrayList&lt;Integer&gt;&gt; array = <span class="keyword">new</span> <span class="title class_">ArrayList</span>();</span><br><span class="line">        <span class="keyword">if</span> (root == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> array;</span><br><span class="line">        &#125;</span><br><span class="line">        Queue&lt;TreeNode&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;TreeNode&gt;();</span><br><span class="line">        list.add(root);</span><br><span class="line">        <span class="keyword">while</span> (!list.isEmpty()) &#123;</span><br><span class="line">            ArrayList&lt;Integer&gt; temp = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;Integer&gt;();</span><br><span class="line">            <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> list.size();</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">                <span class="type">TreeNode</span> <span class="variable">t</span> <span class="operator">=</span> list.poll();</span><br><span class="line">                temp.add(t.val);</span><br><span class="line">                <span class="keyword">if</span> (t.left != <span class="literal">null</span>) &#123;</span><br><span class="line">                    list.add(t.left);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (t.right != <span class="literal">null</span>) &#123;</span><br><span class="line">                    list.add(t.right);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            array.add(temp);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<blockquote>
+<p><font color='red'><u><em><strong>二叉树中和为某一值的路径(一)</strong></em></u></font>，深度搜索，比较简单。</p>
+</blockquote>
+<h2 id="TIPS"><a href="#TIPS" class="headerlink" title="TIPS"></a>TIPS</h2><p>注意Integer和Int，基础和引用的&#x3D;&#x3D;是不一样的，在此基础上形成的stack vector，List也是这样</p>
 <h2 id="递归"><a href="#递归" class="headerlink" title="递归"></a><strong>递归</strong></h2><p>递归判断两个值是否相等或者对称这种题目，或者先判断两个空，然后判断一个空</p>
 <p>if (root1 &#x3D;&#x3D; null &amp;&amp; root2 &#x3D;&#x3D; null) 两个都为空的情况</p>
 <p>if(root1 &#x3D;&#x3D; null || root2 &#x3D;&#x3D; null || root1.val !&#x3D; root2.val) 一个为空的情况</p>
@@ -313,7 +324,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">GETAGGT IN</span><br/>
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/%E5%88%B7%E9%A2%98/" rel="tag">刷题</a>
 
@@ -330,11 +341,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/10/09/Redis/"
                     data-tooltip="Redis复习"
-                    aria-label="FRÜHER: Redis复习"
+                    aria-label="PREVIOUS: Redis复习"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
                     </a>
             </li>
             <li class="post-action">
@@ -344,10 +355,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
                     data-tooltip="Java并发知识"
-                    aria-label="NÄCHSTER: Java并发知识"
+                    aria-label="NEXT: Java并发知识"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -358,7 +369,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
+                aria-label="Share this post"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -370,8 +381,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/09/30/shua/"
-                    title="Teilen auf Facebook"
-                    aria-label="Teilen auf Facebook"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -383,8 +394,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/09/30/shua/"
-                    title="Teilen auf Twitter"
-                    aria-label="Teilen auf Twitter"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -396,8 +407,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/09/30/shua/"
-                    title="Teilen auf Google Plus"
-                    aria-label="Teilen auf Google Plus"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -408,7 +419,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -445,11 +456,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/10/09/Redis/"
                     data-tooltip="Redis复习"
-                    aria-label="FRÜHER: Redis复习"
+                    aria-label="PREVIOUS: Redis复习"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
                     </a>
             </li>
             <li class="post-action">
@@ -459,10 +470,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
                     data-tooltip="Java并发知识"
-                    aria-label="NÄCHSTER: Java并发知识"
+                    aria-label="NEXT: Java并发知识"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -473,7 +484,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
+                aria-label="Share this post"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -485,8 +496,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/09/30/shua/"
-                    title="Teilen auf Facebook"
-                    aria-label="Teilen auf Facebook"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -498,8 +509,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/09/30/shua/"
-                    title="Teilen auf Twitter"
-                    aria-label="Teilen auf Twitter"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -511,8 +522,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/09/30/shua/"
-                    title="Teilen auf Google Plus"
-                    aria-label="Teilen auf Google Plus"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -523,7 +534,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -545,9 +556,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/09/30/shua/"
-                        aria-label="Teilen auf Facebook"
+                        aria-label="Share on Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
                     </a>
                 </li>
             
@@ -558,9 +569,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2023/09/30/shua/"
-                        aria-label="Teilen auf Twitter"
+                        aria-label="Share on Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
                     </a>
                 </li>
             
@@ -571,9 +582,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2023/09/30/shua/"
-                        aria-label="Teilen auf Google Plus"
+                        aria-label="Share on Google+"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
                     </a>
                 </li>
             
@@ -596,7 +607,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
