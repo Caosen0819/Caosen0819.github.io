@@ -291,6 +291,15 @@
 <p><font color='green'><u><em><strong>连续子数组的最大和</strong></em></u></font>：前i个</p>
 <p><font color='green'><u><strong>跳台阶：</strong></u></font>数组的意义是第i个</p>
 <p><font color='green'><u><em><strong>最小花费爬楼梯</strong></em></u></font>：跳到第i个台阶最少花费跳几次。关键在于<font color='red'><u><em><strong>初始化两个0.</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>买卖股票的最好时机(一)</strong></em></u></font>：初始化一个二维的【i】【2】大小。只能买一次，所以和当前的比</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; length; i++) &#123;</span><br><span class="line">            a[i][<span class="number">0</span>] = Math.max(a[i - <span class="number">1</span>][<span class="number">0</span>], a[i - <span class="number">1</span>][<span class="number">1</span>] + prices[i]);</span><br><span class="line">            a[i][<span class="number">1</span>] = Math.max(a[i - <span class="number">1</span>][<span class="number">1</span>], -prices[i]);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p><font color='green'><u><em><strong>买卖股票的最好时机(二)</strong></em></u></font>，初始化一样，但是可以买卖多次，不过必须先买后卖。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; length; i++) &#123;</span><br><span class="line">            dp[i][<span class="number">0</span>] = Math.max(dp[i - <span class="number">1</span>][<span class="number">1</span>] + prices[i], dp[i - <span class="number">1</span>][<span class="number">0</span>]);</span><br><span class="line">            dp[i][<span class="number">1</span>] = Math.max(dp[i - <span class="number">1</span>][<span class="number">0</span>] - prices[i], dp[i - <span class="number">1</span>][<span class="number">1</span>]);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><font color='green'><u><em><strong>买卖股票的最好时机(三)</strong></em></u></font>：这个初始化就不一样了，【i】【4】。<font color='red'><u><em><strong>可以考虑维度的问题</strong></em></u></font></p>
 <p>前面（第零列或者第零行 或者两个都）可能需要初始化</p>
 <p>然后真正匹配的是从1到n；</p>
 
