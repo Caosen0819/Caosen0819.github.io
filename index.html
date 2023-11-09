@@ -259,7 +259,7 @@
                 <div class="postShorten-content">
                     <p>InnoDB最重要的点：行锁设计、MVCC、外键</p>
 <p>首先来了解一下InnoDB的体系架构：</p>
-<h1 id="体系架构"><a href="#体系架构" class="headerlink" title="体系架构"></a>体系架构</h1><p>![image-20231004235405057](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231004235405057.png)</p>
+<h1 id="体系架构"><a href="#体系架构" class="headerlink" title="体系架构"></a>体系架构</h1><p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231004235405057.png" alt="image-20231004235405057"></p>
 <p>InnoDB有很多内存块，组成内存池，负责的工作：</p>
 <blockquote>
 <p>维护所有线程</p>
@@ -352,7 +352,7 @@
 <p><font color='red'><u><em><strong>3、然后马上调用fsync函数，同步磁盘。</strong></em></u></font></p>
 <p>所以，如果写的时候崩溃了，那就把这个共享表空间里面的副本拿出来配合redo log进行恢复。</p>
 </blockquote>
-<p>![image-20231021153343267](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231021153343267.png)</p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231021153343267.png" alt="image-20231021153343267"></p>
 <h2 id="3、自适应哈希"><a href="#3、自适应哈希" class="headerlink" title="3、自适应哈希"></a>3、自适应哈希</h2><p>InnoDB会自动为某些访问频率非常高的页建立哈希索引，而哈希索引比起b+树更快，所以也是一种提高性能手段。</p>
 <p>但是有一个<font color='blue'><u><em><strong>比较大的痛点就是他只能用于做 等值查询，如果遇到范围查到，就无能为力。</strong></em></u></font></p>
 <h1 id="文件"><a href="#文件" class="headerlink" title="文件"></a>文件</h1><p>文件包括mysql文件和innodb文件</p>
@@ -414,7 +414,7 @@
 </ol>
 <h3 id="穿上第一件：Page页面"><a href="#穿上第一件：Page页面" class="headerlink" title="穿上第一件：Page页面"></a>穿上第一件：Page页面</h3><p>MySQL管理数据的一个单位叫Page页面，数据都是存在页面里的<strong>。</strong>那咱们想要知道数据是怎么存，就<strong>需要了解页面长什么样子</strong>。</p>
 <p>直接爆照：</p>
-<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;42a98226cffc1e171d3b202cf4e9e50a728de9ae.jpeg)</p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/42a98226cffc1e171d3b202cf4e9e50a728de9ae.jpeg" alt="img"></p>
 <p>页头（Page Header）：存一些统计信息，记录页面的控制信息，共占56字节，包括页面空间使用情况、页的左右兄弟页面指针（<strong>这个就是双向链表，把左右兄弟页面的指针给拿到了</strong>）等。</p>
 <p>虚记录：分为最大虚记录与最小虚记录，<strong>它俩把这页里面存储的数据的范围框住了。</strong>那怎么比较谁大谁小？用的是主键去比较：最大虚记录比页内最大主键还大，最小虚记录比页内最小主键还小<strong>。</strong>那主键到底是怎么存的呢？InnoDB用的是聚簇索引——<strong>数据和主键存到一起、数据和索引存到一起，数据按主键顺序存储。</strong></p>
 <p>记录堆：<strong>这部分就是存储记录的区域</strong>，分为有效记录和已删除记录。已被删除的记录构成一个链表，叫做自由空间链表<strong>，</strong>如图蓝色已经被删除的数据，<strong>用一个链表把它们连起来</strong>。</p>
@@ -422,18 +422,18 @@
 <p>Slot：<strong>这一块对数据检索非常有用</strong>，卖个关子，后面详细说。</p>
 <p>页尾（Page Tailer）：页面的最后部分，占8个字节，主要存储页面的校验信息。<strong>这一页如果写坏了，数据不对了，通过校验位可以检查出来。</strong></p>
 <p>好了，到这里一个页面咱们了解了，了解数据大概是怎么分布的，<strong>那接下来需要考虑哪些点呢？</strong>我们接下来研究一下——页面记录是怎么维护的</p>
-<h3 id="穿上第二件"><a href="#穿上第二件" class="headerlink" title="穿上第二件"></a>穿上第二件</h3><p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;c9fcc3cec3fdfc032a5c874b6446949da5c2269b.jpeg)</p>
+<h3 id="穿上第二件"><a href="#穿上第二件" class="headerlink" title="穿上第二件"></a>穿上第二件</h3><p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/c9fcc3cec3fdfc032a5c874b6446949da5c2269b.jpeg" alt="img"></p>
 <p><strong>那这个数据在里边到底是怎么存的</strong>？换个说法——数据的顺序是怎么保证的？<strong>到底是物理有序，还是逻辑有序？</strong></p>
 <p>我们再回顾一下大学的知识——<strong>物理有序写入不友好，查询友好；逻辑有序查询不友好，插入友好</strong>，两者优缺点互补。</p>
 <p>再回到正题，了解了这两种不同存储方式的特性，反观页面是怎么做的。</p>
 <p>先看下面这幅图，思考一下插入主键为10，9，8的数据，是按物理有序存储还是逻辑有序存储：</p>
-<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;e850352ac65c103892bb2f180b68801ab27e89a2.jpeg)</p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/e850352ac65c103892bb2f180b68801ab27e89a2.jpeg" alt="img"></p>
 <p>数据插入是写入IO，数据查询是读IO，不管是写还是读，在分析存储的时候，无非是这四种：顺序写、随机写、顺序读、随机读。<strong>如果是顺序写，数据会有各种移动，写入性能肯定非常糟糕</strong>。但是没办法，<strong>优化写入的手段十分有限，不过呢我们却有很多办法优化读</strong>。</p>
 <p><strong>所以想都不用想，页内数据存储的顺序就是逻辑有序</strong>。</p>
 <p>重新梳理一下，<font color='red'><u><em><strong>Page与Page之间由双向链表连接，页内是用小的链表连起来的：</strong></em></u></font></p>
-<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;9825bc315c6034a8191108a4766a5a5d082376a2.jpeg)</p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/9825bc315c6034a8191108a4766a5a5d082376a2.jpeg" alt="img"></p>
 <p>我们再来重新画一下这棵树：</p>
-<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;80cb39dbb6fd5266c5d8021702618422d5073647.jpeg)</p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/80cb39dbb6fd5266c5d8021702618422d5073647.jpeg" alt="img"></p>
 <p>这里要注意，每个Page的索引的每个节点，也就是树的每个节点，它也是一个Page。<strong>既然是个Page，也会有页头，也会有双向链表</strong>，如图蓝色与紫色相间那部分节点数据。</p>
 <p><strong>接下来咱分析一下它的插入策略。</strong></p>
 <p>蓝色部分已删除的空间（记录堆）怎么办呢？<strong>我们得想办法尽量把它们利用上</strong>，这个换谁做数据库设计都要这么设计<strong>。</strong></p>
@@ -442,7 +442,7 @@
 <h3 id="穿上第三件：Slot槽"><a href="#穿上第三件：Slot槽" class="headerlink" title="穿上第三件：Slot槽"></a>穿上第三件：Slot槽</h3><p><strong>页内的数据是遍历还是二分查找？</strong></p>
 <p>无论数据是物理连续还是逻辑有序，都不能二分查找，都得用遍历的办法。如果我们设计一款数据库，通过索引找到数据在哪个Page里面，要是Page这一层通过遍历的方式，那效率实在是太低了，所以数据库肯定不能这样设计。</p>
 <p>遍历不行，那就使用二分查找吧，提高一下效率。那MySQL是怎么做的呢？看看这张图：</p>
-<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;3b87e950352ac65c1fead4dc4c8ba11892138a30.jpeg)</p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/3b87e950352ac65c1fead4dc4c8ba11892138a30.jpeg" alt="img"></p>
 <p>如图，最小虚记录和最大虚记录之间形成一个链表，这时候Slot区就派上用场了，每个Slot槽指向链表中的某一个位置，每个槽的大小一样，可以理解为一个指针，<strong>这样我们只需要用一个算法把每个子链表的长度拆成差不多大小就行了</strong>。</p>
 <p>在查找的时候，先基于Sn、S0找到指向的最大最小虚记录，在Slot区进行二分：<strong>先找到Sn和S0的中间位置，中间找到某个Slot，然后再一步步进行比较，通过几次二分后找到具体的子链表，最后，在子链表内进行遍历找到最终的记录</strong>。这样我们借助Slot区实现了一个近似二分查找的方法。这特别像Java里面的跳表结构，一次查找跳一次，再一次查找再跳一次，效率就特别高了</p>
 <h1 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h1><p><strong>普通索引和唯一索引，应该怎么选择？</strong>查询和对已经在内存的更新差距不大。但是对于不在内存的数据，唯一索引有唯一性要求，要先加到内存（相当于用不了changebuffer），但是普通索引不需要，只需要存到change buffer里面就可以。</p>
@@ -476,9 +476,9 @@
 <p>b+树是为了磁盘或其他直接存取辅助设备设计的一种平衡查找树</p>
 <p>b+树的所有记录结点都是按照键值的大小顺序存放到同一层的叶子结点，他们之间通过叶子结点指针进行连接，中间的都是searchkey</p>
 <h3 id=""><a href="#" class="headerlink" title=""></a></h3></blockquote>
-<h3 id="1、操作"><a href="#1、操作" class="headerlink" title="1、操作"></a>1、操作</h3><h4 id="1、插入"><a href="#1、插入" class="headerlink" title="1、插入"></a>1、插入</h4><p>![image-20231005201534270](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231005201534270.png)</p>
+<h3 id="1、操作"><a href="#1、操作" class="headerlink" title="1、操作"></a>1、操作</h3><h4 id="1、插入"><a href="#1、插入" class="headerlink" title="1、插入"></a>1、插入</h4><p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231005201534270.png" alt="image-20231005201534270"></p>
 <h4 id="2、旋转"><a href="#2、旋转" class="headerlink" title="2、旋转"></a>2、旋转</h4><p>旋转发生在leaf page已经满了，但是左右兄弟还没有满，这时候会把记录平移到兄弟结点上面，左兄弟优先</p>
-<h4 id="3、删除"><a href="#3、删除" class="headerlink" title="3、删除"></a>3、删除</h4><p>![image-20231005202324173](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231005202324173.png)</p>
+<h4 id="3、删除"><a href="#3、删除" class="headerlink" title="3、删除"></a>3、删除</h4><p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231005202324173.png" alt="image-20231005202324173"></p>
 <h3 id="2、分类"><a href="#2、分类" class="headerlink" title="2、分类"></a>2、分类</h3><p>b+树可以分成聚集索引、辅助索引，这两个到区别就是叶子结点放的到底是不是一行信息</p>
 <h4 id="1、聚集索引"><a href="#1、聚集索引" class="headerlink" title="1、聚集索引"></a>1、聚集索引</h4><blockquote>
 <p><font color='red'><u><em><strong>聚集索引就是按照主键构造的索引b+树，所以叶子结点存放的就是整张表的数据</strong></em></u></font>，叶子结点也叫做数据页。非叶子结点的索引页存放的仅仅是键值和指向数据页的偏移量。</p>
@@ -615,8 +615,8 @@
 </ul>
 </blockquote>
 <p>也就是，当执行插入、更新、删除操作，需要先对表加上「意向独占锁」，然后对该记录加行级独占锁。</p>
-<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;20e0f35589584352bd15e817668a0886.png)</p>
-<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;6e6b275c2d6d4dfcbbb338be4f61bee9.png)</p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/20e0f35589584352bd15e817668a0886.png" alt="img"></p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/6e6b275c2d6d4dfcbbb338be4f61bee9.png" alt="img"></p>
 <p>所以，<strong>意向锁的目的是为了快速判断表里是否有记录被加锁</strong>。</p>
 <h4 id="4、自增锁"><a href="#4、自增锁" class="headerlink" title="4、自增锁"></a>4、自增锁</h4><blockquote>
 <p><font color='red'><u><em><strong>主键设置成自增之后，会自动给主键赋递增的值.</strong></em></u></font></p>
@@ -632,7 +632,7 @@
 <li>原因如下：</li>
 </ul>
 </blockquote>
-<p>![img](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;innodb_autoinc_lock_mode&#x3D;2.png)</p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/innodb_autoinc_lock_mode=2.png" alt="img"></p>
 <p>session A 往表 t 中插入了 4 行数据，然后创建了一个相同结构的表 t2，然后<strong>两个 session 同时执行向表 t2 中插入数据</strong>。</p>
 <p>如果 innodb_autoinc_lock_mode &#x3D; 2，意味着「申请自增主键后就释放锁，不必等插入语句执行完」。那么就可能出现这样的情况：</p>
 <ul>
@@ -657,7 +657,7 @@
 <p><strong>在 InnoDB 事务中，行锁是在需要的时候才加上的，但并不是不需要了就立刻释放，而是要等到事务结束时才释放。</strong></p>
 </blockquote>
 <blockquote>
-<p>![image-20230805221422216](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20230805221422216.png)</p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20230805221422216.png" alt="image-20230805221422216"></p>
 </blockquote>
 <blockquote>
 <p>InnoDB有三种行锁的算法：</p>
@@ -705,7 +705,7 @@
 <p>2、wait-for-graph 等待图。检测是否有回路。通常用深度优先。1.2版本开始就变成非递归</p>
 <p>如果有死锁，那就回归undo量最少的</p>
 <h2 id="7、锁升级"><a href="#7、锁升级" class="headerlink" title="7、锁升级"></a>7、锁升级</h2><p>InnoDB中不存在锁升级的问题，因为InnoDB不是更具每个记录来产生锁的，相反，其根据每个事务访问的每个页对锁进行管理，采用的是位图的方式。所以不管你锁住的是页中的一个记录或者多个记录，开销一样</p>
-<p>![image-20231006204601132](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231006204601132.png)</p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231006204601132.png" alt="image-20231006204601132"></p>
 <h1 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h1><h2 id="1、认识事务"><a href="#1、认识事务" class="headerlink" title="1、认识事务"></a>1、认识事务</h2><h3 id="1、四个特性：acid。"><a href="#1、四个特性：acid。" class="headerlink" title="1、四个特性：acid。"></a>1、四个特性：acid。</h3><p>原子性：要么成功要么失败</p>
 <p>一致性：讲数据库从一种状态转变为下一种一致的状态，完整性约束没有被破坏。</p>
 <p>隔离性Isolation：一个事务提交之前对其他事物不可见</p>
@@ -735,16 +735,16 @@
 <li>当设置该<strong>参数为 2 时</strong>，表示每次事务提交时，都只是缓存在 redo log buffer 里的 redo log <strong>写到 redo log 文件，注意写入到「 redo log 文件」并不意味着写入到了磁盘</strong>，因为操作系统的文件系统中有个 Page Cache（如果你想了解 Page Cache，可以看<a target="_blank" rel="noopener" href="https://xiaolincoding.com/os/6_file_system/pagecache.html">这篇 (opens new window)</a>），Page Cache 是专门用来缓存文件数据的，所以写入「 redo log文件」意味着写入到了操作系统的文件缓存。</li>
 </ul>
 <p>事务提交的时候必须把事务的所有日志写入重做日志文件进行持久化。这个的所有日志包括redo log 和undo log</p>
-<p>![image-20231007131604938](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231007131604938.png)</p>
-<p>![image-20231007131752781](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231007131752781.png)</p>
-<p>![image-20231007131726290](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231007131726290.png)</p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231007131604938.png" alt="image-20231007131604938"></p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231007131752781.png" alt="image-20231007131752781"></p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231007131726290.png" alt="image-20231007131726290"></p>
 <blockquote>
 <p>产生的 redo log 是直接写入磁盘的吗？</p>
 </blockquote>
 <p>不是的。</p>
 <p>实际上， 执行一个事务的过程中，产生的 redo log 也不是直接写入磁盘的，因为这样会产生大量的 I&#x2F;O 操作，而且磁盘的运行速度远慢于内存。</p>
 <p>所以，redo log 也有自己的缓存—— <strong>redo log buffer</strong>，每当产生一条 redo log 时，会先写入到 redo log buffer，后续在持久化到磁盘如下图：</p>
-<p>![image-20231007131921540](..&#x2F;images&#x2F;Mysql复习（mysql技术内幕 innodb存储引擎）&#x2F;image-20231007131921540.png)</p>
+<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231007131921540.png" alt="image-20231007131921540"></p>
 <h3 id="2、undo-log"><a href="#2、undo-log" class="headerlink" title="2、undo log"></a>2、undo log</h3><blockquote>
 <p>undo log最主要的作用有两点：<font color='red'><u><em><strong>一个是事务回滚，保证原子性；还有一个是支持mvcc</strong></em></u></font></p>
 <p>那我们先讲第一个，就是事务提交之前，如果发生意外，这时候你用redolog是没有办法恢复的，所以我们可以使用undolog，因为undolog他记录的是修改前的记录。</p>
