@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv: 2023 - 森</title>
+    <title>Archivos: 2023 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Abre el enlace: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Leer más sobre el autor."
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -247,7 +247,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -776,7 +776,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -809,7 +809,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -976,7 +976,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -1009,7 +1009,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1117,7 +1117,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -1150,7 +1150,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1429,7 +1429,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -1462,7 +1462,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1551,6 +1551,43 @@
 <p>上面两个不同的点在于，<font color='red'><u><em><strong>第一个和后面的节点不是连在一起的，第二个是连在一起的</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>链表中的节点每k个一组翻转</strong></em></u></font>    <code>递归反转</code></p>
 <p><font color='red'><u><em><strong>单链表的排序</strong></em></u></font><code>一种是直接用arraylist存每个节点的值，自己排完，再构造链表，另一种方法就是直接归并排序</code></p>
+<h1 id="堆-x2F-栈-x2F-队列-x2F-hashmap"><a href="#堆-x2F-栈-x2F-队列-x2F-hashmap" class="headerlink" title="堆&#x2F;栈&#x2F;队列&#x2F;hashmap"></a>堆&#x2F;栈&#x2F;队列&#x2F;hashmap</h1><blockquote>
+<p><font color='red'><u><em><strong>栈</strong></em></u></font></p>
+<p><strong>用两个栈实现队列</strong>: <code>难度不大</code></p>
+<p><strong>包含min函数的栈</strong>：<code>双栈法，就是定义一个辅助栈作为存min的栈</code></p>
+<p><strong>有效括号序列</strong>：<code>借助一个栈就可以</code></p>
+</blockquote>
+<blockquote>
+<p> <font color='red'><u><em><strong>堆</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>最小的K个数</strong></em></u></font>: <code>用一个大顶堆可以</code> 关键是这里priorityqueue需要你给comparator</p>
+<p><font color='red'><u><em><strong>寻找第k大的数</strong></em></u></font>： <code>和上面的一样用堆结构，不过不同之处在于用的是</code><font color='red'><u><em><strong>小顶堆</strong></em></u></font> ，<code>并且comparator返回得到不一样</code></p>
+<p><font color='red'><u><em><strong>数据流中的中位数</strong></em></u></font>：<code>这个有些难度，用的是</code> 双堆法。一个大顶堆放小的一般，一个小顶堆放大的一半。奇数的时候放入大顶堆，偶数放入小顶堆。放入过程判断大小，做调解。</p>
+</blockquote>
+<blockquote>
+<p><font color='red'><u><em><strong>栈</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>表达式求值</strong></em></u></font> 这个是这里面最难得一个，用一个栈做，思想就是，减法就是加负号，所以对加减直接保留在栈里面，认为都是加法，最后遍历栈加起来就可以。如果遇到乘除，就得做运算，polllast出末尾然后做乘除然后add，每次做完运算num都为0。做运算的时候是要和上一个符号判断的，建议看代码</p>
+</blockquote>
+<blockquote>
+<p><font color='red'><u>**Hashmap **</u></font></p>
+<p><font color='red'><u><em><strong>两数之和</strong></em></u></font> : 很简单，用hashmap更简单</p>
+<p><font color='red'><u><em><strong>数组中出现次数超过一半的数字</strong></em></u></font> ： 很简单</p>
+<p><font color='red'><u><em><strong>缺失的第一个正整数</strong></em></u></font> ; 很简单</p>
+<p><font color='red'><u><em><strong>三数之和</strong></em></u></font>：这个是这一块最难的一题目。用哈希可以得到答案，但是不能通过，有顺序的原因。具体做法是：先sort，然后外面一个循环作为第一个值，循环里面一个left &#x3D; i + 1，一个right &#x3D; length - 1.这样三个值，然后left 和 right向中间靠拢。</p>
+</blockquote>
+<h1 id="模拟"><a href="#模拟" class="headerlink" title="模拟"></a>模拟</h1><blockquote>
+<p><font color='red'><u><em><strong>旋转数组</strong></em></u></font>：关键在于三次反转</p>
+<p><font color='red'><u><em><strong>螺旋矩阵</strong></em></u></font>：按着圈走就行了，比较简单</p>
+<p><font color='red'><u><em><strong>顺时针旋转矩阵</strong></em></u></font>：这个有两种方法，一种new一个数组；然后双重循环<code>array[i][j] = mat[n -1 - j][i];</code></p>
+<p>还有一种方法就是，先沿着左对角线翻转，然后每一行翻转。</p>
+<p><font color='red'><u><em><strong>设计LRU缓存结构</strong></em></u></font>：用双向链表（自己构造node）和一个hashmap来实现，比较麻烦。</p>
+</blockquote>
+<h1 id="字符串"><a href="#字符串" class="headerlink" title="字符串"></a>字符串</h1><blockquote>
+<p>基本就是：翻转 切割 遍历</p>
+<p><font color='red'><u><em><strong>字符串变形</strong></em></u></font> ：这个就是变成sb后 翻转 ，然后对非空的再反转</p>
+<p><font color='red'><u><em><strong>最长公共前缀</strong></em></u></font> ：这个也挺烦的，就是直接遍历第一个，双重循环。</p>
+<p><font color='red'><u><em><strong>IP地址验证</strong></em></u></font>：主要是split（ ，-1）；分完之后，循环遍历切好的集合，看看有没有什么不符合的条件。</p>
+<p><font color='red'><u><em><strong>大数加法</strong></em></u></font>： 用栈，循环从后往前遍历两个字符串。</p>
+</blockquote>
 
                     
                         
@@ -1564,7 +1601,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -1597,7 +1634,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1871,7 +1908,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -1904,7 +1941,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1982,7 +2019,7 @@
 <li><p><strong>底层数据结构：</strong> JDK1.8 以后的 <code>HashMap</code> 在解决哈希冲突时有了较大的变化，当链表长度大于阈值（默认为 8）时，将链表转化为红黑树（将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树），以减少搜索时间（后文中我会结合源码对这一过程进行分析）。<code>Hashtable</code> 没有这样的机制。</p>
 </li>
 </ul>
-<h2 id="HashMap-的底层实现"><a href="#HashMap-的底层实现" class="headerlink" title="HashMap 的底层实现"></a>HashMap 的底层实现</h2><p>JDK1.8 之前 <code>HashMap</code> 底层是 <strong>数组和链表</strong> 结合在一起使用也就是 <strong>链表散列</strong>。相比于之前的版本， JDK1.8 之后在解决哈希冲突时有了较大的变化，链表长度超过 8 个的时候，数组长度大于64时，将链表转化为红黑树，以减少搜索时间</p>
+<h2 id="HashMap-的底层实现"><a href="#HashMap-的底层实现" class="headerlink" title="HashMap 的底层实现"></a>HashMap 的底层实现</h2><p>JDK1.8 之前 <code>HashMap</code> 底层是 <strong>数组和链表</strong> ， JDK1.8 之后在解决哈希冲突时有了较大的变化，链表长度超过 8 个的时候，数组长度大于64时，将链表转化为红黑树，以减少搜索时间</p>
 <p>HashMap 通过 key 的 <code>hashcode</code> 经过扰动函数处理过后得到 hashcode的高16位，，然后通过 <code>  hash &amp; (n - 1)</code> 判断当前元素存放的位置（这里的 n 指的是数组的长度），如果定位到的数组位置没有元素 就直接插入。</p>
 <p>如果定位到的数组位置有元素就和要插入的 key 比较，如果 key 相同就直接覆盖，如果 key 不相同，就判断 p 是否是一个树节点，如果是就调用<code>e = ((TreeNode&lt;K,V&gt;)p).putTreeVal(this, tab, hash, key, value)</code>将元素添加进入。</p>
 <p>如果不是就遍历链表插入(插入的是链表尾部)，并查看连标长度是不是大于等于8且数组长度是不是大于64，如果是的话转化成红黑树，如果链表长度大于等于8，数组长度小于64，那么先不转成红黑树，先扩容。</p>
@@ -2005,11 +2042,9 @@
 </blockquote>
 <h2 id="ConcurrentHashMap"><a href="#ConcurrentHashMap" class="headerlink" title="ConcurrentHashMap"></a><strong>ConcurrentHashMap</strong></h2><blockquote>
 <p><code>ConcurrentHashMap</code>是线程安全的，而是通过原子操作和局部加锁的方法保证了多线程的线程安全。</p>
-<p>这个局部加锁之前是默认的16个<code>Segment</code> 分段锁，现在采用 <code>Node + CAS + synchronized</code> 来保证。Node节点有两类，链表节点和树节点，所以concurrenthashmap的数据结跟 <code>HashMap</code> 1.8 的结构很像，数组+链表和红黑二叉树。CAS是添加节点反正并发问题。<code>synchronized</code> 只锁定当前链表或红黑二叉树的首节点，这样只要 hash 不冲突，</p>
+<p>1.8以前是用16个<code>Segment</code> 分段锁，1.8以后现在采用数组+链表+红黑树的形式。添加元素的时候按照代码的流程先判断是不是初始化、节点为空就cas添加，如果正在扩容，就帮助扩容；如果冲突就加synchronized后再插入。</p>
 <p>Java 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。</p>
 <p>具体的代码层面：</p>
-<p>代码层面做插入操作的时候</p>
-<p>做插入操作时，<br>则判断该hash位置的节点是否为空，如果为空，则通过CAS操作进行插入。<br>如果该节点不为空，再判断容器是否在扩容中，如果在扩容，则帮助其扩容。<br>如果没有扩容，则进行最后一步，先加锁，然后找到hash值相同的那个节点(hash冲突)，<br>循环判断这个节点上的链表，决定做覆盖操作还是插入操作。<br>循环结束，插入完毕。</p>
 </blockquote>
 <h2 id="元素排序-Comparable-和-Comparator-有什么区别？"><a href="#元素排序-Comparable-和-Comparator-有什么区别？" class="headerlink" title="元素排序 Comparable 和 Comparator 有什么区别？"></a>元素排序 Comparable 和 Comparator 有什么区别？</h2><p>Comparable：实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。</p>
 <p>Comparator 除了可以通过创建自定义比较器外，还可以通过<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%8C%BF%E5%90%8D%E7%B1%BB&spm=1001.2101.3001.7020">匿名类</a>的方式，更快速、便捷的完成自定义比较器的功能，具体的代码实现如下：</p>
@@ -2027,7 +2062,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -2060,7 +2095,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -2373,7 +2408,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -2406,7 +2441,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -2457,7 +2492,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -2490,7 +2525,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -2593,7 +2628,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -2611,14 +2646,14 @@
             <a
                 class="btn btn--default btn--small"
                 href="/archives/2023/page/2/"
-                aria-label="ÄLTERE BEITRÄGE"
+                aria-label="ARTÍCULOS ANTERIORES"
             >
-              <span>ÄLTERE BEITRÄGE</span>
+              <span>ARTÍCULOS ANTERIORES</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">Seite 1 von 3</li>
+        <li class="pagination-number">página 1 de 3</li>
     </ul>
 </div>
 
@@ -2648,7 +2683,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
