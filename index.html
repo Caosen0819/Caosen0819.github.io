@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Abre el enlace: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Leer más sobre el autor."
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -246,7 +246,7 @@
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -775,7 +775,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comentar y compartir
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -808,7 +808,7 @@
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -975,7 +975,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comentar y compartir
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1008,7 +1008,7 @@
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1116,7 +1116,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comentar y compartir
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1149,7 +1149,7 @@
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1428,7 +1428,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comentar y compartir
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1461,7 +1461,7 @@
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1587,6 +1587,17 @@
 <p><font color='red'><u><em><strong>IP地址验证</strong></em></u></font>：主要是split（ ，-1）；分完之后，循环遍历切好的集合，看看有没有什么不符合的条件。</p>
 <p><font color='red'><u><em><strong>大数加法</strong></em></u></font>： 用栈，循环从后往前遍历两个字符串。</p>
 </blockquote>
+<h1 id="双指针"><a href="#双指针" class="headerlink" title="双指针"></a>双指针</h1><blockquote>
+<p><font color='red'><u><em><strong>双指针指的是在遍历对象的过程中，不是普通的使用单个指针进行访问，而是使用两个指针（特殊情况甚至可以多个），两个指针或是同方向访问两个链表、或是同方向访问一个链表（快慢指针）、或是相反方向扫描（对撞指针），从而达到我们需要的目的。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>合并两个有序的队列</strong></em></u></font>：可以用归并排序，这个排序需要重点记住</p>
+<blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">guibing</span><span class="params">(<span class="type">int</span> a[], <span class="type">int</span> temp[], <span class="type">int</span>  left, <span class="type">int</span> right)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (left &gt;= right ) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//hebing</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> (left + right) / <span class="number">2</span>;</span><br><span class="line">        guibing(a,temp,left, mid);</span><br><span class="line">        guibing(a,temp, mid + <span class="number">1</span>, right);</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> left, j = mid + <span class="number">1</span>, k = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (i &lt;= mid &amp;&amp; j &lt;= right )&#123;</span><br><span class="line">            <span class="keyword">if</span> (a[i] &lt; a[j]) &#123;</span><br><span class="line">                temp[k++] = a[i++];</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                temp[k++] = a[j++];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (i &lt;= mid )&#123;</span><br><span class="line">            temp[k++] = a[i++];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (j &lt;= right )&#123;</span><br><span class="line">            temp[k++] = a[j++];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">t</span> <span class="operator">=</span> <span class="number">0</span>; t&lt; right - left + <span class="number">1</span>; t++) &#123;</span><br><span class="line">            a[left + t] = temp[t];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p><font color='red'><u><em><strong>合并区间</strong></em></u></font>：关键在于先排序，然后每次都和队列尾部的比较就可以。</p>
+<p><font color='red'><u><em><strong>最长无重复子数组</strong></em></u></font>：这个双重循环+Set集合</p>
+<p><font color='red'><u><em><strong>盛水最多的容器</strong></em></u></font> 前指针 + 后指针 向中间靠拢</p>
+<p><font color='red'><u><em><strong>接雨水问题</strong></em></u></font>： 前指针 + 后指针 向中间靠拢</p>
+</blockquote>
 
                     
                         
@@ -1600,7 +1611,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comentar y compartir
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1633,7 +1644,7 @@
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1907,7 +1918,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comentar y compartir
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1940,7 +1951,7 @@
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -2061,7 +2072,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comentar y compartir
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2094,7 +2105,7 @@
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -2407,7 +2418,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comentar y compartir
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2440,7 +2451,7 @@
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -2491,7 +2502,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comentar y compartir
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2524,7 +2535,7 @@
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -2627,7 +2638,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comentar y compartir
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2645,14 +2656,14 @@
             <a
                 class="btn btn--default btn--small"
                 href="/page/2/"
-                aria-label="ARTÍCULOS ANTERIORES"
+                aria-label="ÄLTERE BEITRÄGE"
             >
-              <span>ARTÍCULOS ANTERIORES</span>
+              <span>ÄLTERE BEITRÄGE</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">página 1 de 4</li>
+        <li class="pagination-number">Seite 1 von 4</li>
     </ul>
 </div>
 
@@ -2681,7 +2692,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

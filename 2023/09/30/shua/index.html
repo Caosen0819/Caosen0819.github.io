@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"二叉树\n难：序列化二叉树  层序遍历或者先序遍历\n递归\n前序遍历、中序遍历、后序遍历、最大深度（等于左右子树最大的+1）。全部都是递归解决，无非就是赋值和两个递归顺序换一下\n重建二叉树\n\n对称二叉树：\n合并二叉树\n二叉树镜像，\n判断是不是平衡树 、靠深度\n***二叉搜索树的最近公共祖先(按照值搜索，所以四种分类，左左，右右，中，相等) ***  \n在二叉树中找到两个节点的最近公共祖先（按照节点搜索值对比，分3类，左右子树都有，左找到右没找到，右找到左没找到，出现相等说明找到了，就返回节点） :这些递归稍显复杂\n还有很多是依赖于前序遍历解决的：二叉搜索树与双向链表，判断是不是二叉搜索树\n\n\nBFS广度搜索\n求二叉树的层序遍历、按之字形顺序打印二叉树。都是BFS广度搜索，不过代码值得一看\nQueue&lt;TreeNode&gt; list = new ArrayDeque&lt;TreeNode&gt;();list.add(root);while (!list.isEmpty()) &#123;    ArrayList&lt;Integer&gt; temp = new ArrayList&lt;Integer&gt;();    int n = list.size();    for (int i = 0; i &lt; n; i++) &#123;        TreeNode t = list.poll();        temp.add(t.val);        if (t.left != null) &#123;            list.add(t.left);        &#125;        if (t.right != null) &#123;            list.add(t.right);        &#125;    &#125;    array.add(temp);&#125;\n\n\n二叉树中和为某一值的路径(一)，深度搜索，比较简单。\n\nTIPS注意Integer和Int，基础和引用的&#x3D;&#x3D;是不一样的，在此基础上形成的stack vector，List也是这样\n递归递归判断两个值是否相等或者对称这种题目，或者先判断两个空，然后判断一个空\nif (root1 &#x3D;&#x3D; null &amp;&amp; root2 &#x3D;&#x3D; null) 两个都为空的情况\nif(root1 &#x3D;&#x3D; null || root2 &#x3D;&#x3D; null || root1.val !&#x3D; root2.val) 一个为空的情况\n结束条件判断中，建议判断已知的。\n结束标志一般一个是null，一个是结束值。\n递归中的凭据，如果是多个数组、Treenode、链表，用坐标也许会很麻烦，可以先尝试原本的类型，比如数组，就用子数组。因为数组如果用坐标判断长度是不是0会比较麻烦\n\n如果能做一次这种就好了\n递归函数体一般分三部分\n1、结束\n2、主要函数操作，比如visit【】&#x3D;true\n3、列举 dfs\n如果是两个匹配，可以用被匹配的长度作为结束判断条件之一,比如两个字符都匹配完，某个字符匹配完某个字符没有匹配完\n动态规划状态定义：要么是以i结尾、要么是前i个、要么是从i到j\n状态转移函数：这个就是各种各样了\n状态初始化 ：***如果是一维数组，可能初始前1个，也可能初始化前两个。如果是两个数组，可能初始化第一行第一列。那辅助表就是二维数组，最好比原来的宽长都多1位 ***\n例题:\n最长回文子串：用两维度的数组，表示从j到i。最后放回最长的\n 打家劫舍(一)：这个比较正常。数组的意思是前i个\n*** 打家劫舍(二)***：多了一个环形的条件，其实就是分两种情形，第一类要第一个不要最后一个；第二不要第一个（dp[0] &#x3D; 0）要最后一个。数组的意义也是前i个。\n最长公共子序列(二)：数组的意义：s1的前i个字符串和s2的前j个字符串的最长公共子序列。\nif(s1.charAt(i) == s2.charAt(j)) &#123;             array[i][j] = array[i - 1][j - 1] + String.valueOf(s2.charAt(j));                                // = min([i-1,j],[i-1][j-1]+1)          &#125; else &#123;              String temp = array[i][j - 1];              if (array[i][j-1].length() &gt; array[i-1][j].length()) &#123;                  array[i][j] = array[i][j-1];              &#125; else &#123;                  array[i][j] = array[i-1][j];              &#125;                        &#125;\n\n最长公共子串：与上面的差别在于子串是连续的。这里就是以s1中以第i个字符结尾和s2中以第j个字符结尾的最长公共子串。判断更简单\nif (str1.charAt(i) == str2.charAt(j)) &#123;                               array[i][j] = array[i - 1][j - 1] + String.valueOf(str1.charAt(i));        &#125; else &#123;            array[i][j] = &quot;&quot;;        &#125;\n\n最长上升子序列：以第i个字符结尾的最长子序列\n不同路径的数目(一) 矩阵的最小路径和 这两个比较简单，就是得初始化第一列和第一行\n兑换零钱(一)：这个就是两个循环，第二个循环遍历纸币集合。\n连续子数组的最大和：前i个\n跳台阶：数组的意义是第i个\n最小花费爬楼梯：跳到第i个台阶最少花费跳几次。关键在于初始化两个0.\n买卖股票的最好时机(一)：初始化一个二维的【i】【2】大小。只能买一次，所以和当前的比\nfor (int i = 1; i &lt; length; i++) &#123;            a[i][0] = Math.max(a[i - 1][0], a[i - 1][1] + prices[i]);            a[i][1] = Math.max(a[i - 1][1], -prices[i]);        &#125;\n\n买卖股票的最好时机(二)，初始化一样，但是可以买卖多次，不过必须先买后卖。\nfor (int i = 1; i &lt; length; i++) &#123;            dp[i][0] = Math.max(dp[i - 1][1] + prices[i], dp[i - 1][0]);            dp[i][1] = Math.max(dp[i - 1][0] - prices[i], dp[i - 1][1]);        &#125;\n\n\n\n买卖股票的最好时机(三)：这个初始化就不一样了，【i】【4】。可以考虑维度的问题\n链表判断有没有环形 ： 一个走两步一个走一步，重要的是while里面是&amp;&amp;，如果碰到了就代表有环\nListNode pre = head;        ListNode nextt = pre;        while (nextt != null &amp;&amp; pre != null) &#123;            pre = pre.next;            if (nextt.next != null) &#123;                nextt = nextt.next.next;            &#125; else &#123;                return false;            &#125;                  if (pre == nextt) &#123;                return true;                        &#125;                   &#125;  \n\n链表相加(二)就是反转在做操作，其他的就是一些小细节没什么大不了的\n反转链表  就是new一个新的链表头，或者栈。\nwhile (head != null) &#123;           ListNode tmp = head.next;           head.next = newHead;           newHead = head;           head = tmp;       &#125;\n\n链表内指定区间反转这个和上面那个一样，但是更加复杂\nfor (int i = 0; i &lt; n - m; i++) &#123;            ListNode tmp = cur.next;            cur.next = tmp.next;            tmp.next = pre.next;            pre.next = tmp;        &#125;\n\n上面这两个题目其实关键在反转，其实就是三步：1）记录当前的下个节点tmp；2）当前的节点的下一个是下一个的下一个（tmp的下一个）；3）tmp的下一个是反转开始前节点的下一个pre或者head；4）pre。next &#x3D; tmp\n上面两个不同的点在于，第一个和后面的节点不是连在一起的，第二个是连在一起的\n链表中的节点每k个一组翻转    递归反转\n单链表的排序一种是直接用arraylist存每个节点的值，自己排完，再构造链表，另一种方法就是直接归并排序\n堆&#x2F;栈&#x2F;队列&#x2F;hashmap\n栈\n用两个栈实现队列: 难度不大\n包含min函数的栈：双栈法，就是定义一个辅助栈作为存min的栈\n有效括号序列：借助一个栈就可以\n\n\n 堆\n最小的K个数: 用一个大顶堆可以 关键是这里priorityqueue需要你给comparator\n寻找第k大的数： 和上面的一样用堆结构，不过不同之处在于用的是小顶堆 ，并且comparator返回得到不一样\n数据流中的中位数：这个有些难度，用的是 双堆法。一个大顶堆放小的一般，一个小顶堆放大的一半。奇数的时候放入大顶堆，偶数放入小顶堆。放入过程判断大小，做调解。\n\n\n栈\n表达式求值 这个是这里面最难得一个，用一个栈做，思想就是，减法就是加负号，所以对加减直接保留在栈里面，认为都是加法，最后遍历栈加起来就可以。如果遇到乘除，就得做运算，polllast出末尾然后做乘除然后add，每次做完运算num都为0。做运算的时候是要和上一个符号判断的，建议看代码\n\n\n**Hashmap **\n两数之和 : 很简单，用hashmap更简单\n数组中出现次数超过一半的数字 ： 很简单\n缺失的第一个正整数 ; 很简单\n三数之和：这个是这一块最难的一题目。用哈希可以得到答案，但是不能通过，有顺序的原因。具体做法是：先sort，然后外面一个循环作为第一个值，循环里面一个left &#x3D; i + 1，一个right &#x3D; length - 1.这样三个值，然后left 和 right向中间靠拢。\n\n模拟\n旋转数组：关键在于三次反转\n螺旋矩阵：按着圈走就行了，比较简单\n顺时针旋转矩阵：这个有两种方法，一种new一个数组；然后双重循环array[i][j] = mat[n -1 - j][i];\n还有一种方法就是，先沿着左对角线翻转，然后每一行翻转。\n设计LRU缓存结构：用双向链表（自己构造node）和一个hashmap来实现，比较麻烦。\n\n字符串\n基本就是：翻转 切割 遍历\n字符串变形 ：这个就是变成sb后 翻转 ，然后对非空的再反转\n最长公共前缀 ：这个也挺烦的，就是直接遍历第一个，双重循环。\nIP地址验证：主要是split（ ，-1）；分完之后，循环遍历切好的集合，看看有没有什么不符合的条件。\n大数加法： 用栈，循环从后往前遍历两个字符串。\n\n","dateCreated":"2023-09-30T00:00:00+08:00","dateModified":"2023-11-12T02:15:34+08:00","datePublished":"2023-09-30T00:00:00+08:00","description":"","headline":"Java刷题","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/09/30/shua/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/09/30/shua/","keywords":"刷题"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"二叉树\n难：序列化二叉树  层序遍历或者先序遍历\n递归\n前序遍历、中序遍历、后序遍历、最大深度（等于左右子树最大的+1）。全部都是递归解决，无非就是赋值和两个递归顺序换一下\n重建二叉树\n\n对称二叉树：\n合并二叉树\n二叉树镜像，\n判断是不是平衡树 、靠深度\n***二叉搜索树的最近公共祖先(按照值搜索，所以四种分类，左左，右右，中，相等) ***  \n在二叉树中找到两个节点的最近公共祖先（按照节点搜索值对比，分3类，左右子树都有，左找到右没找到，右找到左没找到，出现相等说明找到了，就返回节点） :这些递归稍显复杂\n还有很多是依赖于前序遍历解决的：二叉搜索树与双向链表，判断是不是二叉搜索树\n\n\nBFS广度搜索\n求二叉树的层序遍历、按之字形顺序打印二叉树。都是BFS广度搜索，不过代码值得一看\nQueue&lt;TreeNode&gt; list = new ArrayDeque&lt;TreeNode&gt;();list.add(root);while (!list.isEmpty()) &#123;    ArrayList&lt;Integer&gt; temp = new ArrayList&lt;Integer&gt;();    int n = list.size();    for (int i = 0; i &lt; n; i++) &#123;        TreeNode t = list.poll();        temp.add(t.val);        if (t.left != null) &#123;            list.add(t.left);        &#125;        if (t.right != null) &#123;            list.add(t.right);        &#125;    &#125;    array.add(temp);&#125;\n\n\n二叉树中和为某一值的路径(一)，深度搜索，比较简单。\n\nTIPS注意Integer和Int，基础和引用的&#x3D;&#x3D;是不一样的，在此基础上形成的stack vector，List也是这样\n递归递归判断两个值是否相等或者对称这种题目，或者先判断两个空，然后判断一个空\nif (root1 &#x3D;&#x3D; null &amp;&amp; root2 &#x3D;&#x3D; null) 两个都为空的情况\nif(root1 &#x3D;&#x3D; null || root2 &#x3D;&#x3D; null || root1.val !&#x3D; root2.val) 一个为空的情况\n结束条件判断中，建议判断已知的。\n结束标志一般一个是null，一个是结束值。\n递归中的凭据，如果是多个数组、Treenode、链表，用坐标也许会很麻烦，可以先尝试原本的类型，比如数组，就用子数组。因为数组如果用坐标判断长度是不是0会比较麻烦\n\n如果能做一次这种就好了\n递归函数体一般分三部分\n1、结束\n2、主要函数操作，比如visit【】&#x3D;true\n3、列举 dfs\n如果是两个匹配，可以用被匹配的长度作为结束判断条件之一,比如两个字符都匹配完，某个字符匹配完某个字符没有匹配完\n动态规划状态定义：要么是以i结尾、要么是前i个、要么是从i到j\n状态转移函数：这个就是各种各样了\n状态初始化 ：***如果是一维数组，可能初始前1个，也可能初始化前两个。如果是两个数组，可能初始化第一行第一列。那辅助表就是二维数组，最好比原来的宽长都多1位 ***\n例题:\n最长回文子串：用两维度的数组，表示从j到i。最后放回最长的\n 打家劫舍(一)：这个比较正常。数组的意思是前i个\n*** 打家劫舍(二)***：多了一个环形的条件，其实就是分两种情形，第一类要第一个不要最后一个；第二不要第一个（dp[0] &#x3D; 0）要最后一个。数组的意义也是前i个。\n最长公共子序列(二)：数组的意义：s1的前i个字符串和s2的前j个字符串的最长公共子序列。\nif(s1.charAt(i) == s2.charAt(j)) &#123;             array[i][j] = array[i - 1][j - 1] + String.valueOf(s2.charAt(j));                                // = min([i-1,j],[i-1][j-1]+1)          &#125; else &#123;              String temp = array[i][j - 1];              if (array[i][j-1].length() &gt; array[i-1][j].length()) &#123;                  array[i][j] = array[i][j-1];              &#125; else &#123;                  array[i][j] = array[i-1][j];              &#125;                        &#125;\n\n最长公共子串：与上面的差别在于子串是连续的。这里就是以s1中以第i个字符结尾和s2中以第j个字符结尾的最长公共子串。判断更简单\nif (str1.charAt(i) == str2.charAt(j)) &#123;                               array[i][j] = array[i - 1][j - 1] + String.valueOf(str1.charAt(i));        &#125; else &#123;            array[i][j] = &quot;&quot;;        &#125;\n\n最长上升子序列：以第i个字符结尾的最长子序列\n不同路径的数目(一) 矩阵的最小路径和 这两个比较简单，就是得初始化第一列和第一行\n兑换零钱(一)：这个就是两个循环，第二个循环遍历纸币集合。\n连续子数组的最大和：前i个\n跳台阶：数组的意义是第i个\n最小花费爬楼梯：跳到第i个台阶最少花费跳几次。关键在于初始化两个0.\n买卖股票的最好时机(一)：初始化一个二维的【i】【2】大小。只能买一次，所以和当前的比\nfor (int i = 1; i &lt; length; i++) &#123;            a[i][0] = Math.max(a[i - 1][0], a[i - 1][1] + prices[i]);            a[i][1] = Math.max(a[i - 1][1], -prices[i]);        &#125;\n\n买卖股票的最好时机(二)，初始化一样，但是可以买卖多次，不过必须先买后卖。\nfor (int i = 1; i &lt; length; i++) &#123;            dp[i][0] = Math.max(dp[i - 1][1] + prices[i], dp[i - 1][0]);            dp[i][1] = Math.max(dp[i - 1][0] - prices[i], dp[i - 1][1]);        &#125;\n\n\n\n买卖股票的最好时机(三)：这个初始化就不一样了，【i】【4】。可以考虑维度的问题\n链表判断有没有环形 ： 一个走两步一个走一步，重要的是while里面是&amp;&amp;，如果碰到了就代表有环\nListNode pre = head;        ListNode nextt = pre;        while (nextt != null &amp;&amp; pre != null) &#123;            pre = pre.next;            if (nextt.next != null) &#123;                nextt = nextt.next.next;            &#125; else &#123;                return false;            &#125;                  if (pre == nextt) &#123;                return true;                        &#125;                   &#125;  \n\n链表相加(二)就是反转在做操作，其他的就是一些小细节没什么大不了的\n反转链表  就是new一个新的链表头，或者栈。\nwhile (head != null) &#123;           ListNode tmp = head.next;           head.next = newHead;           newHead = head;           head = tmp;       &#125;\n\n链表内指定区间反转这个和上面那个一样，但是更加复杂\nfor (int i = 0; i &lt; n - m; i++) &#123;            ListNode tmp = cur.next;            cur.next = tmp.next;            tmp.next = pre.next;            pre.next = tmp;        &#125;\n\n上面这两个题目其实关键在反转，其实就是三步：1）记录当前的下个节点tmp；2）当前的节点的下一个是下一个的下一个（tmp的下一个）；3）tmp的下一个是反转开始前节点的下一个pre或者head；4）pre。next &#x3D; tmp\n上面两个不同的点在于，第一个和后面的节点不是连在一起的，第二个是连在一起的\n链表中的节点每k个一组翻转    递归反转\n单链表的排序一种是直接用arraylist存每个节点的值，自己排完，再构造链表，另一种方法就是直接归并排序\n堆&#x2F;栈&#x2F;队列&#x2F;hashmap\n栈\n用两个栈实现队列: 难度不大\n包含min函数的栈：双栈法，就是定义一个辅助栈作为存min的栈\n有效括号序列：借助一个栈就可以\n\n\n 堆\n最小的K个数: 用一个大顶堆可以 关键是这里priorityqueue需要你给comparator\n寻找第k大的数： 和上面的一样用堆结构，不过不同之处在于用的是小顶堆 ，并且comparator返回得到不一样\n数据流中的中位数：这个有些难度，用的是 双堆法。一个大顶堆放小的一般，一个小顶堆放大的一半。奇数的时候放入大顶堆，偶数放入小顶堆。放入过程判断大小，做调解。\n\n\n栈\n表达式求值 这个是这里面最难得一个，用一个栈做，思想就是，减法就是加负号，所以对加减直接保留在栈里面，认为都是加法，最后遍历栈加起来就可以。如果遇到乘除，就得做运算，polllast出末尾然后做乘除然后add，每次做完运算num都为0。做运算的时候是要和上一个符号判断的，建议看代码\n\n\n**Hashmap **\n两数之和 : 很简单，用hashmap更简单\n数组中出现次数超过一半的数字 ： 很简单\n缺失的第一个正整数 ; 很简单\n三数之和：这个是这一块最难的一题目。用哈希可以得到答案，但是不能通过，有顺序的原因。具体做法是：先sort，然后外面一个循环作为第一个值，循环里面一个left &#x3D; i + 1，一个right &#x3D; length - 1.这样三个值，然后left 和 right向中间靠拢。\n\n模拟\n旋转数组：关键在于三次反转\n螺旋矩阵：按着圈走就行了，比较简单\n顺时针旋转矩阵：这个有两种方法，一种new一个数组；然后双重循环array[i][j] = mat[n -1 - j][i];\n还有一种方法就是，先沿着左对角线翻转，然后每一行翻转。\n设计LRU缓存结构：用双向链表（自己构造node）和一个hashmap来实现，比较麻烦。\n\n字符串\n基本就是：翻转 切割 遍历\n字符串变形 ：这个就是变成sb后 翻转 ，然后对非空的再反转\n最长公共前缀 ：这个也挺烦的，就是直接遍历第一个，双重循环。\nIP地址验证：主要是split（ ，-1）；分完之后，循环遍历切好的集合，看看有没有什么不符合的条件。\n大数加法： 用栈，循环从后往前遍历两个字符串。\n\n双指针\n双指针指的是在遍历对象的过程中，不是普通的使用单个指针进行访问，而是使用两个指针（特殊情况甚至可以多个），两个指针或是同方向访问两个链表、或是同方向访问一个链表（快慢指针）、或是相反方向扫描（对撞指针），从而达到我们需要的目的。\n合并两个有序的队列：可以用归并排序，这个排序需要重点记住\n\npublic void guibing(int a[], int temp[], int  left, int right) &#123;        if (left &gt;= right ) &#123;            return;        &#125;        //hebing        int mid = (left + right) / 2;        guibing(a,temp,left, mid);        guibing(a,temp, mid + 1, right);        int i = left, j = mid + 1, k = 0;        while (i &lt;= mid &amp;&amp; j &lt;= right )&#123;            if (a[i] &lt; a[j]) &#123;                temp[k++] = a[i++];            &#125; else &#123;                temp[k++] = a[j++];            &#125;        &#125;        while (i &lt;= mid )&#123;            temp[k++] = a[i++];        &#125;        while (j &lt;= right )&#123;            temp[k++] = a[j++];        &#125;        for (int t = 0; t&lt; right - left + 1; t++) &#123;            a[left + t] = temp[t];        &#125;    &#125;\n\n合并区间：关键在于先排序，然后每次都和队列尾部的比较就可以。\n最长无重复子数组：这个双重循环+Set集合\n盛水最多的容器 前指针 + 后指针 向中间靠拢\n接雨水问题： 前指针 + 后指针 向中间靠拢\n\n","dateCreated":"2023-09-30T00:00:00+08:00","dateModified":"2023-11-12T23:45:37+08:00","datePublished":"2023-09-30T00:00:00+08:00","description":"","headline":"Java刷题","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/09/30/shua/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/09/30/shua/","keywords":"刷题"}</script>
     <meta name="description" content="二叉树 难：序列化二叉树  层序遍历或者先序遍历 递归 前序遍历、中序遍历、后序遍历、最大深度（等于左右子树最大的+1）。全部都是递归解决，无非就是赋值和两个递归顺序换一下 重建二叉树  对称二叉树： 合并二叉树 二叉树镜像， 判断是不是平衡树 、靠深度 ***二叉搜索树的最近公共祖先(按照值搜索，所以四种分类，左左，右右，中，相等) ***   在二叉树中找到两个节点的最近公共祖先（按照节点搜索">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Java刷题">
@@ -22,7 +22,7 @@
 <meta property="og:image" content="http://example.com/images/shua/image-20231107163434834.png">
 <meta property="og:image" content="http://example.com/images/shua/image-20231001132922742.png">
 <meta property="article:published_time" content="2023-09-29T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-11-11T18:15:34.134Z">
+<meta property="article:modified_time" content="2023-11-12T15:45:37.765Z">
 <meta property="article:author" content="CSEN">
 <meta property="article:tag" content="刷题">
 <meta name="twitter:card" content="summary">
@@ -78,11 +78,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Abre el enlace: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -101,9 +101,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Leer más sobre el autor."
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -247,7 +247,7 @@
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -376,6 +376,17 @@
 <p><font color='red'><u><em><strong>IP地址验证</strong></em></u></font>：主要是split（ ，-1）；分完之后，循环遍历切好的集合，看看有没有什么不符合的条件。</p>
 <p><font color='red'><u><em><strong>大数加法</strong></em></u></font>： 用栈，循环从后往前遍历两个字符串。</p>
 </blockquote>
+<h1 id="双指针"><a href="#双指针" class="headerlink" title="双指针"></a>双指针</h1><blockquote>
+<p><font color='red'><u><em><strong>双指针指的是在遍历对象的过程中，不是普通的使用单个指针进行访问，而是使用两个指针（特殊情况甚至可以多个），两个指针或是同方向访问两个链表、或是同方向访问一个链表（快慢指针）、或是相反方向扫描（对撞指针），从而达到我们需要的目的。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>合并两个有序的队列</strong></em></u></font>：可以用归并排序，这个排序需要重点记住</p>
+<blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">guibing</span><span class="params">(<span class="type">int</span> a[], <span class="type">int</span> temp[], <span class="type">int</span>  left, <span class="type">int</span> right)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (left &gt;= right ) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//hebing</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> (left + right) / <span class="number">2</span>;</span><br><span class="line">        guibing(a,temp,left, mid);</span><br><span class="line">        guibing(a,temp, mid + <span class="number">1</span>, right);</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> left, j = mid + <span class="number">1</span>, k = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (i &lt;= mid &amp;&amp; j &lt;= right )&#123;</span><br><span class="line">            <span class="keyword">if</span> (a[i] &lt; a[j]) &#123;</span><br><span class="line">                temp[k++] = a[i++];</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                temp[k++] = a[j++];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (i &lt;= mid )&#123;</span><br><span class="line">            temp[k++] = a[i++];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (j &lt;= right )&#123;</span><br><span class="line">            temp[k++] = a[j++];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">t</span> <span class="operator">=</span> <span class="number">0</span>; t&lt; right - left + <span class="number">1</span>; t++) &#123;</span><br><span class="line">            a[left + t] = temp[t];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p><font color='red'><u><em><strong>合并区间</strong></em></u></font>：关键在于先排序，然后每次都和队列尾部的比较就可以。</p>
+<p><font color='red'><u><em><strong>最长无重复子数组</strong></em></u></font>：这个双重循环+Set集合</p>
+<p><font color='red'><u><em><strong>盛水最多的容器</strong></em></u></font> 前指针 + 后指针 向中间靠拢</p>
+<p><font color='red'><u><em><strong>接雨水问题</strong></em></u></font>： 前指针 + 后指针 向中间靠拢</p>
+</blockquote>
 
             
 
@@ -385,7 +396,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">ETIQUETADO EN</span><br/>
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/%E5%88%B7%E9%A2%98/" rel="tag">刷题</a>
 
@@ -402,11 +413,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/10/09/Redis/"
                     data-tooltip="Redis复习"
-                    aria-label="ANTERIOR: Redis复习"
+                    aria-label="FRÜHER: Redis复习"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">ANTERIOR</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -416,10 +427,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
                     data-tooltip="Java并发知识"
-                    aria-label="SIGUIENTE: Java并发知识"
+                    aria-label="NÄCHSTER: Java并发知识"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">SIGUIENTE</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -430,7 +441,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -442,8 +453,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/09/30/shua/"
-                    title="Compartir en Facebook"
-                    aria-label="Compartir en Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -455,8 +466,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/09/30/shua/"
-                    title="Compartir en Twitter"
-                    aria-label="Compartir en Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -468,8 +479,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/09/30/shua/"
-                    title="Compartir en Google+"
-                    aria-label="Compartir en Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -480,7 +491,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -517,11 +528,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/10/09/Redis/"
                     data-tooltip="Redis复习"
-                    aria-label="ANTERIOR: Redis复习"
+                    aria-label="FRÜHER: Redis复习"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">ANTERIOR</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -531,10 +542,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/09/08/Java%E5%B9%B6%E5%8F%91/"
                     data-tooltip="Java并发知识"
-                    aria-label="SIGUIENTE: Java并发知识"
+                    aria-label="NÄCHSTER: Java并发知识"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">SIGUIENTE</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -545,7 +556,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -557,8 +568,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/09/30/shua/"
-                    title="Compartir en Facebook"
-                    aria-label="Compartir en Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -570,8 +581,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/09/30/shua/"
-                    title="Compartir en Twitter"
-                    aria-label="Compartir en Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -583,8 +594,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/09/30/shua/"
-                    title="Compartir en Google+"
-                    aria-label="Compartir en Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -595,7 +606,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -617,9 +628,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/09/30/shua/"
-                        aria-label="Compartir en Facebook"
+                        aria-label="Teilen auf Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Compartir en Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
                     </a>
                 </li>
             
@@ -630,9 +641,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2023/09/30/shua/"
-                        aria-label="Compartir en Twitter"
+                        aria-label="Teilen auf Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Compartir en Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
                     </a>
                 </li>
             
@@ -643,9 +654,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2023/09/30/shua/"
-                        aria-label="Compartir en Google+"
+                        aria-label="Teilen auf Google Plus"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Compartir en Google+</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
                     </a>
                 </li>
             
@@ -668,7 +679,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
