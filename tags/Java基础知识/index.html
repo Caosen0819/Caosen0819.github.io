@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    07 Aug 2023
+		    Aug 07, 2023
     	
     </time>
     
@@ -354,7 +354,7 @@
 </blockquote>
 <h2 id="ConcurrentHashMap"><a href="#ConcurrentHashMap" class="headerlink" title="ConcurrentHashMap"></a><strong>ConcurrentHashMap</strong></h2><blockquote>
 <p><code>ConcurrentHashMap</code>是线程安全的，而是通过原子操作和局部加锁的方法保证了多线程的线程安全。</p>
-<p>1.8以前是用16个<code>Segment</code> 分段锁，1.8以后现在采用数组+链表+红黑树的形式。添加元素的时候按照代码的流程先判断是不是初始化、节点为空就cas添加，如果正在扩容，就帮助扩容；如果冲突就加synchronized后再插入。</p>
+<p>1.8以前是用16个<code>Segment</code> 分段锁加的Reentranlock。，1.8以后现在采用数组+链表+红黑树的形式。添加元素的时候按照代码的流程先判断是不是初始化、节点为空就cas添加，如果正在扩容，就帮助扩容；如果冲突就加synchronized后再插入。</p>
 <p>Java 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。</p>
 <p>具体的代码层面：</p>
 </blockquote>
@@ -374,7 +374,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -388,7 +388,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -417,7 +417,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
