@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -242,7 +242,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -291,7 +291,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -320,7 +320,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -347,21 +347,29 @@
 <p>局部变量表里面放了<font color='red'><u><em><strong>方法参数、方法内部定义的局部变量</strong></em></u></font>。包括各类基本数据类型、对象引用(reference) ，以及returnAddress类型。</p>
 <p>对象引用要完成两件事情：找到在JVM堆里面的对象，还有一个是找到元空间存储的类型信息。</p>
 <p><font color='red'><u><em><strong>操作数栈：</strong>同时作为计算过程中变量临时的存储空间</em>****</u></font></p>
-<p><font color='red'><u><em><strong>动态连接：</strong>指向运行时常量池中该栈帧所属方法的引用</em><em>为了支持方法调用过程中的动态链接（Dynamic Linking）</em>**</u></font></p>
+<p><font color='red'><u><em><strong>动态连接：</strong>指向运行时常量池中该栈帧所属方法的引用</em><em>，为了支持方法调用过程中的动态链接（Dynamic Linking）</em>**</u></font></p>
 <p>方法出口：<strong>存放调用该方法的pc寄存器的值</strong></p>
 </blockquote>
 <p>3、本地方法栈</p>
+<blockquote>
 <p>和虚拟机栈很像，区别是为了虚拟机使用本地native方法服务的。</p>
+</blockquote>
 <p>4、堆</p>
-<p>虚拟机管理的内存中最大的一块，几乎所有的对象实例都在这里。这里有一块是字符串常量池，存的是String实例的引用。</p>
+<blockquote>
+<p>线程共享的，存放对象实例都在这里。这里有一块是字符串常量池，存的是String实例的引用。</p>
+<p>他被分成年轻代和老年代，年轻代有分成伊甸区和幸存者区。</p>
+<p>然后还有一点需要提的是：1.7中的堆有方法区，或者说永久代。但是到了1.8，方法区转移到了直接内存里面变成了元空间。</p>
+</blockquote>
 <p>5、方法区</p>
-<p>存储被虚拟机加载的类型信息、常量、编译后的代码缓存。</p>
-<p>运行时常量池：</p>
+<blockquote>
+<p>存储被虚拟机加载的类信息、静态常量。</p>
+<p><font color='red'><u><em><strong>运行时常量池：</strong></em></u></font></p>
 <p>Class文件除了类的版本字段方法接口描述外，还有一个常量池，用于存放编译期间生成的字面量和符号引用，而当类加载到内存中后，jvm把符号引用换成直接引用，将class常量池中的内容存放到运行时常量池中。</p>
+</blockquote>
 <p><img src="/../images/JVM/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjg0MDA1,size_16,color_FFFFFF,t_70.png" alt="img"></p>
 <p><strong>对象的创建</strong></p>
 <blockquote>
-<p>1、当遇到new，先去检查这个指令的参数能不能在常量池找到类的符号引用，检查是不是已经类加载、解析、初始化。</p>
+<p>1、当遇到new，先去检查在常量池找到类的符号引用，检查是不是已经类加载、解析、初始化。</p>
 <p>2、如果没有，就先执行类加载。</p>
 <p>3、然后分配内存，内存的大小在类加载的时候就确认了。具体分配用“指针碰撞”还是“空闲列表”就看用那种垃圾收集器。为了保证不出现并发问题：有两种方案。<font color='red'><u><em><strong>1）CAS+失败重试。2）给线程自己预先分配本地线程分配缓冲。（TLAB）</strong></em></u></font></p>
 </blockquote>
@@ -381,14 +389,7 @@
 <p><strong>对象的访问定位</strong></p>
 <p>1、句柄方法。reference放的是存储的是句柄地址，句柄包含对象实例数据和类型数据，各自的具体位置。句柄最大的优势就是即使在垃圾收集的时候对象被移动了，只用修改句柄中的指针就好，不用修改reference。</p>
 <p>2、直接指针。存储的就是对象地址。他的优势是少一次间接访问的消耗。</p>
-<h1 id="2、内存溢出异常"><a href="#2、内存溢出异常" class="headerlink" title="2、内存溢出异常"></a>2、内存溢出异常</h1><p>除了程序计数器之外，其他几个运行时区域都有可能发生oom异常。</p>
-<p>1、堆溢出oom</p>
-<p>不断创建对象，然后避免垃圾回收</p>
-<p>2、虚拟机栈和本地方法栈溢出sof</p>
-<p>栈的深度超过最大深度，或者栈的容量无法申请到内存</p>
-<p>3、方法区和运行时常量池溢出oom</p>
-<p>4、直接内存oom</p>
-<h1 id="3、字节码文件"><a href="#3、字节码文件" class="headerlink" title="3、字节码文件"></a>3、字节码文件</h1><ul>
+<h1 id="2、内存溢出异常"><a href="#2、内存溢出异常" class="headerlink" title="2、内存溢出异常"></a>2、内存溢出异常</h1><h1 id="3、字节码文件"><a href="#3、字节码文件" class="headerlink" title="3、字节码文件"></a>3、字节码文件</h1><ul>
 <li><p>魔数：唯一的作用就是确定这个文件是否为一个虚拟机可以接受的Class文件</p>
 </li>
 <li><p>次版本号</p>
@@ -397,7 +398,7 @@
 </li>
 <li><p>常量池：第一个表类型的数据</p>
 <ul>
-<li>主要存放两大类常量：字面量和符号引用。比如包名、方法名接口名、变量名等等，但是Class常量池中他就是一个符号，需要在类加载的时候翻译成具体的内存地址。</li>
+<li>主要存放两大类常量：字面量和符号引用。比如包名、类名、接口名、方法名、变量名等等，但是Class常量池中他就是一个符号，需要在类加载的时候翻译成具体的内存地址。</li>
 </ul>
 </li>
 <li><p>访问标志：有16个标志位，是类还是接口、是否public 是否abstract 是否final</p>
@@ -428,15 +429,15 @@
 <h2 id="4、解析"><a href="#4、解析" class="headerlink" title="4、解析"></a>4、解析</h2><p>把常量池中的符号引用转化为直接引用的阶段。有类和接口解析，字段解析，方法解析等。实际上就是先把类加载到方法区里面，然后返回相应直接引用。</p>
 <p>我们拿字段解析举个例子，先解析这个字段所在的类或接口，假设成功解析为C。我们就在C的字段表里面找有没有匹配的简单名称和字段描述符，如果有就直接返回。没有就找C的接口和父接口，看看有没有匹配的简单名称和字段描述符。如果又返回，没有就按继承关系找父类有没有匹配的，否则就失败。</p>
 <p>但是方法解析有一点不一样，他有一部分是不能解析的，如果 Human h &#x3D; new Man。这种可能方法调用不能确定，这里就解析不了。能解析的叫非虚方法，不能解析的叫虚方法。虚方法需要使用另外一种调用形式就是分派，分派分为静态动态，虚方法静态分派实现重载（静态类型），动态分派实现重写（invokevirtual，先找到这个动态类型，如果有这个方法那就直接用，如果没有，我们再去找他的父类）。</p>
-<h2 id="5、初始化"><a href="#5、初始化" class="headerlink" title="5、初始化"></a>5、初始化</h2><p>初始化就是执行类构造器的过程，而这个类构造器做的事情就是对类中所有类变量的赋值操作和所有静态语句块的赋值操作。</p>
+<h2 id="5、初始化"><a href="#5、初始化" class="headerlink" title="5、初始化"></a>5、初始化</h2><p>初始化就是执行类构造器的过程，而这个类构造器做的事情就是对类中所有类变量的赋值操作和所有静态语句块的操作。</p>
 <p>顺序就是语句在源文件的顺序</p>
-<h1 id="5、类加载器"><a href="#5、类加载器" class="headerlink" title="5、类加载器"></a>5、类加载器</h1><p>类加载器的作用就是实现类加载过程中的加载这一步。每一个类都有一个引用指向类加载器，Java一直保持着三层类加载器、双亲委派的类加载器架构。</p>
+<h1 id="5、类加载器"><a href="#5、类加载器" class="headerlink" title="5、类加载器"></a>5、类加载器</h1><p>类加载器的作用就是实现类加载过程中的加载这一步，通过双亲委派机制去维护一个三层的组织架构。</p>
 <p>三层：</p>
 <p>启动类加载器：负责加载JAVA_HOME&#x2F;LIB目录的或者被-xbootclasspath指定。</p>
 <p>扩展类加载器：负责加载JAVA_HOME&#x2F;LIB&#x2F;EXT的类或者被JAVA.EXT.DIRS系统变量制定的所有的类库。由于是由Java代码实现，所以开发者可以在程序中直接使用这个加载器去加载Class文件</p>
 <p>应用程序类加载器：负责加载用户类路径CLasspath上所有的类库。开发者也可以直接使用这个</p>
 <h2 id="双亲委派："><a href="#双亲委派：" class="headerlink" title="双亲委派："></a>双亲委派：</h2><p>双亲委派是类加载器的组织模型。</p>
-<p>在类加载的时候，系统会首先判断当前类是否被加载过。已经被加载的类会直接返回，否则才会尝试加载（每个父类加载器都会走一遍这个流程）。</p>
+<p>在类加载的时候，系统会首先判断当前类是否被加载过。已经被加载的类会直接返回，否则才会尝试加载</p>
 <p>类加载器在进行类加载的时候，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器去完成（调用父加载器 <code>loadClass()</code>方法来加载类）。这样的话，所有的请求最终都会传送到顶层的启动类加载器 <code>BootstrapClassLoader</code> 中。</p>
 <p>只有当父加载器反馈自己无法完成这个加载请求（它的搜索范围中没有找到所需的类）时，子加载器才会尝试自己去加载（调用自己的 <code>findClass()</code> 方法来加载类）。</p>
 <p>如果子类加载器也无法加载这个类，那么它会抛出一个 <code>ClassNotFoundException</code> 异常。</p>
@@ -513,25 +514,49 @@
 <p>灰色：已经被访问过了，但是至少有一个引用没有被扫描。</p>
 <h4 id="记忆集和卡表。"><a href="#记忆集和卡表。" class="headerlink" title="记忆集和卡表。"></a>记忆集和卡表。</h4><p>为了解决对象跨代，需要在新生代建立名为记忆集的数据结构。记忆集是一种用于记录从非收集区指向收集区域的指针集合的数据结构。为了节省记忆集的存储和维护成本，我们选用了一种叫卡表的精度。就是每个记录精确到一块内存区域，这个区域里面有对象含有跨代指针。</p>
 <p>为了维护这个记忆集，如果有其他代的的对象引用了本区域的对象，为了保证在引用的一瞬间记录下来，我们是在机器码层面做了操作，就是加一个写屏障，在写屏障中去更新卡表。</p>
-<h2 id="3、垃圾回收器"><a href="#3、垃圾回收器" class="headerlink" title="3、垃圾回收器"></a>3、垃圾回收器</h2><h3 id="新生代"><a href="#新生代" class="headerlink" title="新生代"></a><strong>新生代</strong></h3><h4 id="1、Serial收集器"><a href="#1、Serial收集器" class="headerlink" title="1、Serial收集器"></a>1、Serial收集器</h4><p>单线程，暂停其他线程。现在用的人比较少，但是优点是简单高效，对内存消耗最少。</p>
+<h4 id="说一下JVM的分代回收"><a href="#说一下JVM的分代回收" class="headerlink" title="说一下JVM的分代回收"></a>说一下JVM的分代回收</h4><p><img src="/../images/JVM/image-20231117194042634.png" alt="image-20231117194042634"></p>
+<h2 id="3、垃圾回收器"><a href="#3、垃圾回收器" class="headerlink" title="3、垃圾回收器"></a>3、垃圾回收器</h2><p><font color='red'><u><em><strong>四种引用</strong></em></u></font></p>
+<blockquote>
+<p>强引用：只有GCroot都不通过强引用引用该对象，才可以回收</p>
+<p>软引用：内存不足的时候回收</p>
+<p>弱引用：无论内存够不够，都会回收</p>
+<p>虚引用：它就和没有任何引用一样，在任何时候都可能被垃圾回收器回收。</p>
+</blockquote>
+<h3 id="新生代"><a href="#新生代" class="headerlink" title="新生代"></a><strong>新生代</strong></h3><blockquote>
+<h4 id="1、Serial收集器"><a href="#1、Serial收集器" class="headerlink" title="1、Serial收集器"></a>1、Serial收集器</h4><blockquote>
+<p>串行，单线程，暂停其他线程。现在用的人比较少，但是优点是简单高效，对内存消耗最少。（整体STW）</p>
 <p>策略：标记-复制</p>
-<h4 id="2、ParNew收集器"><a href="#2、ParNew收集器" class="headerlink" title="2、ParNew收集器"></a>2、ParNew收集器</h4><p>本质是Serial的多线程并行版本。</p>
+</blockquote>
+<h4 id="2、Parrallel-New收集器"><a href="#2、Parrallel-New收集器" class="headerlink" title="2、Parrallel New收集器"></a>2、Parrallel New收集器</h4><blockquote>
+<p>本质是Serial的多线程并行版本。（整体STW）</p>
 <p>策略：标记-复制</p>
-<h4 id="3、Parrallel-Scanvenge"><a href="#3、Parrallel-Scanvenge" class="headerlink" title="3、Parrallel Scanvenge"></a>3、Parrallel Scanvenge</h4><p>吞吐量优先收集器</p>
-<p>Parrallel很多特性和ParNew一样，但是Parallel Scanvenge 的关键点在于它关注的是吞吐量，吞吐量 &#x3D; 用户代码运行时间 &#x2F; （用户代码运行时间 + 垃圾收集时间）</p>
+</blockquote>
+<h4 id="3、Parrallel-Scanvenge"><a href="#3、Parrallel-Scanvenge" class="headerlink" title="3、Parrallel Scanvenge"></a>3、Parrallel Scanvenge</h4><blockquote>
+<p>吞吐量优先收集器</p>
+<p>Parrallel很多特性和ParNew一样，但是Parallel Scanvenge 的关键点在于它关注的是吞吐量，吞吐量 &#x3D; 代码运行时间 &#x2F; （代码运行时间 + 垃圾收集时间）</p>
+<blockquote>
 <p>策略：标记-复制</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
 <p>-XX:MaxGcPauserMillis：收集器尽可能保证内存回收花费时间不超过设定值，但也不是越小越好，会牺牲吞吐量和新生代空间</p>
+</blockquote>
 <p>-XX:GCTimeRatio：吞吐量的倒数，比如 如果是 19 那么允许的最大GC时间比例为 1&#x2F;（1 + 19） &#x3D;5 %</p>
 <p>-XX:+UseAdaptiveSizePolicy：不需要手动指定新生代大小，虚拟机会自动调整参数（GC自适应）</p>
-<h3 id="老生代"><a href="#老生代" class="headerlink" title="老生代"></a>老生代</h3><h4 id="1、Serial-Old"><a href="#1、Serial-Old" class="headerlink" title="1、Serial Old"></a>1、Serial Old</h4><p>Serial的老年代版本，</p>
+</blockquote>
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3></blockquote>
+<h3 id="老生代"><a href="#老生代" class="headerlink" title="老生代"></a>老生代</h3><blockquote>
+<h4 id="1、Serial-Old"><a href="#1、Serial-Old" class="headerlink" title="1、Serial Old"></a>1、Serial Old</h4><p>Serial的老年代版本，</p>
 <p>收集策略：标记-整理</p>
 <h4 id="2、Parallel-Old-收集器"><a href="#2、Parallel-Old-收集器" class="headerlink" title="2、Parallel Old 收集器"></a>2、Parallel Old 收集器</h4><p>策略：标记-整理</p>
+</blockquote>
 <h4 id="3、CMS收集器"><a href="#3、CMS收集器" class="headerlink" title="3、CMS收集器"></a>3、CMS收集器</h4><p>它是一种获取最短回收停顿时间的收集器，就是希望stw的时间越短越好。</p>
 <p>策略：标记-清除</p>
 <p>因为回收过程和用户线程一起进行，所以有四个步骤。</p>
 <p>1）初始标记，只是标记一下GC Roots，（<font color='red'><u><em><strong>是广义上的gcroots，包含了年轻代所有对象。所以初始标记除了和狭义直接关联，还有年轻代到老年代的引用）</strong></em></u></font>（STW）</p>
 <p>2）并发标记，从GC Roots遍历对象的过程，这个是和用户线程一起进行的。（这里会出现很多引用的变化，比如年轻代到老年代，直接在老年代分配、漏标、浮动垃圾）</p>
-<p>3）重新标记，因为和用户线程一起进行，所以引用会发生变化，所以修正一下。（STW）</p>
+<p>3）重新标记，因为和用户线程一起进行，所以引用会发生变化，所以修正一下（写屏障+增量更新）。（STW）</p>
 <p>4）并发清除，清除对象，因为策略是标记-清除，不需要移动所以同样选择了并发的方式。</p>
 <p>缺点：</p>
 <p>1）对处理资源敏感，而且大于1&#x2F;4。（处理器数量+3）&#x2F;4</p>
@@ -600,6 +625,31 @@
 </ul>
 </li>
 </ul>
+<h2 id="JVM调优参数"><a href="#JVM调优参数" class="headerlink" title="JVM调优参数"></a>JVM调优参数</h2><p>jar包启动的时候java和 -jar直接可以去配置jvm的参数</p>
+<h2 id="JVM调优的参数有哪些？"><a href="#JVM调优的参数有哪些？" class="headerlink" title="JVM调优的参数有哪些？"></a>JVM调优的参数有哪些？</h2><blockquote>
+<p>设计垃圾回收器 </p>
+<p>堆空间大小</p>
+<p>虚拟机栈</p>
+<p>eden区和幸存者区的大小比例</p>
+<p>新生代晋级老年代的阈值</p>
+</blockquote>
+<h2 id="JVM调优工具"><a href="#JVM调优工具" class="headerlink" title="JVM调优工具"></a>JVM调优工具</h2><blockquote>
+<p><font color='red'><u><em><strong>命令：</strong></em></u></font></p>
+<p>jsp + jstack 查看进程内线程的堆栈信息</p>
+<p>jmap -heap 反应堆的信息</p>
+<p>jmap -dump 生成一个内存快照的信息</p>
+<p>jstat ：JVM性能监测工具。 显示伊甸区 幸存者区、老年区的比例</p>
+<p><font color='red'><u><em><strong>可视化工具：</strong></em></u></font></p>
+<p>jconsole</p>
+<p>visualVM</p>
+</blockquote>
+<h2 id="Java内存泄漏排查"><a href="#Java内存泄漏排查" class="headerlink" title="Java内存泄漏排查"></a>Java内存泄漏排查</h2><blockquote>
+<p>内存泄漏会逐渐累加导致内存溢出，内存溢出会发生在：虚拟机栈（stackoverflow）、方法区（OOM：metaspace）、堆空间（OOM：heap space）</p>
+<p>1、可以获得内存的快照dump（jmap -dump或者启动的时候就加上参数-XX：heapdumpOnOutOfMemery）</p>
+<p>2、visualVM去加载</p>
+</blockquote>
+<h2 id="CPU标高的排查"><a href="#CPU标高的排查" class="headerlink" title="CPU标高的排查"></a>CPU标高的排查</h2><p>top或者pidstat命令找到cpu明显过高的进程id，然后用进程id去找到线程id（ps H -eo pid,tid,%cpu | grep进程id），最后jstack 一下定位到该线程就可以</p>
+<p>标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、</p>
 
                     
                         
@@ -613,7 +663,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -642,7 +692,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -670,7 +720,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -699,7 +749,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-03T00:00:00+08:00">
 	
-		    Apr 03, 2023
+		    03 Apr 2023
     	
     </time>
     
@@ -735,7 +785,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -764,7 +814,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-03T00:00:00+08:00">
 	
-		    Apr 03, 2023
+		    03 Apr 2023
     	
     </time>
     
@@ -839,7 +889,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -868,7 +918,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-23T13:03:43+08:00">
 	
-		    Oct 23, 2022
+		    23 Oct 2022
     	
     </time>
     
@@ -913,7 +963,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -942,7 +992,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-20T14:43:00+08:00">
 	
-		    Oct 20, 2022
+		    20 Oct 2022
     	
     </time>
     
@@ -1029,7 +1079,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1058,7 +1108,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T21:25:08+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -1109,7 +1159,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1138,7 +1188,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T21:23:41+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -1224,7 +1274,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1253,7 +1303,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:40:04+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -1304,7 +1354,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1321,10 +1371,10 @@
             <a
                 class="btn btn--default btn--small"
                 href="/page/2/"
-                aria-label="NEWER POSTS"
+                aria-label="NEUERE BEITRÄGE"
             >
               <i class="fa fa-angle-left text-base icon-mr"></i>
-              <span>NEWER POSTS</span>
+              <span>NEUERE BEITRÄGE</span>
             </a>
           </li>
         
@@ -1333,14 +1383,14 @@
             <a
                 class="btn btn--default btn--small"
                 href="/page/4/"
-                aria-label="OLDER POSTS"
+                aria-label="ÄLTERE BEITRÄGE"
             >
-              <span>OLDER POSTS</span>
+              <span>ÄLTERE BEITRÄGE</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">page 3 of 4</li>
+        <li class="pagination-number">Seite 3 von 4</li>
     </ul>
 </div>
 
@@ -1369,7 +1419,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

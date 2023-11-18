@@ -11,17 +11,18 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"讲讲Java的代理代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。\n动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy，\n动态代理有两种方式一种是jdk方法，一种是cglib方法\n我们先来讲jdk代理：\n首先，代理是一个代理类代理真正的对象去帮助你做一些操作，可以在原本的方法前后加一些操作。那代理类就需要一个执行器去帮你做这些事情，那这个执行器就是InvocationHandler接口，他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组\n这三个参数里面代理方法和参数组其实我们可以依赖于最基础反射得到。而jdk代理又必须要实现InvocationHandler接口，而这个接口他又有这么三个参数，而这三个参数其实是可以变化的，被代理类被代理方法参数组是可以变化的，那这样就成功的实现了动态的代理。\n那我们怎么去调用这个方法呢？依赖于Proxy类和他的方法newproxyInstance，得到的代理类，调用方法其实会直接调用我们实现InvocationHandler接口的invoke方法\n下面来讲CGLIB代理\n在 CGLIB 动态代理机制中 MethodInterceptor 接口和 Enhancer 类是核心。你可以通过 Enhancer类来动态获取被代理类，\n  CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法拦截器拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 MethodInterceptor 中的 intercept 方法。\n为什么JDK动态代理只能代理接口实现类，原因是JDK动态代理是基于接口实现的。\n有两个原因，一个是继承Proxy。第二个是当你使用Proxy类创建代理对象时，你需要指定一个接口列表来表示理对象的类型。代理对象的类型是由接口列表决定的，因此只有实现了接口的类才能被代理。如果你想代理一个类而不是一个接口，你需要使用其他的代理技术，比如CGLIB。\n二者区别总结一下两者的区别吧：\nJDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承 java.lang.reflect.Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰JDK 和 CGLIB 动态代理都是在运行期生成字节码。而 JDK 是直接写 Class 字节码；而 CGLIB 使用 ASM 框架写 Class 字节码（不鼓励直接使用ASM，因为它要求你必须对 JVM 内部结构包括 class 文件的格式和指令集都很熟悉）JDK 通过反射调用方法，CGLIB 通过 FastClass 机制（下一篇再将）直接调用方法。所以，CGLIB 执行的效率较高JDK 核心是实现 InvocationHandler接口，使用 invoke()方法进行面向切面的处理，调用相应的通知；CGLIB 动态代理是利用 asm 开源包，对代理对象类的 class 文件加载进来，通过修改其字节码生成子类来处理。核心是实现 MethodInterceptor 接口，使用 intercept() 方法进行面向切面的处理，调用相应的通知。\n集合\nArraylist底层原理可以从底层数据结构，构造函数和关键方法理解。\n\nArraylist的底层数据结构是object[]数组，构造函数分有参无参，如果是无参就是空数组，如果是有参，就用你定义的那个初始大小。如果参数是容器，那就是把容器转成数组copy给object。关键方法就是add方法，需要保证容量够用才能添加元素，所以会在添加之前进行一个ensurecapacity的过程。他会先计算mincapacity的值，他会拿mincapacity去和现在的数组长度比较，如果大了说明要扩容，扩容的过程是先×1.5看看够不够，够的话就1.5，不够就用新的这个mincapacity。如果minCapacity大于最大容量，则新容量则为Integer.MAX_VALUE，否则，新容量大小则为 MAX_ARRAY_SIZE 即为 Integer.MAX_VALUE - 8\n\n了解比较简单\n对于插入：如果不需要扩容，其实无论是头插指定位置插入都是O(n)，尾插是O(1)。如果需要扩容，就得再做一次扩容，O(n)，然后在插入，就是刚才讲的时间复杂度。\n对于删除：头删和指定位置删除是O(n)，尾部删除是O(1)\n\n\nLinkedlist\nLinkedlist 是双向链表，因为是链表，所以没什么扩容的问题，基本的方法都是围绕前节点、后节点、节点值展开的。\n\n头部插入&#x2F;删除： O(1)。\n尾部插入&#x2F;删除： O(1)。\n指定位置插入&#x2F;删除：需要先移动到指定位置，再修改指定节点的指针完成插入&#x2F;删除，因此需要移动平均 n&#x2F;2 个元素，时间复杂度为 O(n)。\n\n\n如何实现数组和list之间的转换List.toarray  (修改原先list，array不受影响)\nArrays.aslist （受影响）\nArrayList 与 LinkedList 区别?\n底层数据结构： ArrayList 底层使用的是 Object 数组；LinkedList 底层使用的是 双向链表 数据结构\n插入和删除的时间复杂度：arraylist，头插、指定插、头删、指定删除都是On，尾插和尾删除是O1\nlingklist 头插和尾插、头删除、尾删除都是O1，指定位置是On\n内存空间占用：linkedlist每个节点要存前后指针，所以内存占用大。\n是否安全：两个都是不安全的，局部变量\n\n\n比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同\nHashSet、LinkedHashSet 和 TreeSet 都是 Set 接口的实现类，都能保证元素唯一，并且都不是线程安全的。\nHashSet、LinkedHashSet 和 TreeSet 的主要区别在于底层数据结构不同。HashSet 的底层数据结构是哈希表（基于 HashMap 实现）。LinkedHashSet 的底层数据结构是链表和哈希表。TreeSet 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。\n底层数据结构不同又导致这三者的应用场景不同。HashSet 用于不需要保证元素插入和取出顺序的场景，LinkedHashSet 用于保证元素的插入和取出顺序满足 FIFO 的场景，TreeSet 用于支持对元素自定义排序规则的场景。\n\n\nQueue 与 Deque 的区别\nQueue 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 先进先出（FIFO） 规则。\nDeque 是双端队列，在队列的两端均可以插入或删除元素。\n\nArrayDeque 与 LinkedList 的区别\nArrayDeque 和 LinkedList 都实现了 Deque 接口，两者都具有队列的功能\nArrayDeque 是基于可变长的数组和双指针来实现，而 LinkedList 则通过链表来实现。\nArrayDeque 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 LinkedList 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。\n\n什么是 BlockingQueue？\nBlockingQueue （阻塞队列）是一个接口，继承自 Queue。没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。BlockingQueue&#96; 常用于生产者-消费者模型中，生产者线程会向队列中添加数据，而消费者线程会从队列中取出数据进行处理。\n\nHashmap：\nHashMap 的底层实现底层数据结构+构造函数+put方法回答\nJDK1.8 之前 HashMap 底层是 数组和链表 ， JDK1.8 之后在解决哈希冲突时有了较大的变化，链表长度超过 8 个的时候，数组长度大于64时，将链表转化为红黑树，以减少搜索时间\n构造函数是懒加载，没有初始化数据，就是把负载因子赋为0.75。\nput的时候，先判断数组是否为空，如果为空，就初始化为16大小。通过 key 的 hashcode 经过扰动函数增加了随机性，然后通过   hash &amp; (n - 1) 判断当前元素存放的位置（这里的 n 指的是数组的长度），如果定位到的数组位置没有元素 就直接插入。如果有数据，就判断key是不是相同，相同就覆盖，不相同就判断是不是红黑树，如果是就调用putTree，如果是链表就遍历链表，看看key有没有，有就覆盖，没有就在尾部插入新的节点，然后判断长度是否大于8，大于8就去尝试转红黑树，插入结束后，最后要判断一下是否需要扩容，\n\n\nhashmap扩容过程扩容简单来说就是做了两件事。1：创建一个新数组，原来的两倍大。2：遍历旧数组每个槽如果槽位中是一个普通节点，则将节点放在新数组中，所在新数组中的下标计算方式为：e.hash &amp; (newCap - 1);如果槽位中是一个树节点，则进行红黑树的迁移操作，新数组中下标计算方式同普通节点；如果槽位中是一个链表节点，则将链表拆为高位链表和低位链表，就是拿hash值和旧容量做与操作，等于0就放入放入新数组的旧数组的下标位置和，不等于0会放到（旧数组下标 + 旧数组容量）下标位置；最后返回新数组。\nHashMap 多线程操作导致死循环问题扩容问题和头插法问题\n假设两个线程同时对hashmap进行扩容，这时候两个都指向首节点A，后面的节点分别是bcd。\n那么这时候线程1正常执行，线程2卡住了。但是A执行完后因为是头插法所以abc变成了cba。线程2唤醒启动，线程2第一个e还是指向a，a的next指向b，这样子就出现了问题，但是还没出现环状。那我们继续执行。把e也就是a赋放到新链表，a &#x3D;\na的next其实就是b，b拿过来，然后b&#x3D;b的next，b的next是谁呢，就是a，然后a指向链表头，这个头节点就是b呀！这里就出问题了。\n解决的方法：concurrenthashmap，推荐；hashtable安全，不建议；或者直接加锁，也不建议。或者头插法改成尾插法。\nHashMap 为什么线程不安全？一方面就是多线程操作导致的死循环问题。\n另一方面就是两个线程 1,2 进行 put 操作，线程1 执行的时候通过判断发现没有出发hash碰撞，但是时间片用完了挂起，这时候线程2也判断有没有hash碰撞发现没有，因为线程1还没来得及插入。这时候线程2插入一个b值结束了，线程1重新获得时间片，因为之前已经成功判断过了，所以直接插入一个a值，那么这样b值就被a值覆盖了。\nHashMap 链表到红黑树的转换。\n1、 putVal 方法中执行链表转红黑树的判断逻辑。\n链表的长度大于 8 的时候，就执行 treeifyBin （转换红黑树）的逻辑。\ntreeifyBin 方法中判断是否真的转换为红黑树。\nHashMap 的长度为什么是 2 的幂次方散列采用%取余的操作来实现。但是，重点来了：“取余(%)操作中如果除数是 2 的幂次则等价于与其除数减一的与(&amp;)操作（也就是说 hash%length&#x3D;&#x3D;hash&amp;(length-1)的前提是 length 是 2 的 n 次方；）。” 并且 **采用二进制位操作 &amp;，相对于%能够提高运算效率）\nHashmap代码loadFactor 负载因子\nloadFactor 负载因子是控制数组存放数据多少的参数和扩容的界限。默认0.75\n给定的默认容量为 16，负载因子为 0.75。Map 在使用过程中不断的往里面存放数据，当数量超过了 16 * 0.75 &#x3D; 12 就需要将当前 16 的容量进行扩容，而扩容这个过程涉及到 rehash、复制数据等操作，所以非常消耗性能。\nHashMap 和 Hashtable 的区别\n线程是否安全：HashMap 是非线程安全的，Hashtable 是线程安全的,因为 Hashtable 内部的方法基本都经过synchronized 修饰。（如果你要保证线程安全的话就使用 ConcurrentHashMap 吧！）\n\n效率： 因为线程安全的问题，HashMap 要比 Hashtable 效率高一点。另外，Hashtable 基本被淘汰，不要在代码中使用它；\n\n初始容量大小和每次扩充容量大小的不同： ① 创建时如果不指定容量初始值，Hashtable 默认的初始大小为 11，之后每次扩充，容量变为原来的 2n+1。HashMap 默认的初始化大小为 16。之后每次扩充，容量变为原来的 2 倍。② 创建时如果给定了容量初始值，那么 Hashtable 会直接使用你给定的大小，而 HashMap 会将其扩充为 2 的幂次方大小（HashMap 中的tableSizeFor()方法保证，下面给出了源代码）。也就是说 HashMap 总是使用 2 的幂作为哈希表的大小,后面会介绍到为什么是 2 的幂次方。\n\n底层数据结构： JDK1.8 以后的 HashMap 在解决哈希冲突时有了较大的变化，当链表长度大于阈值（默认为 8）时，将链表转化为红黑树（将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树），以减少搜索时间（后文中我会结合源码对这一过程进行分析）。Hashtable 没有这样的机制。\n\n\n\nConcurrentHashMap\nConcurrentHashMap是线程安全的，而是通过原子操作和局部加锁的方法保证了多线程的线程安全。\n1.8以前是用16个Segment 分段锁加的Reentranlock。，1.8以后现在采用数组+链表+红黑树的形式。添加元素的时候按照代码的流程先判断是不是初始化、节点为空就cas添加，如果正在扩容，就帮助扩容；如果冲突就加synchronized后再插入。\nJava 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。\n具体的代码层面：\n\n元素排序 Comparable 和 Comparator 有什么区别？Comparable：实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。\nComparator 除了可以通过创建自定义比较器外，还可以通过匿名类的方式，更快速、便捷的完成自定义比较器的功能，具体的代码实现如下：\nComparable 必须由自定义类内部实现排序方法，而 Comparator 是外部定义并实现排序的\n","dateCreated":"2023-08-07T00:00:00+08:00","dateModified":"2023-11-17T00:39:32+08:00","datePublished":"2023-08-07T00:00:00+08:00","description":"","headline":"Java基础知识","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/","keywords":"Java基础知识"}</script>
-    <meta name="description" content="讲讲Java的代理代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。 动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy， 动态代理有两种方式一种是jdk方法，一种是cglib方法 我们先来讲jdk代理： 首先，代理是一个">
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"讲讲Java的代理代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。\n动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy，\n动态代理有两种方式一种是jdk方法，一种是cglib方法\n我们先来讲jdk代理：\nJDK代理依赖于Proxy类和InvocationHandler接口，InvocationHandler接口他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组。代理方法和参数组其实我们可以利用反射得到，所以参数其实是可以变化的，那这样就成功的实现了动态的代理。\n那我们怎么去调用这个方法呢？依赖于Proxy类和他的方法newproxyInstance，得到的代理类，调用方法其实会直接调用我们实现InvocationHandler接口的invoke方法\n下面来讲CGLIB代理\n在 CGLIB 动态代理机制中 MethodInterceptor 接口和 Enhancer 类是核心。你可以通过 Enhancer类来动态获取被代理类，\n  CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法拦截器拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 MethodInterceptor 中的 intercept 方法。\n二者区别总结一下两者的区别吧：\nJDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承 java.lang.reflect.Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰JDK 和 CGLIB 动态代理都是在运行期生成字节码。而 JDK 是直接写 Class 字节码；而 CGLIB 使用 ASM 框架写 Class 字节码（不鼓励直接使用ASM，因为它要求你必须对 JVM 内部结构包括 class 文件的格式和指令集都很熟悉）JDK 通过反射调用方法，CGLIB 通过 FastClass 机制（下一篇再将）直接调用方法。所以，CGLIB 执行的效率较高JDK 核心是实现 InvocationHandler接口，使用 invoke()方法进行面向切面的处理，调用相应的通知；CGLIB 动态代理是利用 asm 开源包，对代理对象类的 class 文件加载进来，通过修改其字节码生成子类来处理。核心是实现 MethodInterceptor 接口，使用 intercept() 方法进行面向切面的处理，调用相应的通知。\n集合\nArraylist底层原理可以从底层数据结构，构造函数和关键方法理解。\n\nArraylist的底层数据结构是object[]数组，构造函数分有参无参，如果是无参就是空数组，如果是有参，就用你定义的那个初始大小。如果参数是容器，那就是把容器转成数组copy给object。关键方法就是add方法，需要保证容量够用才能添加元素，所以会在添加之前进行一个ensurecapacity的过程。他会先计算mincapacity的值，他会拿mincapacity去和现在的数组长度比较，如果大了说明要扩容，扩容的过程是先×1.5看看够不够，够的话就1.5，不够就用新的这个mincapacity。如果minCapacity大于最大容量，则新容量则为Integer.MAX_VALUE，否则，新容量大小则为 MAX_ARRAY_SIZE 即为 Integer.MAX_VALUE - 8\n\n了解比较简单\n对于插入：如果不需要扩容，其实无论是头插指定位置插入都是O(n)，尾插是O(1)。如果需要扩容，就得再做一次扩容，O(n)，然后在插入，就是刚才讲的时间复杂度。\n对于删除：头删和指定位置删除是O(n)，尾部删除是O(1)\n\n\nLinkedlist\nLinkedlist 是双向链表，因为是链表，所以没什么扩容的问题，基本的方法都是围绕前节点、后节点、节点值展开的。\n\n头部插入&#x2F;删除： O(1)。\n尾部插入&#x2F;删除： O(1)。\n指定位置插入&#x2F;删除：需要先移动到指定位置，再修改指定节点的指针完成插入&#x2F;删除，因此需要移动平均 n&#x2F;2 个元素，时间复杂度为 O(n)。\n\n\n如何实现数组和list之间的转换List.toarray  (修改原先list，array不受影响)\nArrays.aslist （受影响）\nArrayList 与 LinkedList 区别?\n底层数据结构： ArrayList 底层使用的是 Object 数组；LinkedList 底层使用的是 双向链表 数据结构\n插入和删除的时间复杂度：arraylist，头插、指定插、头删、指定删除都是On，尾插和尾删除是O1\nlingklist 头插和尾插、头删除、尾删除都是O1，指定位置是On\n内存空间占用：linkedlist每个节点要存前后指针，所以内存占用大。\n是否安全：两个都是不安全的，局部变量\n\n\n比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同\nHashSet、LinkedHashSet 和 TreeSet 都是 Set 接口的实现类，都能保证元素唯一，并且都不是线程安全的。\nHashSet、LinkedHashSet 和 TreeSet 的主要区别在于底层数据结构不同。HashSet 的底层数据结构是哈希表（基于 HashMap 实现）。LinkedHashSet 的底层数据结构是链表和哈希表。TreeSet 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。\n底层数据结构不同又导致这三者的应用场景不同。HashSet 用于不需要保证元素插入和取出顺序的场景，LinkedHashSet 用于保证元素的插入和取出顺序满足 FIFO 的场景，TreeSet 用于支持对元素自定义排序规则的场景。\n\n\nQueue 与 Deque 的区别\nQueue 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 先进先出（FIFO） 规则。\nDeque 是双端队列，在队列的两端均可以插入或删除元素。\n\nArrayDeque 与 LinkedList 的区别\nArrayDeque 和 LinkedList 都实现了 Deque 接口，两者都具有队列的功能\nArrayDeque 是基于可变长的数组和双指针来实现，而 LinkedList 则通过链表来实现。\nArrayDeque 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 LinkedList 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。\n\n什么是 BlockingQueue？\nBlockingQueue （阻塞队列）是一个接口，继承自 Queue。没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。BlockingQueue&#96; 常用于生产者-消费者模型中，生产者线程会向队列中添加数据，而消费者线程会从队列中取出数据进行处理。线程池\n\nHashmap：\nHashMap 的底层实现底层数据结构+构造函数+put方法回答\nJDK1.8 之前 HashMap 底层是 数组和链表。1.8之后是数组+链表+红黑树\n构造函数是懒加载，没有初始化数据，就是把负载因子赋为0.75。\nput的时候，先判断数组是否为空，如果为空，就初始化为16大小。通过 key 的 hashcode 经过扰动函数增加了随机性，然后通过   hash &amp; (n - 1) 判断当前元素存放的位置（这里的 n 指的是数组的长度），如果定位到的数组位置没有元素 就直接插入。如果有数据，就判断key是不是相同，相同就覆盖，不相同就判断是不是红黑树，如果是就调用putTree，如果是链表就遍历链表，看看key有没有，有就覆盖，没有就在尾部插入新的节点，然后判断长度是否大于8，大于8就去尝试转红黑树，插入结束后，最后要判断一下是否需要扩容，\n\n\nhashmap扩容过程扩容简单来说就是做了两件事。1：创建一个新数组，原来的两倍大。2：遍历旧数组每个槽如果槽位中是一个普通节点，则将节点放在新数组中，所在新数组中的下标计算方式为：e.hash &amp; (newCap - 1);如果槽位中是一个树节点，则进行红黑树的迁移操作，新数组中下标计算方式同普通节点；如果槽位中是一个链表节点，则将链表拆为高位链表和低位链表，就是拿hash值和旧容量做与操作，等于0就放入放入新数组的旧数组的下标位置和，不等于0会放到（旧数组下标 + 旧数组容量）下标位置；最后返回新数组。\nHashMap 多线程操作导致死循环问题扩容问题和头插法问题\n假设两个线程同时对hashmap进行扩容，这时候两个都指向首节点A，后面的节点分别是bcd。\n那么这时候线程1正常执行，线程2卡住了。但是A执行完后因为是头插法所以abc变成了cba。线程2唤醒启动，线程2第一个e还是指向a，a的next指向b，这样子就出现了问题，但是还没出现环状。那我们继续执行。把e也就是a赋放到新链表，a &#x3D;\na的next其实就是b，b拿过来，然后b&#x3D;b的next，b的next是谁呢，就是a，然后a指向链表头，这个头节点就是b呀！这里就出问题了。\n解决的方法：concurrenthashmap，推荐；hashtable安全，不建议；或者直接加锁，也不建议。或者头插法改成尾插法。\nHashMap 为什么线程不安全？一方面就是多线程操作导致的死循环问题。\n另一方面就是两个线程 1,2 进行 put 操作，线程1 执行的时候通过判断发现没有出发hash碰撞，但是时间片用完了挂起，这时候线程2也判断有没有hash碰撞发现没有，因为线程1还没来得及插入。这时候线程2插入一个b值结束了，线程1重新获得时间片，因为之前已经成功判断过了，所以直接插入一个a值，那么这样b值就被a值覆盖了。\nHashMap 链表到红黑树的转换。\n1、 putVal 方法中执行链表转红黑树的判断逻辑。\n链表的长度大于 8 的时候，就执行 treeifyBin （转换红黑树）的逻辑。\ntreeifyBin 方法中判断是否真的转换为红黑树。\nHashMap 的长度为什么是 2 的幂次方散列采用%取余的操作来实现。但是，重点来了：“取余(%)操作中如果除数是 2 的幂次则等价于与其除数减一的与(&amp;)操作（也就是说 hash%length&#x3D;&#x3D;hash&amp;(length-1)的前提是 length 是 2 的 n 次方；）。” 并且 **采用二进制位操作 &amp;，相对于%能够提高运算效率）\nHashmap代码loadFactor 负载因子\nloadFactor 负载因子是控制数组存放数据多少的参数和扩容的界限。默认0.75\n给定的默认容量为 16，负载因子为 0.75。Map 在使用过程中不断的往里面存放数据，当数量超过了 16 * 0.75 &#x3D; 12 就需要将当前 16 的容量进行扩容，而扩容这个过程涉及到 rehash、复制数据等操作，所以非常消耗性能。\nHashMap 和 Hashtable 的区别\n线程是否安全：HashMap 是非线程安全的，Hashtable 是线程安全的,因为 Hashtable 内部的方法基本都经过synchronized 修饰。（如果你要保证线程安全的话就使用 ConcurrentHashMap 吧！）\n\n效率： 因为线程安全的问题，HashMap 要比 Hashtable 效率高一点。另外，Hashtable 基本被淘汰，不要在代码中使用它；\n\n初始容量大小和每次扩充容量大小的不同： ① 创建时如果不指定容量初始值，Hashtable 默认的初始大小为 11，之后每次扩充，容量变为原来的 2n+1。HashMap 默认的初始化大小为 16。之后每次扩充，容量变为原来的 2 倍。② 创建时如果给定了容量初始值，那么 Hashtable 会直接使用你给定的大小，而 HashMap 会将其扩充为 2 的幂次方大小（HashMap 中的tableSizeFor()方法保证，下面给出了源代码）。也就是说 HashMap 总是使用 2 的幂作为哈希表的大小,后面会介绍到为什么是 2 的幂次方。\n\n底层数据结构： JDK1.8 以后的 HashMap 在解决哈希冲突时有了较大的变化，当链表长度大于阈值（默认为 8）时，将链表转化为红黑树（将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树），以减少搜索时间（后文中我会结合源码对这一过程进行分析）。Hashtable 没有这样的机制。\n\n\n\nConcurrentHashMap\nConcurrentHashMap是线程安全的，而是通过原子操作和局部加锁的方法保证了多线程的线程安全。\n1.8以前是用16个Segment 分段锁加的Reentranlock。，1.8以后现在采用数组+链表+红黑树的形式。添加元素的时候按照代码的流程先判断是不是初始化、节点为空就cas添加，如果正在扩容，就帮助扩容；如果冲突就加synchronized后再插入。\nJava 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。\n具体的代码层面：\n\n元素排序 Comparable 和 Comparator 有什么区别？Comparable：实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。\nComparator 除了可以通过创建自定义比较器外，还可以通过匿名类的方式，更快速、便捷的完成自定义比较器的功能，具体的代码实现如下：\nComparable 必须由自定义类内部实现排序方法，而 Comparator 是外部定义并实现排序的\nSpirngBean是线程安全的吗？\n\n他是单例，但是不是线程安全。因为Bean内部的成员变量是共享可修改的。\n\nAOP是什么？\n\naop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop****\n\n有没有使用过AOP\n\n全局异常处理、aop做一些权限校验等等\n\nSpring事务失效的场景?\n\n自己捕获异常。如果没有抛出会失效，解决方法：手动抛出异常\n\n抛出检查异常，因为spring默认只回滚非检查异常。解决方法就是transcantional加rollbackfor &#x3D; exception.class\n\n没有用public修饰，\n\n\nBean的生命周期？\n\n1 通过XML、注解和配置类等方式加载Spring Bean\n2、用BeanDefinitionReader把Bean解析成BeanDefinition结构\n3、BeanFactoryPostProcessor：可以对Bean的元信息进行修改，但是一般不做\n4、BeanFactory 实例化（构造函数和set），通过反射\n5、依赖注入\n6、处理三个Aware接口，\t\n7、BeanPostProcessor：自定义的逻辑\n8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）\n9、BeanPostProcessor：自定义的逻辑 aop核心底层动态代理\n\nBean的循环引用？\nSpring解决这个是用三级缓存或者懒加载（构造函数的依赖），三次缓存中：一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。但是在新版本我记得应该是默认禁用的吧\nMVC的执行流程\n\n\n\nSpringboot自动配置？\nspringboot的main方法会有一个springbootapplication的注解，这个注解有三个注解组成、ComponentScan（扫描包和子包，加载符合条件的组件或bean定义）、SpringbootConfiguration（声明当前是配置类，然后去找被configuration修饰的类，读取信息）、还有一个最重要的EnableAutoConfiguraion，这个就是来启动自动化配置的。这个注解里面有一个Import注解，这个注解会加入一个配置选择类，他会去这个项目和项目引用的jar包的meta-inf的spring.factories找全类名，然后在这些配置类里面根据注解@comditionnalXXX 定义的条件进行选择加载\n","dateCreated":"2023-08-07T00:00:00+08:00","dateModified":"2023-11-18T23:54:59+08:00","datePublished":"2023-08-07T00:00:00+08:00","description":"","headline":"Java基础知识","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/","keywords":"Java基础知识"}</script>
+    <meta name="description" content="讲讲Java的代理代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。 动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy， 动态代理有两种方式一种是jdk方法，一种是cglib方法 我们先来讲jdk代理： JDK代理依赖于">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Java基础知识">
 <meta property="og:url" content="http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/index.html">
 <meta property="og:site_name" content="森">
-<meta property="og:description" content="讲讲Java的代理代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。 动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy， 动态代理有两种方式一种是jdk方法，一种是cglib方法 我们先来讲jdk代理： 首先，代理是一个">
+<meta property="og:description" content="讲讲Java的代理代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。 动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy， 动态代理有两种方式一种是jdk方法，一种是cglib方法 我们先来讲jdk代理： JDK代理依赖于">
 <meta property="og:locale" content="zh_CH">
 <meta property="og:image" content="http://example.com/images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231116121230926.png">
+<meta property="og:image" content="http://example.com/images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231118193113289.png">
 <meta property="article:published_time" content="2023-08-06T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-11-16T16:39:32.282Z">
+<meta property="article:modified_time" content="2023-11-18T15:54:59.298Z">
 <meta property="article:author" content="CSEN">
 <meta property="article:tag" content="Java基础知识">
 <meta name="twitter:card" content="summary">
@@ -77,11 +78,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -100,9 +101,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -242,7 +243,7 @@
         <div class="post-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    Aug 07, 2023
+		    07 Aug 2023
     	
     </time>
     
@@ -264,14 +265,11 @@
 <p>动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy，</p>
 <p>动态代理有两种方式一种是jdk方法，一种是cglib方法</p>
 <p><strong>我们先来讲jdk代理：</strong></p>
-<p>首先，代理是一个代理类代理真正的对象去帮助你做一些操作，可以在原本的方法前后加一些操作。那代理类就需要一个执行器去帮你做这些事情，那这个执行器就是InvocationHandler接口，他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组</p>
-<p>这三个参数里面代理方法和参数组其实我们可以依赖于最基础反射得到。而jdk代理又必须要实现InvocationHandler接口，而这个接口他又有这么三个参数，而这三个参数其实是可以变化的，被代理类被代理方法参数组是可以变化的，那这样就成功的实现了动态的代理。</p>
+<p>JDK代理依赖于Proxy类和InvocationHandler接口，InvocationHandler接口他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组。代理方法和参数组其实我们可以利用反射得到，所以参数其实是可以变化的，那这样就成功的实现了动态的代理。</p>
 <p>那我们怎么去调用这个方法呢？依赖于Proxy类和他的方法newproxyInstance，得到的代理类，调用方法其实会直接调用我们实现InvocationHandler接口的invoke方法</p>
 <p><strong>下面来讲CGLIB代理</strong></p>
 <p><strong>在 CGLIB 动态代理机制中 <code>MethodInterceptor</code> 接口和 <code>Enhancer</code> 类是核心。你可以通过 <code>Enhancer</code>类来动态获取被代理类，</strong></p>
 <p>  CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E6%8B%A6%E6%88%AA%E5%99%A8&spm=1001.2101.3001.7020">拦截器</a>拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 <code>MethodInterceptor</code> 中的 <code>intercept</code> 方法。</p>
-<p>为什么JDK动态代理只能代理接口实现类，原因是JDK动态代理是基于接口实现的。</p>
-<p>有两个原因，一个是继承Proxy。第二个是当你使用Proxy类创建代理对象时，你需要指定一个接口列表来表示理对象的类型。代理对象的类型是由接口列表决定的，因此只有实现了接口的类才能被代理。如果你想代理一个类而不是一个接口，你需要使用其他的代理技术，比如CGLIB。</p>
 <p><strong>二者区别</strong><br>总结一下两者的区别吧：</p>
 <p>JDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承 java.lang.reflect.Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰<br>JDK 和 CGLIB 动态代理都是在运行期生成字节码。而 JDK 是直接写 Class 字节码；而 CGLIB 使用 ASM 框架写 Class 字节码（不鼓励直接使用ASM，因为它要求你必须对 JVM 内部结构包括 class 文件的格式和指令集都很熟悉）<br>JDK 通过反射调用方法，CGLIB 通过 FastClass 机制（下一篇再将）直接调用方法。所以，CGLIB 执行的效率较高<br>JDK 核心是实现 InvocationHandler接口，使用 invoke()方法进行面向切面的处理，调用相应的通知；CGLIB 动态代理是利用 asm 开源包，对代理对象类的 class 文件加载进来，通过修改其字节码生成子类来处理。核心是实现 MethodInterceptor 接口，使用 intercept() 方法进行面向切面的处理，调用相应的通知。</p>
 <h1 id="集合"><a href="#集合" class="headerlink" title="集合"></a>集合</h1><p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231116121230926.png" alt="image-20231116121230926"></p>
@@ -318,11 +316,11 @@
 <p><code>ArrayDeque</code> 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 <code>LinkedList</code> 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。</p>
 </blockquote>
 <h3 id="什么是-BlockingQueue？"><a href="#什么是-BlockingQueue？" class="headerlink" title="什么是 BlockingQueue？"></a>什么是 BlockingQueue？</h3><blockquote>
-<p><code>BlockingQueue</code> （阻塞队列）是一个接口，继承自 <code>Queue</code>。<code>没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。</code>BlockingQueue&#96; 常用于生产者-消费者模型中，生产者线程会向队列中添加数据，而消费者线程会从队列中取出数据进行处理。</p>
+<p><code>BlockingQueue</code> （阻塞队列）是一个接口，继承自 <code>Queue</code>。<code>没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。</code>BlockingQueue&#96; 常用于生产者-消费者模型中，生产者线程会向队列中添加数据，而消费者线程会从队列中取出数据进行处理。线程池</p>
 </blockquote>
 <h1 id="Hashmap："><a href="#Hashmap：" class="headerlink" title="Hashmap："></a>Hashmap：</h1><blockquote>
 <h2 id="HashMap-的底层实现"><a href="#HashMap-的底层实现" class="headerlink" title="HashMap 的底层实现"></a>HashMap 的底层实现</h2><p>底层数据结构+构造函数+put方法回答</p>
-<p>JDK1.8 之前 <code>HashMap</code> 底层是 <strong>数组和链表</strong> ， JDK1.8 之后在解决哈希冲突时有了较大的变化，链表长度超过 8 个的时候，数组长度大于64时，将链表转化为红黑树，以减少搜索时间</p>
+<p>JDK1.8 之前 <code>HashMap</code> 底层是 <strong>数组和链表</strong>。1.8之后是数组+链表+红黑树</p>
 <p>构造函数是懒加载，没有初始化数据，就是把负载因子赋为0.75。</p>
 <p>put的时候，先判断数组是否为空，如果为空，就初始化为16大小。通过 key 的 <code>hashcode</code> 经过扰动函数增加了<strong>随机性</strong>，然后通过 <code>  hash &amp; (n - 1)</code> 判断当前元素存放的位置（这里的 n 指的是数组的长度），如果定位到的数组位置没有元素 就直接插入。如果有数据，就判断key是不是相同，相同就覆盖，不相同就判断是不是红黑树，如果是就调用putTree，如果是链表就遍历链表，看看key有没有，有就覆盖，没有就在尾部插入新的节点，然后判断长度是否大于8，大于8就去尝试转红黑树，插入结束后，最后要判断一下是否需要扩容，</p>
 </blockquote>
@@ -363,6 +361,47 @@
 <h2 id="元素排序-Comparable-和-Comparator-有什么区别？"><a href="#元素排序-Comparable-和-Comparator-有什么区别？" class="headerlink" title="元素排序 Comparable 和 Comparator 有什么区别？"></a>元素排序 Comparable 和 Comparator 有什么区别？</h2><p>Comparable：实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。</p>
 <p>Comparator 除了可以通过创建自定义比较器外，还可以通过<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%8C%BF%E5%90%8D%E7%B1%BB&spm=1001.2101.3001.7020">匿名类</a>的方式，更快速、便捷的完成自定义比较器的功能，具体的代码实现如下：</p>
 <p><font color='red'><u><em><strong>Comparable 必须由自定义类内部实现排序方法，而 Comparator 是外部定义并实现排序的</strong></em></u></font></p>
+<h1 id="Spirng"><a href="#Spirng" class="headerlink" title="Spirng"></a>Spirng</h1><p><strong>Bean是线程安全的吗？</strong></p>
+<blockquote>
+<p>他是单例，但是不是线程安全。因为Bean内部的成员变量是共享可修改的。</p>
+</blockquote>
+<p><strong>AOP是什么？</strong></p>
+<blockquote>
+<p><font color='red'><u><em><strong>aop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。</strong>然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop</em>****</u></font></p>
+</blockquote>
+<p><strong>有没有使用过AOP</strong></p>
+<blockquote>
+<p>全局异常处理、aop做一些权限校验等等</p>
+</blockquote>
+<p><strong>Spring事务失效的场景?</strong></p>
+<ul>
+<li><p>自己捕获异常。如果没有抛出会失效，解决方法：手动抛出异常</p>
+</li>
+<li><p>抛出检查异常，因为spring默认只回滚非检查异常。解决方法就是transcantional加rollbackfor &#x3D; exception.class</p>
+</li>
+<li><p>没有用public修饰，</p>
+</li>
+</ul>
+<p><strong>Bean的生命周期？</strong></p>
+<blockquote>
+<p>1 通过<strong>XML</strong>、注解和配置类等方式加载<strong>Spring Bean</strong></p>
+<p>2、用<strong>BeanDefinitionReader</strong>把Bean解析成BeanDefinition结构</p>
+<p>3、<strong>BeanFactoryPostProcessor</strong>：可以对Bean的元信息进行修改，但是一般不做</p>
+<p>4、BeanFactory 实例化（构造函数和set），通过反射</p>
+<p>5、依赖注入</p>
+<p>6、处理三个Aware接口，	</p>
+<p>7、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em></p>
+<p>8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）</p>
+<p>9、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em> aop核心底层动态代理</p>
+</blockquote>
+<p><strong>Bean的循环引用？</strong></p>
+<p>Spring解决这个是用三级缓存或者懒加载（构造函数的依赖），三次缓存中：一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。但是在新版本我记得应该是默认禁用的吧</p>
+<p><strong>MVC的执行流程</strong></p>
+<blockquote>
+<p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231118193113289.png" alt="image-20231118193113289"></p>
+</blockquote>
+<p><strong>Springboot自动配置？</strong></p>
+<p>springboot的main方法会有一个springbootapplication的注解，这个注解有三个注解组成、ComponentScan（扫描包和子包，加载符合条件的组件或bean定义）、SpringbootConfiguration（声明当前是配置类，然后去找被configuration修饰的类，读取信息）、还有一个最重要的EnableAutoConfiguraion，这个就是来启动自动化配置的。这个注解里面有一个Import注解，这个注解会加入一个配置选择类，他会去这个项目和项目引用的jar包的meta-inf的spring.factories找全类名，然后在这些配置类里面根据注解@comditionnalXXX 定义的条件进行选择加载</p>
 
             
 
@@ -372,7 +411,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" rel="tag">Java基础知识</a>
 
@@ -389,11 +428,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/09/08/JUC/"
                     data-tooltip="JUC"
-                    aria-label="PREVIOUS: JUC"
+                    aria-label="FRÜHER: JUC"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -403,10 +442,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
                     data-tooltip="计算机网络复习1"
-                    aria-label="NEXT: 计算机网络复习1"
+                    aria-label="NÄCHSTER: 计算机网络复习1"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -417,7 +456,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -429,8 +468,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -442,8 +481,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -455,8 +494,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -467,7 +506,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -504,11 +543,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/09/08/JUC/"
                     data-tooltip="JUC"
-                    aria-label="PREVIOUS: JUC"
+                    aria-label="FRÜHER: JUC"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -518,10 +557,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
                     data-tooltip="计算机网络复习1"
-                    aria-label="NEXT: 计算机网络复习1"
+                    aria-label="NÄCHSTER: 计算机网络复习1"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -532,7 +571,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -544,8 +583,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -557,8 +596,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -570,8 +609,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -582,7 +621,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -604,9 +643,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                        aria-label="Share on Facebook"
+                        aria-label="Teilen auf Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
                     </a>
                 </li>
             
@@ -617,9 +656,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                        aria-label="Share on Twitter"
+                        aria-label="Teilen auf Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
                     </a>
                 </li>
             
@@ -630,9 +669,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                        aria-label="Share on Google+"
+                        aria-label="Teilen auf Google Plus"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
                     </a>
                 </li>
             
@@ -655,7 +694,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
