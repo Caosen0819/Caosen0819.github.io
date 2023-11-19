@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"1、Redis数据结构2、Redis线程模型1、Redis是不是单线程的？1）以前严格意义上来说也不是单线程，还有后台线程2）6.0.x后，由于网络的瓶颈出现，Redis采用了多线程来解决这个问题，具体的步骤是\n流程简述如下：\n\n主线程获取 socket 放入等待列表\n将 socket 分配给各个 IO 线程（并不会等列表满）\n主线程阻塞等待 IO 线程(多线程)读取 socket 完毕\n主线程执行命令 - 单线程（如果命令没有接收完毕，会等 IO 下次继续）\n主线程阻塞等待 IO 线程(多线程)将数据回写 socket 完毕（一次没写完，会等下次再写）\n\n所以多线程就是把最耗时的socket读、请求解析、socket写，这个外包给io线程组，实现socet读写并行化，主线程只去执行命令。所以redis为什么快，一个多线程、多路复用、内存、执行命令的单线程\n\n2、单线程是怎么样子的其实redis的单线程是先初始化后一直走一个循环处理。初始化的时候就做了三件事情：\n\n\n创建一个 epoll 对象，就是我们的io多路复用的实现\n对配置的监听端口进行 listen\n把 listen socket 让 epoll 给管理起来，注册accept处理函数。\n\n做完这些之前之后就要真正处理用户请求，他会调用 epoll_wait 函数等待事件的到来，交给事件分发器。\n\n若发现 listen socket 上有新连接到达，就调用我们刚刚注册的那个accept函数，并追加这个client socket到epoll中进行管理\n若发现其它 socket 上的读写请求，那就调用相应的读事件处理，和写事件处理。\n\n当然这里6.0以后引入了多线程，那接收数据、解析数据、写回数据都交给了io线程组，和主线程无关了。\n6、讲一下io多路复用首先我们知道用户缓冲区去内核缓冲区读数据的时候，有两个耗时的过程，一个是等待从网卡来的数据，一个是内核拷贝到用户缓冲区。\n阻塞io和非阻塞io都是先调用revfrom，阻塞io两个都要等、非阻塞需要等待拷贝这个过程。但是io多路复用，先监听一个socket集合，然后某个socket数据就绪了，发了个可读的通知，这时候才调用revfrom去读。\nio多路复用有多种实现，select、poll、epoll。select和poll收到可读通知，需要自己去遍历，是哪个发了可读通知。epoll是直接告诉你是哪个socket就绪。\t\n3、为什么这么快？基于内存\n单线程执行命令\nio多路复用\n多线程读写socket\n4、采用单线程原因\n使用单线程模型是 Redis 的开发和维护更简单\n即使使用单线程模型也并发的处理多客户端的请求，主要使用的是多路复用IO\n对于 Redis 系统来说， 主要的性能瓶颈是内存或者网络带宽而并非 CPU。\n\n5、引入多线程原因内存问题比较好解决，因此Redis的瓶颈原因为网络IO\n3、Redis持久化Redis 共有三种数据持久化的方式：\n\nAOF 日志：每执行一条写操作命令，就把该命令以追加的方式写入到一个文件里；\nRDB 快照：将某一时刻的内存数据，以二进制的方式写入磁盘；\n混合持久化方式：Redis 4.0 新增的方式，集成了 AOF 和 RBD 的优点；\n\n1、AOF执行一条写命令，就把这个命令往aof文件里面写\n1、为什么先执行命令，再把数据写入日志呢？\n1、避免额外的开销\n2、不会阻塞当前的写命令\n缺点：\n1、可能数据丢失，因为如果在执行完还没写入aof文件之间宕机，那就丢失\n2、可能阻塞下一个命令\n\n2、写回策略几种？三种：Always everySec no，其实和mysql的binlog非常相似\n第一种就是每次都同步\n第二种就是每一秒都讲缓冲区里面的写会磁盘\n第三种就是写到缓冲区里面，但是什么时候写到磁盘依赖于操作系统\n3、AOF 日志过大，会触发什么机制？aof是你执行一条写命令，马上追加到aof文件里面。这个记录的机制依赖一个参数，everysec每秒，always同步，no就是由操作系统去判断什么时候把缓冲区里面的数据写回磁盘。\naof重写机制：读取当前数据库中的所有键值对，对每一键值对用一条命令记录到「新的 AOF 文件」，等到全部记录完后，就将新的 AOF 文件替换掉现有的 AOF 文件。\naof是由后台子进程完成的。\n这里有一个问题，就是如果aof重写过程中，主进程对内存进行了修改，怎么办？会触发写时复制。\n当aof重写过程中父进程修改内存，那我们执行一个写命令后，会写到aof缓冲区和aof重写缓冲区里面。当子进程完成重写，再去吧重写缓冲区里面的内容追加到aof文件\n2、RDB快照快照就是记录一瞬间的意思。记录的是当前的实际数据。\n有两种启动的方式，一个save阻塞住线程，一种bgsave，后台线程，fork一个子进程，也复制了页表。他的做法是\n所以rdb快照不会想aof那样开辟一个缓冲区用于记录新操作。这里rdb用的是全量快照数据。\n如果在rdb快照的时候，主线程修改了内容，那么这时候会出发写保护中断，写时复制，原本的物理内存A，复制一份A‘，然后主线程修改A’就好了\n3、混合持久化混合持久化就是合并了aof和rdb的两个优点，rdb恢复数据块，aof丢失数据少\n混合持久化，fork出来的子进程先去把共享内存以rdb的格式写入到aof文件里面，然后写入过程中主进程执行的命令会被记录到重写缓冲区里面，然后这些增量命令最后会以aof的格式增加到aof文件里面，所以aof文件里面前一部分时rdb，后一部分是aof。\n4、Redis主从复制主服务器可以进行读写操作，当发生写操作时自动将写操作同步给从服务器，而从服务器一般是只读，并接受主服务器同步过来写操作命令，然后执行这条命令。\n主从服务器间的第一次同步是全量同步，分为三个阶段：\n\n\n第一阶段是建立链接、协商同步；\n\n 建立链接的时候会给主服务器发送psync，然后带上主服务器的runID和复制进度\n 主服务器收到后会返回一个FULLRESYNC响应，主服务器的runID和目前的复制进度\n\n第二阶段是主服务器同步数据给从服务器；\n\n接着主服务器就执行bgsave生产rdb文件，发给从服务器，从服务器收到rdb文件，会清空当前自己的数据，然后载入rdb文件。并且把新增的写操作写入到replication buffer缓冲区\n\n第三阶段是主服务器发送新写操作命令给从服务器\n\n把repliacation buffer缓冲区里面的写操作发给从服务器\n\n第一次同步完成后，双方会维护一个TCP链接。\n增量复制\n网络断开又恢复后，从主从服务器会采用增量复制的方式继续同步，也就是只会把网络断开期间主服务器接收到的写操作命令，同步给从服务器。\n主要有三个步骤：\n\n从服务器在恢复网络后，会发送 psync 命令给主服务器，此时的 psync 命令里的 offset 参数不是 -1（slave_repl_offset）\n主服务器收到该命令后，然后用 CONTINUE 响应命令告诉从服务器接下来采用增量复制的方式同步数据；\n主服务将主从服务器断线期间，所执行的写命令发送给从服务器，然后从服务器执行这些命令。\n\n主服务器怎么知道要将哪些增量数据发送给从服务器呢？\n\nrepl_backlog_buffer，是一个「环形」缓冲区，用于主从服务器断连后，从中找到差异的数据。（主服务器进行命令传播时，不仅会将写命令发送给从服务器，还会将写命令写入到 repl_backlog_buffer 缓冲区里。）\n\nreplication offset，标记上面那个缓冲区的同步进度，主从服务器都有各自的偏移量，主服务器使用 master_repl_offset 来记录自己「写」到的位置，从服务器使用 slave_repl_offset 来记录自己「读」到的位置。\n\n如果判断出从服务器要读取的数据还在 repl_backlog_buffer 缓冲区里，那么主服务器将采用增量同步的方式；\n\n相反，如果判断出从服务器要读取的数据已经不存在 repl_backlog_buffer 缓冲区里，那么主服务器将采用全量同步的方式。\n\n\n哨兵模式（怎么保证redis的高可用？）用哨兵模式去实现主从集群的自动故障恢复。他有三大作用：监控、自动故障恢复、通知。\n怎么监控？监控是基于心跳机制，每隔1s会向实例发送ping命令，然后实例响应pong，加入在规定时间内，没回复，那就认为主观下线，如果超过一半的哨兵都认为下线了，那就是客观下线。如果这个时候master挂了，这个时候就要选取新的master。\n怎么选取？先判断优先值，值越小代表优先级越高\n然后看offset，你越大，说明你和master之间的差距小，数据丢失的就少，那优先级越高\n最后看id，越小优先级越高。\n主从切换如何减少数据丢失？\n\n主从切换有两种情况会数据丢失\n\n异步复制同步丢失。\n集群产生脑裂数据丢失。就是因为网络问题，哨兵监听不到主节点，那么哨兵就去从节点里面选了一个主节点，这个时候就有多个主节点，那原先的主节点就会被迫降为从节点，然后去新的主节点同步数据，他一同步，那么原先的数据就丢了。所以他的解决方案就是，必须有从节点和设置主从同步之间的延迟时间，如果从节点不够或者网络延迟太大，那我就禁止写操作\n\n第一种情况的解决方法：\nRedis 配置里有一个参数 min-slaves-max-lag，表示一旦所有的从节点数据复制和同步的延迟都超过了 min-slaves-max-lag 定义的值，那么主节点就会拒绝接收任何请求。上面两个参数是依赖于两个参数：\n\nmin-slaves-to-write x，主节点必须要有至少 x 个从节点连接，如果小于这个数，主节点会禁止写数据。\nmin-slaves-max-lag x，主从数据复制和同步的延迟不能超过 x 秒，如果主从同步的延迟超过 x 秒，主节点会禁止写数据\n\n\n\n如何如何应对主从数据不一致？\n\n第一种方法，尽量保证主从节点间的网络连接状况良好，避免主从节点在不同的机房。\n第二种方法，可以开发一个外部程序来监控主从节点间的复制进度。具体做法：得到主从的复制差距，如果过大，就不再和这个从节点进行数据同步\n\n怎么判断 Redis 某个节点是否正常工作？\n\n基本都是通过互相的 ping-pong 心态检测机制,\nRedis 主节点默认每隔 10 秒对从节点发送 ping 命令\nRedis 从节点每隔 1 秒上报自身当前的复制偏移量\n\n5、Redis 过期删除与内存淘汰1、Redis过期策略Redis 使用的过期删除策略是「惰性删除+定期删除」这两种策略配和使用。\n\n什么是惰性删除？\n我不主动的删除，每当访问key的时候，我去判断一下是否过期，如果过期那么就删除该key\n优点：占用比较少的资源，对cpu时间最友好\n缺点：会导致缓存污染，浪费内存空间，对内存不友好\n\n\n什么是定期删除策略？\n就是定期的数据库里面随机抽取一定数量的key，并删除其中的过期的key\n抽取策略？\n1、从过期字典里面随机找20个\n2、然后判断是否过期，并删除已经过期的key\n3、如果过期的key超过了25%，那么就重复这个过程，如果没有，那就等待下一轮的抽查\n优点：通过调整删除操作的时长的频率可以减少一些无用的占用\n缺点：很难确定删除的时长和频率，太频繁对cpu不好，太少又和惰性删除一样。\n\n1、Redis 持久化时，对过期键会如何处理的？持久化有两种 aof和rdb\n对于rdb，考虑生成和加载阶段\n\n生成阶段：对于过期的key不写入rdb文件里面\n加载阶段：这里分两种情况，一种是主服务器，另一种是从服务器。\n​\t主服务器：加载阶段回去判断key是不是过期了，如果过期了那我就不加载这个\n​\t从服务器：不管key是不是过期，全部加载。\n\naof：考虑aof写入阶段和重写阶段\n\n写入阶段：如果这个key过期了，但是没有被删除，那么aof文件就会保留这个key，如果这个key被过期策略删除了，那么就会往aof文件里面追加一条del语句\n重写阶段：重写阶段如果过期了，那么就直接删除，不会保留在新的aof文件里面\n\n2、Redis 主从模式中，对过期键会如何处理？主从模式中，从数据库完全依赖于主数据库，所以即使从库的key过期了，但是你查询，依旧能查到。只有主数据库在key到期的时候往aof文件里面增加del语句，同步到所有的从库，从库才会删除这个key。\n2、Redis 内存淘汰在 Redis 的运行内存达到了某个阀值，就会触发内存淘汰机制****\n这个阀值就是我们设置的最大运行内存，此值在 Redis 的配置文件中可以找到，配置项为 maxmemory。\n默认是不淘汰，内存满了我拒绝添加。\n除开默认的，内存淘汰机制分为两类：一类是对有过期时间的内存淘汰机制；一类是对所有数据的淘汰机制。\n对过期时间的内存淘汰机制可以分成四种：\n1、volatile random\n2、volatile lru 最近最少使用\n3、volatile lfu 最近最不常用的\n4、volatile ttl  最早时间\n对所有数据的淘汰机制：\n1、volatile random\n2、volatile lru 最近最少使用\n3、volatile lfu 最近最不常用的\nLRU 算法和 LFU 算法有什么区别？传统的lru算法依赖于一个链表，，数据被访问时候，链表中的节点会出现很多的移动操作，降低性能\nLRU\n\nRedis实现lru是在RedisObject里面新增一个字段，记录最后一次访问时间\n进行淘汰的时候，随机选取五个，然后淘汰访问时间最早的\n优点：节省空间，提高性能\n缺点：无法解决缓存污染\n\nLFU\n\nlfu在RedisObject的基础上新增了一个字段，用于记录数据的访问频次。24位\n高16位记录时间戳，后8位记录访问频次，默认5，会随着时间衰减\n数据每次被访问的时候：\n先做一个衰减操作，根据时间和上一次访问时间的差\n然后做一次增加的操作，这个是基于一定的概率\n\n\n\n6、Redis缓存设计1、如何避免缓存雪崩？缓存雪崩是指在同一时间大量的key同时过期了\n解决方法：\n这里关键就是同时和过期，所以解决方法如下：\n1、打乱过期的时间\n2、设置缓存不过期\n2、缓存击穿对于一个热点数据过期了，导致请求全部打到数据库\n1、设置缓存不过期，后台异步的去更新\n2、互斥锁，分布式锁的方法。让同一时间只有一个线程去访问\n3、缓存穿透访问的值既不在redis 也不在mysql，所以很可能是那种黑客攻击之类的，解决方法的话\n1、非法请求的限制\n2、空值或者默认值\n3、布隆过滤器\n布隆过滤器的主要原理是使用一组哈希函数，将元素映射成一组位数组中的索引位置。当要检查一个元素是否在集合中时，将该元素进行哈希处理，然后查看哈希值对应的位数组的值是否为1。如果哈希值对应的位数组的值都为1，那么这个元素可能在集合中，否则这个元素肯定不在集合中。\n4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性\nredis和mysql的数据一致性其实有两类方式：一种是双写，一种是缓存删除。对于双写策略，两个请求并发更新同一条数据的时候，会出现数据不一致的情况，另外更新缓存的代价有时候是很高的，可能你1分钟内更新了100次，然后只访问了一次，那代价着实太大了。所以我们一般选择缓存删除的策略。\n对于双写策略：如果是强一致性就需要加分布式锁或延迟双删，但是我们业务对同步的实时性要求没那么高，我们想要的是最终一致性，所以我们用的是异步消息+canal监听。redis修改后发送异步消息给mysql，mysql如果有一些热点数据的修改，就监听这些数据去更新redis。\n我们一般来说是先更新数据库，再去删除缓存。虽然在理论上存在着 一个读请求读到旧值然后准备更新到redis里面的时候，有一个写请求更新数据库并且删除了缓存，这时候读请求才把旧值缓存到redis里面，这样出现redis和mysql的不一致。但是其实由于我们的缓存写入是远远快于数据库的写入，所以很难出现我一个请求更新完数据库删除完缓存了这时候，原先的读请求才写入缓存。为了保证第二个操作能成功，可以订阅binlog或者消息队列做删除。\n对于并发引起的不一致性，那就用延迟双删\n\n常见的缓存更新策略共有3种：\n\n\nCache Aside（旁路缓存）策略；\n\nRead&#x2F;Write Through（读穿 &#x2F; 写穿）策略；\n\nWrite Back（写回）策略\n\n\n\n旁路缓存策略\n写策略的步骤：\n\n先更新数据库中的数据，再删除缓存中的数据。\n\n读策略的步骤：\n\n如果读取的数据命中了缓存，则直接返回数据；\n如果读取的数据没有命中缓存，则从数据库中读取数据，然后将数据写入到缓存，并且返回给用户\n\n\n\n读穿 &#x2F; 写穿）策略\n策略原则是应用程序只和缓存交互，不再和数据库交互，而是由缓存和数据库交互，相当于更新数据库的操作由缓存自己代理了。\n1、Read Through 策略\n\n先查询缓存中数据是否存在，如果存在则直接返回，如果不存在，则由缓存组件负责从数据库查询数据，并将结果写入到缓存组件，最后缓存组件将数据返回给应用。\n\n2、Write Through 策略\n\n当有数据更新的时候，先查询要写入的数据在缓存中是否已经存在：\n\n如果缓存中数据已经存在，则更新缓存中的数据，并且由缓存组件同步更新到数据库中，然后缓存组件告知应用程序更新完成。\n如果缓存中数据不存在，直接更新数据库，然后返回；\n\n\n\n\n\nWrite Back（写回）策略\n写回在更新数据的时候，只更新缓存，同时将缓存数据设置为脏的，然后立马返回，并不会更新数据库。对于数据库的更新，会通过批量异步更新的方式进行。\n实际上，Write Back（写回）策略也不能应用到我们常用的数据库和缓存的场景中，因为 Redis 并没有异步更新数据库的功能。\nWrite Back 是计算机体系结构中的设计，比如 CPU 的缓存、操作系统中文件系统的缓存都采用了 Write Back（写回）策略。\n\n\n7、分布式锁怎么实现\n","dateCreated":"2023-10-09T00:00:00+08:00","dateModified":"2023-11-15T14:16:52+08:00","datePublished":"2023-10-09T00:00:00+08:00","description":"","headline":"Redis复习","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/10/09/Redis/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/10/09/Redis/","keywords":"Redis"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"1、Redis数据结构2、Redis线程模型1、Redis是不是单线程的？1）以前严格意义上来说也不是单线程，还有后台线程2）6.0.x后，由于网络的瓶颈出现，Redis采用了多线程来解决这个问题，具体的步骤是\n流程简述如下：\n\n主线程获取 socket 放入等待列表\n将 socket 分配给各个 IO 线程（并不会等列表满）\n主线程阻塞等待 IO 线程(多线程)读取 socket 完毕\n主线程执行命令 - 单线程（如果命令没有接收完毕，会等 IO 下次继续）\n主线程阻塞等待 IO 线程(多线程)将数据回写 socket 完毕（一次没写完，会等下次再写）\n\n所以多线程就是把最耗时的socket读、请求解析、socket写，这个外包给io线程组，实现socet读写并行化，主线程只去执行命令。所以redis为什么快，一个多线程、多路复用、内存、执行命令的单线程\n\n2、单线程是怎么样子的其实redis的单线程是先初始化后一直走一个循环处理。初始化的时候就做了三件事情：\n\n\n创建一个 epoll 对象，就是我们的io多路复用的实现\n对配置的监听端口进行 listen\n把 listen socket 让 epoll 给管理起来，注册accept处理函数。\n\n做完这些之前之后就要真正处理用户请求，他会调用 epoll_wait 函数等待事件的到来，交给事件分发器。\n\n若发现 listen socket 上有新连接到达，就调用我们刚刚注册的那个accept函数，并追加这个client socket到epoll中进行管理\n若发现其它 socket 上的读写请求，那就调用相应的读事件处理，和写事件处理。\n\n当然这里6.0以后引入了多线程，那接收数据、解析数据、写回数据都交给了io线程组，和主线程无关了。\n6、讲一下io多路复用首先我们知道用户缓冲区去内核缓冲区读数据的时候，有两个耗时的过程，一个是等待从网卡来的数据，一个是内核拷贝到用户缓冲区。\n阻塞io和非阻塞io都是先调用revfrom，阻塞io两个都要等、非阻塞需要等待拷贝这个过程。但是io多路复用，先监听一个socket集合，然后某个socket数据就绪了，发了个可读的通知，这时候才调用revfrom去读。\nio多路复用有多种实现，select、poll、epoll。select和poll收到可读通知，需要自己去遍历，是哪个发了可读通知。epoll是直接告诉你是哪个socket就绪。\t\n3、为什么这么快？基于内存\n单线程执行命令\nio多路复用\n多线程读写socket\n4、采用单线程原因\n使用单线程模型是 Redis 的开发和维护更简单\n即使使用单线程模型也并发的处理多客户端的请求，主要使用的是多路复用IO\n对于 Redis 系统来说， 主要的性能瓶颈是内存或者网络带宽而并非 CPU。\n\n5、引入多线程原因内存问题比较好解决，因此Redis的瓶颈原因为网络IO\n3、Redis持久化Redis 共有三种数据持久化的方式：\n\nAOF 日志：每执行一条写操作命令，就把该命令以追加的方式写入到一个文件里；\nRDB 快照：将某一时刻的内存数据，以二进制的方式写入磁盘；\n混合持久化方式：Redis 4.0 新增的方式，集成了 AOF 和 RBD 的优点；\n\n1、AOF执行一条写命令，就把这个命令往aof文件里面写\n1、为什么先执行命令，再把数据写入日志呢？\n1、避免额外的开销\n2、不会阻塞当前的写命令\n缺点：\n1、可能数据丢失，因为如果在执行完还没写入aof文件之间宕机，那就丢失\n2、可能阻塞下一个命令\n\n2、写回策略几种？三种：Always everySec no，其实和mysql的binlog非常相似\n第一种就是每次都同步\n第二种就是每一秒都讲缓冲区里面的写会磁盘\n第三种就是写到缓冲区里面，但是什么时候写到磁盘依赖于操作系统\n3、AOF 日志过大，会触发什么机制？aof重写机制：读取当前数据库中的所有键值对，对每一键值对用一条命令记录到「新的 AOF 文件」，等到全部记录完后，就将新的 AOF 文件替换掉现有的 AOF 文件。\naof是由后台子进程完成的，这里有一个问题，就是如果aof重写过程中，主进程对内存进行了修改，怎么办？会触发写时复制。\n当aof重写过程中父进程修改内存，那我们执行一个写命令后，会写到aof缓冲区和aof重写缓冲区里面。当子进程完成重写，再去吧重写缓冲区里面的内容追加到aof文件\n2、RDB快照快照就是记录一瞬间的意思。记录的是当前的实际数据。\n有两种启动的方式，一个save阻塞住线程，一种bgsave，后台线程，fork一个子进程，也复制了页表。他的做法是\n所以rdb快照不会想aof那样开辟一个缓冲区用于记录新操作。这里rdb用的是全量快照数据。\n如果在rdb快照的时候，主线程修改了内容，那么这时候会出发写保护中断，写时复制，原本的物理内存A，复制一份A‘，然后主线程修改A’就好了\n3、混合持久化混合持久化就是合并了aof和rdb的两个优点，rdb恢复数据块，aof丢失数据少\n混合持久化，fork出来的子进程先去把共享内存以rdb的格式写入到aof文件里面，然后写入过程中主进程执行的命令会被记录到重写缓冲区里面，然后这些增量命令最后会以aof的格式增加到aof文件里面，所以aof文件里面前一部分时rdb，后一部分是aof。\n4、Redis主从复制主服务器可以进行读写操作，当发生写操作时自动将写操作同步给从服务器，而从服务器一般是只读，并接受主服务器同步过来写操作命令，然后执行这条命令。\n主从服务器间的第一次同步是全量同步，分为三个阶段：\n\n\n第一阶段是建立链接、协商同步；\n\n 建立链接的时候会给主服务器发送psync，然后带上主服务器的runID和复制进度\n 主服务器收到后会返回一个FULLRESYNC响应，主服务器的runID和目前的复制进度\n\n第二阶段是主服务器同步数据给从服务器；\n\n接着主服务器就执行bgsave生产rdb文件，发给从服务器，从服务器收到rdb文件，会清空当前自己的数据，然后载入rdb文件。并且把新增的写操作写入到replication buffer缓冲区\n\n第三阶段是主服务器发送新写操作命令给从服务器\n\n把repliacation buffer缓冲区里面的写操作发给从服务器\n\n第一次同步完成后，双方会维护一个TCP链接。\n增量复制\n网络断开又恢复后，从主从服务器会采用增量复制的方式继续同步，也就是只会把网络断开期间主服务器接收到的写操作命令，同步给从服务器。\n主要有三个步骤：\n\n从服务器在恢复网络后，会发送 psync 命令给主服务器，此时的 psync 命令里的 offset 参数不是 -1（slave_repl_offset）\n主服务器收到该命令后，然后用 CONTINUE 响应命令告诉从服务器接下来采用增量复制的方式同步数据；\n主服务将主从服务器断线期间，所执行的写命令发送给从服务器，然后从服务器执行这些命令。\n\n主服务器怎么知道要将哪些增量数据发送给从服务器呢？\n\nrepl_backlog_buffer，是一个「环形」缓冲区，用于主从服务器断连后，从中找到差异的数据。（主服务器进行命令传播时，不仅会将写命令发送给从服务器，还会将写命令写入到 repl_backlog_buffer 缓冲区里。）\n\nreplication offset，标记上面那个缓冲区的同步进度，主从服务器都有各自的偏移量，主服务器使用 master_repl_offset 来记录自己「写」到的位置，从服务器使用 slave_repl_offset 来记录自己「读」到的位置。\n\n如果判断出从服务器要读取的数据还在 repl_backlog_buffer 缓冲区里，那么主服务器将采用增量同步的方式；\n\n相反，如果判断出从服务器要读取的数据已经不存在 repl_backlog_buffer 缓冲区里，那么主服务器将采用全量同步的方式。\n\n\n哨兵模式（怎么保证redis的高可用？）用哨兵模式去实现主从集群的自动故障恢复。他有三大作用：监控、自动故障恢复、通知。\n怎么监控？监控是基于心跳机制，每隔1s会向实例发送ping命令，然后实例响应pong，假如规定时间内，没回复，那就认为主观下线，如果超过一半的哨兵都认为下线了，那就是客观下线。如果这个时候master挂了，这个时候就要选取新的master。\n怎么选取？先判断优先值，值越小代表优先级越高\n然后看offset，你越大，说明你和master之间的差距小，数据丢失的就少，那优先级越高\n最后看id，越小优先级越高。\n主从切换如何减少数据丢失？\n\n主从切换有两种情况会数据丢失\n\n异步复制同步丢失。master来不及同步给从节点就挂了\n集群产生脑裂数据丢失。就是因为网络问题，哨兵监听不到主节点，那么哨兵就去从节点里面选了一个主节点，这个时候就有多个主节点，那原先的主节点就会被迫降为从节点，然后去新的主节点同步数据，他一同步，那么原先的数据就丢了。所以他的解决方案就是，必须有从节点和设置主从同步之间的延迟时间，如果从节点不够或者网络延迟太大，那我就禁止写操作\n\n解决方法：\nRedis 配置里有一个参数 min-slaves-max-lag，表示一旦所有的从节点数据复制和同步的延迟都超过了 min-slaves-max-lag 定义的值，那么主节点就会拒绝接收任何请求。上面两个参数是依赖于两个参数：\n\nmin-slaves-to-write x，主节点必须要有至少 x 个从节点连接，如果小于这个数，主节点会禁止写数据。\nmin-slaves-max-lag x，主从数据复制和同步的延迟不能超过 x 秒，如果主从同步的延迟超过 x 秒，主节点会禁止写数据\n\n\n如何如何应对主从数据不一致？\n\n第一种方法，尽量保证主从节点间的网络连接状况良好，避免主从节点在不同的机房。\n第二种方法，可以开发一个外部程序来监控主从节点间的复制进度。具体做法：得到主从的复制差距，如果过大，就不再和这个从节点进行数据同步\n\n怎么判断 Redis 某个节点是否正常工作？\n\n基本都是通过互相的 ping-pong 心态检测机制,\nRedis 主节点默认每隔 10 秒对从节点发送 ping 命令\nRedis 从节点每隔 1 秒上报自身当前的复制偏移量\n\n5、Redis 过期删除与内存淘汰1、Redis过期策略Redis 使用的过期删除策略是「惰性删除+定期删除」这两种策略配和使用。\n\n什么是惰性删除？\n我不主动的删除，每当访问key的时候，我去判断一下是否过期，如果过期那么就删除该key\n优点：占用比较少的资源，对cpu时间最友好\n缺点：会导致缓存污染，浪费内存空间，对内存不友好\n\n\n什么是定期删除策略？\n就是定期的数据库里面随机抽取一定数量的key，并删除其中的过期的key\n抽取策略？\n1、从过期字典里面随机找20个\n2、然后判断是否过期，并删除已经过期的key\n3、如果过期的key超过了25%，那么就重复这个过程，如果没有，那就等待下一轮的抽查\n优点：通过调整删除操作的时长的频率可以减少一些无用的占用\n缺点：很难确定删除的时长和频率，太频繁对cpu不好，太少又和惰性删除一样。\n\n1、Redis 持久化时，对过期键会如何处理的？持久化有两种 aof和rdb\n对于rdb，考虑生成和加载阶段\n\n生成阶段：对于过期的key不写入rdb文件里面\n加载阶段：这里分两种情况，一种是主服务器，另一种是从服务器。\n​\t主服务器：加载阶段回去判断key是不是过期了，如果过期了那我就不加载这个\n​\t从服务器：不管key是不是过期，全部加载。\n\naof：考虑aof写入阶段和重写阶段\n\n写入阶段：如果这个key过期了，但是没有被删除，那么aof文件就会保留这个key，如果这个key被过期策略删除了，那么就会往aof文件里面追加一条del语句\n重写阶段：重写阶段如果过期了，那么就直接删除，不会保留在新的aof文件里面\n\n2、Redis 主从模式中，对过期键会如何处理？主从模式中，从数据库完全依赖于主数据库，所以即使从库的key过期了，但是你查询，依旧能查到。只有主数据库在key到期的时候往aof文件里面增加del语句，同步到所有的从库，从库才会删除这个key。\n2、Redis 内存淘汰在 Redis 的运行内存达到了某个阀值，就会触发内存淘汰机制****\n这个阀值就是我们设置的最大运行内存，此值在 Redis 的配置文件中可以找到，配置项为 maxmemory。\n默认是不淘汰，内存满了我拒绝添加。\n除开默认的，内存淘汰机制分为两类：一类是对有过期时间的内存淘汰机制；一类是对所有数据的淘汰机制。\n对过期时间的内存淘汰机制可以分成四种：\n1、volatile random\n2、volatile lru 最近最少使用\n3、volatile lfu 最近最不常用的\n4、volatile ttl  最早时间\n对所有数据的淘汰机制：\n1、volatile random\n2、volatile lru 最近最少使用\n3、volatile lfu 最近最不常用的\nLRU 算法和 LFU 算法有什么区别？传统的lru算法依赖于一个链表，，数据被访问时候，链表中的节点会出现很多的移动操作，降低性能\nLRU\n\nRedis实现lru是在RedisObject里面新增一个字段，记录最后一次访问时间\n进行淘汰的时候，随机选取五个，然后淘汰访问时间最早的\n优点：节省空间，提高性能\n缺点：无法解决缓存污染\n\nLFU\n\nlfu在RedisObject的基础上新增了一个字段，用于记录数据的访问频次。24位\n高16位记录时间戳，后8位记录访问频次，默认5，会随着时间衰减\n数据每次被访问的时候：\n先做一个衰减操作，根据时间和上一次访问时间的差\n然后做一次增加的操作，这个是基于一定的概率\n\n\n\n6、Redis缓存设计1、如何避免缓存雪崩？缓存雪崩是指在同一时间大量的key同时过期了\n解决方法：\n这里关键就是同时和过期，所以解决方法如下：\n1、打乱过期的时间\n2、设置缓存不过期\n2、缓存击穿对于一个热点数据过期了，导致请求全部打到数据库\n1、设置缓存不过期，后台异步的去更新\n2、互斥锁，分布式锁的方法。让同一时间只有一个线程去访问\n3、缓存穿透访问的值既不在redis 也不在mysql，所以很可能是那种黑客攻击之类的，解决方法的话\n1、非法请求的限制\n2、空值或者默认值\n3、布隆过滤器\n布隆过滤器的主要原理是使用一组哈希函数，将元素映射成一组位数组中的索引位置。当要检查一个元素是否在集合中时，将该元素进行哈希处理，然后查看哈希值对应的位数组的值是否为1。如果哈希值对应的位数组的值都为1，那么这个元素可能在集合中，否则这个元素肯定不在集合中。\n4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性\nredis和mysql的数据一致性其实有两类方式：一种是双写，一种是缓存删除。\n\n对于双写策略，两个请求并发更新同一条数据的时候，会出现数据不一致的情况，另外更新缓存的代价有时候是很高的，可能你1分钟内更新了100次，然后只访问了一次，那代价着实太大了。所以我们一般选择缓存删除的策略。\n\n对于双写策略：如果对一致性就需要加分布式锁或延迟双删，但是我们业务对同步的实时性要求没那么高，我们想要的是最终一致性，所以我们用的是异步消息+canal监听。redis修改后发送异步消息给mysql，mysql如果有一些热点数据的修改，就监听这些数据去更新redis。x\n我们一般来说是先更新数据库，再去删除缓存。虽然在理论上存在着 一个读请求读到旧值然后准备更新到redis里面的时候，有一个写请求更新数据库并且删除了缓存，这时候读请求才把旧值缓存到redis里面，这样出现redis和mysql的不一致。但是其实由于我们的缓存写入是远远快于数据库的写入，所以很难出现我一个请求更新完数据库删除完缓存了这时候，原先的读请求才写入缓存。为了保证第二个操作能成功，可以订阅binlog或者消息队列做删除。\n对于并发引起的不一致性，那就用延迟双删\n\n常见的缓存更新策略共有3种：\n\n\nCache Aside（旁路缓存）策略；\n\nRead&#x2F;Write Through（读穿 &#x2F; 写穿）策略；\n\nWrite Back（写回）策略\n\n\n\n旁路缓存策略\n写策略的步骤：\n\n先更新数据库中的数据，再删除缓存中的数据。\n\n读策略的步骤：\n\n如果读取的数据命中了缓存，则直接返回数据；\n如果读取的数据没有命中缓存，则从数据库中读取数据，然后将数据写入到缓存，并且返回给用户\n\n\n\n读穿 &#x2F; 写穿）策略\n策略原则是应用程序只和缓存交互，不再和数据库交互，而是由缓存和数据库交互，相当于更新数据库的操作由缓存自己代理了。\n1、Read Through 策略\n\n先查询缓存中数据是否存在，如果存在则直接返回，如果不存在，则由缓存组件负责从数据库查询数据，并将结果写入到缓存组件，最后缓存组件将数据返回给应用。\n\n2、Write Through 策略\n\n当有数据更新的时候，先查询要写入的数据在缓存中是否已经存在：\n\n如果缓存中数据已经存在，则更新缓存中的数据，并且由缓存组件同步更新到数据库中，然后缓存组件告知应用程序更新完成。\n如果缓存中数据不存在，直接更新数据库，然后返回；\n\n\n\n\n\nWrite Back（写回）策略\n写回在更新数据的时候，只更新缓存，同时将缓存数据设置为脏的，然后立马返回，并不会更新数据库。对于数据库的更新，会通过批量异步更新的方式进行。\n实际上，Write Back（写回）策略也不能应用到我们常用的数据库和缓存的场景中，因为 Redis 并没有异步更新数据库的功能。\nWrite Back 是计算机体系结构中的设计，比如 CPU 的缓存、操作系统中文件系统的缓存都采用了 Write Back（写回）策略。\n\n\n7、分布式锁怎么实现\n","dateCreated":"2023-10-09T00:00:00+08:00","dateModified":"2023-11-19T22:49:24+08:00","datePublished":"2023-10-09T00:00:00+08:00","description":"","headline":"Redis复习","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/10/09/Redis/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/10/09/Redis/","keywords":"Redis"}</script>
     <meta name="description" content="1、Redis数据结构2、Redis线程模型1、Redis是不是单线程的？1）以前严格意义上来说也不是单线程，还有后台线程2）6.0.x后，由于网络的瓶颈出现，Redis采用了多线程来解决这个问题，具体的步骤是 流程简述如下：  主线程获取 socket 放入等待列表 将 socket 分配给各个 IO 线程（并不会等列表满） 主线程阻塞等待 IO 线程(多线程)读取 socket 完毕 主线程执">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Redis复习">
@@ -21,12 +21,11 @@
 <meta property="og:locale" content="zh_CH">
 <meta property="og:image" content="http://example.com/images/Redis/image-20231031151613941.png">
 <meta property="og:image" content="http://example.com/images/Redis/image-20231023173508951.png">
-<meta property="og:image" content="http://example.com/images/Redis/image-20231031162512549.png">
 <meta property="og:image" content="http://example.com/images/Redis/%E8%BF%87%E6%9C%9F%E5%88%A0%E9%99%A4%E7%AD%96%E7%95%A5.jpg">
 <meta property="og:image" content="http://example.com/images/Redis/%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5.jpg">
 <meta property="og:image" content="http://example.com/images/Redis/image-20231115124152900.png">
 <meta property="article:published_time" content="2023-10-08T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-11-15T06:16:52.053Z">
+<meta property="article:modified_time" content="2023-11-19T14:49:24.847Z">
 <meta property="article:author" content="CSEN">
 <meta property="article:tag" content="Redis">
 <meta name="twitter:card" content="summary">
@@ -82,11 +81,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Abre el enlace: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
         
         </a>
     
@@ -105,9 +104,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Leer más sobre el autor."
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -251,7 +250,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -320,10 +319,8 @@
 <p>第一种就是每次都同步</p>
 <p>第二种就是每一秒都讲缓冲区里面的写会磁盘</p>
 <p>第三种就是写到缓冲区里面，但是什么时候写到磁盘依赖于操作系统</p>
-<h3 id="3、AOF-日志过大，会触发什么机制？"><a href="#3、AOF-日志过大，会触发什么机制？" class="headerlink" title="3、AOF 日志过大，会触发什么机制？"></a>3、AOF 日志过大，会触发什么机制？</h3><p>aof是你执行一条写命令，马上追加到aof文件里面。这个记录的机制依赖一个参数，everysec每秒，always同步，no就是由操作系统去判断什么时候把缓冲区里面的数据写回磁盘。</p>
-<p>aof重写机制：读取当前数据库中的所有键值对，对每一键值对用一条命令记录到「新的 AOF 文件」，等到全部记录完后，就将新的 AOF 文件替换掉现有的 AOF 文件。</p>
-<p>aof是由后台子进程完成的。</p>
-<p>这里有一个问题，就是如果aof重写过程中，主进程对内存进行了修改，怎么办？会触发写时复制。</p>
+<h3 id="3、AOF-日志过大，会触发什么机制？"><a href="#3、AOF-日志过大，会触发什么机制？" class="headerlink" title="3、AOF 日志过大，会触发什么机制？"></a>3、AOF 日志过大，会触发什么机制？</h3><p>aof重写机制：读取当前数据库中的所有键值对，对每一键值对用一条命令记录到「新的 AOF 文件」，等到全部记录完后，就将新的 AOF 文件替换掉现有的 AOF 文件。</p>
+<p>aof是由后台子进程完成的，这里有一个问题，就是如果aof重写过程中，主进程对内存进行了修改，怎么办？会触发写时复制。</p>
 <p>当aof重写过程中父进程修改内存，那我们执行一个写命令后，会写到aof缓冲区和aof重写缓冲区里面。当子进程完成重写，再去吧重写缓冲区里面的内容追加到aof文件</p>
 <h2 id="2、RDB快照"><a href="#2、RDB快照" class="headerlink" title="2、RDB快照"></a>2、RDB快照</h2><p>快照就是记录一瞬间的意思。记录的是当前的实际数据。</p>
 <p>有两种启动的方式，一个save阻塞住线程，一种bgsave，后台线程，fork一个子进程，也复制了页表。他的做法是</p>
@@ -369,7 +366,7 @@
 </li>
 </ul>
 <h2 id="哨兵模式（怎么保证redis的高可用？）"><a href="#哨兵模式（怎么保证redis的高可用？）" class="headerlink" title="哨兵模式（怎么保证redis的高可用？）"></a>哨兵模式（怎么保证redis的高可用？）</h2><p>用哨兵模式去实现主从集群的自动故障恢复。他有三大作用：监控、自动故障恢复、通知。</p>
-<h5 id="怎么监控？"><a href="#怎么监控？" class="headerlink" title="怎么监控？"></a>怎么监控？</h5><p>监控是基于心跳机制，每隔1s会向实例发送ping命令，然后实例响应pong，加入在规定时间内，没回复，那就认为主观下线，如果超过一半的哨兵都认为下线了，那就是客观下线。如果这个时候master挂了，这个时候就要选取新的master。</p>
+<h5 id="怎么监控？"><a href="#怎么监控？" class="headerlink" title="怎么监控？"></a>怎么监控？</h5><p>监控是基于心跳机制，每隔1s会向实例发送ping命令，然后实例响应pong，假如规定时间内，没回复，那就认为主观下线，如果超过一半的哨兵都认为下线了，那就是客观下线。如果这个时候master挂了，这个时候就要选取新的master。</p>
 <h5 id="怎么选取？"><a href="#怎么选取？" class="headerlink" title="怎么选取？"></a>怎么选取？</h5><p>先判断优先值，值越小代表优先级越高</p>
 <p>然后看offset，你越大，说明你和master之间的差距小，数据丢失的就少，那优先级越高</p>
 <p>最后看id，越小优先级越高。</p>
@@ -377,16 +374,15 @@
 <blockquote>
 <p>主从切换有两种情况会数据丢失</p>
 <ul>
-<li>异步复制同步丢失。</li>
+<li>异步复制同步丢失。master来不及同步给从节点就挂了</li>
 <li>集群产生脑裂数据丢失。就是因为网络问题，哨兵监听不到主节点，那么哨兵就去从节点里面选了一个主节点，这个时候就有多个主节点，那原先的主节点就会被迫降为从节点，然后去新的主节点同步数据，他一同步，那么原先的数据就丢了。所以他的解决方案就是，必须有从节点和设置主从同步之间的延迟时间，如果从节点不够或者网络延迟太大，那我就禁止写操作</li>
 </ul>
-<p>第一种情况的解决方法：</p>
+<p>解决方法：</p>
 <p>Redis 配置里有一个参数 min-slaves-max-lag，表示一旦所有的从节点数据复制和同步的延迟都超过了 min-slaves-max-lag 定义的值，那么主节点就会拒绝接收任何请求。上面两个参数是依赖于两个参数：</p>
 <ul>
 <li>min-slaves-to-write x，主节点必须要有<strong>至少 x 个从节点连接</strong>，如果小于这个数，主节点会禁止写数据。</li>
 <li>min-slaves-max-lag x，主从数据复制和同步的延迟<strong>不能超过 x 秒</strong>，如果主从同步的延迟超过 x 秒，主节点会禁止写数据</li>
 </ul>
-<p><img src="/../images/Redis/image-20231031162512549.png" alt="image-20231031162512549"></p>
 </blockquote>
 <p><strong>如何如何应对主从数据不一致？</strong></p>
 <blockquote>
@@ -475,8 +471,11 @@
 <p>3、布隆过滤器</p>
 <p>布隆过滤器的主要原理是使用一组哈希函数，将元素映射成一组位数组中的索引位置。当要检查一个元素是否在集合中时，将该元素进行哈希处理，然后查看哈希值对应的位数组的值是否为1。如果哈希值对应的位数组的值都为1，那么这个元素可能在集合中，否则这个元素肯定不在集合中。</p>
 <h2 id="4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性"><a href="#4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性" class="headerlink" title="4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性"></a>4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性</h2><blockquote>
-<p>redis和mysql的数据一致性其实有两类方式：<font color='red'><u><em><strong>一种是双写，一种是缓存删除。对于双写策略，两个请求并发更新同一条数据的时候，会出现数据不一致的情况，另外更新缓存的代价有时候是很高的，可能你1分钟内更新了100次，然后只访问了一次，那代价着实太大了。所以我们一般选择缓存删除的策略。</strong></em></u></font></p>
-<p>对于双写策略：如果是强一致性就需要加分布式锁或延迟双删，但是我们业务对同步的实时性要求没那么高，我们想要的是最终一致性，所以我们用的是异步消息+canal监听。redis修改后发送异步消息给mysql，mysql如果有一些热点数据的修改，就监听这些数据去更新redis。</p>
+<p>redis和mysql的数据一致性其实有两类方式：<font color='red'><u><em><strong>一种是双写，一种是缓存删除。</strong></em></u></font></p>
+<blockquote>
+<p>对于双写策略，两个请求并发更新同一条数据的时候，会出现数据不一致的情况，另外更新缓存的代价有时候是很高的，可能你1分钟内更新了100次，然后只访问了一次，那代价着实太大了。所以我们一般选择缓存删除的策略。</p>
+</blockquote>
+<p>对于双写策略：如果对一致性就需要加分布式锁或延迟双删，但是我们业务对同步的实时性要求没那么高，我们想要的是最终一致性，所以我们用的是异步消息+canal监听。redis修改后发送异步消息给mysql，mysql如果有一些热点数据的修改，就监听这些数据去更新redis。x</p>
 <p>我们一般来说是<font color='red'><u><em><strong>先更新数据库，再去删除缓存</strong></em></u></font>。虽然在理论上存在着 一个读请求读到旧值然后准备更新到redis里面的时候，有一个写请求更新数据库并且删除了缓存，这时候读请求才把旧值缓存到redis里面，这样出现redis和mysql的不一致。但是其实由于我们的缓存写入是远远快于数据库的写入，所以很难出现我一个请求更新完数据库删除完缓存了这时候，原先的读请求才写入缓存。为了保证第二个操作能成功，可以订阅binlog或者消息队列做删除。</p>
 <p>对于并发引起的不一致性，那就用延迟双删</p>
 <blockquote>
@@ -536,7 +535,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">GETAGGT IN</span><br/>
+                <span class="text-color-light text-small">ETIQUETADO EN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/Redis/" rel="tag">Redis</a>
 
@@ -553,11 +552,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
                     data-tooltip="设计模式"
-                    aria-label="FRÜHER: 设计模式"
+                    aria-label="ANTERIOR: 设计模式"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">ANTERIOR</span>
                     </a>
             </li>
             <li class="post-action">
@@ -567,10 +566,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/09/30/shua/"
                     data-tooltip="Java刷题"
-                    aria-label="NÄCHSTER: Java刷题"
+                    aria-label="SIGUIENTE: Java刷题"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">SIGUIENTE</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -581,7 +580,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
+                aria-label="Share this post"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -593,8 +592,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/10/09/Redis/"
-                    title="Teilen auf Facebook"
-                    aria-label="Teilen auf Facebook"
+                    title="Compartir en Facebook"
+                    aria-label="Compartir en Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -606,8 +605,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/10/09/Redis/"
-                    title="Teilen auf Twitter"
-                    aria-label="Teilen auf Twitter"
+                    title="Compartir en Twitter"
+                    aria-label="Compartir en Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -619,8 +618,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/10/09/Redis/"
-                    title="Teilen auf Google Plus"
-                    aria-label="Teilen auf Google Plus"
+                    title="Compartir en Google+"
+                    aria-label="Compartir en Google+"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -631,7 +630,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -668,11 +667,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
                     data-tooltip="设计模式"
-                    aria-label="FRÜHER: 设计模式"
+                    aria-label="ANTERIOR: 设计模式"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">ANTERIOR</span>
                     </a>
             </li>
             <li class="post-action">
@@ -682,10 +681,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/09/30/shua/"
                     data-tooltip="Java刷题"
-                    aria-label="NÄCHSTER: Java刷题"
+                    aria-label="SIGUIENTE: Java刷题"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">SIGUIENTE</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -696,7 +695,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
+                aria-label="Share this post"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -708,8 +707,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/10/09/Redis/"
-                    title="Teilen auf Facebook"
-                    aria-label="Teilen auf Facebook"
+                    title="Compartir en Facebook"
+                    aria-label="Compartir en Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -721,8 +720,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/10/09/Redis/"
-                    title="Teilen auf Twitter"
-                    aria-label="Teilen auf Twitter"
+                    title="Compartir en Twitter"
+                    aria-label="Compartir en Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -734,8 +733,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/10/09/Redis/"
-                    title="Teilen auf Google Plus"
-                    aria-label="Teilen auf Google Plus"
+                    title="Compartir en Google+"
+                    aria-label="Compartir en Google+"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -746,7 +745,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -768,9 +767,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/10/09/Redis/"
-                        aria-label="Teilen auf Facebook"
+                        aria-label="Compartir en Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Compartir en Facebook</span>
                     </a>
                 </li>
             
@@ -781,9 +780,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2023/10/09/Redis/"
-                        aria-label="Teilen auf Twitter"
+                        aria-label="Compartir en Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Compartir en Twitter</span>
                     </a>
                 </li>
             
@@ -794,9 +793,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2023/10/09/Redis/"
-                        aria-label="Teilen auf Google Plus"
+                        aria-label="Compartir en Google+"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Compartir en Google+</span>
                     </a>
                 </li>
             
@@ -819,7 +818,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

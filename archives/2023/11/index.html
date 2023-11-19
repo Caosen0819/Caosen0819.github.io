@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv: 2023/11 - 森</title>
+    <title>Archivos: 2023/11 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Abre el enlace: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Leer más sobre el autor."
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -247,7 +247,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -511,7 +511,6 @@
 <h4 id="1、索引管理"><a href="#1、索引管理" class="headerlink" title="1、索引管理"></a>1、索引管理</h4><p>创建和删除可以通过两种方法。一种是alter table。另一种是create&#x2F;drop index。</p>
 <p>查看：show index from XX</p>
 <h4 id="2、fast-index-create"><a href="#2、fast-index-create" class="headerlink" title="2、fast index create"></a><font color='red'><u><em><strong>2、fast index create</strong></em></u></font></h4><p>在创建索引的表加上一个S锁不需要重建表，删除索引只需要更新内部视图。<font color='red'><u><em><strong>但是不能做一些更新操作。</strong></em></u></font></p>
-<h4 id="3、Online-Schema-Change在线架构改变OSC"><a href="#3、Online-Schema-Change在线架构改变OSC" class="headerlink" title="3、Online Schema Change在线架构改变OSC"></a>3、Online Schema Change在线架构改变OSC</h4><p>osc了解即可：在线的意思其实就是在DDL的过程中，可以有读写事务对表进行操作</p>
 <h4 id="4、Online-DDL"><a href="#4、Online-DDL" class="headerlink" title="4、Online DDL"></a><font color='red'><u><em><strong>4、Online DDL</strong></em></u></font></h4><p>允许在辅助索引创建的同时，还允许insert update等DML操作</p>
 <p>原理是：执行insert update delete这些操作的时候，<font color='red'><u><em><strong>先把操作日志写入一个缓存里面，然后，索引建立后重做表上面</strong></em></u></font></p>
 <p>新的alter table语法中，通过<font color='red'><u><em><strong>algorithm如果是 copy还是通过建立临时表的方式，如果是replace就是不需要临时表，</strong></em></u></font>是在InnoDB引擎内部完成，但是还是需要临时空间的。如果是default，那就是根据old_alter_table判断，如果是off，那就是replace。</p>
@@ -530,7 +529,6 @@
 <h4 id="2、覆盖索引"><a href="#2、覆盖索引" class="headerlink" title="2、覆盖索引"></a>2、覆盖索引</h4><p>覆盖索引的意思是，从辅助索引中就直接可以得到想要查询的记录，不需要回表。</p>
 <p>第一个好处是：辅助索引本身不包括整行记录，所以大小远小于聚集索引，减少io操作</p>
 <p>第二个好处是：对于某些统计问题，存储引擎并不会通过积极索引，辅助索引远远小于聚集索引，</p>
-<h4 id="3、优化器不选择索引的方式"><a href="#3、优化器不选择索引的方式" class="headerlink" title="3、优化器不选择索引的方式"></a>3、优化器不选择索引的方式</h4><p>多发生在范围查找、join链接操作</p>
 <h4 id="4、MRR优化（只支持非聚集索引）（离散读变成顺序读）"><a href="#4、MRR优化（只支持非聚集索引）（离散读变成顺序读）" class="headerlink" title="4、MRR优化（只支持非聚集索引）（离散读变成顺序读）"></a>4、MRR优化（只支持非聚集索引）<font color='red'><u><em><strong>（离散读变成顺序读）</strong></em></u></font></h4><p>工作方式：</p>
 <ul>
 <li>把辅助索引读出来放到一个缓存里面</li>
@@ -548,7 +546,6 @@
 <p>场景：</p>
 <p>假设表TB1上有索引IDX_C1_C2_C3(C1,C2,C3)，对于查询SELECT * FROM TB1 WHERE C1&#x3D;’XXX’ AND C3&#x3D;’XXX’</p>
 <p>在MySQL 5.6版本以前，由于缺少C2的过滤条件，Innodb存储引擎层只能使用索引IDX_C1_C2_C3按照C1&#x3D;’XXX’条件找出所有满足条件的索引记录，再根据这些索引记录去聚集索引中查找，将找到的表数据返回给MySQL Server层，然后由MySQL Server层使用C3&#x3D;’XXX’条件进行过滤得到最终结果。</p>
-<p>再MySQL 5.6版本中引入ICP特性，Innodb存储引擎层只能使用索引IDX_C1_C2_C3按照C1&#x3D;’XXX’条件去扫描所有满足条件的索引记录，再将这些索引记录按照C3&#x3D;’XXX’条件进行过滤，并按照过滤后的索引记录去去聚集索引中查找，将找到的表数据返回给MySQL Server层，得到最终结果。</p>
 <p>假设满足C1&#x3D;’XXX’条件的数据行为100000条，而满足C1&#x3D;’XXX’ AND C3&#x3D;’XXX’的数据行为100条，则：</p>
 <p>1、在MySQL 5.5版本中，需要对TB1的聚集索引进行100000次Index Seek操作，Innodb存储引擎层向MySQL Server层传递100000行数据。</p>
 <p>2、在MySQL 5.6版本中，使用ICP仅需要对TB1的聚集索引进行100次的Index Seek操作，Innodb存储引擎层向MySQL Server层传递100行数据。</p>
@@ -600,12 +597,7 @@
 <li>自增锁</li>
 </ul>
 </blockquote>
-<h4 id="1、表锁"><a href="#1、表锁" class="headerlink" title="1、表锁"></a>1、表锁</h4><p>对于表锁，又可以分为2类：</p>
-<ul>
-<li>表共享读锁（read lock）</li>
-<li>表独占写锁（write lock）</li>
-</ul>
-<p>结论: 读锁不会阻塞其他客户端的读，但是会阻塞写。写锁既会阻塞其他客户端的读，又会阻塞 其他客户端的写。</p>
+<h4 id="1、表锁"><a href="#1、表锁" class="headerlink" title="1、表锁"></a>1、表锁</h4><p>表锁就是对表加锁，分读锁和写锁，读琐和读锁是兼容，读锁和写锁、写锁和写锁是不兼容的。</p>
 <h4 id="2、元数据锁"><a href="#2、元数据锁" class="headerlink" title="2、元数据锁"></a>2、元数据锁</h4><blockquote>
 <p>再来说说<strong>元数据锁</strong>（MDL）,<font color='red'><u><em><strong>它 是为了保证当用户对表执行 CRUD 操作时，防止其他线程对这个表结构做了变更。我们不需要显示的使用 MDL，会自动给这个表加上 MDL：</strong></em></u></font></p>
 <ul>
@@ -656,11 +648,7 @@
 <p>要解决这问题，binlog 日志格式要设置为 row，这样在 binlog 里面记录的是主库分配的自增值，到备库执行的时候，主库的自增值是什么，从库的自增值就是什么。</p>
 <p>所以，<strong>当 innodb_autoinc_lock_mode &#x3D; 2 时，并且 binlog_format &#x3D; row，既能提升并发性，又不会出现数据一致性问题</strong>。</p>
 <h3 id="3、行锁"><a href="#3、行锁" class="headerlink" title="3、行锁"></a>3、行锁</h3><blockquote>
-<p>InnoDB实现了以下两种类型的行锁：</p>
-<ul>
-<li>共享锁（S）：允许一个事务去读一行，阻止其他事务获得相同数据集的排它锁。</li>
-<li>排他锁（X）：允许获取排他锁的事务更新数据，阻止其他事务获得相同数据集的共享锁和排他 锁</li>
-</ul>
+<p>也分读锁和写锁</p>
 <p><strong>MySQL 的行锁是在引擎层由各个引擎自己实现的。</strong></p>
 <p><strong>两阶段锁协议</strong>：</p>
 <blockquote>
@@ -690,7 +678,7 @@
 <h2 id="2、一致性非锁定读（快照读）"><a href="#2、一致性非锁定读（快照读）" class="headerlink" title="2、一致性非锁定读（快照读）"></a>2、一致性非锁定读（快照读）</h2><p>一致性非锁定读是指InnoDb通过多版本控制（MVCC）的方式读一个我能看到的数据。就算读取的那一行正在做一些dml操作，但是我不会去等，我会直接去读一个快照数据。</p>
 <p>所以我们要讲一下这个MVCC，他这个就依赖于undolog版本链和readView。</p>
 <p>首先，每一行数据其实都有两个隐藏列，一个是trxid一个是rollpointer，trxid 表示最新修改事务的id，rollpointer表示指向旧版本undo log</p>
-<p>undolog版本链形成的原因是，我们修改的数据的时候，我们把该行数据拷贝到 <code>undo log</code>作为旧版本。进行真正的修改操作，同时修改trxid 和roll_pointer。</p>
+<p>我们修改的数据的时候，我们把该行数据拷贝到 <code>undo log</code>作为旧版本。进行真正的修改操作，同时修改trxid 和roll_pointer，这样就形成了一个版本链条，那至于我们能看到哪个版本的就依赖于readview</p>
 <p>ReadView，里面有四个比较关键的东西：</p>
 <p>一个是m_ids，这个就是说事务开启那一刻有哪些事务在Mysql里面执行还没有提交的；</p>
 <p>一个是min_trx_id，就是m_ids里最小的事务id的值；</p>
@@ -781,7 +769,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -795,7 +783,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">página 1 de 1</li>
     </ul>
 </div>
 
@@ -825,7 +813,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

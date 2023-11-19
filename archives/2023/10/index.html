@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv: 2023/10 - 森</title>
+    <title>Archivos: 2023/10 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Abre el enlace: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Leer más sobre el autor."
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -247,7 +247,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -414,7 +414,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -447,7 +447,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -555,7 +555,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -588,7 +588,7 @@
     	
     </time>
     
-        <span>in </span>
+        <span>en </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -654,10 +654,8 @@
 <p>第一种就是每次都同步</p>
 <p>第二种就是每一秒都讲缓冲区里面的写会磁盘</p>
 <p>第三种就是写到缓冲区里面，但是什么时候写到磁盘依赖于操作系统</p>
-<h3 id="3、AOF-日志过大，会触发什么机制？"><a href="#3、AOF-日志过大，会触发什么机制？" class="headerlink" title="3、AOF 日志过大，会触发什么机制？"></a>3、AOF 日志过大，会触发什么机制？</h3><p>aof是你执行一条写命令，马上追加到aof文件里面。这个记录的机制依赖一个参数，everysec每秒，always同步，no就是由操作系统去判断什么时候把缓冲区里面的数据写回磁盘。</p>
-<p>aof重写机制：读取当前数据库中的所有键值对，对每一键值对用一条命令记录到「新的 AOF 文件」，等到全部记录完后，就将新的 AOF 文件替换掉现有的 AOF 文件。</p>
-<p>aof是由后台子进程完成的。</p>
-<p>这里有一个问题，就是如果aof重写过程中，主进程对内存进行了修改，怎么办？会触发写时复制。</p>
+<h3 id="3、AOF-日志过大，会触发什么机制？"><a href="#3、AOF-日志过大，会触发什么机制？" class="headerlink" title="3、AOF 日志过大，会触发什么机制？"></a>3、AOF 日志过大，会触发什么机制？</h3><p>aof重写机制：读取当前数据库中的所有键值对，对每一键值对用一条命令记录到「新的 AOF 文件」，等到全部记录完后，就将新的 AOF 文件替换掉现有的 AOF 文件。</p>
+<p>aof是由后台子进程完成的，这里有一个问题，就是如果aof重写过程中，主进程对内存进行了修改，怎么办？会触发写时复制。</p>
 <p>当aof重写过程中父进程修改内存，那我们执行一个写命令后，会写到aof缓冲区和aof重写缓冲区里面。当子进程完成重写，再去吧重写缓冲区里面的内容追加到aof文件</p>
 <h2 id="2、RDB快照"><a href="#2、RDB快照" class="headerlink" title="2、RDB快照"></a>2、RDB快照</h2><p>快照就是记录一瞬间的意思。记录的是当前的实际数据。</p>
 <p>有两种启动的方式，一个save阻塞住线程，一种bgsave，后台线程，fork一个子进程，也复制了页表。他的做法是</p>
@@ -703,7 +701,7 @@
 </li>
 </ul>
 <h2 id="哨兵模式（怎么保证redis的高可用？）"><a href="#哨兵模式（怎么保证redis的高可用？）" class="headerlink" title="哨兵模式（怎么保证redis的高可用？）"></a>哨兵模式（怎么保证redis的高可用？）</h2><p>用哨兵模式去实现主从集群的自动故障恢复。他有三大作用：监控、自动故障恢复、通知。</p>
-<h5 id="怎么监控？"><a href="#怎么监控？" class="headerlink" title="怎么监控？"></a>怎么监控？</h5><p>监控是基于心跳机制，每隔1s会向实例发送ping命令，然后实例响应pong，加入在规定时间内，没回复，那就认为主观下线，如果超过一半的哨兵都认为下线了，那就是客观下线。如果这个时候master挂了，这个时候就要选取新的master。</p>
+<h5 id="怎么监控？"><a href="#怎么监控？" class="headerlink" title="怎么监控？"></a>怎么监控？</h5><p>监控是基于心跳机制，每隔1s会向实例发送ping命令，然后实例响应pong，假如规定时间内，没回复，那就认为主观下线，如果超过一半的哨兵都认为下线了，那就是客观下线。如果这个时候master挂了，这个时候就要选取新的master。</p>
 <h5 id="怎么选取？"><a href="#怎么选取？" class="headerlink" title="怎么选取？"></a>怎么选取？</h5><p>先判断优先值，值越小代表优先级越高</p>
 <p>然后看offset，你越大，说明你和master之间的差距小，数据丢失的就少，那优先级越高</p>
 <p>最后看id，越小优先级越高。</p>
@@ -711,16 +709,15 @@
 <blockquote>
 <p>主从切换有两种情况会数据丢失</p>
 <ul>
-<li>异步复制同步丢失。</li>
+<li>异步复制同步丢失。master来不及同步给从节点就挂了</li>
 <li>集群产生脑裂数据丢失。就是因为网络问题，哨兵监听不到主节点，那么哨兵就去从节点里面选了一个主节点，这个时候就有多个主节点，那原先的主节点就会被迫降为从节点，然后去新的主节点同步数据，他一同步，那么原先的数据就丢了。所以他的解决方案就是，必须有从节点和设置主从同步之间的延迟时间，如果从节点不够或者网络延迟太大，那我就禁止写操作</li>
 </ul>
-<p>第一种情况的解决方法：</p>
+<p>解决方法：</p>
 <p>Redis 配置里有一个参数 min-slaves-max-lag，表示一旦所有的从节点数据复制和同步的延迟都超过了 min-slaves-max-lag 定义的值，那么主节点就会拒绝接收任何请求。上面两个参数是依赖于两个参数：</p>
 <ul>
 <li>min-slaves-to-write x，主节点必须要有<strong>至少 x 个从节点连接</strong>，如果小于这个数，主节点会禁止写数据。</li>
 <li>min-slaves-max-lag x，主从数据复制和同步的延迟<strong>不能超过 x 秒</strong>，如果主从同步的延迟超过 x 秒，主节点会禁止写数据</li>
 </ul>
-<p><img src="/../images/Redis/image-20231031162512549.png" alt="image-20231031162512549"></p>
 </blockquote>
 <p><strong>如何如何应对主从数据不一致？</strong></p>
 <blockquote>
@@ -809,8 +806,11 @@
 <p>3、布隆过滤器</p>
 <p>布隆过滤器的主要原理是使用一组哈希函数，将元素映射成一组位数组中的索引位置。当要检查一个元素是否在集合中时，将该元素进行哈希处理，然后查看哈希值对应的位数组的值是否为1。如果哈希值对应的位数组的值都为1，那么这个元素可能在集合中，否则这个元素肯定不在集合中。</p>
 <h2 id="4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性"><a href="#4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性" class="headerlink" title="4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性"></a>4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性</h2><blockquote>
-<p>redis和mysql的数据一致性其实有两类方式：<font color='red'><u><em><strong>一种是双写，一种是缓存删除。对于双写策略，两个请求并发更新同一条数据的时候，会出现数据不一致的情况，另外更新缓存的代价有时候是很高的，可能你1分钟内更新了100次，然后只访问了一次，那代价着实太大了。所以我们一般选择缓存删除的策略。</strong></em></u></font></p>
-<p>对于双写策略：如果是强一致性就需要加分布式锁或延迟双删，但是我们业务对同步的实时性要求没那么高，我们想要的是最终一致性，所以我们用的是异步消息+canal监听。redis修改后发送异步消息给mysql，mysql如果有一些热点数据的修改，就监听这些数据去更新redis。</p>
+<p>redis和mysql的数据一致性其实有两类方式：<font color='red'><u><em><strong>一种是双写，一种是缓存删除。</strong></em></u></font></p>
+<blockquote>
+<p>对于双写策略，两个请求并发更新同一条数据的时候，会出现数据不一致的情况，另外更新缓存的代价有时候是很高的，可能你1分钟内更新了100次，然后只访问了一次，那代价着实太大了。所以我们一般选择缓存删除的策略。</p>
+</blockquote>
+<p>对于双写策略：如果对一致性就需要加分布式锁或延迟双删，但是我们业务对同步的实时性要求没那么高，我们想要的是最终一致性，所以我们用的是异步消息+canal监听。redis修改后发送异步消息给mysql，mysql如果有一些热点数据的修改，就监听这些数据去更新redis。x</p>
 <p>我们一般来说是<font color='red'><u><em><strong>先更新数据库，再去删除缓存</strong></em></u></font>。虽然在理论上存在着 一个读请求读到旧值然后准备更新到redis里面的时候，有一个写请求更新数据库并且删除了缓存，这时候读请求才把旧值缓存到redis里面，这样出现redis和mysql的不一致。但是其实由于我们的缓存写入是远远快于数据库的写入，所以很难出现我一个请求更新完数据库删除完缓存了这时候，原先的读请求才写入缓存。为了保证第二个操作能成功，可以订阅binlog或者消息队列做删除。</p>
 <p>对于并发引起的不一致性，那就用延迟双删</p>
 <blockquote>
@@ -874,7 +874,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comentar y compartir
                             </a>
                         </p>
                     
@@ -888,7 +888,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">página 1 de 1</li>
     </ul>
 </div>
 
@@ -918,7 +918,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
