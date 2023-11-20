@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Etiqueta: 设计模式 - 森</title>
+    <title>Tag: 设计模式 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Abre el enlace: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Leer más sobre el autor."
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,11 +243,11 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-10T00:00:00+08:00">
 	
-		    10 Oct 2023
+		    Oct 10, 2023
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -265,13 +265,13 @@
 <h2 id="模版模式"><a href="#模版模式" class="headerlink" title="模版模式"></a>模版模式</h2><p>模版模式的主要思路就是把自己要实现的功能抽象成一组<strong>步骤</strong>，也就是在抽象类中定义算法的骨架，具体实现留给子类。但是这里有一点非常重要，就是模版类的流程是定义好的，或者说定死了，子类就是在每一个步骤中实现自己的个性化。</p>
 <h2 id="工厂模式"><a href="#工厂模式" class="headerlink" title="工厂模式"></a>工厂模式</h2><blockquote>
 <p>工厂模式有三种，简单工厂、工厂模式、抽象工厂模式。</p>
-<p><font color='red'><u>***简单工厂只适合单一产品的生产，他的思路很简单，就是根据不同信息new出来不同的对象。比如车 ***</u></font></p>
+<p><font color='red'><u>**简单工厂只适合单一产品的生产，他的思路很简单，就是根据不同信息new出来不同的对象。比如车 **</u></font></p>
 <p><font color='red'><u><em><strong>工厂模式是把原来的工厂作为抽象模型创建不同的子类工厂生产不同的商品。</strong></em></u></font></p>
 <p><font color='red'><u><em>*<em><strong>抽象工厂模式</strong>就考虑了一个工厂生产多等级的产品，说得简单点就是在抽象工厂里面增加生产其他产品的接口，子类去实现它。</em>*</em></u></font></p>
 </blockquote>
 <p>将同一个具体工厂所生产的<strong>位于不同等级（种类）的一组产品称为一个产品族</strong>。</p>
 <p>抽象工厂是需要理解产品族和产品等级两个概念。</p>
-<h2 id="组合模式"><a href="#组合模式" class="headerlink" title="组合模式"></a>组合模式</h2><p>组合模式一般用来描述整体与部分的关系 ，它将对象组织到树形结构中 ，最顶层的节点称为根节点 ，根节点下面可以包含树枝节点和叶子节点 ，树枝节点下面又可以包含树枝节点和叶子节点。宗旨是通过将单个对象（叶子节点）和组合对象（树枝节点）用相同的接口进行表示 ，使得客户对单个对象和组合对象的使用具有一致性</p>
+<h2 id="组合模式"><a href="#组合模式" class="headerlink" title="组合模式"></a>组合模式</h2><p>组合模式用树形结构描述整体与部分的关系中 。最顶层的节点称为根节点 ，根节点下面可以包含树枝节点和叶子节点 ，树枝节点下面又可以包含树枝节点和叶子节点。宗旨是通过将单个对象（叶子节点）和组合对象（树枝节点）用相同的接口进行表示 ，使得客户对单个对象和组合对象的使用具有一致性</p>
 <h2 id="代理模式"><a href="#代理模式" class="headerlink" title="代理模式"></a>代理模式</h2><blockquote>
 <p>代理分成<font color='blue'><u><em><strong>静态代理和动态代理</strong></em></u></font>，静态代理需要自己实现对每一个方法对代理，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。</p>
 <p><strong>动态代理</strong>是代理类在程序运行时创建的代理方式被成为动态代理。</p>
@@ -290,10 +290,7 @@
 <h2 id="策略模式-1"><a href="#策略模式-1" class="headerlink" title="策略模式"></a>策略模式</h2><ul>
 <li><h2 id="讲一讲策略模式以及在项目的应用？"><a href="#讲一讲策略模式以及在项目的应用？" class="headerlink" title="讲一讲策略模式以及在项目的应用？"></a><strong>讲一讲策略模式以及在项目的应用？</strong></h2></li>
 </ul>
-<p>一个问题基于对象的某个特征的不同而有不同的解决方案，传统的方法就是ifif，策略模式就是为了解决这种问题。</p>
-<p>策略模式具体的实验需要三个部分，一个是策略接口这个很简单，一个是环境类，包含策略接口，他的作用就是把具体的算法和用户分开；一个是具体的策略类（ <em>接口回调（向上转型</em>）。比如初级中级高级会员打折力度不一样，</p>
-<p>但是，策略模式有一个问题就是，如果我传进来的策略是一个参数，是一个可变的值，那么这个策略模式还是需要经历if else，所以我的优化方法就是枚举类+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的，</p>
-<p>抽奖的时候根据抽奖算法的id是1还是2，直接去map里面get就可以；生成订单id的时候用雪花还是美团哪一种方法，直接去map里面找</p>
+<p>在我的项目里面也是这样的，我们在抽奖算法和分布式ID生成算法这两个使用了这个策略模式，抽奖的时候用概率可变还是概率不变的抽奖算法，拿着抽奖算法的id去map里面拿，生产订单id的时候用的雪花还是美团改进的，也是直接去map里面拿</p>
 <h2 id="模版模式-1"><a href="#模版模式-1" class="headerlink" title="模版模式"></a>模版模式</h2><ul>
 <li><h2 id="讲一讲模版模式以及在项目的应用？"><a href="#讲一讲模版模式以及在项目的应用？" class="headerlink" title="讲一讲模版模式以及在项目的应用？"></a><strong>讲一讲模版模式以及在项目的应用？</strong></h2></li>
 </ul>
@@ -309,9 +306,9 @@
 <h2 id="组合模式-1"><a href="#组合模式-1" class="headerlink" title="组合模式"></a>组合模式</h2><ul>
 <li><h2 id="讲一讲组合模式以及在项目中的应用"><a href="#讲一讲组合模式以及在项目中的应用" class="headerlink" title="讲一讲组合模式以及在项目中的应用"></a><strong>讲一讲组合模式以及在项目中的应用</strong></h2></li>
 </ul>
-<p>组合模式一般用来描述整体与部分的关系 ，它将对象组织到树形结构中 ，最顶层的节点称为根节点 ，根节点下面可以包含树枝节点和叶子节点 ，树枝节点下面又可以包含树枝节点和叶子节点。宗旨是通过将单个对象（叶子节点）和组合对象（树枝节点）用相同的接口进行表示 ，使得客户对单个对象和组合对象的使用具有一致性</p>
+<p>这里我们是用组合模式搭建规则引擎树，规则树有两种对象。一种是树节点，一种是树枝，树节点包括连接的树枝集合，树枝里面包含了连接的前后两个树节点和判断依据，这样子就能构建出一个有判断规则的规则树了。具体的流程就是假设我们现在在根节点，然后看了下根节点的规则是性别，那我就拿到年龄规则过滤器，遍历根节点的树枝集合，假如这里有两个树枝，一个树枝的规则是&#x3D;男，就走这个树枝；另一个树枝的规则是&#x3D;女，就走这个树枝。这时候我们拿出用户的信息一对比，发现应该走男生那个树枝。这样就进入下一个节点，然后这个节点的判断规则是年龄，可能大于某个枝走某个树枝，小于就走另外的树枝。直到我们找到叶子结点就结束。</p>
 <h2 id="装饰器模式"><a href="#装饰器模式" class="headerlink" title="装饰器模式"></a>装饰器模式</h2><blockquote>
-<p><font color='red'><u><em><strong>装饰器模式的核心就是不改原有类的基础上给类新增功能。其实就是在原本类的基础上包装一个装饰器类，这个类在执行源类的行为的前后再加入一些新的逻辑。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>装饰器模式其实就是在原本类的基础上包装一个装饰器类，这个类在执行源类的行为的前后再加入一些新的逻辑。</strong></em></u></font></p>
 </blockquote>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">抽象组件</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Component</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line">具体组件（需要被装饰的组件）</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConcreteComponent</span> <span class="keyword">extends</span> <span class="title class_">Component</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;具体组件处理业务逻辑&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">抽象装饰器（继承、实现抽象组件，并持有抽象组件）</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Decorator</span> <span class="keyword">extends</span> <span class="title class_">Component</span> &#123;</span><br><span class="line"></span><br><span class="line">     * 抽象组件</span><br><span class="line">    <span class="keyword">public</span> Component component;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Decorator</span><span class="params">(Component component)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.component = component;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        component.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">具体装饰器A继承抽象装饰器</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConcreteDecorator</span> <span class="keyword">extends</span> <span class="title class_">Decorator</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ConcreteDecorator</span><span class="params">(Component component)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(component);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">before</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;ConcreteDecorator前置操作....&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">after</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;ConcreteDecorator后置操作....&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">组件本身执行的动作</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        before();</span><br><span class="line">        component.execute();</span><br><span class="line">        after();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">decorator 通用写法测试</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">//创建需要被装饰的组件</span></span><br><span class="line">        <span class="type">Component</span> <span class="variable">component</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConcreteComponent</span>();</span><br><span class="line">        <span class="comment">//给对象透明的增加功能并调用</span></span><br><span class="line">        <span class="type">Decorator</span> <span class="variable">decorator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConcreteDecorator</span>(component);</span><br><span class="line">        decorator.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -355,7 +352,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comentar y compartir
+                                Comment and share
                             </a>
                         </p>
                     
@@ -369,7 +366,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">página 1 de 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -398,7 +395,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

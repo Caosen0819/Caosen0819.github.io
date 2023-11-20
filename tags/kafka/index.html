@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Etiqueta: Kafka - 森</title>
+    <title>Tag: Kafka - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Abre el enlace: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Leer más sobre el autor."
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,11 +243,11 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
-        <span>en </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -259,24 +259,36 @@
             
                 <div class="postShorten-content">
                     <p>常见面试问题：</p>
-<h2 id="消息保证消息不丢失？"><a href="#消息保证消息不丢失？" class="headerlink" title="消息保证消息不丢失？"></a>消息保证消息不丢失？</h2><p>分成三个方面分析：</p>
-<p>消息生产者发送丢失：</p>
+<h2 id="消息保证消息不丢失？"><a href="#消息保证消息不丢失？" class="headerlink" title="消息保证消息不丢失？"></a>消息保证消息不丢失？</h2><blockquote>
+<p>分成三个方面分析：</p>
+<ul>
+<li>消息生产者发送丢失：</li>
+</ul>
+<blockquote>
 <p>异步发送，发送失败使用回调进行记录或者重发 </p>
 <p>重试机制</p>
+</blockquote>
 <p>broker存储丢失：</p>
-<p>依赖一个确认机制</p>
-<p>0</p>
-<p>1</p>
-<p>all</p>
+<blockquote>
+<p>依赖一个ACK确认机制</p>
+<p>0：发了就不管了</p>
+<p>1：需要leader成功接收</p>
+<p>-1：所有ISR的follower都成功接收才可以</p>
+</blockquote>
 <p>消费者消费丢失：</p>
+<blockquote>
 <p>取消自动提交（自动提交5s一次，会导致重复消费和消息丢失），改为手动。然后有三种方式：同步、异步、同步+异步组合提交</p>
+</blockquote>
+</blockquote>
 <h2 id="重复消费问题怎么解决？"><a href="#重复消费问题怎么解决？" class="headerlink" title="重复消费问题怎么解决？"></a>重复消费问题怎么解决？</h2><p>首先最好关闭自动提交，然后开启手动提交。用同步+异步的组合方式。</p>
-<p>单分区内是可以用幂等性解决的</p>
-<h2 id="怎么保证顺序性-？"><a href="#怎么保证顺序性-？" class="headerlink" title="怎么保证顺序性 ？"></a>怎么保证顺序性 ？</h2><p>一个topic的数据会通过那个分区分配器分发到某个分区，如果会发到多个分区，我们是不能保证顺序性的，但是我们可以保证在一个分区内是顺序的，因为生产者发送消息给broker的时候会携带PID和sequence number，一个是生产者的id，一个是消息的序列号。我们靠这个可以保证顺序性。所以我们尽可能的要把消息发到一个分区里面。那这个就要配合分区器来使用，如果你指定了分区号或者指定key，那就代表指定了某个分区，这样就能实现顺序性。如果你用没有指定，他就会用随机粘性分区策略，那就不能保证顺序性。</p>
+<p>单分区内是可以用幂等性解决的。跨区的重复消费，多分区就用事务解决，要么都成功要么都失败。</p>
+<h2 id="怎么保证顺序性-？"><a href="#怎么保证顺序性-？" class="headerlink" title="怎么保证顺序性 ？"></a>怎么保证顺序性 ？</h2><p>一个topic的数据会通过那个分区分配器分发到某个分区，如果会发到多个分区，我们是不能保证顺序性的，但是我们可以用幂等性保证在一个分区内是顺序的。因为生产者发送消息给broker的时候会携带PID和sequence number，一个是生产者的id，一个是消息的序列号。我们靠这个可以保证顺序性。所以我们尽可能的要把消息发到一个分区里面。那这个就要配合分区器来使用，如果你指定了分区号或者指定key，那就代表指定了某个分区，这样就能实现顺序性。如果你用没有指定，他就会用随机粘性分区策略，那就不能保证顺序性。</p>
 <h2 id="Kafka的高可用了解过吗"><a href="#Kafka的高可用了解过吗" class="headerlink" title="Kafka的高可用了解过吗"></a>Kafka的高可用了解过吗</h2><ul>
 <li>集群：首先kafka集群由多个broker组成，一个broker宕机，其余的broker依旧提供服务。</li>
-<li>复制机制：一个topic有多个分区，每个分区有多个副本 一个leader和多个副本，存在不同的broker里面。然后如果leader故障了，会从ISR中选举新的leader保证高可用。所以正常情况下，除非所有的broker都挂了，不然kafka总是能够提供服务。</li>
+<li>复制机制：一个topic有多个分区，每个分区有多个副本 一个leader和多个副本，存在不同的broker里面。然后如果leader故障了，会从ISR中选举新的leader保证高可用（ISR中存活，并且排在AR列表前面的优先）。所以正常情况下，除非所有的broker都挂了，不然kafka总是能够提供服务。</li>
 </ul>
+<h3 id="1-follower故障流程"><a href="#1-follower故障流程" class="headerlink" title="1.follower故障流程"></a><strong>1.follower故障流程</strong></h3><p><img src="/../images/Kafka/b01dad78f006b40d82e719fe71caeb78.png" alt="image-20220902210759125"></p>
+<h3 id="2-leader故障流程"><a href="#2-leader故障流程" class="headerlink" title="2.leader故障流程"></a>2.leader故障流程</h3><p><img src="/../images/Kafka/1f96e55810be5ff8cbf64c04b5d37315.png" alt="image-20220902210830344"></p>
 <h2 id="Kafka文件存储机制"><a href="#Kafka文件存储机制" class="headerlink" title="Kafka文件存储机制"></a>Kafka文件存储机制</h2><p>一个partition对应多个segment（删除和查找方便），每一个segment里面都有三个文件，分别是log日志文件，index索引文件，timeindex时间戳索引文件，producer的数据会追加到log里面，每次往log里面写4k数据，就会到index文件写一条索引。</p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928232748011.png" alt="在这里插入图片描述"></p>
 <h2 id="Kafka数据清理机制"><a href="#Kafka数据清理机制" class="headerlink" title="Kafka数据清理机制"></a>Kafka数据清理机制</h2><p>Kafka提供了两种日志清理策略。</p>
@@ -285,14 +297,14 @@
 <p>​		按照文件大小：当topic所有 分区的数据总和达到了默认的阈值（1G），就开始删除最久的消息	</p>
 <p>日志压缩(compact) :针对每个消息的key进行整合，对于有相同key的不同value值，只保留最后一个版本。</p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928233315113.png" alt="在这里插入图片描述"></p>
-<h2 id="Kafka高性能的设计"><a href="#Kafka高性能的设计" class="headerlink" title="Kafka高性能的设计"></a><strong>Kafka高性能的设计</strong></h2><p><font color='red'><u><em><strong>1）分区可以实现并行操作，处理更多数据。2）稀疏索引快速定位。3）零拷贝</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>2）磁盘顺序读写+索引</strong></em></u></font></p>
+<h2 id="Kafka高性能的设计"><a href="#Kafka高性能的设计" class="headerlink" title="Kafka高性能的设计"></a><strong>Kafka高性能的设计</strong></h2><p><font color='red'><u><em><strong>1）分区可以实现并行操作，处理更多数据。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>2）磁盘顺序写+索引</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>3）MMF+页缓存</strong></em></u></font> 即使kafka是顺序写，这个本身比较快，但是即使这样，速度也追不上内存。所以Kafka不是实时写入磁盘，而是先把数据写到页缓存里面，满足一定条件在刷回磁盘。它的工作原理是MMF，直接利用操作系统的 Page Cache 来实现磁盘文件到物理内存的直接映射，完成映射之后你对物理内存的操作会被同步到硬盘上（操作系统在适当的时候）。</p>
 <p><font color='red'><u><em><strong>4）零拷贝</strong></em></u></font></p>
-<p>传统的io，先读取、再发送，实际经过 1~4 四次 copy。</p>
+<p>传统的io，先读取、再发送，实际经过 4 次 copy。</p>
 <p>分别是：</p>
 <ol>
-<li>第一次：将磁盘文件，读取到操作系统内核缓冲区；</li>
+<li>第一次：将磁盘文件，读到内核缓冲区；</li>
 <li>第二次：将内核缓冲区的数据，copy 到 application 应用程序的 buffer；</li>
 <li>第三步：将 application 应用程序 buffer 中的数据，copy 到 socket 网络发送缓冲区(属于操作系统内核的缓冲区)；</li>
 <li>第四次：将 socket buffer 的数据，copy 到网卡，由网卡进行网络传输。</li>
@@ -328,19 +340,9 @@
 <p>但是，并不是来一条消息就发一次，他是把消息加入到一个叫消息累加器里面，然后进行批量发送，一次是16k，32M大小的内存。 我看了下代码，就是 累加器的存储形式为ConcurrentMap&lt;TopicPartition, Deque<ProducerBatch>&gt;，一个分区对应一个双端队列</p>
 <p>真正的发送要靠sender线程。发送的时机是：当双端队列中的DQueue满足 batch.size 或者 linger.ms 条件时触发sender线程。 同时Sender线程默认每个分区容纳5个未确认的消息，消息发送失败后会进行重试。</p>
 <p><img src="/../images/Kafka/cd41370a872e70b75435f35692925370.png" alt="image-20220902155220662"></p>
-<hr>
-<p>消息发送就会涉及到可靠性和幂等性的问题。</p>
-<p><font color='red'><u><em><strong>可靠性用的是ACK消息确认机制</strong></em></u></font></p>
-<blockquote>
-<p>producer提供了<strong>三种</strong>消息确认的模式，通过配置acks来实现</p>
-<p>acks为0时， 表示生产者将数据发送出去就不管了，不等待任何返回。这种情况下数据传输效率最高，但是数据可靠性最低，当 server挂掉的时候就会丢数据；</p>
-<p>acks为1时（默认），表示数据发送到Kafka后，经过leader成功接收消息的的确认，才算发送成功，如果leader宕机了，就会丢失数据。</p>
-<p>acks为-1&#x2F;all时，表示生产者需要等待ISR中的所有follower都确认接收到数据后才算发送完成，这样数据不会丢失，因此可靠性最高，性能最低。</p>
-</blockquote>
-<p><img src="/../images/Kafka/a5c1a40450861d56bfc5cce44746a8a6.png" alt="image-20220902172535966"></p>
 <blockquote>
 <p>AR &#x3D; ISR + ORS</p>
-<p>ISR 表示在保持一定同步的 follower 副本；</p>
+<p>ISR 表示在保持一定成都同步的 follower 副本；</p>
 <p>OSR 表示不能保持一定程度同步的follower副本</p>
 </blockquote>
 <p><strong>数据完全可靠条件 &#x3D; ACK级别设置为-1 + 分区副本大于等于2 + ISR里应答的最小副本数量大于等于2</strong></p>
@@ -386,7 +388,7 @@
 </blockquote>
 <ul>
 <li>分区多副本选leader<ul>
-<li>有controller节点空值，决策是：排在ar列表前面的优先，同时必须在isr里面。</li>
+<li>有controller节点空值，决策是：ISR中存活，并且排在AR列表前面的优先，同时必须在isr里面。</li>
 </ul>
 </li>
 </ul>
@@ -397,8 +399,6 @@
 <li>消费者选Leader</li>
 </ul>
 <p> 在kafka，但是他们之间需要选举出一个leader，其他的都是follower。broker的leader有很重要的作用，诸如：创建、删除主题、增加分区并分配leader分区；集群broker管理，包括新增、关闭和故障处理；分区重分配（auto.leader.rebalance.enable&#x3D;true，后面会介绍），分区leader选举。</p>
-<h2 id="副本故障处理"><a href="#副本故障处理" class="headerlink" title="副本故障处理"></a>副本故障处理</h2><h3 id="1-follower故障流程"><a href="#1-follower故障流程" class="headerlink" title="1.follower故障流程"></a><strong>1.follower故障流程</strong></h3><p><img src="/../images/Kafka/b01dad78f006b40d82e719fe71caeb78.png" alt="image-20220902210759125"></p>
-<h3 id="2-leader故障流程"><a href="#2-leader故障流程" class="headerlink" title="2.leader故障流程"></a>2.leader故障流程</h3><p><img src="/../images/Kafka/1f96e55810be5ff8cbf64c04b5d37315.png" alt="image-20220902210830344"></p>
 <h2 id="kafka分区策略"><a href="#kafka分区策略" class="headerlink" title="kafka分区策略"></a>kafka分区策略</h2><p>如果 kafka 服务器只有 4 个节点，那么设置 kafka 的分区数大于服务器台数，在 kafka底层如何分配存储副本呢？</p>
 <ul>
 <li>这里如果用默认的就是如下</li>
@@ -409,9 +409,9 @@
 </ul>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ vim increase-replication-factor.json</span><br><span class="line">输入如下内容：</span><br><span class="line">&#123;</span><br><span class="line">&quot;version&quot;:1,</span><br><span class="line">&quot;partitions&quot;:[</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[0,1]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[0,1]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:2,&quot;replicas&quot;:[1,0]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:3,&quot;replicas&quot;:[1,0]&#125;]</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<h3 id="1、分区自动调整"><a href="#1、分区自动调整" class="headerlink" title="1、分区自动调整"></a><strong>1、分区自动调整</strong></h3><p>随着一些broker故障，会慢慢出现leader集中在某台broker上的情况，造成集群负载不均衡，这时候就需要分区平衡。</p>
+<h3 id="1、分区自动调整"><a href="#1、分区自动调整" class="headerlink" title="1、分区自动调整"></a><strong>1、分区自动调整</strong></h3><p>这个是指broker故障，leader集中在某台broker上的情况，造成集群负载不均衡，这时候就需要分区平衡。那他一般有个比例，就是不平衡比例超过10%，就需要再平衡。</p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16.png" alt="在这里插入图片描述"></p>
-<h1 id="4、kafka消费者"><a href="#4、kafka消费者" class="headerlink" title="4、kafka消费者"></a>4、kafka消费者</h1><h2 id="1、Kafka-消费方式"><a href="#1、Kafka-消费方式" class="headerlink" title="1、Kafka 消费方式"></a>1、Kafka 消费方式</h2><p>​	<img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928234825729.png" alt="在这里插入图片描述"></p>
+<h1 id="4、kafka消费者"><a href="#4、kafka消费者" class="headerlink" title="4、kafka消费者"></a>4、kafka消费者</h1><h2 id="1、Kafka-消费方式（拉）"><a href="#1、Kafka-消费方式（拉）" class="headerlink" title="1、Kafka 消费方式（拉）"></a>1、Kafka 消费方式（拉）</h2><p>​	<img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928234825729.png" alt="在这里插入图片描述"></p>
 <h2 id="2、消费者工作流程"><a href="#2、消费者工作流程" class="headerlink" title="2、消费者工作流程"></a>2、消费者工作流程</h2><h5 id="①消费者总体工作流程"><a href="#①消费者总体工作流程" class="headerlink" title="①消费者总体工作流程"></a>①消费者总体工作流程</h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928234848009.png" alt="在这里插入图片描述"></p>
 <h5 id="②消费者组原理"><a href="#②消费者组原理" class="headerlink" title="②消费者组原理"></a>②消费者组原理</h5><p> <img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235013969.png" alt="在这里插入图片描述"></p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235020544.png" alt="在这里插入图片描述"></p>
@@ -421,7 +421,7 @@
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235058845.png" alt="在这里插入图片描述"></p>
 <p><strong>消费者组详细消费流程</strong></p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235306060.png" alt="在这里插入图片描述"></p>
-<h2 id="3、消费者api"><a href="#3、消费者api" class="headerlink" title="3、消费者api"></a>3、消费者api</h2><h2 id="4、生产经验-——-分区的分配"><a href="#4、生产经验-——-分区的分配" class="headerlink" title="4、生产经验 —— 分区的分配"></a>4、生产经验 —— 分区的分配</h2><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235523539.png" alt="在这里插入图片描述"></p>
+<h2 id="4、生产经验-——-消费者分区的分配"><a href="#4、生产经验-——-消费者分区的分配" class="headerlink" title="4、生产经验 —— 消费者分区的分配"></a>4、生产经验 —— 消费者分区的分配</h2><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235523539.png" alt="在这里插入图片描述"></p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235554746.png" alt="在这里插入图片描述"></p>
 <p><strong>Range 分区分配策略案例</strong></p>
 <p> <img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235731478.png" alt="在这里插入图片描述"></p>
@@ -439,8 +439,6 @@
 <p>offset是消费者提交的，分为自动提交和手动提交。</p>
 <p>自动提交会出现重复消费的问题。默认5s提交一次</p>
 <p>手动提交会出现漏消费的问题，因为消费完数据后，如果来不及调用哪个sync函数，消费者宕机，就会丢失数据。</p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929001250173.png" alt="在这里插入图片描述"></p>
-<h5 id="③手动交-提交-offset"><a href="#③手动交-提交-offset" class="headerlink" title="③手动交 提交 offset"></a>③手动交 提交 offset</h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929001022624.png" alt="在这里插入图片描述"></p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929001509066.png" alt="在这里插入图片描述"></p>
 <h4 id="数据积压-（-消费者-如何提高吞吐量）"><a href="#数据积压-（-消费者-如何提高吞吐量）" class="headerlink" title="数据积压 （ 消费者 如何提高吞吐量）"></a>数据积压 （ 消费者 如何提高吞吐量）</h4><p>1、增加分区数和消费者数量</p>
 <p>2、提高消费者每次拉取的数量</p>
@@ -458,7 +456,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comentar y compartir
+                                Comment and share
                             </a>
                         </p>
                     
@@ -472,7 +470,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">página 1 de 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -501,7 +499,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Foto de autor"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
