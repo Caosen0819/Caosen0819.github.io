@@ -258,7 +258,9 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="二叉树"><a href="#二叉树" class="headerlink" title="二叉树"></a>二叉树</h1><blockquote>
+                    <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">int left = 0;</span><br><span class="line">        int right = data.length - 1;</span><br><span class="line">        //二分左右界</span><br><span class="line">        while(left &lt;= right)&#123;</span><br><span class="line">            int mid = (left + right) / 2;</span><br><span class="line">            if(data[mid] &lt; k)</span><br><span class="line">                left = mid + 1;</span><br><span class="line">            else if(data[mid] &gt; k)</span><br><span class="line">                right = mid - 1;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="二叉树"><a href="#二叉树" class="headerlink" title="二叉树"></a>二叉树</h1><blockquote>
 <p>难：<font color='red'><u><em><strong>序列化二叉树</strong></em></u></font>  层序遍历或者先序遍历</p>
 <p><font color='blue'><u><em><strong>递归</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>前序遍历、中序遍历、后序遍历、最大深度（等于左右子树最大的+1）。</strong></em></u></font>全部都是递归解决，无非就是赋值和两个递归顺序换一下</p>
@@ -723,9 +725,14 @@
 <p>IO密集型，就设置成2*cpu核数+ 1</p>
 <p>cpu密集型任务，就避免线程上下文切换，可以设置成cpu+1</p>
 </blockquote>
+<p><strong>如何设定线程池的大小？</strong></p>
+<blockquote>
+<p>最佳线程数 &#x3D; CPU 核心数 ∗（1+WT（线程等待时间）&#x2F;ST（线程计算时间</p>
+<p>反正和cpu核数和线程等待时间计算时间有关。</p>
+</blockquote>
 <p><font color='red'><u><em><strong>线程池的使用场景</strong></em></u></font></p>
 <blockquote>
-<p>使用线程池就是要用多线程，多线程其实可以说是尽量把串行的工作变成并行的，所以什么那种数据查询然后汇总就可以用线程池。还有数据分批导入可以用线程池、甚至某些异步调用也可以用线程池。</p>
+<p>使用线程池就是要用多线程，多线程其实可以说是尽量把一个线程串行的工作变成并行的，所以什么那种数据查询然后汇总就可以用线程池。还有数据分批导入可以用线程池、甚至某些异步调用也可以用线程池。</p>
 <p>数据汇总</p>
 <p>数据导入</p>
 </blockquote>
@@ -735,10 +742,7 @@
 </blockquote>
 <blockquote>
 </blockquote>
-<p><strong>如何设定线程池的大小？</strong></p>
 <blockquote>
-<p>最佳线程数 &#x3D; CPU 核心数 ∗（1+WT（线程等待时间）&#x2F;ST（线程计算时间</p>
-<p>反正和cpu核数和线程等待时间计算时间有关。</p>
 </blockquote>
 <p><strong>MQ和线程池区别？</strong></p>
 <blockquote>

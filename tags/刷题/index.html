@@ -258,7 +258,9 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="二叉树"><a href="#二叉树" class="headerlink" title="二叉树"></a>二叉树</h1><blockquote>
+                    <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">int left = 0;</span><br><span class="line">        int right = data.length - 1;</span><br><span class="line">        //二分左右界</span><br><span class="line">        while(left &lt;= right)&#123;</span><br><span class="line">            int mid = (left + right) / 2;</span><br><span class="line">            if(data[mid] &lt; k)</span><br><span class="line">                left = mid + 1;</span><br><span class="line">            else if(data[mid] &gt; k)</span><br><span class="line">                right = mid - 1;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="二叉树"><a href="#二叉树" class="headerlink" title="二叉树"></a>二叉树</h1><blockquote>
 <p>难：<font color='red'><u><em><strong>序列化二叉树</strong></em></u></font>  层序遍历或者先序遍历</p>
 <p><font color='blue'><u><em><strong>递归</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>前序遍历、中序遍历、后序遍历、最大深度（等于左右子树最大的+1）。</strong></em></u></font>全部都是递归解决，无非就是赋值和两个递归顺序换一下</p>

@@ -452,7 +452,9 @@
 <p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/3b87e950352ac65c1fead4dc4c8ba11892138a30.jpeg" alt="img"></p>
 <p>如图，最小虚记录和最大虚记录之间形成一个链表，这时候Slot区就派上用场了，每个Slot槽指向链表中的某一个位置，每个槽的大小一样，可以理解为一个指针，<strong>这样我们只需要用一个算法把每个子链表的长度拆成差不多大小就行了</strong>。</p>
 <p>在查找的时候，先基于Sn、S0找到指向的最大最小虚记录，在Slot区进行二分：<strong>先找到Sn和S0的中间位置，中间找到某个Slot，然后再一步步进行比较，通过几次二分后找到具体的子链表，最后，在子链表内进行遍历找到最终的记录</strong>。这样我们借助Slot区实现了一个近似二分查找的方法。这特别像Java里面的跳表结构，一次查找跳一次，再一次查找再跳一次，效率就特别高了</p>
-<h1 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h1><p><strong>普通索引和唯一索引，应该怎么选择？</strong>查询和对已经在内存的更新差距不大。但是对于不在内存的数据，唯一索引有唯一性要求，要先加到内存（相当于用不了changebuffer），但是普通索引不需要，只需要存到change buffer里面就可以。</p>
+<h1 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h1><p><strong>in会导致索引失效吗</strong></p>
+<p>当in的条件命中的数量很少时，是走索引的；但是当in的条件命中的数量超过30%时，索引失效，走全表扫描；</p>
+<p><strong>普通索引和唯一索引，应该怎么选择？</strong>查询和对已经在内存的更新差距不大。但是对于不在内存的数据，唯一索引有唯一性要求，要先加到内存（相当于用不了changebuffer），但是普通索引不需要，只需要存到change buffer里面就可以。</p>
 <p><strong>添加索引的原则</strong></p>
 <p>![image-20231115165553203](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115165553203.png)</p>
 <p><strong>超大分页优化</strong></p>
@@ -1470,7 +1472,9 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="二叉树"><a href="#二叉树" class="headerlink" title="二叉树"></a>二叉树</h1><blockquote>
+                    <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">int left = 0;</span><br><span class="line">        int right = data.length - 1;</span><br><span class="line">        //二分左右界</span><br><span class="line">        while(left &lt;= right)&#123;</span><br><span class="line">            int mid = (left + right) / 2;</span><br><span class="line">            if(data[mid] &lt; k)</span><br><span class="line">                left = mid + 1;</span><br><span class="line">            else if(data[mid] &gt; k)</span><br><span class="line">                right = mid - 1;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="二叉树"><a href="#二叉树" class="headerlink" title="二叉树"></a>二叉树</h1><blockquote>
 <p>难：<font color='red'><u><em><strong>序列化二叉树</strong></em></u></font>  层序遍历或者先序遍历</p>
 <p><font color='blue'><u><em><strong>递归</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>前序遍历、中序遍历、后序遍历、最大深度（等于左右子树最大的+1）。</strong></em></u></font>全部都是递归解决，无非就是赋值和两个递归顺序换一下</p>
@@ -1935,9 +1939,14 @@
 <p>IO密集型，就设置成2*cpu核数+ 1</p>
 <p>cpu密集型任务，就避免线程上下文切换，可以设置成cpu+1</p>
 </blockquote>
+<p><strong>如何设定线程池的大小？</strong></p>
+<blockquote>
+<p>最佳线程数 &#x3D; CPU 核心数 ∗（1+WT（线程等待时间）&#x2F;ST（线程计算时间</p>
+<p>反正和cpu核数和线程等待时间计算时间有关。</p>
+</blockquote>
 <p><font color='red'><u><em><strong>线程池的使用场景</strong></em></u></font></p>
 <blockquote>
-<p>使用线程池就是要用多线程，多线程其实可以说是尽量把串行的工作变成并行的，所以什么那种数据查询然后汇总就可以用线程池。还有数据分批导入可以用线程池、甚至某些异步调用也可以用线程池。</p>
+<p>使用线程池就是要用多线程，多线程其实可以说是尽量把一个线程串行的工作变成并行的，所以什么那种数据查询然后汇总就可以用线程池。还有数据分批导入可以用线程池、甚至某些异步调用也可以用线程池。</p>
 <p>数据汇总</p>
 <p>数据导入</p>
 </blockquote>
@@ -1947,10 +1956,7 @@
 </blockquote>
 <blockquote>
 </blockquote>
-<p><strong>如何设定线程池的大小？</strong></p>
 <blockquote>
-<p>最佳线程数 &#x3D; CPU 核心数 ∗（1+WT（线程等待时间）&#x2F;ST（线程计算时间</p>
-<p>反正和cpu核数和线程等待时间计算时间有关。</p>
 </blockquote>
 <p><strong>MQ和线程池区别？</strong></p>
 <blockquote>

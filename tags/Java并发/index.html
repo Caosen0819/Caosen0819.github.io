@@ -540,9 +540,14 @@
 <p>IO密集型，就设置成2*cpu核数+ 1</p>
 <p>cpu密集型任务，就避免线程上下文切换，可以设置成cpu+1</p>
 </blockquote>
+<p><strong>如何设定线程池的大小？</strong></p>
+<blockquote>
+<p>最佳线程数 &#x3D; CPU 核心数 ∗（1+WT（线程等待时间）&#x2F;ST（线程计算时间</p>
+<p>反正和cpu核数和线程等待时间计算时间有关。</p>
+</blockquote>
 <p><font color='red'><u><em><strong>线程池的使用场景</strong></em></u></font></p>
 <blockquote>
-<p>使用线程池就是要用多线程，多线程其实可以说是尽量把串行的工作变成并行的，所以什么那种数据查询然后汇总就可以用线程池。还有数据分批导入可以用线程池、甚至某些异步调用也可以用线程池。</p>
+<p>使用线程池就是要用多线程，多线程其实可以说是尽量把一个线程串行的工作变成并行的，所以什么那种数据查询然后汇总就可以用线程池。还有数据分批导入可以用线程池、甚至某些异步调用也可以用线程池。</p>
 <p>数据汇总</p>
 <p>数据导入</p>
 </blockquote>
@@ -552,10 +557,7 @@
 </blockquote>
 <blockquote>
 </blockquote>
-<p><strong>如何设定线程池的大小？</strong></p>
 <blockquote>
-<p>最佳线程数 &#x3D; CPU 核心数 ∗（1+WT（线程等待时间）&#x2F;ST（线程计算时间</p>
-<p>反正和cpu核数和线程等待时间计算时间有关。</p>
 </blockquote>
 <p><strong>MQ和线程池区别？</strong></p>
 <blockquote>
