@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archives: 2023/10 - 森</title>
+    <title>Archiv: 2023/10 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-28T00:00:00+08:00">
 	
-		    Oct 28, 2023
+		    28 Oct 2023
     	
     </time>
     
@@ -414,7 +414,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -443,7 +443,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-10T00:00:00+08:00">
 	
-		    Oct 10, 2023
+		    10 Oct 2023
     	
     </time>
     
@@ -552,7 +552,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -581,7 +581,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-09T00:00:00+08:00">
 	
-		    Oct 09, 2023
+		    09 Oct 2023
     	
     </time>
     
@@ -596,7 +596,26 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="1、Redis数据结构"><a href="#1、Redis数据结构" class="headerlink" title="1、Redis数据结构"></a>1、Redis数据结构</h1><h1 id="2、Redis线程模型"><a href="#2、Redis线程模型" class="headerlink" title="2、Redis线程模型"></a>2、Redis线程模型</h1><h2 id="1、Redis是不是单线程的？"><a href="#1、Redis是不是单线程的？" class="headerlink" title="1、Redis是不是单线程的？"></a>1、Redis是不是单线程的？</h2><p><font color='red'><u><em><strong>1）以前严格意义上来说也不是单线程，还有后台线程</strong></em></u></font><br><font color='red'><u><em><strong>2）6.0.x后，由于网络的瓶颈出现，Redis采用了多线程来解决这个问题，具体的步骤是</strong></em></u></font></p>
+                    <h1 id="1、Redis数据结构"><a href="#1、Redis数据结构" class="headerlink" title="1、Redis数据结构"></a>1、Redis数据结构</h1><p>我在项目中用到的数据结构有String、Hash。</p>
+<p>String我主要用于三类。 1）库存和订单数量，2）还有一些策略对象、活动对象，这种读多写少，没有频繁变化的对象。3）分布式锁。</p>
+<p>Hashmap 我主要用于活动剩余的奖品数量和还有用户剩余次数。本身奖品是一个对象，可以用String+JSON的格式，但是奖品数量这个属性频繁变化，我就把他抽出来放到HashMap里面了。</p>
+<blockquote>
+<p>Redis的对象都是RedisObject，RedisObject里面有type encoding ptr。如果是String类型，且这个字符串保存的是整数型，那就会把encoding设置成int，然后ptr用来存储整数。如果是一个字符串且小于32字节，就是embstr的SDS，如果是大于32字节就是RAW格式的SDS。embstr分配一次连续的内存空间，RAW格式要分配两次分别保存RedisObeject和SDS。(SDS包括字符串长度、分配的空间、sds类型、字节数组。)</p>
+</blockquote>
+<blockquote>
+<p>List是<strong>quicklist</strong>（其实就是双向链表 + 压缩列表），链表的每个节点就是一个压缩列表，压缩列表是一个连续的内存块组成的顺序性数据结。链表的形式减少用于解决连锁更新的问题。</p>
+</blockquote>
+<blockquote>
+<p>HashMap是压缩列表和哈希表。哈希冲突用链式哈希解决。</p>
+</blockquote>
+<blockquote>
+<p>SET 是整数集合（元素个数少于512）、哈希表。整数集合就是一块连续的数组</p>
+</blockquote>
+<blockquote>
+<p>ZSET是<strong>压缩列表或跳表</strong>。<strong>跳表是在链表基础，对部分节点分层，如果next的值大于我们要找的就从下一层找结果</strong>。<strong>跳表的相邻两层的节点数量最理想的比例是 2:1</strong>。</p>
+<p><strong>跳表在创建节点时候，会生成范围为[0-1]的一个随机数，如果这个随机数小于 0.25（相当于概率 25%），那么层数就增加 1 层，然后继续生成下一个随机数，直到随机数的结果大于 0.25 结束，最终确定该节点的层数</strong>。</p>
+</blockquote>
+<h1 id="2、Redis线程模型"><a href="#2、Redis线程模型" class="headerlink" title="2、Redis线程模型"></a>2、Redis线程模型</h1><h2 id="2、线程模型是怎么样的？是不是单线程"><a href="#2、线程模型是怎么样的？是不是单线程" class="headerlink" title="2、线程模型是怎么样的？是不是单线程"></a>2、线程模型是怎么样的？是不是单线程</h2><p><font color='red'><u><em><strong>1）以前严格意义上来说也不是单线程，还有后台线程，比如aof刷盘</strong></em></u></font><br><font color='red'><u><em><strong>2）6.0.x后，由于网络的瓶颈出现，Redis采用了多线程来解决这个问题，具体的步骤是</strong></em></u></font></p>
 <p>流程简述如下：</p>
 <ul>
 <li>主线程获取 socket 放入等待列表</li>
@@ -607,7 +626,7 @@
 </ul>
 <p>所以多线程就是把最耗时的socket读、请求解析、socket写，这个外包给io线程组，实现socet读写并行化，主线程只去执行命令。所以redis为什么快，一个多线程、多路复用、内存、执行命令的单线程</p>
 <p><img src="/../images/Redis/image-20231031151613941.png" alt="image-20231031151613941"></p>
-<h2 id="2、单线程是怎么样子的"><a href="#2、单线程是怎么样子的" class="headerlink" title="2、单线程是怎么样子的"></a>2、单线程是怎么样子的</h2><p>其实redis的单线程是先初始化后一直走一个循环处理。初始化的时候就做了三件事情：</p>
+<p>其实redis的单线程是先初始化后一直走一个循环处理。初始化的时候就做了三件事情：</p>
 <p><img src="/../images/Redis/image-20231023173508951.png" alt="image-20231023173508951"></p>
 <ul>
 <li>创建一个 epoll 对象，就是我们的io多路复用的实现</li>
@@ -620,13 +639,13 @@
 <li>若发现其它 socket 上的读写请求，那就调用相应的读事件处理，和写事件处理。</li>
 </ul>
 <p>当然这里6.0以后引入了多线程，那接收数据、解析数据、写回数据都交给了io线程组，和主线程无关了。</p>
-<h2 id="6、讲一下io多路复用"><a href="#6、讲一下io多路复用" class="headerlink" title="6、讲一下io多路复用"></a>6、讲一下io多路复用</h2><p>首先我们知道用户缓冲区去内核缓冲区读数据的时候，有两个耗时的过程，一个是等待从网卡来的数据，一个是内核拷贝到用户缓冲区。</p>
-<p>阻塞io和非阻塞io都是先调用revfrom，阻塞io两个都要等、非阻塞需要等待拷贝这个过程。但是io多路复用，先监听一个socket集合，然后某个socket数据就绪了，发了个可读的通知，这时候才调用revfrom去读。</p>
-<p>io多路复用有多种实现，select、poll、epoll。select和poll收到可读通知，需要自己去遍历，是哪个发了可读通知。epoll是直接告诉你是哪个socket就绪。	</p>
-<h2 id="3、为什么这么快？"><a href="#3、为什么这么快？" class="headerlink" title="3、为什么这么快？"></a>3、为什么这么快？</h2><p>基于内存</p>
+<h2 id="3、为什么这么快？高性能"><a href="#3、为什么这么快？高性能" class="headerlink" title="3、为什么这么快？高性能"></a>3、为什么这么快？高性能</h2><p>基于内存</p>
 <p>单线程执行命令</p>
 <p>io多路复用</p>
 <p>多线程读写socket</p>
+<h2 id="6、讲一下io多路复用"><a href="#6、讲一下io多路复用" class="headerlink" title="6、讲一下io多路复用"></a>6、讲一下io多路复用</h2><p>首先我们知道用户缓冲区去内核缓冲区读数据的时候，有两个耗时的过程，一个是等待从网卡来的数据，一个是内核拷贝到用户缓冲区。</p>
+<p>阻塞io和非阻塞io都是先调用revfrom，阻塞io两个都要等、非阻塞需要等待拷贝这个过程。但是io多路复用，先监听一个socket集合，然后某个socket数据就绪了，发了个可读的通知，这时候才调用revfrom去读。</p>
+<p>io多路复用有多种实现，select、poll、epoll。select和poll收到可读通知，需要自己去遍历，是哪个发了可读通知。epoll是直接告诉你是哪个socket就绪。	</p>
 <h2 id="4、采用单线程原因"><a href="#4、采用单线程原因" class="headerlink" title="4、采用单线程原因"></a>4、采用单线程原因</h2><ul>
 <li>使用单线程模型是 Redis 的开发和维护更简单</li>
 <li>即使使用单线程模型也并发的处理多客户端的请求，主要使用的是多路复用IO</li>
@@ -661,13 +680,13 @@
 <h2 id="3、混合持久化"><a href="#3、混合持久化" class="headerlink" title="3、混合持久化"></a>3、混合持久化</h2><p>混合持久化就是合并了aof和rdb的两个优点，rdb恢复数据块，aof丢失数据少</p>
 <p>混合持久化，fork出来的子进程先去把共享内存以rdb的格式写入到aof文件里面，然后写入过程中主进程执行的命令会被记录到重写缓冲区里面，然后这些增量命令最后会以aof的格式增加到aof文件里面，所以aof文件里面前一部分时rdb，后一部分是aof。</p>
 <h1 id="4、Redis主从复制"><a href="#4、Redis主从复制" class="headerlink" title="4、Redis主从复制"></a>4、Redis主从复制</h1><p>主服务器可以进行读写操作，当发生写操作时自动将写操作同步给从服务器，而从服务器一般是只读，并接受主服务器同步过来写操作命令，然后执行这条命令。</p>
-<p>主从服务器间的第一次同步是全量同步，分为三个阶段：</p>
 <blockquote>
+<p><font color='red'><u><em><strong>全量同步</strong></em></u></font></p>
 <ul>
 <li><font color='red'><u><em><strong>第一阶段是建立链接、协商同步；</strong></em></u></font></li>
 </ul>
-<p> 建立链接的时候会给主服务器发送psync，然后带上主服务器的runID和复制进度</p>
-<p> 主服务器收到后会返回一个FULLRESYNC响应，主服务器的runID和目前的复制进度</p>
+<p>建立链接的时候会给主服务器发送psync，然后带上主服务器的runID（其实第一次不知道）和复制进度</p>
+<p>主服务器收到后会返回一个FULLRESYNC响应，主服务器的runID和目前的复制进度</p>
 <ul>
 <li><font color='red'><u><em><strong>第二阶段是主服务器同步数据给从服务器；</strong></em></u></font></li>
 </ul>
@@ -678,7 +697,8 @@
 <p>把repliacation buffer缓冲区里面的写操作发给从服务器</p>
 </blockquote>
 <p>第一次同步完成后，双方会维护一个TCP链接。</p>
-<p><strong>增量复制</strong></p>
+<blockquote>
+<p><font color='red'><u><strong>增量复制</strong></u></font></p>
 <p>网络断开又恢复后，从主从服务器会采用<strong>增量复制</strong>的方式继续同步，也就是只会把网络断开期间主服务器接收到的写操作命令，同步给从服务器。</p>
 <p>主要有三个步骤：</p>
 <ul>
@@ -688,35 +708,36 @@
 </ul>
 <p><strong>主服务器怎么知道要将哪些增量数据发送给从服务器呢？</strong></p>
 <ul>
-<li><p><strong>repl_backlog_buffer</strong>，是一个「<strong>环形</strong>」缓冲区，用于主从服务器断连后，从中找到差异的数据。（主服务器进行命令传播时，不仅会将写命令发送给从服务器，还会将写命令写入到 repl_backlog_buffer 缓冲区里。）</p>
-</li>
-<li><p><strong>replication offset</strong>，标记上面那个缓冲区的同步进度，主从服务器都有各自的偏移量，主服务器使用 master_repl_offset 来记录自己「<em>写</em>」到的位置，从服务器使用 slave_repl_offset 来记录自己「<em>读</em>」到的位置。</p>
-</li>
-<li><p>如果判断出从服务器要读取的数据还在 repl_backlog_buffer 缓冲区里，那么主服务器将采用<strong>增量同步</strong>的方式；</p>
-</li>
-<li><p>相反，如果判断出从服务器要读取的数据已经不存在 repl_backlog_buffer 缓冲区里，那么主服务器将采用<strong>全量同步</strong>的方式。</p>
-</li>
+<li><strong>repl_backlog_buffer</strong>，是一个「<strong>环形</strong>」缓冲区，用于主从服务器断连后，从中找到差异的数据。（主服务器进行命令传播时，不仅会将写命令发送给从服务器，还会将写命令写入到 repl_backlog_buffer 缓冲区里。）</li>
+<li><strong>replication offset</strong>，标记上面那个缓冲区的同步进度，主从服务器都有各自的偏移量，主服务器使用 master_repl_offset 来记录自己「<em>写</em>」到的位置，从服务器使用 slave_repl_offset 来记录自己「<em>读</em>」到的位置。</li>
 </ul>
-<h2 id="哨兵模式（怎么保证redis的高可用？）"><a href="#哨兵模式（怎么保证redis的高可用？）" class="headerlink" title="哨兵模式（怎么保证redis的高可用？）"></a>哨兵模式（怎么保证redis的高可用？）</h2><p>用哨兵模式去实现主从集群的自动故障恢复。他有三大作用：监控、自动故障恢复、通知。</p>
-<h5 id="怎么监控？"><a href="#怎么监控？" class="headerlink" title="怎么监控？"></a>怎么监控？</h5><p>监控是基于心跳机制，每隔1s会向实例发送ping命令，然后实例响应pong，假如规定时间内，没回复，那就认为主观下线，如果超过一半的哨兵都认为下线了，那就是客观下线。如果这个时候master挂了，这个时候就要选取新的master。</p>
-<h5 id="怎么选取？"><a href="#怎么选取？" class="headerlink" title="怎么选取？"></a>怎么选取？</h5><p>先判断优先值，值越小代表优先级越高</p>
-<p>然后看offset，你越大，说明你和master之间的差距小，数据丢失的就少，那优先级越高</p>
-<p>最后看id，越小优先级越高。</p>
+<p>如果判断出从服务器要读取的数据还在 repl_backlog_buffer 缓冲区里，那么主服务器将采用<strong>增量同步</strong>的方式；</p>
+<p>相反，如果判断出从服务器要读取的数据已经不存在 repl_backlog_buffer 缓冲区里，那么主服务器将采用<strong>全量同步</strong>的方式。</p>
+</blockquote>
+<h2 id="哨兵模式（怎么保证redis的高可用？）"><a href="#哨兵模式（怎么保证redis的高可用？）" class="headerlink" title="哨兵模式（怎么保证redis的高可用？）"></a>哨兵模式（怎么保证redis的高可用？）</h2><p>他有三大作用：监控、恢复、通知。</p>
+<p><strong>怎么监控？怎么主从切换</strong></p>
+<blockquote>
+<p>监控是基于心跳机制去监控节点。每隔1s会向实例发送ping命令，然后实例响应pong，假如规定时间内，没回复，那就认为主观下线。如果主节点超过一半的哨兵都认为下线了，那就是客观下线，这个时候就要选取新的master。判断主节点客观下线的那个哨兵成为候选者，候选节点向其他哨兵发送成为leader的请求，如果成功就负责进行主从切换。</p>
+<p>1、选出主节点、先看优先值，再看offset，再看id</p>
+<p>2、将从节点指向新主节点</p>
+<p>3、通知客户的主节点已更换</p>
+<p>4、如果旧的主节点重新上线，将旧主节点变为从节点</p>
+</blockquote>
 <p><strong>主从切换如何减少数据丢失</strong>？</p>
 <blockquote>
 <p>主从切换有两种情况会数据丢失</p>
 <ul>
-<li>异步复制同步丢失。master来不及同步给从节点就挂了</li>
-<li>集群产生脑裂数据丢失。就是因为网络问题，哨兵监听不到主节点，那么哨兵就去从节点里面选了一个主节点，这个时候就有多个主节点，那原先的主节点就会被迫降为从节点，然后去新的主节点同步数据，他一同步，那么原先的数据就丢了。所以他的解决方案就是，必须有从节点和设置主从同步之间的延迟时间，如果从节点不够或者网络延迟太大，那我就禁止写操作</li>
+<li><font color='red'><u><em><strong>异步复制同步丢失。master来不及同步给从节点就挂了</strong></em></u></font></li>
+<li><font color='red'><u><em><strong>集群产生脑裂数据丢失。</strong></em></u></font>就是因为网络问题，哨兵监听不到主节点，那么哨兵就去从节点里面选了一个主节点，这个时候就有多个主节点，那原先的主节点就会被迫降为从节点，然后去新的主节点同步数据，他一同步，那么原先的数据就丢了。所以他的解决方案就是，必须有从节点和设置主从同步之间的延迟时间，如果从节点不够或者网络延迟太大，那我就禁止写操作</li>
 </ul>
 <p>解决方法：</p>
-<p>Redis 配置里有一个参数 min-slaves-max-lag，表示一旦所有的从节点数据复制和同步的延迟都超过了 min-slaves-max-lag 定义的值，那么主节点就会拒绝接收任何请求。上面两个参数是依赖于两个参数：</p>
+<p>Redis 配置里有一个参数 min-slaves-max-lag，表示一旦所有的从节点数据复制和同步的延迟都超过了 min-slaves-max-lag 定义的值，那么主节点就会拒绝接收任何请求。</p>
 <ul>
-<li>min-slaves-to-write x，主节点必须要有<strong>至少 x 个从节点连接</strong>，如果小于这个数，主节点会禁止写数据。</li>
-<li>min-slaves-max-lag x，主从数据复制和同步的延迟<strong>不能超过 x 秒</strong>，如果主从同步的延迟超过 x 秒，主节点会禁止写数据</li>
+<li>min-slaves-to-write x，<font color='red'><u><strong>主节点必须要有至少 x 个从节点连接</strong></u></font>，如果小于这个数，主节点会禁止写数据。</li>
+<li>min-slaves-max-lag x，<font color='red'><u><em><strong>主从数据复制和同步的延迟</strong>不能超过 x 秒</em><em>，如果主从同步的延迟超过 x 秒，主节点会禁止写数据</em>**</u></font></li>
 </ul>
 </blockquote>
-<p><strong>如何如何应对主从数据不一致？</strong></p>
+<p><strong>如何应对主从数据不一致？</strong></p>
 <blockquote>
 <p>第一种方法，尽量<font color='red'><u><em><strong>保证主从节点间的网络连接状况良好</strong></em></u></font>，避免主从节点在不同的机房。</p>
 <p>第二种方法，可以开发一个外部程序来<font color='red'><u><em><strong>监控主从节点间的复制进度</strong></em></u></font>。具体做法：得到主从的复制差距，如果过大，就不再和这个从节点进行数据同步</p>
@@ -724,8 +745,8 @@
 <p><strong>怎么判断 Redis 某个节点是否正常工作？</strong></p>
 <blockquote>
 <p>基本都是通过互相的 ping-pong 心态检测机制,</p>
-<p>Redis 主节点默认每隔 10 秒对从节点发送 ping 命令</p>
-<p>Redis 从节点每隔 1 秒上报自身当前的复制偏移量</p>
+<p>哨兵每隔1s会向主节点和从节点发送ping，</p>
+<p>每隔10s会向主节点发送info命令获取从节点的信息。</p>
 </blockquote>
 <h1 id="5、Redis-过期删除与内存淘汰"><a href="#5、Redis-过期删除与内存淘汰" class="headerlink" title="5、Redis 过期删除与内存淘汰"></a>5、Redis 过期删除与内存淘汰</h1><h2 id="1、Redis过期策略"><a href="#1、Redis过期策略" class="headerlink" title="1、Redis过期策略"></a>1、Redis过期策略</h2><p>Redis 使用的过期删除策略是「<strong>惰性删除+定期删除</strong>」这两种策略配和使用。</p>
 <blockquote>
@@ -771,7 +792,7 @@
 <p>1、volatile random</p>
 <p>2、volatile lru 最近最少使用</p>
 <p>3、volatile lfu <strong>最近最不常用的</strong></p>
-<h3 id="LRU-算法和-LFU-算法有什么区别？"><a href="#LRU-算法和-LFU-算法有什么区别？" class="headerlink" title="LRU 算法和 LFU 算法有什么区别？"></a>LRU 算法和 LFU 算法有什么区别？</h3><p>传统的lru算法依赖于一个链表，，数据被访问时候，链表中的节点会出现很多的移动操作，降低性能</p>
+<h3 id="LRU-算法和-LFU-算法有什么区别？"><a href="#LRU-算法和-LFU-算法有什么区别？" class="headerlink" title="LRU 算法和 LFU 算法有什么区别？"></a>LRU 算法和 LFU 算法有什么区别？</h3><p>传统的lru算法依赖于一个链表，数据被访问时候，链表中的节点会出现很多的移动操作，降低性能</p>
 <p>LRU</p>
 <blockquote>
 <p>Redis实现lru是在RedisObject里面新增一个字段，记录最后一次访问时间</p>
@@ -784,7 +805,7 @@
 <p>lfu在RedisObject的基础上新增了一个字段，用于记录数据的访问频次。24位</p>
 <p>高16位记录时间戳，后8位记录访问频次，默认5，会随着时间衰减</p>
 <p>数据每次被访问的时候：</p>
-<p>先做一个衰减操作，根据时间和上一次访问时间的差</p>
+<p>先对访问频次做一个衰减操作，根据时间和上一次访问时间的差</p>
 <p>然后做一次增加的操作，这个是基于一定的概率</p>
 </blockquote>
 <p><img src="/../images/Redis/%E8%BF%87%E6%9C%9F%E5%88%A0%E9%99%A4%E7%AD%96%E7%95%A5.jpg" alt="img"></p>
@@ -801,14 +822,15 @@
 <p>1、非法请求的限制</p>
 <p>2、空值或者默认值</p>
 <p>3、布隆过滤器</p>
-<p>布隆过滤器的主要原理是使用一组哈希函数，将元素映射成一组位数组中的索引位置。当要检查一个元素是否在集合中时，将该元素进行哈希处理，然后查看哈希值对应的位数组的值是否为1。如果哈希值对应的位数组的值都为1，那么这个元素可能在集合中，否则这个元素肯定不在集合中。</p>
+<p>布隆过滤器的主要原理是使用一组哈希函数，将元素映射成一位数组里。当要检查一个元素是否在集合中时，将该元素进行哈希处理，然后查看哈希值对应的位数组的值是否为1。如果哈希值对应的位数组的值都为1，那么这个元素可能在集合中，否则这个元素肯定不在集合中。</p>
 <h2 id="4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性"><a href="#4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性" class="headerlink" title="4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性"></a>4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性</h2><blockquote>
 <p>redis和mysql的数据一致性其实有两类方式：<font color='red'><u><em><strong>一种是双写，一种是缓存删除。</strong></em></u></font></p>
 <blockquote>
 <p>对于双写策略，两个请求并发更新同一条数据的时候，会出现数据不一致的情况，另外更新缓存的代价有时候是很高的，可能你1分钟内更新了100次，然后只访问了一次，那代价着实太大了。所以我们一般选择缓存删除的策略。</p>
 </blockquote>
-<p>对于双写策略：如果对一致性就需要加分布式锁或延迟双删，但是我们业务对同步的实时性要求没那么高，我们想要的是最终一致性，所以我们用的是异步消息+canal监听。redis修改后发送异步消息给mysql，mysql如果有一些热点数据的修改，就监听这些数据去更新redis。x</p>
-<p>我们一般来说是<font color='red'><u><em><strong>先更新数据库，再去删除缓存</strong></em></u></font>。虽然在理论上存在着 一个读请求读到旧值然后准备更新到redis里面的时候，有一个写请求更新数据库并且删除了缓存，这时候读请求才把旧值缓存到redis里面，这样出现redis和mysql的不一致。但是其实由于我们的缓存写入是远远快于数据库的写入，所以很难出现我一个请求更新完数据库删除完缓存了这时候，原先的读请求才写入缓存。为了保证第二个操作能成功，可以订阅binlog或者消息队列做删除。</p>
+<p>对于双写策略：如果对一致性要求高，就需要加分布式锁，但是我们业务对同步的实时性要求没那么高，我们想要的是最终一致性，所以我们用的是异步消息+canal监听。redis修改后发送异步消息给mysql，mysql如果有一些热点数据的修改，就监听这些数据去更新redis。</p>
+<p>缓存删除也有延迟双删。</p>
+<p>然后我们一般来说是<font color='red'><u><em><strong>先更新数据库，再去删除缓存</strong></em></u></font>。虽然在理论上存在着 一个读请求读到旧值然后准备更新到redis里面的时候，有一个写请求更新数据库并且删除了缓存，这时候读请求才把旧值缓存到redis里面，这样出现redis和mysql的不一致。但是其实由于我们的缓存写入是远远快于数据库的写入，所以很难出现我一个请求更新完数据库删除完缓存了这时候，原先的读请求才写入缓存。为了保证第二个操作能成功，可以订阅binlog或者消息队列做删除。</p>
 <p>对于并发引起的不一致性，那就用延迟双删</p>
 <blockquote>
 <p>常见的缓存更新策略共有3种：</p>
@@ -871,7 +893,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -885,7 +907,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -915,7 +937,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
