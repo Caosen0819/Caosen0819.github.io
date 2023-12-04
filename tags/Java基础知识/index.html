@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    07 Aug 2023
+		    Aug 07, 2023
     	
     </time>
     
@@ -268,7 +268,8 @@
 <p><strong>在 CGLIB 动态代理机制中 <code>MethodInterceptor</code> 接口和 <code>Enhancer</code> 类是核心。你可以通过 <code>Enhancer</code>类来动态获取被代理类，</strong></p>
 <p>  CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E6%8B%A6%E6%88%AA%E5%99%A8&spm=1001.2101.3001.7020">拦截器</a>拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 <code>MethodInterceptor</code> 中的 <code>intercept</code> 方法。</p>
 <p><strong>二者区别</strong><br>总结一下两者的区别吧：</p>
-<p>JDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰<br>JDK 和 CGLIB 动态代理都是在运行期生成字节码。而 JDK 是直接写 Class 字节码；而 CGLIB 使用 ASM 框架写 Class 字节码<br>JDK 通过反射调用方法，CGLIB 通过 FastClass 机制（下一篇再将）直接调用方法。所以，CGLIB 执行的效率较高<br>JDK 核心是实现 InvocationHandler接口，使用 invoke()方法进行面向切面的处理，调用相应的通知；CGLIB 动态代理是利用 asm 开源包，对代理对象类的 class 文件加载进来，通过修改其字节码生成子类来处理。核心是实现 MethodInterceptor 接口，使用 intercept() 方法进行面向切面的处理，调用相应的通知。</p>
+<p>JDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰<br>JDK 是自带的、CGLIB需要加载包</p>
+<p>JDK是反射机制，CGLIB是使用ASM框架。</p>
 <h1 id="集合"><a href="#集合" class="headerlink" title="集合"></a>集合</h1><p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231116121230926.png" alt="image-20231116121230926"></p>
 <h2 id="Arraylist底层原理"><a href="#Arraylist底层原理" class="headerlink" title="Arraylist底层原理"></a>Arraylist底层原理</h2><p>可以从底层数据结构，构造函数和关键方法理解。</p>
 <blockquote>
@@ -313,7 +314,6 @@
 
 ## 比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同
 
-- `HashSet`、`LinkedHashSet` 和 `TreeSet` 都是 `Set` 接口的实现类，都能保证元素唯一，并且都不是线程安全的。
 - <font color='red'><u>***`HashSet`、`LinkedHashSet` 和 `TreeSet` 的主要区别在于底层数据结构不同。`HashSet` 的底层数据结构是哈希表（基于 `HashMap` 实现）。`LinkedHashSet` 的底层数据结构是链表和哈希表。`TreeSet` 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。***</u></font>
 - 底层数据结构不同又导致这三者的应用场景不同。`HashSet` 用于不需要保证元素插入和取出顺序的场景，`LinkedHashSet` 用于保证元素的插入和取出顺序满足 FIFO 的场景，`TreeSet` 用于支持对元素自定义排序规则的场景。
 
@@ -339,7 +339,7 @@
 
 ### 什么是 BlockingQueue？
 
->`BlockingQueue` （阻塞队列）是一个接口，继承自 `Queue`。`没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。`BlockingQueue` 常用于生产者-消费者模型中，生产者线程会向队列中添加数据，而消费者线程会从队列中取出数据进行处理。
+>`BlockingQueue` （阻塞队列）是一个接口，继承自 `Queue`。`没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。`线程安全。
 >
 ><font color='red'><u>***阻塞队列有哪些***</u></font>
 >
@@ -375,7 +375,7 @@
 >
 >
 >
->## HashMap 多线程操作导致死循环问题
+>## HashMap 多线程操作导致死循环问题（1.7会，1.8是在树操作）
 >
 ><font color='red'><u>***扩容问题和头插法问题***</u></font>
 >
@@ -400,8 +400,6 @@
 >散列采用%取余的操作来实现。但是，重点来了：**“取余(%)操作中如果除数是 2 的幂次则等价于与其除数减一的与(&)操作（也就是说 hash%length==hash&(length-1)的前提是 length 是 2 的 n 次方；）。”** 并且 **采用二进制位操作 &，相对于%能够提高运算效率）
 >
 >
->
->## Hashmap代码
 >
 >**loadFactor 负载因子**
 >
@@ -492,6 +490,10 @@ Comparator 除了可以通过创建自定义比较器外，还可以通过[匿�
 
 Spring解决这个是用三级缓存或者懒加载（构造函数的循环依赖问题），三次缓存中：一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。
 
+为什么三层？
+
+aop
+
 
 
 **MVC的执行流程**
@@ -516,7 +518,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -530,7 +532,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -559,7 +561,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

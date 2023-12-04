@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv: 2023 - 森</title>
+    <title>Archives: 2023 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    04 Apr 2023
+		    Apr 04, 2023
     	
     </time>
     
@@ -292,7 +292,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -321,7 +321,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    04 Apr 2023
+		    Apr 04, 2023
     	
     </time>
     
@@ -340,16 +340,16 @@
 <p><img src="/../images/JVM/java-runtime-data-areas-jdk1.8.png" alt="Java 运行时数据区域（JDK1.8 ）"></p>
 <p>1、程序计数器</p>
 <blockquote>
-<p><font color='red'><u><em><strong>当前线程执行的字节码的行号指示器，</strong></em></u></font>什么循环、分支、线程恢复都靠这个。</p>
+<p><font color='red'><u><em><strong>存储当前指令执行的地址</strong></em></u></font>线程恢复都靠这个。</p>
 </blockquote>
 <p>2、虚拟机栈</p>
 <blockquote>
 <p>每个方法调用的时候都会生成一个栈帧，栈帧里面存储了<font color='red'><u><em><strong>局部变量表，操作数栈、动态连接、方法出口</strong></em></u></font>等。</p>
 <p>局部变量表里面放了<font color='red'><u><em><strong>方法参数、方法内部定义的局部变量</strong></em></u></font>。包括各类基本数据类型、对象引用(reference) ，以及returnAddress类型。</p>
 <p>对象引用要完成两件事情：找到在JVM堆里面的对象，还有一个是找到元空间存储的类型信息。</p>
-<p><font color='red'><u><em><strong>操作数栈：</strong>同时作为计算过程中变量临时的存储空间</em>****</u></font></p>
+<p><font color='red'><u><strong>操作数栈：同时作为计算过程中变量临时的存储空间</strong></u></font></p>
 <p><font color='red'><u><em><strong>动态连接：</strong>指向运行时常量池中该栈帧所属方法的引用</em><em>，为了支持方法调用过程中的动态链接（Dynamic Linking）</em>**</u></font></p>
-<p>方法出口：<strong>存放调用该方法的pc寄存器的值</strong></p>
+<p>方法出口：<font color='green'><u><em><strong>方法执行完去哪里</strong></em></u></font></p>
 </blockquote>
 <p>3、本地方法栈</p>
 <blockquote>
@@ -358,7 +358,7 @@
 <p>4、堆</p>
 <blockquote>
 <p>线程共享的，存放对象实例都在这里。这里有一块是字符串常量池，存的是String实例的引用。</p>
-<p>他被分成年轻代和老年代，年轻代有分成伊甸区和幸存者区。</p>
+<p>他被分成年轻代和老年代，年轻代有分成伊甸区和幸存者区。垃圾回收的时候先扫伊甸区和一个幸存者区，存活的对象放到另一个幸存者区。</p>
 <p>然后还有一点需要提的是：1.7中的堆有方法区，或者说永久代。但是到了1.8，方法区转移到了直接内存里面变成了元空间。</p>
 </blockquote>
 <p>5、方法区</p>
@@ -428,7 +428,7 @@
 <p>4、符号引用验证。<font color='red'><u><em><strong>符号引用验证发生在解析阶段，就是把符号引用转化为直接引用的时候去验证的。</strong></em></u></font></p>
 <h2 id="3、准备阶段"><a href="#3、准备阶段" class="headerlink" title="3、准备阶段"></a>3、准备阶段</h2><p>为静态变量分配内存，并设置初始值的阶段。如果没有final修饰，那就是默认值，比如0这类，真正赋你定义的值那就在初始化阶段。如果用final修饰了，那就是你自己定义的了。</p>
 <h2 id="4、解析"><a href="#4、解析" class="headerlink" title="4、解析"></a>4、解析</h2><p>把常量池中的符号引用转化为直接引用的阶段。有类和接口解析，字段解析，方法解析等。实际上就是先把类加载到方法区里面，然后返回相应直接引用。</p>
-<p>我们拿字段解析举个例子，先解析这个字段所在的类或接口，假设成功解析为C。我们就在C的字段表里面找有没有匹配的简单名称和字段描述符，如果有就直接返回。没有就找C的接口和父接口，看看有没有匹配的简单名称和字段描述符。如果又返回，没有就按继承关系找父类有没有匹配的，否则就失败。</p>
+<p>我们拿字段解析举个例子，先解析这个字段表所在的类或接口，假设成功解析为C。我们就在C的字段表里面找有没有匹配的简单名称和字段描述符，如果有就直接返回。没有就找C的接口和父接口，看看有没有匹配的简单名称和字段描述符。如果又返回，没有就按继承关系找父类有没有匹配的，否则就失败。</p>
 <p>但是方法解析有一点不一样，他有一部分是不能解析的，如果 Human h &#x3D; new Man。这种可能方法调用不能确定，这里就解析不了。能解析的叫非虚方法，不能解析的叫虚方法。虚方法需要使用另外一种调用形式就是分派，分派分为静态动态，虚方法静态分派实现重载（静态类型），动态分派实现重写（invokevirtual，先找到这个动态类型，如果有这个方法那就直接用，如果没有，我们再去找他的父类）。</p>
 <h2 id="5、初始化"><a href="#5、初始化" class="headerlink" title="5、初始化"></a>5、初始化</h2><p>初始化就是执行类构造器的过程，而这个类构造器做的事情就是对类中所有类变量的赋值操作和所有静态语句块的操作。</p>
 <p>顺序就是语句在源文件的顺序</p>
@@ -526,24 +526,34 @@
 <h3 id="新生代"><a href="#新生代" class="headerlink" title="新生代"></a><strong>新生代</strong></h3><blockquote>
 <h4 id="1、Serial收集器"><a href="#1、Serial收集器" class="headerlink" title="1、Serial收集器"></a>1、Serial收集器</h4><blockquote>
 <p>串行，单线程，暂停其他线程。现在用的人比较少，但是优点是简单高效，对内存消耗最少。（整体STW）</p>
+</blockquote>
+<blockquote>
 <p>策略：标记-复制</p>
 </blockquote>
 <h4 id="2、Parrallel-New收集器"><a href="#2、Parrallel-New收集器" class="headerlink" title="2、Parrallel New收集器"></a>2、Parrallel New收集器</h4><blockquote>
 <p>本质是Serial的多线程并行版本。（整体STW）</p>
+</blockquote>
+<blockquote>
 <p>策略：标记-复制</p>
 </blockquote>
 <h4 id="3、Parrallel-Scanvenge"><a href="#3、Parrallel-Scanvenge" class="headerlink" title="3、Parrallel Scanvenge"></a>3、Parrallel Scanvenge</h4><blockquote>
 <p>吞吐量优先收集器</p>
+</blockquote>
+<blockquote>
 <p>Parrallel很多特性和ParNew一样，但是Parallel Scanvenge 的关键点在于它关注的是吞吐量，吞吐量 &#x3D; 代码运行时间 &#x2F; （代码运行时间 + 垃圾收集时间）</p>
+</blockquote>
+<blockquote>
 <blockquote>
 <p>策略：标记-复制</p>
 </blockquote>
 </blockquote>
 <blockquote>
 <blockquote>
-<p>-XX:MaxGcPauserMillis：收集器尽可能保证内存回收花费时间不超过设定值，但也不是越小越好，会牺牲吞吐量和新生代空间</p>
-</blockquote>
+<p>-XX:MaxGcPauserMillis：最大停顿时间</p>
 <p>-XX:GCTimeRatio：吞吐量的倒数，比如 如果是 19 那么允许的最大GC时间比例为 1&#x2F;（1 + 19） &#x3D;5 %</p>
+</blockquote>
+</blockquote>
+<blockquote>
 <p>-XX:+UseAdaptiveSizePolicy：不需要手动指定新生代大小，虚拟机会自动调整参数（GC自适应）</p>
 </blockquote>
 <h3 id=""><a href="#" class="headerlink" title=""></a></h3></blockquote>
@@ -556,11 +566,11 @@
 <p>策略：标记-清除</p>
 <p>因为回收过程和用户线程一起进行，所以有四个步骤。</p>
 <p>1）初始标记，只是标记一下GC Roots，（<font color='red'><u><em><strong>是广义上的gcroots，包含了年轻代所有对象。所以初始标记除了和狭义直接关联，还有年轻代到老年代的引用）</strong></em></u></font>（STW）</p>
-<p>2）并发标记，从GC Roots遍历对象的过程，这个是和用户线程一起进行的。（这里会出现很多引用的变化，比如年轻代到老年代，直接在老年代分配、漏标、浮动垃圾）</p>
-<p>3）重新标记，因为和用户线程一起进行，所以引用会发生变化，所以修正一下（写屏障+增量更新）。（STW）</p>
+<p>2）并发标记，从GC Roots遍历对象的过程，这个是和用户线程一起进行的。（这里会出现很多引用的变化，比如年轻代到老年代，直接在老年代分配、漏标）</p>
+<p>3）重新标记，因为和用户线程一起进行，对于漏标问题的解决方案是（写后屏障+增量更新（<font color='green'><u><em><strong>就是把新增加的引用进行记录</strong></em></u></font>））。（STW）</p>
 <p>4）并发清除，清除对象，因为策略是标记-清除，不需要移动所以同样选择了并发的方式。</p>
 <p>缺点：</p>
-<p>1）对处理资源敏感，而且大于1&#x2F;4。（处理器数量+3）&#x2F;4</p>
+<p>1）对处理资源敏感，而且大于1&#x2F;4。CMS的默认收集线程数量是（处理器数量+3）&#x2F;4</p>
 <p>2）无法处理浮动垃圾（用户线程使得原来某些对象不是垃圾，但是当 CMS 进行清理的时候变成了垃圾，从可达到不可达，但是没扫出来），有可能触发full gc</p>
 <p>3）用的是标记清除，会有内存碎片</p>
 <h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><blockquote>
@@ -571,18 +581,18 @@
 <p>维护这两个是依赖写屏障</p>
 </blockquote>
 <p>下面我们讲讲G1的垃圾收集过程，分为四个步骤</p>
-<p>然后他把region作为单次回收的最小单元，那每次回收都是region的整数倍。然后跟踪每一个region的回收价值（空间大小和回收所需时间），在后台维护一个优先级列表。</p>
+<p>然后他把region作为单次回收的最小单元，那每次回收都是region的整数倍。</p>
 <p>1、初始标记，只是标记一下和能直达的对象，这个和young gc密切相关，这个之前讲过（STW）</p>
 <p>2、并发标记，扫描对象图</p>
-<p>3、最终标记，处理并发标记中变化的哪些引用，这里对于漏标情况G1用的SATB（STW）</p>
-<p>4、筛选回收，后台维护一个优先级列表，跟踪每一个region的回收价值（空间大小和回收所需时间）。把回收region中存活对象复制到空的region，清除旧的。（STW）</p>
+<p>3、最终标记，处理并发标记中变化的哪些引用，这里对于漏标情况G1用的SATB（原始快照）（STW）</p>
+<p>4、筛选回收，后台维护一个优先级列表，跟踪每一个region的回收价值（空间大小和回收所需时间），在指定的停顿时间内回收回收价值最大的region。（STW）</p>
 <p>优点：可以指定最大停顿时间，不会产生内存碎片，按收益回收，分region的内存布局。</p>
 <p>缺点：内存占用和负载都比较高。</p>
 <p>为什么年轻代比以前的快？</p>
 <p>他是筛选回收，是通过region个数进行minor gc 不用对整个eden区minorgc ，而且有个容忍时间。</p>
 <p>G1的SATB算法为什么比CMS的增量标记算法快（原因之一）：</p>
 <p>① CMS的重新标记需要重新扫描所有root</p>
-<p>② G1：在开始标记的时候生成一个快照图，标记存活对象。所有被改变引用关系的对象都标记，至于它是不是真的存活，留给下一次gc扫描</p>
+<p>② G1：在开始标记的时候生成一个快照图，标记存活对象。所有被改变引用关系的对象都标记，至于它是不是真的存活。留给下一次gc扫描</p>
 <h3 id="三色标记"><a href="#三色标记" class="headerlink" title="三色标记"></a>三色标记</h3><p>三色标记在并发会出现问题。</p>
 <p>CMS解决对象消失问题，用的是写屏障+增量更新（黑色对象一旦新插入了指向白色对象的引用之后，它就变回灰色对象了，后续对这个对象再进行扫描）</p>
 <p>G1用的是，写屏障+STAB。（灰色对象要删除指向白色对象的引用关系的时候，就把这个删除的引用记录下来，涂成灰色，等并发扫描结束，再重新扫一次）</p>
@@ -630,14 +640,13 @@
 <h2 id="JVM调优的参数有哪些？"><a href="#JVM调优的参数有哪些？" class="headerlink" title="JVM调优的参数有哪些？"></a>JVM调优的参数有哪些？</h2><blockquote>
 <p>设计垃圾回收器 </p>
 <p>堆空间大小</p>
-<p>虚拟机栈</p>
+<p>虚拟机栈大小</p>
 <p>eden区和幸存者区的大小比例</p>
 <p>新生代晋级老年代的阈值</p>
 </blockquote>
 <h2 id="JVM调优工具"><a href="#JVM调优工具" class="headerlink" title="JVM调优工具"></a>JVM调优工具</h2><blockquote>
 <p><font color='red'><u><em><strong>命令：</strong></em></u></font></p>
 <p>jsp + jstack 查看进程内线程的堆栈信息</p>
-<p>jmap -heap 反应堆的信息</p>
 <p>jmap -dump 生成一个内存快照的信息</p>
 <p>jstat ：JVM性能监测工具。 显示伊甸区 幸存者区、老年区的比例</p>
 <p><font color='red'><u><em><strong>可视化工具：</strong></em></u></font></p>
@@ -664,7 +673,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -693,7 +702,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    04 Apr 2023
+		    Apr 04, 2023
     	
     </time>
     
@@ -721,7 +730,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -750,7 +759,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-03T00:00:00+08:00">
 	
-		    03 Apr 2023
+		    Apr 03, 2023
     	
     </time>
     
@@ -786,7 +795,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -815,7 +824,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-03T00:00:00+08:00">
 	
-		    03 Apr 2023
+		    Apr 03, 2023
     	
     </time>
     
@@ -890,7 +899,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -907,15 +916,15 @@
             <a
                 class="btn btn--default btn--small"
                 href="/archives/2023/page/2/"
-                aria-label="NEUERE BEITRÄGE"
+                aria-label="NEWER POSTS"
             >
               <i class="fa fa-angle-left text-base icon-mr"></i>
-              <span>NEUERE BEITRÄGE</span>
+              <span>NEWER POSTS</span>
             </a>
           </li>
         
         
-        <li class="pagination-number">Seite 3 von 3</li>
+        <li class="pagination-number">page 3 of 3</li>
     </ul>
 </div>
 
@@ -945,7 +954,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

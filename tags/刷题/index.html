@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-09-30T00:00:00+08:00">
 	
-		    30 Sep 2023
+		    Sep 30, 2023
     	
     </time>
     
@@ -341,6 +341,9 @@
 <p><font color='green'><u><em><strong>矩形覆盖</strong></em></u></font> 简单 dp[i] &#x3D; dp[i - 1] + dp[i - 2] ;</p>
 <p><font color='green'><u>*** 把数字翻译成字符串***</u></font>:也不是很难</p>
 </blockquote>
+<blockquote>
+<p><font color='green'><u><em><strong>最长有效括号</strong></em></u></font></p>
+</blockquote>
 <h1 id="链表"><a href="#链表" class="headerlink" title="链表"></a>链表</h1><p><font color='red'><u><em><strong>判断有没有环形 ：</strong></em></u></font> 一个走两步一个走一步，重要的是while里面是&amp;&amp;，如果碰到了就代表有环</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ListNode</span> <span class="variable">pre</span> <span class="operator">=</span> head;</span><br><span class="line">        <span class="type">ListNode</span> <span class="variable">nextt</span> <span class="operator">=</span> pre;</span><br><span class="line">        <span class="keyword">while</span> (nextt != <span class="literal">null</span> &amp;&amp; pre != <span class="literal">null</span>) &#123;</span><br><span class="line">            pre = pre.next;</span><br><span class="line">            <span class="keyword">if</span> (nextt.next != <span class="literal">null</span>) &#123;</span><br><span class="line">                nextt = nextt.next.next;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;      </span><br><span class="line">            <span class="keyword">if</span> (pre == nextt) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;            </span><br><span class="line">            &#125;           </span><br><span class="line">        &#125;  </span><br></pre></td></tr></table></figure>
 
@@ -410,6 +413,12 @@
 <p><font color='red'><u><em><strong>盛水最多的容器</strong></em></u></font> 前指针 + 后指针 向中间靠拢</p>
 <p><font color='red'><u><em><strong>接雨水问题</strong></em></u></font>： 前指针 + 后指针 向中间靠拢</p>
 </blockquote>
+<p>难：正则表达式</p>
+<p>二和指数：用map</p>
+<p>三和之数：不用map，双重循环，每一层循环都要注意和前面那个数进行对比重复</p>
+<p>单调栈：</p>
+<p>柱状图</p>
+<p>最大矩阵</p>
 
                     
                         
@@ -423,7 +432,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -437,7 +446,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -466,7 +475,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

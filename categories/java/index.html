@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Kategorie: Java - 森</title>
+    <title>Category: Java - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    08 Nov 2023
+		    Nov 08, 2023
     	
     </time>
     
@@ -393,7 +393,7 @@
 </blockquote>
 </blockquote>
 <h3 id="2、表结构定义文件"><a href="#2、表结构定义文件" class="headerlink" title="2、表结构定义文件"></a>2、表结构定义文件</h3><p>这个文件的后缀是.frm，每个文件都会有这个一个frm文件，记录了该表的表结构定义</p>
-<h3 id="3、Innodb存储引擎文件"><a href="#3、Innodb存储引擎文件" class="headerlink" title="3、Innodb存储引擎文件"></a>3、Innodb存储引擎文件</h3><h4 id="1、表空间文件"><a href="#1、表空间文件" class="headerlink" title="1、表空间文件"></a>1、表空间文件</h4><p>首当其冲的就是表空间文件，次情况下我们会放到ibdata那个文件里面，但是我们可以通过设置一个参数去产生一个自己表的独立表空间，然后这些<font color='red'><u><em><strong>独立的表空间记录该表的数据，索引信息，其余的还是放在共享表空间里面。</strong></em></u></font></p>
+<h3 id="3、Innodb存储引擎文件"><a href="#3、Innodb存储引擎文件" class="headerlink" title="3、Innodb存储引擎文件"></a>3、Innodb存储引擎文件</h3><h4 id="1、表空间文件"><a href="#1、表空间文件" class="headerlink" title="1、表空间文件"></a>1、表空间文件</h4><p>首当其冲的就是表空间文件，情况下我们会放到ibdata那个文件里面，但是我们可以通过设置一个参数去产生一个自己表的独立表空间，然后这些<font color='red'><u><em><strong>独立的表空间记录该表的数据，索引信息，其余的还是放在共享表空间里面。</strong></em></u></font></p>
 <h4 id="2、redolog"><a href="#2、redolog" class="headerlink" title="2、redolog"></a>2、redolog</h4><blockquote>
 <p>有两部分组成：redo log buffer缓冲，redo log File，它为了防止断电导致数据丢失的问题.当有一条记录需要更新的时候，InnoDB 引擎就会先更新内存（同时标记为脏页），然后将本次对这个页的修改记录到redolog buffer里面，然后按照一定的机制刷回redolog文件</p>
 <p>后续，InnoDB 引擎会在适当的时候，由后台线程将缓存在 Buffer Pool 的脏页刷新到磁盘里，这就是 <strong>WAL （Write-Ahead Logging）技术</strong>。</p>
@@ -515,7 +515,7 @@
 <h4 id="2、fast-index-create"><a href="#2、fast-index-create" class="headerlink" title="2、fast index create"></a><font color='red'><u><em><strong>2、fast index create</strong></em></u></font></h4><p>在创建索引的表加上一个S锁不需要重建表，删除索引只需要更新内部视图。<font color='red'><u><em><strong>但是不能做一些更新操作。</strong></em></u></font></p>
 <h4 id="4、Online-DDL"><a href="#4、Online-DDL" class="headerlink" title="4、Online DDL"></a><font color='red'><u><em><strong>4、Online DDL</strong></em></u></font></h4><p>允许在辅助索引创建的同时，还允许insert update等DML操作</p>
 <p>原理是：执行insert update delete这些操作的时候，<font color='red'><u><em><strong>先把操作日志写入一个缓存里面，然后，索引建立后重做表上面</strong></em></u></font></p>
-<p>新的alter table语法中，通过<font color='red'><u><em><strong>algorithm如果是 copy还是通过建立临时表的方式，如果是replace就是不需要临时表，</strong></em></u></font>是在InnoDB引擎内部完成，但是还是需要临时空间的。如果是default，那就是根据old_alter_table判断，如果是off，那就是replace。</p>
+<p>新的alter table语法中，通过<font color='red'><u><em><strong>algorithm如果是 copy还是通过建立临时表的方式，如果是replace就是不需要临时表，</strong></em></u></font>是在InnoDB引擎内部完成，但是还是需要临时空间的。如果是instant，无需拷贝数据也无需重建整表</p>
 <h4 id="5、cardinality值"><a href="#5、cardinality值" class="headerlink" title="5、cardinality值"></a><font color='red'><u><em><strong>5、cardinality值</strong></em></u></font></h4><p>他是一个统计信息，优化器会根据这个值来判断我们用不用索引，表示索引中唯一值的数据的估计值，如果是性别这种，重复的非常多，我们叫低选择性，不适合做索引。反之高选择性就比较适合，尤其是在高选择性属性字段里面取出一小部分数据，那就更有必要了。</p>
 <ul>
 <li><strong>统计的方式</strong>？</li>
@@ -530,8 +530,8 @@
 <p>第二个好处：一句对第二个键值进行了排序处理，可以缩短某些情况的查询时间</p>
 <h4 id="2、覆盖索引"><a href="#2、覆盖索引" class="headerlink" title="2、覆盖索引"></a>2、覆盖索引</h4><p>覆盖索引的意思是，从辅助索引中就直接可以得到想要查询的记录，不需要回表。</p>
 <p>第一个好处是：辅助索引本身不包括整行记录，所以大小远小于聚集索引，减少io操作</p>
-<p>第二个好处是：对于某些统计问题，存储引擎并不会通过积极索引，辅助索引远远小于聚集索引，</p>
-<h4 id="4、MRR优化（只支持非聚集索引）（离散读变成顺序读）"><a href="#4、MRR优化（只支持非聚集索引）（离散读变成顺序读）" class="headerlink" title="4、MRR优化（只支持非聚集索引）（离散读变成顺序读）"></a>4、MRR优化（只支持非聚集索引）<font color='red'><u><em><strong>（离散读变成顺序读）</strong></em></u></font></h4><p>工作方式：</p>
+<p>第二个好处是：对于某些统计问题，存储引擎并不会通过聚集索引，辅助索引远远小于聚集索引，</p>
+<h4 id="4、MRR优化（多范围读取、只支持非聚集索引）（离散读变成顺序读）"><a href="#4、MRR优化（多范围读取、只支持非聚集索引）（离散读变成顺序读）" class="headerlink" title="4、MRR优化（多范围读取、只支持非聚集索引）（离散读变成顺序读）"></a>4、MRR优化（多范围读取、只支持非聚集索引）<font color='red'><u><em><strong>（离散读变成顺序读）</strong></em></u></font></h4><p>工作方式：</p>
 <ul>
 <li>把辅助索引读出来放到一个缓存里面</li>
 <li>把缓存中根据rowid进行排序</li>
@@ -650,32 +650,29 @@
 <p>要解决这问题，binlog 日志格式要设置为 row，这样在 binlog 里面记录的是主库分配的自增值，到备库执行的时候，主库的自增值是什么，从库的自增值就是什么。</p>
 <p>所以，<strong>当 innodb_autoinc_lock_mode &#x3D; 2 时，并且 binlog_format &#x3D; row，既能提升并发性，又不会出现数据一致性问题</strong>。</p>
 <h3 id="3、行锁"><a href="#3、行锁" class="headerlink" title="3、行锁"></a>3、行锁</h3><blockquote>
-<p>也分读锁和写锁</p>
 <p><strong>MySQL 的行锁是在引擎层由各个引擎自己实现的。</strong></p>
+</blockquote>
+<blockquote>
+<p>InnoDB有三种行锁的算法：</p>
+<p>Record Lock：单个行记录的锁</p>
+<p>Gap Lock：间隙锁，锁定一个范围，但不包括记录本身</p>
+<p>Next-Key Lock：Record Lock + Gap Lock</p>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>InnoDB就是用Next-Key去解决幻读问题（同一事务下，连续执行两次相同的sql语句可能导致不同的结果，第二次sql可能会返回之前不存在的行）</p>
+</blockquote>
+<blockquote>
+<p>查询的索引如果是唯一性质，那么降级为Record Lock</p>
+</blockquote>
+</blockquote>
+<blockquote>
 <p><strong>两阶段锁协议</strong>：</p>
 <blockquote>
 <p><strong>在 InnoDB 事务中，行锁是在需要的时候才加上的，但并不是不需要了就立刻释放，而是要等到事务结束时才释放。</strong></p>
 </blockquote>
 <blockquote>
 <p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20230805221422216.png" alt="image-20230805221422216"></p>
-</blockquote>
-<blockquote>
-<p>InnoDB有三种行锁的算法：</p>
-</blockquote>
-<blockquote>
-<p>Record Lock：单个行记录的锁</p>
-</blockquote>
-<blockquote>
-<p>Gap Lock：间隙锁，锁定一个范围，但不包括记录本身</p>
-</blockquote>
-<blockquote>
-<p>Next-Key Lock：Record Lock + Gap Lock</p>
-</blockquote>
-<blockquote>
-<p>InnoDB就是用Next-Key去解决幻读问题（同一事务下，连续执行两次相同的sql语句可能导致不同的结果，第二次sql可能会返回之前不存在的行）</p>
-</blockquote>
-<blockquote>
-<p>查询的索引如果是唯一性质，那么降级为Record Lock</p>
 </blockquote>
 <h2 id="2、一致性非锁定读（快照读）"><a href="#2、一致性非锁定读（快照读）" class="headerlink" title="2、一致性非锁定读（快照读）"></a>2、一致性非锁定读（快照读）</h2><p>一致性非锁定读是指InnoDb通过多版本控制（MVCC）的方式读一个我能看到的数据。就算读取的那一行正在做一些dml操作，但是我不会去等，我会直接去读一个快照数据。</p>
 <p>所以我们要讲一下这个MVCC，他这个就依赖于undolog版本链和readView。</p>
@@ -708,7 +705,7 @@
 <h2 id="7、锁升级"><a href="#7、锁升级" class="headerlink" title="7、锁升级"></a>7、锁升级</h2><p>InnoDB中不存在锁升级的问题，因为InnoDB不是更具每个记录来产生锁的，相反，其根据每个事务访问的每个页对锁进行管理，采用的是位图的方式。所以不管你锁住的是页中的一个记录或者多个记录，开销一样</p>
 <p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231006204601132.png" alt="image-20231006204601132"></p>
 <h1 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h1><h2 id="1、认识事务"><a href="#1、认识事务" class="headerlink" title="1、认识事务"></a>1、认识事务</h2><h3 id="1、四个特性：acid。"><a href="#1、四个特性：acid。" class="headerlink" title="1、四个特性：acid。"></a>1、四个特性：acid。</h3><p>原子性：要么成功要么失败</p>
-<p>一致性：讲数据库从一种状态转变为下一种一致的状态，完整性约束没有被破坏。</p>
+<p>一致性：讲数据库从一种状态转变为下一种一致的状态，完整性约束没有被破坏。比如A向B转账，不可能A扣了钱，B却没收到。</p>
 <p>隔离性Isolation：一个事务提交之前对其他事物不可见</p>
 <p>Durability：一旦提交，那么结果是永久性的</p>
 <p>可以举个例子：就是转账。</p>
@@ -771,7 +768,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -800,7 +797,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-28T00:00:00+08:00">
 	
-		    28 Oct 2023
+		    Oct 28, 2023
     	
     </time>
     
@@ -971,7 +968,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1000,7 +997,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-10T00:00:00+08:00">
 	
-		    10 Oct 2023
+		    Oct 10, 2023
     	
     </time>
     
@@ -1109,7 +1106,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1138,7 +1135,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-09T00:00:00+08:00">
 	
-		    09 Oct 2023
+		    Oct 09, 2023
     	
     </time>
     
@@ -1450,7 +1447,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1479,7 +1476,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-09-30T00:00:00+08:00">
 	
-		    30 Sep 2023
+		    Sep 30, 2023
     	
     </time>
     
@@ -1577,6 +1574,9 @@
 <p><font color='green'><u><em><strong>矩形覆盖</strong></em></u></font> 简单 dp[i] &#x3D; dp[i - 1] + dp[i - 2] ;</p>
 <p><font color='green'><u>*** 把数字翻译成字符串***</u></font>:也不是很难</p>
 </blockquote>
+<blockquote>
+<p><font color='green'><u><em><strong>最长有效括号</strong></em></u></font></p>
+</blockquote>
 <h1 id="链表"><a href="#链表" class="headerlink" title="链表"></a>链表</h1><p><font color='red'><u><em><strong>判断有没有环形 ：</strong></em></u></font> 一个走两步一个走一步，重要的是while里面是&amp;&amp;，如果碰到了就代表有环</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ListNode</span> <span class="variable">pre</span> <span class="operator">=</span> head;</span><br><span class="line">        <span class="type">ListNode</span> <span class="variable">nextt</span> <span class="operator">=</span> pre;</span><br><span class="line">        <span class="keyword">while</span> (nextt != <span class="literal">null</span> &amp;&amp; pre != <span class="literal">null</span>) &#123;</span><br><span class="line">            pre = pre.next;</span><br><span class="line">            <span class="keyword">if</span> (nextt.next != <span class="literal">null</span>) &#123;</span><br><span class="line">                nextt = nextt.next.next;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;      </span><br><span class="line">            <span class="keyword">if</span> (pre == nextt) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;            </span><br><span class="line">            &#125;           </span><br><span class="line">        &#125;  </span><br></pre></td></tr></table></figure>
 
@@ -1646,6 +1646,12 @@
 <p><font color='red'><u><em><strong>盛水最多的容器</strong></em></u></font> 前指针 + 后指针 向中间靠拢</p>
 <p><font color='red'><u><em><strong>接雨水问题</strong></em></u></font>： 前指针 + 后指针 向中间靠拢</p>
 </blockquote>
+<p>难：正则表达式</p>
+<p>二和指数：用map</p>
+<p>三和之数：不用map，双重循环，每一层循环都要注意和前面那个数进行对比重复</p>
+<p>单调栈：</p>
+<p>柱状图</p>
+<p>最大矩阵</p>
 
                     
                         
@@ -1659,7 +1665,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1688,7 +1694,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-09-08T00:00:00+08:00">
 	
-		    08 Sep 2023
+		    Sep 08, 2023
     	
     </time>
     
@@ -2020,7 +2026,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -2049,7 +2055,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    07 Aug 2023
+		    Aug 07, 2023
     	
     </time>
     
@@ -2074,7 +2080,8 @@
 <p><strong>在 CGLIB 动态代理机制中 <code>MethodInterceptor</code> 接口和 <code>Enhancer</code> 类是核心。你可以通过 <code>Enhancer</code>类来动态获取被代理类，</strong></p>
 <p>  CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E6%8B%A6%E6%88%AA%E5%99%A8&spm=1001.2101.3001.7020">拦截器</a>拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 <code>MethodInterceptor</code> 中的 <code>intercept</code> 方法。</p>
 <p><strong>二者区别</strong><br>总结一下两者的区别吧：</p>
-<p>JDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰<br>JDK 和 CGLIB 动态代理都是在运行期生成字节码。而 JDK 是直接写 Class 字节码；而 CGLIB 使用 ASM 框架写 Class 字节码<br>JDK 通过反射调用方法，CGLIB 通过 FastClass 机制（下一篇再将）直接调用方法。所以，CGLIB 执行的效率较高<br>JDK 核心是实现 InvocationHandler接口，使用 invoke()方法进行面向切面的处理，调用相应的通知；CGLIB 动态代理是利用 asm 开源包，对代理对象类的 class 文件加载进来，通过修改其字节码生成子类来处理。核心是实现 MethodInterceptor 接口，使用 intercept() 方法进行面向切面的处理，调用相应的通知。</p>
+<p>JDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰<br>JDK 是自带的、CGLIB需要加载包</p>
+<p>JDK是反射机制，CGLIB是使用ASM框架。</p>
 <h1 id="集合"><a href="#集合" class="headerlink" title="集合"></a>集合</h1><p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231116121230926.png" alt="image-20231116121230926"></p>
 <h2 id="Arraylist底层原理"><a href="#Arraylist底层原理" class="headerlink" title="Arraylist底层原理"></a>Arraylist底层原理</h2><p>可以从底层数据结构，构造函数和关键方法理解。</p>
 <blockquote>
@@ -2119,7 +2126,6 @@
 
 ## 比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同
 
-- `HashSet`、`LinkedHashSet` 和 `TreeSet` 都是 `Set` 接口的实现类，都能保证元素唯一，并且都不是线程安全的。
 - <font color='red'><u>***`HashSet`、`LinkedHashSet` 和 `TreeSet` 的主要区别在于底层数据结构不同。`HashSet` 的底层数据结构是哈希表（基于 `HashMap` 实现）。`LinkedHashSet` 的底层数据结构是链表和哈希表。`TreeSet` 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。***</u></font>
 - 底层数据结构不同又导致这三者的应用场景不同。`HashSet` 用于不需要保证元素插入和取出顺序的场景，`LinkedHashSet` 用于保证元素的插入和取出顺序满足 FIFO 的场景，`TreeSet` 用于支持对元素自定义排序规则的场景。
 
@@ -2145,7 +2151,7 @@
 
 ### 什么是 BlockingQueue？
 
->`BlockingQueue` （阻塞队列）是一个接口，继承自 `Queue`。`没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。`BlockingQueue` 常用于生产者-消费者模型中，生产者线程会向队列中添加数据，而消费者线程会从队列中取出数据进行处理。
+>`BlockingQueue` （阻塞队列）是一个接口，继承自 `Queue`。`没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。`线程安全。
 >
 ><font color='red'><u>***阻塞队列有哪些***</u></font>
 >
@@ -2181,7 +2187,7 @@
 >
 >
 >
->## HashMap 多线程操作导致死循环问题
+>## HashMap 多线程操作导致死循环问题（1.7会，1.8是在树操作）
 >
 ><font color='red'><u>***扩容问题和头插法问题***</u></font>
 >
@@ -2206,8 +2212,6 @@
 >散列采用%取余的操作来实现。但是，重点来了：**“取余(%)操作中如果除数是 2 的幂次则等价于与其除数减一的与(&)操作（也就是说 hash%length==hash&(length-1)的前提是 length 是 2 的 n 次方；）。”** 并且 **采用二进制位操作 &，相对于%能够提高运算效率）
 >
 >
->
->## Hashmap代码
 >
 >**loadFactor 负载因子**
 >
@@ -2298,6 +2302,10 @@ Comparator 除了可以通过创建自定义比较器外，还可以通过[匿�
 
 Spring解决这个是用三级缓存或者懒加载（构造函数的循环依赖问题），三次缓存中：一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。
 
+为什么三层？
+
+aop
+
 
 
 **MVC的执行流程**
@@ -2322,7 +2330,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -2351,7 +2359,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -2695,7 +2703,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -2724,7 +2732,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -2779,7 +2787,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -2808,7 +2816,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -2915,7 +2923,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -2933,14 +2941,14 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
             <a
                 class="btn btn--default btn--small"
                 href="/categories/Java/page/2/"
-                aria-label="ÄLTERE BEITRÄGE"
+                aria-label="OLDER POSTS"
             >
-              <span>ÄLTERE BEITRÄGE</span>
+              <span>OLDER POSTS</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">Seite 1 von 2</li>
+        <li class="pagination-number">page 1 of 2</li>
     </ul>
 </div>
 
@@ -2970,7 +2978,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
