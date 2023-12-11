@@ -336,6 +336,7 @@
 <blockquote>
 <p><font color='green'><u><em><strong>打家劫舍(一)</strong></em></u></font>：这个比较正常。数组的意思是前i个</p>
 <p><font color='green'><u>*** 打家劫舍(二)***</u></font>：多了一个环形的条件，其实就是分两种情形，第一类要第一个不要最后一个；第二不要第一个（dp[0] &#x3D; 0）要最后一个。数组的意义也是前i个。</p>
+<p><font color='green'><u><em><strong>打家劫舍三</strong></em></u></font> ：分两种状态，直接dfs返回的时候，用new int[2]返回两种状态下的不同最大值。一种状态是选中，一种是不选中</p>
 </blockquote>
 <blockquote>
 <p><font color='green'><u><em><strong>矩形覆盖</strong></em></u></font> 简单 dp[i] &#x3D; dp[i - 1] + dp[i - 2] ;</p>
@@ -429,6 +430,136 @@
                         <p>
                             <a
                                 href="/2023/09/30/shua/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/09/30/hot/"
+                            aria-label=": Hot100"
+                        >
+                            Hot100
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-09-30T00:00:00+08:00">
+	
+		    Sep 30, 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>最长回文串：动态规划，boolean</p>
+<p>没有重复字符的最长子串：借助map的滑动窗口</p>
+<p>寻找两个正序数组的中位数：</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/container-with-most-water/">盛最多水的容器</a> : 双指针</p>
+<p>Lru : 多练，两个指针+Map</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/regular-expression-matching/">正则表达式匹配</a>: 动态规划，条件较复杂	</p>
+<p>三数之和：两个循环，第二个循环用前后双指针。两个循环里面都要做去重，都是和前一个对比</p>
+<p>括号生产：较简单的dfs</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/group-anagrams/">字母异位词分组</a> : 简单的</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/sliding-window-maximum/">滑动窗口最大值</a> :  单调队列，用linkedlist</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/next-permutation?envType=featured-list&envId=2cktkvj?envType=featured-list&envId=2cktkvj">下一个排列</a> : 要推导一下，先一个循环从右往左找到第一个a[i] &lt;a[i + 1]，然后再用一个和上面那个同等级的循环去从右往左找到第一个小于a[i]的交换，然后Arrays.sort(nums, left + 1, n);</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/longest-valid-parentheses/">最长有效括号</a> : <font color='blue'><u><em><strong>动态规划</strong></em></u></font> 很有趣</p>
+<p>不同路径 ： 动态规划</p>
+<p>全排列：dfs 加一个辅助的set</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/subarray-sum-equals-k/"> 和为 K 的子数组</a> ：<font color='blue'><u><em><strong>不是动态规划</strong></em></u></font> <font color='blue'><u><em><strong>是前缀和 + map</strong></em></u></font>, 很有趣。1 2 3 4 5 6, 每次判断前j个减去前i个是不是等于k，用map优化</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/partition-equal-subset-sum/">分割等和子集</a> :  <font color='red'><u><em><strong>动态规划</strong></em></u></font> 这个非常重要, 背包问题，<font color='red'><u><em><strong>int[n] [target]</strong></em></u></font>  </p>
+<p><font color='red'><u><em><strong><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/jump-game/">跳跃游戏</a>：不是动态规划，从小遍历到n，然后每次遍历判断</strong></em></u></font></p>
+<details>
+    for (int i = 0; i < nums.length; i++) {
+            if (k < i) {
+                return false;
+            }
+            k = Math.max(k, i + nums[i]);
+        }
+</details>
+
+<p>电话号码的字母组合 : 回溯</p>
+<p><font color='red'><u><em><strong><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/daily-temperatures/">每日温度</a> 如果能想到用单调栈 就会比较简单。遍历的每次都先从栈里面弹出比自己小的。</strong></em></u></font></p>
+<details>
+  de.offerLast(0);
+        for (int i = 1; i < n; i++) {
+            while (!de.isEmpty() && temperatures[de.peekLast()] < temperatures[i]) {
+                int t = de.pollLast();
+                res[t] = i - t;
+            }
+            de.offerLast(i);
+        }
+</details>
+
+<p><font color='red'><u><em><strong>搜索旋转排序数组 : 二分法，</strong></em></u></font></p>
+<details>
+  if (nums[0] <= nums[mid]) {
+            if ( target <= nums[mid] && target >= nums[left] ) {
+                return find(nums, target, left, mid - 1);
+            } else {
+                return find(nums, target, mid + 1, right);
+            }
+        } else {
+            if ( target >= nums[mid] && target <= nums[right]) {
+                return find(nums, target, mid + 1, right);
+            } else {
+                return find(nums, target, left, mid - 1);
+            }
+        }
+</details>
+
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/course-schedule/">课程表</a> : DFS 分三个状态，分别是未搜索0，搜索中1， 结束2. <font color='red'><u><em><strong>多做————–</strong></em></u></font></p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/binary-tree-maximum-path-sum/">二叉树中的最大路径和</a> : 回溯，挺有意思的</p>
+<details>
+  int Lson = Math.max(recurtion(root.left), 0);
+        int Rson = Math.max(recurtion(root.right), 0);
+        maxV = Math.max(maxV, root.val + Lson + Rson);
+        return root.val + Math.max(Lson, Rson);
+</details>
+
+
+
+
+
+
+
+<p>简单的一些：</p>
+<p>旋转矩阵</p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/09/30/hot/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >

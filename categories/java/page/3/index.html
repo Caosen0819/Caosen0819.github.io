@@ -6,16 +6,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>森</title>
+    <title>Category: Java - 森</title>
     <meta name="author" content="CSEN">
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"Website","@id":"http://example.com","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"name":"森","description":"潮起潮落，云卷云舒","url":"http://example.com"}</script>
+    <script type="application/ld+json">{}</script>
     <meta name="description" content="潮起潮落，云卷云舒">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="森">
-<meta property="og:url" content="http://example.com/page/4/index.html">
+<meta property="og:url" content="http://example.com/categories/Java/page/3/index.html">
 <meta property="og:site_name" content="森">
 <meta property="og:description" content="潮起潮落，云卷云舒">
 <meta property="og:locale" content="zh_CH">
@@ -221,256 +221,8 @@
                  class="
                         hasCoverMetaIn
                         ">
-                <section class="postShorten-group main-content-wrap">
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
-                            aria-label=": springboot整合elasticsearch8.2.0"
-                        >
-                            springboot整合elasticsearch8.2.0
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2022-10-04T13:40:04+08:00">
-	
-		    Oct 04, 2022
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <h1 id="java-整合elasticsearch8-2-0"><a href="#java-整合elasticsearch8-2-0" class="headerlink" title="java 整合elasticsearch8.2.0"></a>java 整合elasticsearch8.2.0</h1><p>[TOC]</p>
-<h3 id="一、application-yml或者其他的配置文件皆可"><a href="#一、application-yml或者其他的配置文件皆可" class="headerlink" title="一、application.yml或者其他的配置文件皆可"></a>一、application.yml或者其他的配置文件皆可</h3><p>两种方式：【1】</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">elasticsearch:</span><br><span class="line">  hosts: <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">9200</span>     # 如果有多个IP就自己加逗号吧</span><br></pre></td></tr></table></figure>
-
-<p>【2】</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">spring：</span><br><span class="line">	elasticsearch:</span><br><span class="line">    	uris: localhost:<span class="number">9200</span>   #这样子自动配置了</span><br></pre></td></tr></table></figure>
-
-<h3 id="二、config类"><a href="#二、config类" class="headerlink" title="二、config类"></a>二、config类</h3><p>不同的版本会有不同的config类要求，这里只提供es8.2.0的，对应着上面两种application文件，此处也提供两种对应的config类，至于之后和springboot整合就不会出现分类了。</p>
-<h5 id="【1】自定义属性"><a href="#【1】自定义属性" class="headerlink" title="【1】自定义属性"></a>【1】自定义属性</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span> Caosen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span> 2022/9/22 10:34</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Version</span> 1.0</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EsUtilConfigClint2</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;elasticsearch.hosts&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String hosts;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> HttpHost[] getHttpHost()&#123;</span><br><span class="line">        <span class="keyword">if</span> (hosts.length() &gt; <span class="number">0</span>)&#123;</span><br><span class="line">            System.out.println(hosts);</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;invalid&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        String[] hosts_array = hosts.split(<span class="string">&quot;,&quot;</span>);</span><br><span class="line">        <span class="comment">//用string类型创建host的集合</span></span><br><span class="line"></span><br><span class="line">        HttpHost[] httpHosts = <span class="keyword">new</span> <span class="title class_">HttpHost</span>[hosts_array.length];</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (String s : hosts_array) &#123;</span><br><span class="line">            <span class="comment">//这里解析端口</span></span><br><span class="line">            String[] hosts_array_in = s.split(<span class="string">&quot;:&quot;</span>);</span><br><span class="line">            <span class="comment">//到这里就有了id和端口两个东西</span></span><br><span class="line">            <span class="type">HttpHost</span> <span class="variable">http</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HttpHost</span>(hosts_array_in[<span class="number">0</span>], Integer.parseInt(hosts_array_in[<span class="number">1</span>]), <span class="string">&quot;http&quot;</span>);</span><br><span class="line">            httpHosts[i++] = http;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;目前的配置加入了&quot;</span> + i + <span class="string">&quot;个id及其端口&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> httpHosts;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IOException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> ElasticsearchClient <span class="title function_">configClint</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">// Create the low-level client</span></span><br><span class="line">        HttpHost[] httpHosts = getHttpHost();</span><br><span class="line">        <span class="type">RestClient</span> <span class="variable">restClient</span> <span class="operator">=</span> RestClient.builder(httpHosts).build();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Create the transport with a Jackson mapper</span></span><br><span class="line">        <span class="type">ElasticsearchTransport</span> <span class="variable">transport</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RestClientTransport</span>(</span><br><span class="line">                restClient, <span class="keyword">new</span> <span class="title class_">JacksonJsonpMapper</span>());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 客户端</span></span><br><span class="line">        <span class="type">ElasticsearchClient</span> <span class="variable">client</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ElasticsearchClient</span>(transport);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> client;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-<h5 id="【2】使用自带的属性"><a href="#【2】使用自带的属性" class="headerlink" title="【2】使用自带的属性"></a>【2】使用自带的属性</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span> Caosen</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Date</span> 2022/9/18 15:01</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Version</span> 1.0</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EsUtilConfigClint</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IOException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> ElasticsearchClient <span class="title function_">configClint</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">// Create the low-level client</span></span><br><span class="line">        <span class="type">RestClient</span> <span class="variable">restClient</span> <span class="operator">=</span> RestClient.builder(</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">HttpHost</span>(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">9200</span>)).build();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Create the transport with a Jackson mapper</span></span><br><span class="line">        <span class="type">ElasticsearchTransport</span> <span class="variable">transport</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RestClientTransport</span>(</span><br><span class="line">                restClient, <span class="keyword">new</span> <span class="title class_">JacksonJsonpMapper</span>());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 客户端</span></span><br><span class="line">        <span class="type">ElasticsearchClient</span> <span class="variable">client</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ElasticsearchClient</span>(transport);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> client;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="三、测试"><a href="#三、测试" class="headerlink" title="三、测试"></a>三、测试</h3><h5 id="【1】service接口"><a href="#【1】service接口" class="headerlink" title="【1】service接口"></a>【1】service接口</h5><p>由于作者是直接在项目里面加内容的，可能会出现一些不相关的东西，我尽量截取相关代码</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/**</span><br><span class="line">     * 从数据库中导入所有商品到ES</span><br><span class="line">     */</span><br><span class="line">    int importAll();</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 新建指定名称的索引</span><br><span class="line">     * @param name</span><br><span class="line">     * @throws IOException</span><br><span class="line">     */</span><br><span class="line">    void addIndex(String name) throws IOException;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 检查指定名称的索引是否存在</span><br><span class="line">     * @param name</span><br><span class="line">     * @return</span><br><span class="line">     * @throws IOException</span><br><span class="line">     */</span><br><span class="line">    boolean indexExists(String name) throws IOException;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 删除指定索引</span><br><span class="line">     * @param name</span><br><span class="line">     * @throws IOException</span><br><span class="line">     */</span><br><span class="line">    void delIndex(String name) throws IOException;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 创建索引，指定setting和mapping</span><br><span class="line">     * @param name 索引名称</span><br><span class="line">     * @param settingFn 索引参数</span><br><span class="line">     * @param mappingFn 索引结构</span><br><span class="line">     * @throws IOException</span><br><span class="line">     */</span><br><span class="line">    void create(String name,</span><br><span class="line">                Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; settingFn,</span><br><span class="line">                Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mappingFn) throws IOException;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h5 id="【2】serviceImpl，主要看create-，add，exsits-delete"><a href="#【2】serviceImpl，主要看create-，add，exsits-delete" class="headerlink" title="【2】serviceImpl，主要看create ，add，exsits, delete"></a>【2】serviceImpl，主要看create ，add，exsits, delete</h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">    private EsProductDao esProductDao;</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    private EsProductRepository esProductRepository;</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    private ElasticsearchClient elasticsearchClient;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public int importAll() &#123;</span><br><span class="line">        List&lt;EsProduct&gt; allEsProductList = esProductDao.getAllEsProductList(null);</span><br><span class="line">        Iterable&lt;EsProduct&gt; esProducts = esProductRepository.saveAll(allEsProductList);</span><br><span class="line">        Iterator&lt;EsProduct&gt; iterator = esProducts.iterator();</span><br><span class="line">        int result = 0;</span><br><span class="line">        while (iterator.hasNext()) &#123;</span><br><span class="line">            result++;</span><br><span class="line">            iterator.next();</span><br><span class="line">        &#125;</span><br><span class="line">        return result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void addIndex(String name) throws IOException &#123;</span><br><span class="line">        elasticsearchClient.indices().create(b -&gt; b.index(name));</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public boolean indexExists(String name) throws IOException &#123;</span><br><span class="line">        return elasticsearchClient.indices().exists(b -&gt; b.index(name)).value();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void delIndex(String name) throws IOException &#123;</span><br><span class="line">        elasticsearchClient.indices().delete(b -&gt; b.index(name));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void create(String name, Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; setting, Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mapping) throws IOException &#123;</span><br><span class="line">        elasticsearchClient.indices()</span><br><span class="line">                .create(b -&gt; b</span><br><span class="line">                        .index(name)</span><br><span class="line">                        .settings(setting)</span><br><span class="line">                        .mappings(mapping));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<h5 id="【3】测试"><a href="#【3】测试" class="headerlink" title="【3】测试"></a>【3】测试</h5><p>测试可以用controller 或者 用test伪装controller，自己测试的时候还是用postman接口比较合适。这里测试两种创建index，一种简单，一种稍微复杂，结果都是通过，见图。其他的删除啊，导入数据库的数据（repository）都是可以查到的。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Test</span><br><span class="line">    void addIndexSimple() throws IOException &#123;</span><br><span class="line">        String s = &quot;simple&quot;;</span><br><span class="line"></span><br><span class="line">        esProductService.addIndex(s);</span><br><span class="line">        System.out.println(&quot;创建success&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    @Test</span><br><span class="line">    void addIndexComplicated() throws IOException &#123;</span><br><span class="line"></span><br><span class="line">        String s = &quot;complicated&quot;;</span><br><span class="line">        Function&lt;IndexSettings.Builder, ObjectBuilder&lt;IndexSettings&gt;&gt; setting = builder -&gt; builder</span><br><span class="line">                .index(i -&gt; i.numberOfShards(&quot;3&quot;).numberOfReplicas(&quot;1&quot;));</span><br><span class="line">        Property keywordproperty = Property.of(p -&gt; p.keyword(k -&gt; k.ignoreAbove(256)));</span><br><span class="line">        Property testproperty = Property.of(p -&gt; p.text(builder -&gt; builder));</span><br><span class="line">        Property integerproperty = Property.of(builder -&gt; builder.integer(i -&gt; i));</span><br><span class="line"></span><br><span class="line">        Function&lt;TypeMapping.Builder, ObjectBuilder&lt;TypeMapping&gt;&gt; mapping = builder -&gt; builder</span><br><span class="line">                .properties(&quot;name&quot;, keywordproperty)</span><br><span class="line">                .properties(&quot;description&quot;, testproperty)</span><br><span class="line">                .properties(&quot;price&quot;, integerproperty);</span><br><span class="line">        esProductService.create(s, setting, mapping);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<p><img src="C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220922113434674.png" alt="image-20220922113434674"></p>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Comment and share
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2022/10/04/%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
-                            aria-label=": springboot整合kafka3.1-基本配置和操作"
-                        >
-                            springboot整合kafka3.1-基本配置和操作
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2022-10-04T13:38:01+08:00">
-	
-		    Oct 04, 2022
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <p>这篇是单机的zookeeper形式，适用于入门。等有时间会更新kraft搭建。</p>
-<p>博主自己装了双系统，虚拟机刚刚删了，所以没去做集群，不过当大家的kafka版本来到3.1，建议大家去学习KRaft集群搭建而不是去整合zookeeper。下面介绍一下怎么整合，正所谓举一反三，这个会了，到时候换个环境就ok，讲的不好的地方还请见谅。</p>
-<p>[toc]</p>
-<h2 id="前提准备"><a href="#前提准备" class="headerlink" title="前提准备"></a>前提准备</h2><h3 id="1、springboot"><a href="#1、springboot" class="headerlink" title="1、springboot"></a>1、springboot</h3><p>博主自己用的是2.7版本的</p>
-<p>一般关于springboot我会引入一下依赖</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line"></span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line"></span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line"></span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-aop&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;</span><br><span class="line">          &lt;scope&gt;test&lt;/scope&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="2、kafka"><a href="#2、kafka" class="headerlink" title="2、kafka"></a>2、kafka</h3><h4 id="1、kafka下载"><a href="#1、kafka下载" class="headerlink" title="1、kafka下载"></a>1、kafka下载</h4><p><a target="_blank" rel="noopener" href="https://kafka.apache.org/downloads">https://kafka.apache.org/downloads</a>  这里下载，这里再提一句，建议直接放到d盘e盘一级子目录里面，否则有可能出现启动的时候名字太长的问题</p>
-<p>下载之后修改配置文件server.properties</p>
-<p>log.dirs&#x3D;E:\kafka_2.13-3.2.3\kafka-logs</p>
-<h4 id="2、项目引入依赖"><a href="#2、项目引入依赖" class="headerlink" title="2、项目引入依赖"></a>2、项目引入依赖</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.springframework.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;spring-kafka&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;根据自己的版本选择&lt;/version&gt;  </span><br><span class="line">        &lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
-
-<p>这里提一句：不一样的springboot对应的kafka依赖版本也不一样，所以先去官网查看依赖版本。</p>
-<p><a target="_blank" rel="noopener" href="https://spring.io/projects/spring-kafka">https://spring.io/projects/spring-kafka</a>   点这个链接去找对应的，别自己乱下最新的。</p>
-<h5 id="新版本的kafka命令和老版本的不一样。"><a href="#新版本的kafka命令和老版本的不一样。" class="headerlink" title="新版本的kafka命令和老版本的不一样。"></a>新版本的kafka命令和老版本的不一样。</h5><p>试着启动，命令看你在哪个文件夹，如果是kafka，用下面的，如果是linux，把bat换成sh</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">bin\windows\kafka-server-start.bat config\server.properties</span><br></pre></td></tr></table></figure>
-
-<p>简单使用</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bin\windows\kafka-topics.bat --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic test（自己取）</span><br></pre></td></tr></table></figure>
-
-<p>查看</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bin\windows\kafka-topics.bat --list --bootstrap-server localhost:9092</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="3、zookeeper"><a href="#3、zookeeper" class="headerlink" title="3、zookeeper"></a>3、zookeeper</h3><p>新版本的kafka其实自己集成了zookeeper，博主这里同样介绍两种方式，一种自己重新去下个zookeeper，一种用kafka自带的。</p>
-<h4 id="1、自带的"><a href="#1、自带的" class="headerlink" title="1、自带的"></a>1、自带的</h4><p>修改配置zookeeper.properties</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">dataDir=/opt/kafka/zookeeper/data/dataDir</span><br><span class="line">dataLogDir=/opt/kafka/zookeeper/data/dataLogDir</span><br><span class="line"># the port at which the clients will connect</span><br><span class="line">clientPort=<span class="number">2181</span></span><br><span class="line"># disable the per-ip limit on the number of connections since <span class="built_in">this</span> is a non-production config</span><br><span class="line">maxClientCnxns=<span class="number">100</span></span><br><span class="line">tickTime=<span class="number">2000</span></span><br><span class="line">initLimit=<span class="number">10</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bin\windows\zookeeper-server-start.bat config\zookeeper.properties</span><br></pre></td></tr></table></figure>
-
-<h4 id="2、自己下载zookeeper"><a href="#2、自己下载zookeeper" class="headerlink" title="2、自己下载zookeeper"></a>2、自己下载zookeeper</h4><p>由于是自己下载所以也不用去配置kafka文件中的zookeeper.properties</p>
-<p><a target="_blank" rel="noopener" href="https://zookeeper.apache.org/releases.html#download">https://zookeeper.apache.org/releases.html#download</a>  这是下载地址</p>
-<p>进去之后很简单，一样改配置，进入conf目录下，将<code>zoo_example.cfg</code>重命名为<code>zoo.cfg</code></p>
-<p>同样修改dataDir和log， 我的是：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">example sakes.</span><br><span class="line"></span><br><span class="line">dataDir=E:\\java-configuration\\apache-zookeeper-<span class="number">3.7</span><span class="number">.1</span>-bin\\data</span><br><span class="line"></span><br><span class="line">存放事务日志目录</span><br><span class="line"></span><br><span class="line">dataLogDir=E:\\java-configuration\\apache-zookeeper-<span class="number">3.7</span><span class="number">.1</span>-bin\\logs</span><br></pre></td></tr></table></figure>
-
-<p>然后运行zkserver.cmd和zkcli.cmd, 一个是启动我们的zookeeper服务器，一个是客户端。</p>
-<h2 id="springboot整合操作kafka"><a href="#springboot整合操作kafka" class="headerlink" title="springboot整合操作kafka"></a>springboot整合操作kafka</h2><p><img src="C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220924153503966.png" alt="image-20220924153503966"></p>
-<p>这里用一张图作为流程讲解如何整合。</p>
-<h3 id="1、config"><a href="#1、config" class="headerlink" title="1、config"></a>1、config</h3><p>其实可以把下面的conponent exception filter什么的都丢进来，可以配一些生产者消费者的信息，想配什么都可以，这个就不展示了。</p>
-<h3 id="2、回调（conponent）"><a href="#2、回调（conponent）" class="headerlink" title="2、回调（conponent）"></a>2、回调（conponent）</h3><p>回调有多种写法，这里介绍三种</p>
-<h4 id="1、较为泛用的"><a href="#1、较为泛用的" class="headerlink" title="1、较为泛用的"></a>1、较为泛用的</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class KafkaSendResultHandler implements ProducerListener &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onSuccess(ProducerRecord producerRecord, RecordMetadata recordMetadata) &#123;</span><br><span class="line">        System.out.println(&quot;Message send success : &quot; + producerRecord.toString());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onError(ProducerRecord producerRecord, RecordMetadata recordMetadata, Exception exception) &#123;</span><br><span class="line">        System.out.println(&quot;Message send error : &quot; + producerRecord.toString());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后在生产者里面使用</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">private KafkaSendResultHandler kafkaSendResultHandler;</span><br><span class="line"></span><br><span class="line">。。。。。省略</span><br><span class="line"></span><br><span class="line">kafkaTemplate.setProducerListener(kafkaSendResultHandler);    </span><br></pre></td></tr></table></figure>
-
-<h4 id="2、一个方法对应一个特定的回调"><a href="#2、一个方法对应一个特定的回调" class="headerlink" title="2、一个方法对应一个特定的回调"></a>2、一个方法对应一个特定的回调</h4><h5 id="1、第一种写法"><a href="#1、第一种写法" class="headerlink" title="1、第一种写法"></a>1、第一种写法</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(<span class="string">&quot;topic1&quot;</span>, callbackMessage).addCallback(success -&gt;&#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">topic</span> <span class="operator">=</span> success.getRecordMetadata().topic();</span><br><span class="line">    <span class="type">int</span> <span class="variable">partition</span> <span class="operator">=</span> success.getRecordMetadata().partition();</span><br><span class="line">    <span class="type">long</span> <span class="variable">offset</span> <span class="operator">=</span> success.getRecordMetadata().offset();</span><br><span class="line">    System.out.println(<span class="string">&quot;发送消息成功:&quot;</span> + topic + <span class="string">&quot;-&quot;</span> + partition + <span class="string">&quot;-&quot;</span> + offset);</span><br><span class="line"></span><br><span class="line">&#125;, failure -&gt; &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;发送消息失败:&quot;</span> + failure.getMessage());</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h5 id="2、第二种写法"><a href="#2、第二种写法" class="headerlink" title="2、第二种写法"></a>2、第二种写法</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(<span class="string">&quot;topic1&quot;</span>, callbackMessage).addCallback(<span class="keyword">new</span> <span class="title class_">ListenableFutureCallback</span>&lt;SendResult&lt;String, Object&gt;&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onFailure</span><span class="params">(Throwable ex)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;发送消息失败：&quot;</span>+ex.getMessage());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onSuccess</span><span class="params">(SendResult&lt;String, Object&gt; result)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;发送消息成功：&quot;</span> + result.getRecordMetadata().topic() + <span class="string">&quot;-&quot;</span></span><br><span class="line">                + result.getRecordMetadata().partition() + <span class="string">&quot;-&quot;</span> + result.getRecordMetadata().offset());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h3 id="3、consumer-消费者"><a href="#3、consumer-消费者" class="headerlink" title="3、consumer(消费者)"></a>3、consumer(消费者)</h3><p>使用KafkaListener，指定消息类型（必选）和groupid，partitions offset（可选）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">@KafkaListener(topics = &#123;&quot;topic1&quot;&#125;, groupId = &quot;felix-group0&quot; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage1(ConsumerRecord&lt;?,?&gt; record)&#123;</span><br><span class="line">    System.out.println(&quot;简单消费：&quot; + record.topic() + &quot;--&quot; + record.partition() + &quot;--&quot; + record.value());</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@KafkaListener(id = &quot;comsumer1&quot;, groupId = &quot;felix-group1&quot;, topicPartitions = &#123;</span><br><span class="line">        @TopicPartition(topic = &quot;topic1&quot;, partitions = &#123;&quot;0&quot;&#125;),</span><br><span class="line">        @TopicPartition(topic = &quot;topic2&quot;, partitionOffsets = @PartitionOffset(partition = &quot;0&quot;, initialOffset = &quot;8&quot;))</span><br><span class="line">&#125; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage2(ConsumerRecord&lt;?, ?&gt; record)&#123;</span><br><span class="line">    System.out.println(&quot;topic:&quot;+record.topic()+&quot;|partition:&quot;+record.partition()+&quot;|offset:&quot;+record.offset()+&quot;|value:&quot;+record.value());</span><br><span class="line">&#125;</span><br><span class="line">@KafkaListener(id = &quot;consumer2&quot;,groupId = &quot;felix-group2&quot;, topics = &quot;topic1&quot; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage3(List&lt;ConsumerRecord&lt;?, ?&gt;&gt; records) &#123;</span><br><span class="line">    System.out.println(&quot;&gt;&gt;&gt;批量消费一次，records.size()=&quot;+records.size());</span><br><span class="line">    for (ConsumerRecord&lt;?, ?&gt; record : records) &#123;</span><br><span class="line">        System.out.println(record.value());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="4、controller生产者（produces）"><a href="#4、controller生产者（produces）" class="headerlink" title="4、controller生产者（produces）"></a>4、controller生产者（produces）</h3><h4 id="1、同步发送"><a href="#1、同步发送" class="headerlink" title="1、同步发送"></a>1、同步发送</h4><p>如果需要使用同步发送，可以在每次发送之后使用get方法，因为producer.send方法返回一个Future类型的结果，Future的get方法会一直阻塞直到该线程的任务得到返回值，也就是broker返回发送成功。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(&quot;test&quot;, message).get();</span><br></pre></td></tr></table></figure>
-
-<h4 id="2、异步发送"><a href="#2、异步发送" class="headerlink" title="2、异步发送"></a>2、异步发送</h4><p>可以从返回的future对象中稍后获取发送的结果，ProducerRecord、RecordMetadata包含了返回的结果信息</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(&quot;test&quot;, message);</span><br></pre></td></tr></table></figure>
-
-<h4 id="3-使用ack机制实现可靠"><a href="#3-使用ack机制实现可靠" class="headerlink" title="3. 使用ack机制实现可靠"></a>3. 使用ack机制实现可靠</h4><p>producers可以一步的并行向kafka发送消息，但是通常producer在发送完消息之后会得到一个响应，返回的是offset值或者发送过程中遇到的错误。这其中有个非常重要的参数“request.required.acks”，这个参数决定了producer要求leader partition收到确认的副本个数：</p>
-<ul>
-<li>如果acks设置为0，表示producer不会等待broker的相应，所以，producer无法知道消息是否发生成功，这样有可能导致数据丢失，但同时，acks值为0会得到最大的系统吞吐量。</li>
-<li>若acks设置为1，表示producer会在leader partition收到消息时得到broker的一个确认，这样会有更好的可靠性，因为客户端会等待知道broker确认收到消息。</li>
-<li>若设置为-1，producer会在所有备份的partition收到消息时得到broker的确认，这个设置可以得到最高的可靠性保证。</li>
-</ul>
-<h3 id="5、exception"><a href="#5、exception" class="headerlink" title="5、exception"></a>5、exception</h3><p>bean注入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Bean</span><br><span class="line">public ConsumerAwareListenerErrorHandler consumerAwareErrorHandler() &#123;</span><br><span class="line">    return (message, exception, consumer) -&gt; &#123;</span><br><span class="line">        System.out.println(&quot;消费异常：&quot;+message.getPayload());</span><br><span class="line">        return null;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>消费异常配置注解实现</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@KafkaListener(topics = &#123;&quot;topic1&quot;&#125;, groupId = &quot;felix-group0&quot; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage1(ConsumerRecord&lt;?,?&gt; record)&#123;</span><br><span class="line">    System.out.println(&quot;简单消费：&quot; + record.topic() + &quot;--&quot; + record.partition() + &quot;--&quot; + record.value());</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="6、filter"><a href="#6、filter" class="headerlink" title="6、filter"></a>6、filter</h3><p>bean注入factory的时候配置好消息过滤策略</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//配置消息过滤策略</span><br><span class="line">    @Bean(value = &quot;filterContainerFactory&quot;)</span><br><span class="line">    public ConcurrentKafkaListenerContainerFactory concurrentKafkaListenerContainerFactory() &#123;</span><br><span class="line">        ConcurrentKafkaListenerContainerFactory factory = new ConcurrentKafkaListenerContainerFactory();</span><br><span class="line">        factory.setConsumerFactory(consumerFactory);</span><br><span class="line">        // 被过滤的消息将被丢弃</span><br><span class="line">        factory.setAckDiscarded(true);</span><br><span class="line">        // 消息过滤策略</span><br><span class="line">        factory.setRecordFilterStrategy(consumerRecord -&gt; &#123;</span><br><span class="line">            if (Integer.parseInt(consumerRecord.value().toString()) % 2 == 0) &#123;</span><br><span class="line">                return false;</span><br><span class="line">            &#125;</span><br><span class="line">            else &#123;</span><br><span class="line">                return true;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        return factory;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<p>消费异常配置注解实现</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 消息过滤监听</span><br><span class="line">    @KafkaListener(topics = &#123;&quot;topic1&quot;&#125;, containerFactory = &quot;filterContainerFactory&quot;)</span><br><span class="line">    public void onMessage6(ConsumerRecord&lt;?, ?&gt; record) &#123;</span><br><span class="line">        System.out.println(record.value());</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="7、序列化编码解码"><a href="#7、序列化编码解码" class="headerlink" title="7、序列化编码解码"></a>7、序列化编码解码</h3><p>序列化器都实现了接口（<code>org.apache.kafka.common.serialization.Serializer</code>）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public interface Serializer&lt;T&gt; extends Closeable &#123;</span><br><span class="line">	default void configure(Map&lt;String, ?&gt; configs, Boolean isKey) &#123;</span><br><span class="line">	&#125;</span><br><span class="line">	byte[] serialize(String var1, T var2);</span><br><span class="line">	default byte[] serialize(String topic, Headers headers, T data) &#123;</span><br><span class="line">		return this.serialize(topic, data);</span><br><span class="line">	&#125;</span><br><span class="line">	default void close() &#123;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>所以我们只用去实现serialize即可</p>
-<h4 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h4><pre><code>public class MySerializer implements Serializer &#123;
-    @Override
-    public byte[] serialize(String s, Object o) &#123;
-        String json = JSON.toJSONString(o);
-        return json.getBytes();
-&#125;
-&#125;
-</code></pre>
-<h4 id="解码"><a href="#解码" class="headerlink" title="解码"></a>解码</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class MyDeserializer implements Deserializer &#123;</span><br><span class="line">    private final static Logger logger = LoggerFactory.getLogger(MyDeserializer.class);</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Object deserialize(String s, byte[] bytes) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            String json = new String(bytes,&quot;utf-8&quot;);</span><br><span class="line">            return JSON.parse(json);</span><br><span class="line">        &#125; catch (UnsupportedEncodingException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>最后在application中配置key-serializer 和 value-serializer</p>
-<h3 id="8、分区策略"><a href="#8、分区策略" class="headerlink" title="8、分区策略"></a>8、分区策略</h3><p>分区策略一般分为四种情况：</p>
-<ul>
-<li>有分区号，直接将数据发送到指定的分区里面去</li>
-<li>没有分区号，但是给了数据的key值，根据key取hashCode进行分区</li>
-<li>分区号和key值都没有，直接使用默认的轮循分区</li>
-<li>自定义分区</li>
-</ul>
-<h4 id="常规"><a href="#常规" class="headerlink" title="常规"></a>常规</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">测试</span><br><span class="line">        kafkaTemplate.send(&quot;test&quot;, 0, key, &quot;key=&quot; + key + &quot;，msg=指定0号分区&quot;);</span><br><span class="line">        kafkaTemplate.send(&quot;test&quot;, key, &quot;key=&quot; + key + &quot;，msg=不指定分区&quot;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h4 id="自定义"><a href="#自定义" class="headerlink" title="自定义"></a>自定义</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyPartitioner</span> <span class="keyword">implements</span> <span class="title class_">Partitioner</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">partition</span><span class="params">(String topic, Object key, <span class="type">byte</span>[] keyBytes, Object value, <span class="type">byte</span>[] valueBytes, Cluster cluster)</span> &#123;</span><br><span class="line"><span class="comment">//        定义自己的分区策略</span></span><br><span class="line"><span class="comment">//                如果key以0开头，发到0号分区</span></span><br><span class="line"><span class="comment">//                其他都扔到1号分区</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">keyStr</span> <span class="operator">=</span> key+<span class="string">&quot;&quot;</span>;</span><br><span class="line">        <span class="keyword">if</span> (keyStr.startsWith(<span class="string">&quot;0&quot;</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">close</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configure</span><span class="params">(Map&lt;String, ?&gt; map)</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyPartitionTemplate</span> &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Logger</span> <span class="variable">logger</span> <span class="operator">=</span> LoggerFactory.getLogger(<span class="built_in">this</span>.getClass());</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;spring.kafka.bootstrap-servers&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String bootstrapServers;</span><br><span class="line"></span><br><span class="line">    KafkaTemplate kafkaTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostConstruct</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setKafkaTemplate</span><span class="params">()</span> &#123;</span><br><span class="line">        Map&lt;String, Object&gt; props = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);</span><br><span class="line">        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);</span><br><span class="line">        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);</span><br><span class="line">        <span class="comment">//注意分区器在这里！！！</span></span><br><span class="line">        props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, MyPartitioner.class);</span><br><span class="line">        <span class="built_in">this</span>.kafkaTemplate = <span class="keyword">new</span> <span class="title class_">KafkaTemplate</span>&lt;String, String&gt;(<span class="keyword">new</span> <span class="title class_">DefaultKafkaProducerFactory</span>&lt;&gt;(props));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> KafkaTemplate <span class="title function_">getKafkaTemplate</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> kafkaTemplate;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//测试自定义分区发送</span><br><span class="line">@RestController</span><br><span class="line">public class MyPartitionProducer &#123;</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    MyPartitionTemplate template;</span><br><span class="line"></span><br><span class="line">//    使用0开头和其他任意字母开头的key发送消息</span><br><span class="line">//    看控制台的输出，在哪个分区里？</span><br><span class="line">    @GetMapping(&quot;/kafka/myPartitionSend/&#123;key&#125;&quot;)</span><br><span class="line">    public void setPartition(@PathVariable(&quot;key&quot;) String key) &#123;</span><br><span class="line">        template.getKafkaTemplate().send(&quot;test&quot;, key,&quot;key=&quot;+key+&quot;，msg=自定义分区策略&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2022/10/04/%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Comment and share
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
+                
+    <section class="postShorten-group main-content-wrap">
     
     
     <article class="postShorten postShorten--thumbnailimg-bottom">
@@ -766,126 +518,13 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
         
     </article>
     
-    
-    <article class="postShorten postShorten--thumbnailimg-right">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"
-                            aria-label=": 数据结构-线性表"
-                        >
-                            数据结构-线性表
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2022-10-04T13:33:19+08:00">
-	
-		    Oct 04, 2022
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt">
-                    <h2 id="线性表"><a href="#线性表" class="headerlink" title="线性表"></a>线性表</h2><ul>
-<li><p>线性结构特点：在数据元素的非空有限集合中</p>
-<ul>
-<li>(1)存在唯一的一个被称做“第一个”的数据元素；</li>
-<li>(2)存在唯一的一个被称做“最后一个”的数据元素；</li>
-</ul>
-</li>
-<li><p>(3)除第一个之外，集合中的每个数据元素均只有一个前驱；(4)除最后一个之外，集合中每个数据元素均只有一个后继。</p>
-</li>
-<li><p>线性表定义：有限个性质相同的数据元素组成的序列。</p>
-                    
-                        <a
-                            href="/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-%E7%BA%BF%E6%80%A7%E8%A1%A8-1/"
-                            class="postShorten-excerpt_link link"
-                            aria-label=": 数据结构-线性表"
-                        >
-                            Continue reading
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-right">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/"
-                            aria-label=": 数据结构的基本概念"
-                        >
-                            数据结构的基本概念
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2022-10-04T13:28:49+08:00">
-	
-		    Oct 04, 2022
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt">
-                    <h2 id="信息化时代"><a href="#信息化时代" class="headerlink" title="信息化时代"></a>信息化时代</h2><p><img src="/./../img/1-1.png" alt="xinxihua"></p>
-<hr>
-<h2 id="数据结构的基本概念"><a href="#数据结构的基本概念" class="headerlink" title="数据结构的基本概念"></a>数据结构的基本概念</h2>
-                    
-                        <a
-                            href="/2022/10/04/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/"
-                            class="postShorten-excerpt_link link"
-                            aria-label=": 数据结构的基本概念"
-                        >
-                            Continue reading
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
     <div class="pagination-bar">
     <ul class="pagination">
         
           <li class="pagination-prev">
             <a
                 class="btn btn--default btn--small"
-                href="/page/3/"
+                href="/categories/Java/page/2/"
                 aria-label="NEWER POSTS"
             >
               <i class="fa fa-angle-left text-base icon-mr"></i>
@@ -894,11 +533,12 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
           </li>
         
         
-        <li class="pagination-number">page 4 of 4</li>
+        <li class="pagination-number">page 3 of 3</li>
     </ul>
 </div>
 
 </section>
+
 
 
                 <footer id="footer" class="main-content-wrap">

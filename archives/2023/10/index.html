@@ -458,7 +458,7 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h1><h2 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h2><p>就是：“准备一组算法，并将每一个算法封装起来，使得它们可以互换。<strong>翻译一下就是</strong>，运行时我给你这个类的方法传不同的“key”，你这个方法会执行不同的业务逻辑。<strong>细品一下，这不就是 if else 干的事吗？</strong></p>
+                    <h1 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h1><h2 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h2><p><strong>是一种 if else 的优化方法</strong>，一个策略接口由不同的实现策略，传进来不同的参数返回不同的策略。</p>
 <p>但是原始的策略模式，他如果遇到参数是可变的，那他依旧会尽力if else的阶段，那就意义不大。所以我们的</p>
 <p>优化方法就是枚举类+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的，</p>
 <p>抽奖的时候根据抽奖算法的id是1还是2，直接去map里面get就可以；生成订单id的时候用雪花还是美团哪一种方法，直接去map里面找</p>

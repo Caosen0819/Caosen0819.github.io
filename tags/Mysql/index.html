@@ -268,13 +268,13 @@
 <p>重做日志缓冲</p>
 </blockquote>
 <p>后台线程的主要作用就是：刷新内存池中的数据，保证缓冲池里的是最新的数据。把已修改的数据文件刷新到磁盘文件，</p>
-<p>我们看体系架构，可以从以下几点：</p>
+<p><font color='red'><u><em><strong>体系架构可以用一句话概括，就是由很多内存块组成的缓冲池去维护所有的线程，缓存磁盘数据，重做缓冲。所以他可以从两方面来讲：一个是内存，一个是线程。</strong></em></u></font></p>
 <h2 id="1、后台线程"><a href="#1、后台线程" class="headerlink" title="1、后台线程"></a>1、后台线程</h2><blockquote>
 <p>主要有：</p>
 <p><font color='red'><u><em><strong>master thread</strong></em></u></font>：最重要的，脏页刷新、合并insert buffer，undo 页的回收，redolog。不过后来脏页回收放到了单独的线程，也就是page thread</p>
-<p>IO thread</p>
-<p>purge thread</p>
-<p>page thread</p>
+<p>IO thread: 负责异步io的回调</p>
+<p>purge thread: 负责undolog清理</p>
+<p>page clean thread：负责脏页刷新</p>
 </blockquote>
 <h3 id="1、master-thread"><a href="#1、master-thread" class="headerlink" title="1、master thread"></a>1、master thread</h3><p>本质是一个循环</p>
 <p>每秒都会进行一次操作：重做日志缓冲刷新、合并insertbuffer，脏页刷新被放到了page clean 线程</p>
@@ -325,6 +325,7 @@
 <p><font color='red'><u><em><strong>重做日志缓冲 剩余空间小于1&#x2F;2</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>正常关闭</strong></em></u></font></p>
 </blockquote>
+<h3 id="4、额外的缓冲池"><a href="#4、额外的缓冲池" class="headerlink" title="4、额外的缓冲池"></a>4、额外的缓冲池</h3><p>对于一些数据结构本身的内存分配服务</p>
 <h1 id="关键特性"><a href="#关键特性" class="headerlink" title="关键特性"></a>关键特性</h1><p>前三个最重要：</p>
 <blockquote>
 <p>1、插入缓冲</p>
@@ -334,7 +335,7 @@
 <p>5、刷新邻接页</p>
 </blockquote>
 <h2 id="1、插入缓冲"><a href="#1、插入缓冲" class="headerlink" title="1、插入缓冲"></a>1、插入缓冲</h2><h3 id="1、insert-buffer"><a href="#1、insert-buffer" class="headerlink" title="1、insert buffer"></a>1、insert buffer</h3><blockquote>
-<p>数据插入的时候还是按照主键的位置存放的，但是这个表如果有辅助索引，那么这条记录也会插入辅助索引，但是这时候他就不是顺序插入了，而是离散的插入访问。我们在对非聚集索引的插入的时候不会实时的插入，而是先判断有没有在缓冲池里面，有的话直接插入，没有的话，先放到一个insert buffer里面。后面再以一定的频率进行insertbuffer和非聚集索页子节点的merge操作。</p>
+<p>数据插入的时候还是按照主键的位置存放的，但是这个表如果有辅助索引，那么这条记录也会插入辅助索引，但是这时候他就不是顺序插入了，而是离散的插入。我们在对非聚集索引的插入的时候不会实时的插入，而是先判断有没有在缓冲池里面，有的话直接插入，没有的话，先构造一个searchkey，放到一个insert buffer里面。后面再以一定的频率进行insertbuffer和非聚集索页子节点的merge操作。</p>
 <p><strong>changebuffer的存在让普通索引优于唯一索引。</strong>普通索引和唯一索引的查询效率差不多，对于已经在内存的数据更新也差不多。但是对于没有在内存的数据更新操作差很多，因为唯一索引为了保证唯一性，会把数据从磁盘读到内存，这一步是数据库成本最高的操作之一。</p>
 <p>insert buffer 升级为了 change buffer，对插入更新删除操作都准备了缓冲</p>
 <h3 id="2、insert-buffer的内部实现"><a href="#2、insert-buffer的内部实现" class="headerlink" title="2、insert buffer的内部实现"></a>2、insert buffer的内部实现</h3><p>全局唯一的b+树的形式，负责对<font color='red'><u><em><strong>所有表</strong></em></u></font>的辅助索引进行insert buffer，存放在共享表空间，就是ibdata1。但是我们知道，我们可以有独立表ibdata，但是恢复的时候最好用共享表里面的。</p>
@@ -395,7 +396,7 @@
 <h3 id="2、表结构定义文件"><a href="#2、表结构定义文件" class="headerlink" title="2、表结构定义文件"></a>2、表结构定义文件</h3><p>这个文件的后缀是.frm，每个文件都会有这个一个frm文件，记录了该表的表结构定义</p>
 <h3 id="3、Innodb存储引擎文件"><a href="#3、Innodb存储引擎文件" class="headerlink" title="3、Innodb存储引擎文件"></a>3、Innodb存储引擎文件</h3><h4 id="1、表空间文件"><a href="#1、表空间文件" class="headerlink" title="1、表空间文件"></a>1、表空间文件</h4><p>首当其冲的就是表空间文件，情况下我们会放到ibdata那个文件里面，但是我们可以通过设置一个参数去产生一个自己表的独立表空间，然后这些<font color='red'><u><em><strong>独立的表空间记录该表的数据，索引信息，其余的还是放在共享表空间里面。</strong></em></u></font></p>
 <h4 id="2、redolog"><a href="#2、redolog" class="headerlink" title="2、redolog"></a>2、redolog</h4><blockquote>
-<p>有两部分组成：redo log buffer缓冲，redo log File，它为了防止断电导致数据丢失的问题.当有一条记录需要更新的时候，InnoDB 引擎就会先更新内存（同时标记为脏页），然后将本次对这个页的修改记录到redolog buffer里面，然后按照一定的机制刷回redolog文件</p>
+<p>他是引擎层的文件，它为了防止断电导致数据丢失的问题。他的使用流程是：当有一条记录需要更新的时候，InnoDB 引擎就会先更新内存（同时标记为脏页），然后将本次对这个页的修改记录到redolog buffer里面，然后按照一定的机制刷回redolog文件。这里两段式提交， redo log 和 binlog 的数据一致性。</p>
 <p>后续，InnoDB 引擎会在适当的时候，由后台线程将缓存在 Buffer Pool 的脏页刷新到磁盘里，这就是 <strong>WAL （Write-Ahead Logging）技术</strong>。</p>
 <p><font color='red'><u><em><strong>WAL 技术指的是， MySQL 的写操作并不是立刻写到磁盘上，而是先写日志，然后在合适的时间再写到磁盘上。</strong></em></u></font></p>
 <p>主要有下面几个时机：</p>
@@ -472,8 +473,8 @@
 <p><strong>MySQL为什么有时候会选错索引？</strong></p>
 <blockquote>
 <p>优化器是找到一个最优的方案，以最小的代价去执行。</p>
-<p>1)我们是根据基数来估计记录数，那基数是怎么得到的？是通过采样统计。InnoDB 默认会选择 N 个数据页，统计这些页面上的不同值，得到一个平均值，然后乘以这个索引的页面数，就得到了基数。</p>
-<p>2)优化器还要判断，执行这个语句本身要扫描多少行，</p>
+<p>1)我们是根据基数来估计行数，那基数是怎么得到的？是通过采样统计。InnoDB 默认会选择 N 个数据页，统计这些页面上的不同值，得到一个平均值，然后乘以这个索引的页面数，就得到了基数。</p>
+<p>2)还有一个问题就是优化器还要判断，执行这个语句本身要扫描多少行，</p>
 <p>解决方法？</p>
 <p>1）forceindex</p>
 <p>2）<strong>修改语句，引导 MySQL 使用我们期望的索引</strong></p>
@@ -514,8 +515,10 @@
 <p>查看：show index from XX</p>
 <h4 id="2、fast-index-create"><a href="#2、fast-index-create" class="headerlink" title="2、fast index create"></a><font color='red'><u><em><strong>2、fast index create</strong></em></u></font></h4><p>在创建索引的表加上一个S锁不需要重建表，删除索引只需要更新内部视图。<font color='red'><u><em><strong>但是不能做一些更新操作。</strong></em></u></font></p>
 <h4 id="4、Online-DDL"><a href="#4、Online-DDL" class="headerlink" title="4、Online DDL"></a><font color='red'><u><em><strong>4、Online DDL</strong></em></u></font></h4><p>允许在辅助索引创建的同时，还允许insert update等DML操作</p>
-<p>原理是：执行insert update delete这些操作的时候，<font color='red'><u><em><strong>先把操作日志写入一个缓存里面，然后，索引建立后重做表上面</strong></em></u></font></p>
-<p>新的alter table语法中，通过<font color='red'><u><em><strong>algorithm如果是 copy还是通过建立临时表的方式，如果是replace就是不需要临时表，</strong></em></u></font>是在InnoDB引擎内部完成，但是还是需要临时空间的。如果是instant，无需拷贝数据也无需重建整表</p>
+<p>有三种算法：</p>
+<p>copy：执行insert update delete这些操作的时候，<font color='red'><u><em><strong>先把操作日志写入一个缓存里面，然后，索引建立后重做表上面</strong></em></u></font></p>
+<p>replace ：replace就是不需要临时表。</p>
+<p>instant ：直接对元数据进行修改，无需拷贝数据也无需重建整表</p>
 <h4 id="5、cardinality值"><a href="#5、cardinality值" class="headerlink" title="5、cardinality值"></a><font color='red'><u><em><strong>5、cardinality值</strong></em></u></font></h4><p>他是一个统计信息，优化器会根据这个值来判断我们用不用索引，表示索引中唯一值的数据的估计值，如果是性别这种，重复的非常多，我们叫低选择性，不适合做索引。反之高选择性就比较适合，尤其是在高选择性属性字段里面取出一小部分数据，那就更有必要了。</p>
 <ul>
 <li><strong>统计的方式</strong>？</li>
@@ -544,7 +547,7 @@
 <li>数据访问更加顺序，</li>
 <li>减少缓冲池页的替换</li>
 </ul>
-<h4 id="5、索引下推ICP优化（只支持非聚集索引）"><a href="#5、索引下推ICP优化（只支持非聚集索引）" class="headerlink" title="5、索引下推ICP优化（只支持非聚集索引）"></a>5、索引下推ICP优化（只支持非聚集索引）</h4><p>原本我们通过索引进行查询的时候，首先根据索引查找记录，然后根据where条件过滤记录。ICP是在取出索引的同时，判断是否可以进行where条件的过滤，也就是讲where的部分过滤操作放到了存储引擎层</p>
+<h4 id="5、索引下推ICP优化（只支持非聚集索引）"><a href="#5、索引下推ICP优化（只支持非聚集索引）" class="headerlink" title="5、索引下推ICP优化（只支持非聚集索引）"></a>5、索引下推ICP优化（只支持非聚集索引）</h4><p>原本我们通过索引进行查询的时候，首先根据索引查找记录，然后根据where条件过滤记录。ICP是在取出索引的同时，判断是否可以进行where条件的过滤，也就是讲where的部分过滤操作放到了存储引擎层。<font color='red'><u><em><strong>联合索引</strong></em></u></font></p>
 <p>场景：</p>
 <p>假设表TB1上有索引IDX_C1_C2_C3(C1,C2,C3)，对于查询SELECT * FROM TB1 WHERE C1&#x3D;’XXX’ AND C3&#x3D;’XXX’</p>
 <p>在MySQL 5.6版本以前，由于缺少C2的过滤条件，Innodb存储引擎层只能使用索引IDX_C1_C2_C3按照C1&#x3D;’XXX’条件找出所有满足条件的索引记录，再根据这些索引记录去聚集索引中查找，将找到的表数据返回给MySQL Server层，然后由MySQL Server层使用C3&#x3D;’XXX’条件进行过滤得到最终结果。</p>
@@ -656,7 +659,7 @@
 <p>InnoDB有三种行锁的算法：</p>
 <p>Record Lock：单个行记录的锁</p>
 <p>Gap Lock：间隙锁，锁定一个范围，但不包括记录本身</p>
-<p>Next-Key Lock：Record Lock + Gap Lock</p>
+<p>Next-Key Lock（临建锁）：Record Lock + Gap Lock 左开右闭</p>
 </blockquote>
 <blockquote>
 <blockquote>
@@ -674,7 +677,7 @@
 <blockquote>
 <p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20230805221422216.png" alt="image-20230805221422216"></p>
 </blockquote>
-<h2 id="2、一致性非锁定读（快照读）"><a href="#2、一致性非锁定读（快照读）" class="headerlink" title="2、一致性非锁定读（快照读）"></a>2、一致性非锁定读（快照读）</h2><p>一致性非锁定读是指InnoDb通过多版本控制（MVCC）的方式读一个我能看到的数据。就算读取的那一行正在做一些dml操作，但是我不会去等，我会直接去读一个快照数据。</p>
+<h2 id="2、一致性非锁定读（快照读）"><a href="#2、一致性非锁定读（快照读）" class="headerlink" title="2、一致性非锁定读（快照读）"></a>2、一致性非锁定读（快照读）</h2><p>一致性非锁定读是指InnoDb通过多版本控制（MVCC）的方式读一个我能看到的数据。</p>
 <p>所以我们要讲一下这个MVCC，他这个就依赖于undolog版本链和readView。</p>
 <p>首先，每一行数据其实都有两个隐藏列，一个是trxid一个是rollpointer，trxid 表示最新修改事务的id，rollpointer表示指向旧版本undo log</p>
 <p>我们修改的数据的时候，我们把该行数据拷贝到 <code>undo log</code>作为旧版本。进行真正的修改操作，同时修改trxid 和roll_pointer，这样就形成了一个版本链条，那至于我们能看到哪个版本的就依赖于readview</p>
@@ -685,7 +688,7 @@
 <p>一个是creator_trx_id，就是你这个事务的id。</p>
 <p><font color='red'><u><em><strong>如果比mintexid小或者等于creatoridexid，我们可以看得见。</strong></em></u></font></p>
 <p>比如一条记录旧版本里面有三条记录：10，20，30。然后我们的事务id是15，m_ids里面有20，30。这里的min_trx_id就是20，我们的15比她小，说明还没有提交。因为隔离性所以肯定是看不到的，然后再去找更前面版本，我们就找到了10，发现10可以，所以我们这次读到的数据就是事务id为10的那一个版本。</p>
-<h2 id="3、一致性锁定读（当前读）"><a href="#3、一致性锁定读（当前读）" class="headerlink" title="3、一致性锁定读（当前读）"></a>3、一致性锁定读（当前读）</h2><p>有时候用户需要些显式的对读操作进行加锁保证一致性。<font color='red'><u><em><strong>还有update也是当前读</strong></em></u></font></p>
+<h2 id="3、一致性锁定读（当前读）"><a href="#3、一致性锁定读（当前读）" class="headerlink" title="3、一致性锁定读（当前读）"></a>3、一致性锁定读（当前读）</h2><p>有时候用户需要些显式的对读操作进行加锁保证一致性。 <font color='red'><u><em><strong>select for update还有update也是当前读</strong></em></u></font></p>
 <p>![image-20231115193544143](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115193544143.png)</p>
 <h2 id="5、锁问题（并发事务带来的问题）"><a href="#5、锁问题（并发事务带来的问题）" class="headerlink" title="5、锁问题（并发事务带来的问题）"></a>5、锁问题（并发事务带来的问题）</h2><h3 id="1、脏读"><a href="#1、脏读" class="headerlink" title="1、脏读"></a>1、脏读</h3><p><font color='blue'><u><em><strong>读到了其他事务没有提交的数据</strong></em></u></font>，违反了隔离性。但是脏读发生的隔离级别最少也得是read uncommitted，而我们的数据库默认是可重复读，所以一般在生产环境中，发生的并不多。</p>
 <h3 id="2、不可重复读-or-幻读"><a href="#2、不可重复读-or-幻读" class="headerlink" title="2、不可重复读 or 幻读"></a>2、不可重复读 or 幻读</h3><p>不可重复读：两次读，读的不一样。</p>

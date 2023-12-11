@@ -268,13 +268,13 @@
 <p>重做日志缓冲</p>
 </blockquote>
 <p>后台线程的主要作用就是：刷新内存池中的数据，保证缓冲池里的是最新的数据。把已修改的数据文件刷新到磁盘文件，</p>
-<p>我们看体系架构，可以从以下几点：</p>
+<p><font color='red'><u><em><strong>体系架构可以用一句话概括，就是由很多内存块组成的缓冲池去维护所有的线程，缓存磁盘数据，重做缓冲。所以他可以从两方面来讲：一个是内存，一个是线程。</strong></em></u></font></p>
 <h2 id="1、后台线程"><a href="#1、后台线程" class="headerlink" title="1、后台线程"></a>1、后台线程</h2><blockquote>
 <p>主要有：</p>
 <p><font color='red'><u><em><strong>master thread</strong></em></u></font>：最重要的，脏页刷新、合并insert buffer，undo 页的回收，redolog。不过后来脏页回收放到了单独的线程，也就是page thread</p>
-<p>IO thread</p>
-<p>purge thread</p>
-<p>page thread</p>
+<p>IO thread: 负责异步io的回调</p>
+<p>purge thread: 负责undolog清理</p>
+<p>page clean thread：负责脏页刷新</p>
 </blockquote>
 <h3 id="1、master-thread"><a href="#1、master-thread" class="headerlink" title="1、master thread"></a>1、master thread</h3><p>本质是一个循环</p>
 <p>每秒都会进行一次操作：重做日志缓冲刷新、合并insertbuffer，脏页刷新被放到了page clean 线程</p>
@@ -325,6 +325,7 @@
 <p><font color='red'><u><em><strong>重做日志缓冲 剩余空间小于1&#x2F;2</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>正常关闭</strong></em></u></font></p>
 </blockquote>
+<h3 id="4、额外的缓冲池"><a href="#4、额外的缓冲池" class="headerlink" title="4、额外的缓冲池"></a>4、额外的缓冲池</h3><p>对于一些数据结构本身的内存分配服务</p>
 <h1 id="关键特性"><a href="#关键特性" class="headerlink" title="关键特性"></a>关键特性</h1><p>前三个最重要：</p>
 <blockquote>
 <p>1、插入缓冲</p>
@@ -334,7 +335,7 @@
 <p>5、刷新邻接页</p>
 </blockquote>
 <h2 id="1、插入缓冲"><a href="#1、插入缓冲" class="headerlink" title="1、插入缓冲"></a>1、插入缓冲</h2><h3 id="1、insert-buffer"><a href="#1、insert-buffer" class="headerlink" title="1、insert buffer"></a>1、insert buffer</h3><blockquote>
-<p>数据插入的时候还是按照主键的位置存放的，但是这个表如果有辅助索引，那么这条记录也会插入辅助索引，但是这时候他就不是顺序插入了，而是离散的插入访问。我们在对非聚集索引的插入的时候不会实时的插入，而是先判断有没有在缓冲池里面，有的话直接插入，没有的话，先放到一个insert buffer里面。后面再以一定的频率进行insertbuffer和非聚集索页子节点的merge操作。</p>
+<p>数据插入的时候还是按照主键的位置存放的，但是这个表如果有辅助索引，那么这条记录也会插入辅助索引，但是这时候他就不是顺序插入了，而是离散的插入。我们在对非聚集索引的插入的时候不会实时的插入，而是先判断有没有在缓冲池里面，有的话直接插入，没有的话，先构造一个searchkey，放到一个insert buffer里面。后面再以一定的频率进行insertbuffer和非聚集索页子节点的merge操作。</p>
 <p><strong>changebuffer的存在让普通索引优于唯一索引。</strong>普通索引和唯一索引的查询效率差不多，对于已经在内存的数据更新也差不多。但是对于没有在内存的数据更新操作差很多，因为唯一索引为了保证唯一性，会把数据从磁盘读到内存，这一步是数据库成本最高的操作之一。</p>
 <p>insert buffer 升级为了 change buffer，对插入更新删除操作都准备了缓冲</p>
 <h3 id="2、insert-buffer的内部实现"><a href="#2、insert-buffer的内部实现" class="headerlink" title="2、insert buffer的内部实现"></a>2、insert buffer的内部实现</h3><p>全局唯一的b+树的形式，负责对<font color='red'><u><em><strong>所有表</strong></em></u></font>的辅助索引进行insert buffer，存放在共享表空间，就是ibdata1。但是我们知道，我们可以有独立表ibdata，但是恢复的时候最好用共享表里面的。</p>
@@ -395,7 +396,7 @@
 <h3 id="2、表结构定义文件"><a href="#2、表结构定义文件" class="headerlink" title="2、表结构定义文件"></a>2、表结构定义文件</h3><p>这个文件的后缀是.frm，每个文件都会有这个一个frm文件，记录了该表的表结构定义</p>
 <h3 id="3、Innodb存储引擎文件"><a href="#3、Innodb存储引擎文件" class="headerlink" title="3、Innodb存储引擎文件"></a>3、Innodb存储引擎文件</h3><h4 id="1、表空间文件"><a href="#1、表空间文件" class="headerlink" title="1、表空间文件"></a>1、表空间文件</h4><p>首当其冲的就是表空间文件，情况下我们会放到ibdata那个文件里面，但是我们可以通过设置一个参数去产生一个自己表的独立表空间，然后这些<font color='red'><u><em><strong>独立的表空间记录该表的数据，索引信息，其余的还是放在共享表空间里面。</strong></em></u></font></p>
 <h4 id="2、redolog"><a href="#2、redolog" class="headerlink" title="2、redolog"></a>2、redolog</h4><blockquote>
-<p>有两部分组成：redo log buffer缓冲，redo log File，它为了防止断电导致数据丢失的问题.当有一条记录需要更新的时候，InnoDB 引擎就会先更新内存（同时标记为脏页），然后将本次对这个页的修改记录到redolog buffer里面，然后按照一定的机制刷回redolog文件</p>
+<p>他是引擎层的文件，它为了防止断电导致数据丢失的问题。他的使用流程是：当有一条记录需要更新的时候，InnoDB 引擎就会先更新内存（同时标记为脏页），然后将本次对这个页的修改记录到redolog buffer里面，然后按照一定的机制刷回redolog文件。这里两段式提交， redo log 和 binlog 的数据一致性。</p>
 <p>后续，InnoDB 引擎会在适当的时候，由后台线程将缓存在 Buffer Pool 的脏页刷新到磁盘里，这就是 <strong>WAL （Write-Ahead Logging）技术</strong>。</p>
 <p><font color='red'><u><em><strong>WAL 技术指的是， MySQL 的写操作并不是立刻写到磁盘上，而是先写日志，然后在合适的时间再写到磁盘上。</strong></em></u></font></p>
 <p>主要有下面几个时机：</p>
@@ -472,8 +473,8 @@
 <p><strong>MySQL为什么有时候会选错索引？</strong></p>
 <blockquote>
 <p>优化器是找到一个最优的方案，以最小的代价去执行。</p>
-<p>1)我们是根据基数来估计记录数，那基数是怎么得到的？是通过采样统计。InnoDB 默认会选择 N 个数据页，统计这些页面上的不同值，得到一个平均值，然后乘以这个索引的页面数，就得到了基数。</p>
-<p>2)优化器还要判断，执行这个语句本身要扫描多少行，</p>
+<p>1)我们是根据基数来估计行数，那基数是怎么得到的？是通过采样统计。InnoDB 默认会选择 N 个数据页，统计这些页面上的不同值，得到一个平均值，然后乘以这个索引的页面数，就得到了基数。</p>
+<p>2)还有一个问题就是优化器还要判断，执行这个语句本身要扫描多少行，</p>
 <p>解决方法？</p>
 <p>1）forceindex</p>
 <p>2）<strong>修改语句，引导 MySQL 使用我们期望的索引</strong></p>
@@ -514,8 +515,10 @@
 <p>查看：show index from XX</p>
 <h4 id="2、fast-index-create"><a href="#2、fast-index-create" class="headerlink" title="2、fast index create"></a><font color='red'><u><em><strong>2、fast index create</strong></em></u></font></h4><p>在创建索引的表加上一个S锁不需要重建表，删除索引只需要更新内部视图。<font color='red'><u><em><strong>但是不能做一些更新操作。</strong></em></u></font></p>
 <h4 id="4、Online-DDL"><a href="#4、Online-DDL" class="headerlink" title="4、Online DDL"></a><font color='red'><u><em><strong>4、Online DDL</strong></em></u></font></h4><p>允许在辅助索引创建的同时，还允许insert update等DML操作</p>
-<p>原理是：执行insert update delete这些操作的时候，<font color='red'><u><em><strong>先把操作日志写入一个缓存里面，然后，索引建立后重做表上面</strong></em></u></font></p>
-<p>新的alter table语法中，通过<font color='red'><u><em><strong>algorithm如果是 copy还是通过建立临时表的方式，如果是replace就是不需要临时表，</strong></em></u></font>是在InnoDB引擎内部完成，但是还是需要临时空间的。如果是instant，无需拷贝数据也无需重建整表</p>
+<p>有三种算法：</p>
+<p>copy：执行insert update delete这些操作的时候，<font color='red'><u><em><strong>先把操作日志写入一个缓存里面，然后，索引建立后重做表上面</strong></em></u></font></p>
+<p>replace ：replace就是不需要临时表。</p>
+<p>instant ：直接对元数据进行修改，无需拷贝数据也无需重建整表</p>
 <h4 id="5、cardinality值"><a href="#5、cardinality值" class="headerlink" title="5、cardinality值"></a><font color='red'><u><em><strong>5、cardinality值</strong></em></u></font></h4><p>他是一个统计信息，优化器会根据这个值来判断我们用不用索引，表示索引中唯一值的数据的估计值，如果是性别这种，重复的非常多，我们叫低选择性，不适合做索引。反之高选择性就比较适合，尤其是在高选择性属性字段里面取出一小部分数据，那就更有必要了。</p>
 <ul>
 <li><strong>统计的方式</strong>？</li>
@@ -544,7 +547,7 @@
 <li>数据访问更加顺序，</li>
 <li>减少缓冲池页的替换</li>
 </ul>
-<h4 id="5、索引下推ICP优化（只支持非聚集索引）"><a href="#5、索引下推ICP优化（只支持非聚集索引）" class="headerlink" title="5、索引下推ICP优化（只支持非聚集索引）"></a>5、索引下推ICP优化（只支持非聚集索引）</h4><p>原本我们通过索引进行查询的时候，首先根据索引查找记录，然后根据where条件过滤记录。ICP是在取出索引的同时，判断是否可以进行where条件的过滤，也就是讲where的部分过滤操作放到了存储引擎层</p>
+<h4 id="5、索引下推ICP优化（只支持非聚集索引）"><a href="#5、索引下推ICP优化（只支持非聚集索引）" class="headerlink" title="5、索引下推ICP优化（只支持非聚集索引）"></a>5、索引下推ICP优化（只支持非聚集索引）</h4><p>原本我们通过索引进行查询的时候，首先根据索引查找记录，然后根据where条件过滤记录。ICP是在取出索引的同时，判断是否可以进行where条件的过滤，也就是讲where的部分过滤操作放到了存储引擎层。<font color='red'><u><em><strong>联合索引</strong></em></u></font></p>
 <p>场景：</p>
 <p>假设表TB1上有索引IDX_C1_C2_C3(C1,C2,C3)，对于查询SELECT * FROM TB1 WHERE C1&#x3D;’XXX’ AND C3&#x3D;’XXX’</p>
 <p>在MySQL 5.6版本以前，由于缺少C2的过滤条件，Innodb存储引擎层只能使用索引IDX_C1_C2_C3按照C1&#x3D;’XXX’条件找出所有满足条件的索引记录，再根据这些索引记录去聚集索引中查找，将找到的表数据返回给MySQL Server层，然后由MySQL Server层使用C3&#x3D;’XXX’条件进行过滤得到最终结果。</p>
@@ -656,7 +659,7 @@
 <p>InnoDB有三种行锁的算法：</p>
 <p>Record Lock：单个行记录的锁</p>
 <p>Gap Lock：间隙锁，锁定一个范围，但不包括记录本身</p>
-<p>Next-Key Lock：Record Lock + Gap Lock</p>
+<p>Next-Key Lock（临建锁）：Record Lock + Gap Lock 左开右闭</p>
 </blockquote>
 <blockquote>
 <blockquote>
@@ -674,7 +677,7 @@
 <blockquote>
 <p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20230805221422216.png" alt="image-20230805221422216"></p>
 </blockquote>
-<h2 id="2、一致性非锁定读（快照读）"><a href="#2、一致性非锁定读（快照读）" class="headerlink" title="2、一致性非锁定读（快照读）"></a>2、一致性非锁定读（快照读）</h2><p>一致性非锁定读是指InnoDb通过多版本控制（MVCC）的方式读一个我能看到的数据。就算读取的那一行正在做一些dml操作，但是我不会去等，我会直接去读一个快照数据。</p>
+<h2 id="2、一致性非锁定读（快照读）"><a href="#2、一致性非锁定读（快照读）" class="headerlink" title="2、一致性非锁定读（快照读）"></a>2、一致性非锁定读（快照读）</h2><p>一致性非锁定读是指InnoDb通过多版本控制（MVCC）的方式读一个我能看到的数据。</p>
 <p>所以我们要讲一下这个MVCC，他这个就依赖于undolog版本链和readView。</p>
 <p>首先，每一行数据其实都有两个隐藏列，一个是trxid一个是rollpointer，trxid 表示最新修改事务的id，rollpointer表示指向旧版本undo log</p>
 <p>我们修改的数据的时候，我们把该行数据拷贝到 <code>undo log</code>作为旧版本。进行真正的修改操作，同时修改trxid 和roll_pointer，这样就形成了一个版本链条，那至于我们能看到哪个版本的就依赖于readview</p>
@@ -685,7 +688,7 @@
 <p>一个是creator_trx_id，就是你这个事务的id。</p>
 <p><font color='red'><u><em><strong>如果比mintexid小或者等于creatoridexid，我们可以看得见。</strong></em></u></font></p>
 <p>比如一条记录旧版本里面有三条记录：10，20，30。然后我们的事务id是15，m_ids里面有20，30。这里的min_trx_id就是20，我们的15比她小，说明还没有提交。因为隔离性所以肯定是看不到的，然后再去找更前面版本，我们就找到了10，发现10可以，所以我们这次读到的数据就是事务id为10的那一个版本。</p>
-<h2 id="3、一致性锁定读（当前读）"><a href="#3、一致性锁定读（当前读）" class="headerlink" title="3、一致性锁定读（当前读）"></a>3、一致性锁定读（当前读）</h2><p>有时候用户需要些显式的对读操作进行加锁保证一致性。<font color='red'><u><em><strong>还有update也是当前读</strong></em></u></font></p>
+<h2 id="3、一致性锁定读（当前读）"><a href="#3、一致性锁定读（当前读）" class="headerlink" title="3、一致性锁定读（当前读）"></a>3、一致性锁定读（当前读）</h2><p>有时候用户需要些显式的对读操作进行加锁保证一致性。 <font color='red'><u><em><strong>select for update还有update也是当前读</strong></em></u></font></p>
 <p>![image-20231115193544143](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115193544143.png)</p>
 <h2 id="5、锁问题（并发事务带来的问题）"><a href="#5、锁问题（并发事务带来的问题）" class="headerlink" title="5、锁问题（并发事务带来的问题）"></a>5、锁问题（并发事务带来的问题）</h2><h3 id="1、脏读"><a href="#1、脏读" class="headerlink" title="1、脏读"></a>1、脏读</h3><p><font color='blue'><u><em><strong>读到了其他事务没有提交的数据</strong></em></u></font>，违反了隔离性。但是脏读发生的隔离级别最少也得是read uncommitted，而我们的数据库默认是可重复读，所以一般在生产环境中，发生的并不多。</p>
 <h3 id="2、不可重复读-or-幻读"><a href="#2、不可重复读-or-幻读" class="headerlink" title="2、不可重复读 or 幻读"></a>2、不可重复读 or 幻读</h3><p>不可重复读：两次读，读的不一样。</p>
@@ -1012,7 +1015,7 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h1><h2 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h2><p>就是：“准备一组算法，并将每一个算法封装起来，使得它们可以互换。<strong>翻译一下就是</strong>，运行时我给你这个类的方法传不同的“key”，你这个方法会执行不同的业务逻辑。<strong>细品一下，这不就是 if else 干的事吗？</strong></p>
+                    <h1 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h1><h2 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h2><p><strong>是一种 if else 的优化方法</strong>，一个策略接口由不同的实现策略，传进来不同的参数返回不同的策略。</p>
 <p>但是原始的策略模式，他如果遇到参数是可变的，那他依旧会尽力if else的阶段，那就意义不大。所以我们的</p>
 <p>优化方法就是枚举类+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的，</p>
 <p>抽奖的时候根据抽奖算法的id是1还是2，直接去map里面get就可以；生成订单id的时候用雪花还是美团哪一种方法，直接去map里面找</p>
@@ -1569,6 +1572,7 @@
 <blockquote>
 <p><font color='green'><u><em><strong>打家劫舍(一)</strong></em></u></font>：这个比较正常。数组的意思是前i个</p>
 <p><font color='green'><u>*** 打家劫舍(二)***</u></font>：多了一个环形的条件，其实就是分两种情形，第一类要第一个不要最后一个；第二不要第一个（dp[0] &#x3D; 0）要最后一个。数组的意义也是前i个。</p>
+<p><font color='green'><u><em><strong>打家劫舍三</strong></em></u></font> ：分两种状态，直接dfs返回的时候，用new int[2]返回两种状态下的不同最大值。一种状态是选中，一种是不选中</p>
 </blockquote>
 <blockquote>
 <p><font color='green'><u><em><strong>矩形覆盖</strong></em></u></font> 简单 dp[i] &#x3D; dp[i - 1] + dp[i - 2] ;</p>
@@ -1662,6 +1666,136 @@
                         <p>
                             <a
                                 href="/2023/09/30/shua/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/09/30/hot/"
+                            aria-label=": Hot100"
+                        >
+                            Hot100
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-09-30T00:00:00+08:00">
+	
+		    Sep 30, 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>最长回文串：动态规划，boolean</p>
+<p>没有重复字符的最长子串：借助map的滑动窗口</p>
+<p>寻找两个正序数组的中位数：</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/container-with-most-water/">盛最多水的容器</a> : 双指针</p>
+<p>Lru : 多练，两个指针+Map</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/regular-expression-matching/">正则表达式匹配</a>: 动态规划，条件较复杂	</p>
+<p>三数之和：两个循环，第二个循环用前后双指针。两个循环里面都要做去重，都是和前一个对比</p>
+<p>括号生产：较简单的dfs</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/group-anagrams/">字母异位词分组</a> : 简单的</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/sliding-window-maximum/">滑动窗口最大值</a> :  单调队列，用linkedlist</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/next-permutation?envType=featured-list&envId=2cktkvj?envType=featured-list&envId=2cktkvj">下一个排列</a> : 要推导一下，先一个循环从右往左找到第一个a[i] &lt;a[i + 1]，然后再用一个和上面那个同等级的循环去从右往左找到第一个小于a[i]的交换，然后Arrays.sort(nums, left + 1, n);</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/longest-valid-parentheses/">最长有效括号</a> : <font color='blue'><u><em><strong>动态规划</strong></em></u></font> 很有趣</p>
+<p>不同路径 ： 动态规划</p>
+<p>全排列：dfs 加一个辅助的set</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/subarray-sum-equals-k/"> 和为 K 的子数组</a> ：<font color='blue'><u><em><strong>不是动态规划</strong></em></u></font> <font color='blue'><u><em><strong>是前缀和 + map</strong></em></u></font>, 很有趣。1 2 3 4 5 6, 每次判断前j个减去前i个是不是等于k，用map优化</p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/partition-equal-subset-sum/">分割等和子集</a> :  <font color='red'><u><em><strong>动态规划</strong></em></u></font> 这个非常重要, 背包问题，<font color='red'><u><em><strong>int[n] [target]</strong></em></u></font>  </p>
+<p><font color='red'><u><em><strong><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/jump-game/">跳跃游戏</a>：不是动态规划，从小遍历到n，然后每次遍历判断</strong></em></u></font></p>
+<details>
+    for (int i = 0; i < nums.length; i++) {
+            if (k < i) {
+                return false;
+            }
+            k = Math.max(k, i + nums[i]);
+        }
+</details>
+
+<p>电话号码的字母组合 : 回溯</p>
+<p><font color='red'><u><em><strong><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/daily-temperatures/">每日温度</a> 如果能想到用单调栈 就会比较简单。遍历的每次都先从栈里面弹出比自己小的。</strong></em></u></font></p>
+<details>
+  de.offerLast(0);
+        for (int i = 1; i < n; i++) {
+            while (!de.isEmpty() && temperatures[de.peekLast()] < temperatures[i]) {
+                int t = de.pollLast();
+                res[t] = i - t;
+            }
+            de.offerLast(i);
+        }
+</details>
+
+<p><font color='red'><u><em><strong>搜索旋转排序数组 : 二分法，</strong></em></u></font></p>
+<details>
+  if (nums[0] <= nums[mid]) {
+            if ( target <= nums[mid] && target >= nums[left] ) {
+                return find(nums, target, left, mid - 1);
+            } else {
+                return find(nums, target, mid + 1, right);
+            }
+        } else {
+            if ( target >= nums[mid] && target <= nums[right]) {
+                return find(nums, target, mid + 1, right);
+            } else {
+                return find(nums, target, left, mid - 1);
+            }
+        }
+</details>
+
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/course-schedule/">课程表</a> : DFS 分三个状态，分别是未搜索0，搜索中1， 结束2. <font color='red'><u><em><strong>多做————–</strong></em></u></font></p>
+<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/binary-tree-maximum-path-sum/">二叉树中的最大路径和</a> : 回溯，挺有意思的</p>
+<details>
+  int Lson = Math.max(recurtion(root.left), 0);
+        int Rson = Math.max(recurtion(root.right), 0);
+        maxV = Math.max(maxV, root.val + Lson + Rson);
+        return root.val + Math.max(Lson, Rson);
+</details>
+
+
+
+
+
+
+
+<p>简单的一些：</p>
+<p>旋转矩阵</p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/09/30/hot/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
@@ -2784,142 +2918,6 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                         <p>
                             <a
                                 href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A03/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Comment and share
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2023/07/08/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/"
-                            aria-label=": 输入网络，期间发生了什么？"
-                        >
-                            输入网络，期间发生了什么？
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-07-08T00:00:00+08:00">
-	
-		    Jul 08, 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <h1 id="输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？"><a href="#输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？" class="headerlink" title="输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？"></a>输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？</h1><h2 id="1、解析url"><a href="#1、解析url" class="headerlink" title="1、解析url"></a>1、解析url</h2><p>首先，就是对我们输入的url进行解析，一般可以得到三个信息：协议，web服务器，文件的路径</p>
-<p>拿到这三个信息之后我们就可以包装成一个http请求信息</p>
-<p>![image-20230728193306158](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193306158.png)</p>
-<p>如图所示，一个是请求一个是响应报文</p>
-<p>那我们生产出一个消息之后就要开始发送？那应该怎么发？往哪里发？</p>
-<p>这就需要下面的知识。</p>
-<h2 id="地址查询-——-DNS"><a href="#地址查询-——-DNS" class="headerlink" title="地址查询 —— DNS"></a>地址查询 —— DNS</h2><p>基于我们已经拿到的web服务器域名，我们可以先去浏览器缓存里面找有没有，如果有，就直接返回，如果没有那就问操作系统的缓存再去看hosts文件，如果都没有，那就看走下面</p>
-<p>客户端首先会发出一个 DNS 请求，问 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 是啥，并发给本地 DNS 服务器（也就是客户端的 TCP&#x2F;IP 设置中填写的 DNS 服务器地址）。</p>
-<p>本地域名服务器收到客户端的请求后，如果缓存里的表格能找到 <a target="_blank" rel="noopener" href="http://www.xx.com,则它直接返回/">www.xx.com，则它直接返回</a> IP 地址。如果没有，本地 DNS 会去问它的根域名服务器：“老大， 能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？” 根域名服务器是最高层次的，它不直接用于域名解析，但能指明一条道路。</p>
-<p>根 DNS 收到来自本地 DNS 的请求后，发现后置是 .com，说：“<a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 这个域名归 .com 区域管理”，我给你 .com 顶级域名服务器地址给你，你去问问它吧。”</p>
-<p>本地 DNS 收到顶级域名服务器的地址后，发起请求问“老二， 你能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？”</p>
-<p>顶级域名服务器说：“我给你负责 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 区域的权威 DNS 服务器的地址，你去问它应该能问到”。</p>
-<p>本地 DNS 于是转向问权威 DNS 服务器：“老三，<a href="http://www.xx.com对应的IP是啥呀？”">www.xx.com对应的IP是啥呀？”</a> server.com 的权威 DNS 服务器，它是域名解析结果的原出处。为啥叫权威呢？就是我的域名我做主。</p>
-<p>权威 DNS 服务器查询后将对应的 IP 地址 X.X.X.X 告诉本地 DNS。</p>
-<p>本地 DNS 再将 IP 地址返回客户端，客户端和目标建立连接</p>
-<p>![image-20230728193808617](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193808617.png)</p>
-<p>通过dns或者缓存获取到ip地址之后，我们就要为发送做一些准备，首先浏览器通过调用 Socket 库，来委托协议栈工作。</p>
-<p>![image-20230728193955912](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193955912.png)</p>
-<p>说是协议栈，其实就是中间tcp udp ip这些协议。那下面我们就来仔细的看看</p>
-<h2 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h2><p>tcp段的头如下所示：</p>
-<p>![image-20230728194108402](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728194108402.png)</p>
-<p>TCP 传输数据之前，要先三次握手建立连接</p>
-<p>前提：客户端 为closed状态，服务端变成listen状态</p>
-<p>连接：</p>
-<p>1、客户端向服务端发送连接syn，之后客户端处于syn-sent状态；</p>
-<p>2、服务端接收到这个消息之后，会返回一个syn+ack，之后服务端处于syn-rcvd状态</p>
-<p>3、客户端收到这个之后，再给服务端发送一个对syn的ack，之后客户端处于establish状态</p>
-<p>服务端收到ack也变成了establish状态</p>
-<p>所以三次握手目的是<strong>保证双方都有发送和接收的能力</strong>。</p>
-<p>假设我们已经建立了连接，我们要发送消息，但是消息要遵循tcp协议，他的消息大小是有限制的，不是每一次都可以发送全部消息。具体要求如下：</p>
-<p>![image-20230728195857751](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728195857751.png)</p>
-<ul>
-<li><code>MTU</code>：一个网络包的最大长度，以太网中一般为 <code>1500</code> 字节。</li>
-<li><code>MSS</code>：除去 IP 和 TCP 头部之后，一个网络包所能容纳的 TCP 数据的最大长度</li>
-</ul>
-<p>所以如果http请求消息超过mss，那么就要分段发送。</p>
-<p>到这里我们得到了一个tcp的报文段或者说包，下面我们就要把这个包发送给网络层，因为在传输层我们就是服务应用层，然后对好端口，确定好协议，之后的事情就不归传输层管控了。</p>
-<p>到这里，我们的数据包的格式如下所示：</p>
-<p>![image-20230728200405680](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728200405680.png)</p>
-<h2 id="定位IP"><a href="#定位IP" class="headerlink" title="定位IP"></a>定位IP</h2><p>ip协议的最重要的功能就是寻址和路由，他要做到这两点就需要你遵循ip协议，那么遵循的要求就是你加一个ip头![image-20230728200452235](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728200452235.png)</p>
-<p>加上ip头之后我们就知道了我们的源ip和目的ip地址，那么起点站和终点站就已经知道了</p>
-<p>可以现在又有一个小问题，那就是路径怎么规划呢？这时候就需要用到Mac地址</p>
-<h2 id="mac地址"><a href="#mac地址" class="headerlink" title="mac地址"></a>mac地址</h2><p><img src="/../images/typora-user-images/image-20230728202408619.png" alt="image-20230728202408619"></p>
-<ul>
-<li>先查询 ARP 缓存，如果其中已经保存了对方的 MAC 地址，就不需要发送 ARP 查询，直接使用 ARP 缓存中的地址。</li>
-<li>而当 ARP 缓存中不存在对方 MAC 地址时，则发送 ARP 广播查询</li>
-</ul>
-<p>也就是说到了网络接口层，要发了，结果不知道往哪里发，这时候就按照上面两步得到mac地址</p>
-<p>因为上面已经得到了ip地址，所以直接喊话：这个 IP 地址是谁的？请把你的 MAC 地址告诉我，就得到mac地址了。</p>
-<p>到这里数据包还差最后一层包装</p>
-<h2 id="出口–网卡"><a href="#出口–网卡" class="headerlink" title="出口–网卡"></a>出口–网卡</h2><p>![image-20230728204942674](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728204942674.png)</p>
-<p>最后一层包装就是上面图片提到的报头和起始帧分界符和fcs帧校验序列</p>
-<p>网卡驱动获取网络包之后，会将其<strong>复制</strong>到网卡内的缓存区中，接着会在其<strong>开头加上报头和起始帧分界符，在末尾加上用于检测错误的帧校验序列</strong>。</p>
-<p>到这里数据包就真正的包装结束了，最后网卡会将包转为电信号，通过网线发送出去。！！</p>
-<h2 id="送别者—交换机"><a href="#送别者—交换机" class="headerlink" title="送别者—交换机"></a>送别者—交换机</h2><p>交换机的设计是将网络包<strong>原样</strong>转发到目的地。交换机工作在 MAC 层，也称为<strong>二层网络设备</strong>。</p>
-<p>一般在网线接口啊这些地方，其实路由器也可以作为交换机。</p>
-<h3 id="交换机的包接收操作"><a href="#交换机的包接收操作" class="headerlink" title="交换机的包接收操作"></a>交换机的包接收操作</h3><p>交换机里的模块将电信号转换为数字信号。</p>
-<p>然后通过包末尾的fcs校验错误，没问题就放到缓存区，这部分操作基本和计算机的网卡相同，但交换机的工作方式和网卡不同。</p>
-<p>计算机的网卡本身具有 MAC 地址，并通过核对收到的包的接收方 MAC 地址判断是不是发给自己的，如果不是发给自己的则丢弃；相对地，交换机的端口不核对接收方 MAC 地址，而是直接接收所有的包并存放到缓冲区中。因此，和网卡不同，<strong>交换机的端口不具有 MAC 地址</strong>。</p>
-<h3 id="查询MAC-地址表"><a href="#查询MAC-地址表" class="headerlink" title="查询MAC 地址表"></a>查询<strong>MAC 地址表</strong></h3><p>如果找到，就发送到相应的端口，如果找不到，那说明该mac地址的设备还没有向我们交换机发送过包，那这时候我们主动的向除了源端口的所有端口都发送一遍，因为后面的设备他自己都有检测功能，所以不需要担心</p>
-<p>这时候要么就发送到位，要么就可能离开子网了，离开子网需要用到路由器</p>
-<h2 id="出境大门–路由器"><a href="#出境大门–路由器" class="headerlink" title="出境大门–路由器"></a>出境大门–路由器</h2><h3 id="路由器的包接收操作"><a href="#路由器的包接收操作" class="headerlink" title="路由器的包接收操作"></a>路由器的包接收操作</h3><p>首先，电信号到达网线接口部分，路由器中的模块会将电信号转成数字信号，然后通过包末尾的 <code>FCS</code> 进行错误校验。</p>
-<p>如果没问题则检查 MAC 头部中的<strong>接收方 MAC 地址</strong>，看看是不是发给自己的包，如果是就放到接收缓冲区中，否则就丢弃这个包。</p>
-<p>完成包接收操作之后，路由器就会<strong>去掉</strong>包开头的 MAC 头部。</p>
-<p><strong>MAC 头部的作用就是将包送达路由器</strong>，其中的接收方 MAC 地址就是路由器端口的 MAC 地址。因此，当包到达路由器之后，MAC 头部的任务就完成了，于是 MAC 头部就会<strong>被丢弃</strong>。</p>
-<p>接下来，路由器会根据 MAC 头部后方的 <code>IP</code> 头部中的内容进行包的转发操作。</p>
-<h3 id="路由器的发送操作"><a href="#路由器的发送操作" class="headerlink" title="路由器的发送操作"></a>路由器的发送操作</h3><p>首先，我们需要根据<strong>路由表的网关列</strong>判断对方的地址。</p>
-<ul>
-<li>如果网关是一个 IP 地址，则这个IP 地址就是我们要转发到的目标地址，<strong>还未抵达终点</strong>，还需继续需要路由器转发。</li>
-<li>如果网关为空，则 IP 头部中的接收方 IP 地址就是要转发到的目标地址，也是就终于找到 IP 包头里的目标地址了，说明<strong>已抵达终点</strong>。</li>
-</ul>
-<p>反正我们从路由表知道了ip地址，那么我们同样用这个地址去查mac地址</p>
-<p>接下来是发送方 MAC 地址字段，这里填写输出端口的 MAC 地址。还有一个以太类型字段，填写 <code>0800</code> （十六进制）表示 IP 协议。</p>
-<p>网络包完成后，接下来会将其转换成电信号并通过端口发送出去。这一步的工作过程和计算机也是相同的。</p>
-<p>发送出去的网络包会通过<strong>交换机</strong>到达下一个路由器。由于接收方 MAC 地址就是下一个路由器的地址，所以交换机会根据这一地址将包传输到下一个路由器。</p>
-<h1 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h1><p>这边举个例子![image-20230729000740012](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230729000740012.png)</p>
-<p>子网1某个设备想要发送数据给子网2的某个设备</p>
-<p>首先源ip和目的ip是知道的，如果只是简单的arp群发这个ip问是谁的ip地址，其实是找不到的，所以判断是否为同一子网，如果不是，就把目的mac改成网关的mac，然后数据发送到网关，这时候官网一查mac地址，发现属于子网2的设备，这时候修改源mac为自己的mac，修改目的mac为设备的地址，从子网2的网卡发出。</p>
-<p>大多数情况下一个子网的默认网关就是一个，就基本代表着出口。复杂情况就需要某种选择算法了</p>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/07/08/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
