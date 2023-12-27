@@ -1163,7 +1163,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="1、Java内存区域"><a href="#1、Java内存区域" class="headerlink" title="1、Java内存区域"></a>1、Java内存区域</h1><p>主要有五大部分：程序计数器（私有）、虚拟机栈（私有）、本地方法栈（私有）、堆（公有）、方法区（公有），不过在8之后，永久代就已经被元空间代替了，而元空间在本地内存。</p>
+                    <h1 id="1、JVM内存结构"><a href="#1、JVM内存结构" class="headerlink" title="1、JVM内存结构"></a>1、JVM内存结构</h1><p>主要有五大部分：程序计数器（私有）、虚拟机栈（私有）、本地方法栈（私有）、堆（公有）、方法区（公有），不过在8之后，永久代就已经被元空间代替了，而元空间在本地内存。</p>
 <p><img src="/../images/JVM/java-runtime-data-areas-jdk1.8.png" alt="Java 运行时数据区域（JDK1.8 ）"></p>
 <p>1、程序计数器</p>
 <blockquote>
@@ -1257,7 +1257,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 <h2 id="4、解析"><a href="#4、解析" class="headerlink" title="4、解析"></a>4、解析</h2><p>把常量池中的符号引用转化为直接引用的阶段。有类和接口解析，字段解析，方法解析等。实际上就是先把类加载到方法区里面，然后返回相应直接引用。</p>
 <p>我们拿字段解析举个例子，先解析这个字段表所在的类或接口，假设成功解析为C。我们就在C的字段表里面找有没有匹配的简单名称和字段描述符，如果有就直接返回。没有就找C的接口和父接口，看看有没有匹配的简单名称和字段描述符。如果又返回，没有就按继承关系找父类有没有匹配的，否则就失败。</p>
 <p>但是方法解析有一点不一样，他有一部分是不能解析的，如果 Human h &#x3D; new Man。这种可能方法调用不能确定，这里就解析不了。能解析的叫非虚方法，不能解析的叫虚方法。虚方法需要使用另外一种调用形式就是分派，分派分为静态动态，虚方法静态分派实现重载（静态类型），动态分派实现重写（invokevirtual，先找到这个动态类型，如果有这个方法那就直接用，如果没有，我们再去找他的父类）。</p>
-<h2 id="5、初始化"><a href="#5、初始化" class="headerlink" title="5、初始化"></a>5、初始化</h2><p>初始化就是执行类构造器的过程，而这个类构造器做的事情就是对类中所有类变量的赋值操作和所有静态语句块的操作。</p>
+<h2 id="5、初始化"><a href="#5、初始化" class="headerlink" title="5、初始化"></a>5、初始化</h2><p>初始化就是执行类构造器的过程，而这个类构造器做的事情就是对类中所有类变量的赋值操作和所有<font color='green'><u><em><strong>静态</strong></em></u></font>语句块的操作。</p>
 <p>顺序就是语句在源文件的顺序</p>
 <h1 id="5、类加载器"><a href="#5、类加载器" class="headerlink" title="5、类加载器"></a>5、类加载器</h1><p>类加载器的作用就是实现类加载过程中的加载这一步，通过双亲委派机制去维护一个三层的组织架构。</p>
 <p>三层：</p>
@@ -1277,7 +1277,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 </blockquote>
 <p>2、高层的类加载器（<code>SharedClassLoader</code>）借助子类加载器（ <code>WebAppClassLoader</code>）来加载业务类</p>
 <blockquote>
-<p>解决方案：线程上下文类加载器。	线程上下文类加载器的原理是将一个类加载器保存在线程私有数据里，跟线程绑定，然后在需要的时候取出来使用。这个类加载器通常是由应用程序或者容器（如 Tomcat）设置的。</p>
+<p>解决方案：线程上下文类加载器。	线程上下文类加载器的原理是将一个类加载器保存在线程私有数据里，跟线程绑定，然后在需要的时候取出来使用。这个类加载器通常是由应用程序或者容器（如 Tomcat）设置的。类加载冲突问题</p>
 </blockquote>
 <p>3、OSGI实现模块化热部署，把类加载从双亲委派变成更加复杂的网状结构。</p>
 <h2 id="模块化"><a href="#模块化" class="headerlink" title="模块化"></a>模块化</h2><p><strong>什么是JDK9模块化系统</strong></p>
@@ -1397,9 +1397,10 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 <p>3）重新标记，因为和用户线程一起进行，对于漏标问题的解决方案是（写后屏障+增量更新（<font color='green'><u><em><strong>就是把新增加的引用进行记录</strong></em></u></font>））。（STW）</p>
 <p>4）并发清除，清除对象，因为策略是标记-清除，不需要移动所以同样选择了并发的方式。</p>
 <p>缺点：</p>
-<p>1）对处理资源敏感，而且大于1&#x2F;4。CMS的默认收集线程数量是（处理器数量+3）&#x2F;4</p>
+<p>1）对处理资源敏感，而且大于1&#x2F;4。CMS的默认收集线程数量是（处理器数量+3）&#x2F;4。</p>
 <p>2）无法处理浮动垃圾（用户线程使得原来某些对象不是垃圾，但是当 CMS 进行清理的时候变成了垃圾，从可达到不可达，但是没扫出来），有可能触发full gc</p>
 <p>3）用的是标记清除，会有内存碎片</p>
+<p>​	</p>
 <h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><blockquote>
 <p>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。</p>
 <p>为了加快搜索，G1是使用card table和RSet。</p>
@@ -1465,7 +1466,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 </ul>
 <h2 id="JVM调优参数"><a href="#JVM调优参数" class="headerlink" title="JVM调优参数"></a>JVM调优参数</h2><p>jar包启动的时候java和 -jar直接可以去配置jvm的参数</p>
 <h2 id="JVM调优的参数有哪些？"><a href="#JVM调优的参数有哪些？" class="headerlink" title="JVM调优的参数有哪些？"></a>JVM调优的参数有哪些？</h2><blockquote>
-<p>设计垃圾回收器 </p>
+<p>换垃圾回收器 </p>
 <p>堆空间大小</p>
 <p>虚拟机栈大小</p>
 <p>eden区和幸存者区的大小比例</p>
@@ -1473,7 +1474,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 </blockquote>
 <h2 id="JVM调优工具"><a href="#JVM调优工具" class="headerlink" title="JVM调优工具"></a>JVM调优工具</h2><blockquote>
 <p><font color='red'><u><em><strong>命令：</strong></em></u></font></p>
-<p>jsp + jstack 查看进程内线程的堆栈信息</p>
+<p>jps + jstack 查看进程内线程的堆栈信息</p>
 <p>jmap -dump 生成一个内存快照的信息</p>
 <p>jstat ：JVM性能监测工具。 显示伊甸区 幸存者区、老年区的比例</p>
 <p><font color='red'><u><em><strong>可视化工具：</strong></em></u></font></p>

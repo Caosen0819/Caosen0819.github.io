@@ -233,157 +233,6 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                            aria-label=": 章节：10"
-                        >
-                            章节：10
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-04-04T00:00:00+08:00">
-	
-		    04 Apr 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <p>第十节我们可以从注解出发看项目。<br>DBRouter注解写好后，肯定要配备切面类DBRouterJoinPoint（这里面包括了路由策略和路由配置几库几表），里面有一个@Around注解，表示包围一个函数，也就是可以在函数执行前做一些事情，也可以在函数执行后做一些事情。</p>
-<p>项目中是先拿到Key字段（uId），判断是不是空，是的话Runtime异常，不是的话就去拿uId这个字段对应的值，按照例子就是Uhdgkw766120d。</p>
-<p>拿到值之后，那么下面就是拿着这个值去做路由了（该怎么走），这部分内容被写在DBRouterStrategyHashCode的doRouter里面。其实就是hash的扰动函数，通过设定的算法得到去拿个库哪个表，把这两个信息交给DBContextHolder（一个标识类，用来存储当前数据源的key及状态判断），下面就要向数据集里面写东西了，jp.process(),接下去就是mybatis拦截器的任务了。</p>
-<p>自定义拦截器需要实现org.apache.ibatis.plugin.Interceptor接口, 并在接口上添加@Intercepts注解。<br>@Intercepts注解是通过一个@Signature注解(拦截点),来指定拦截那个对象里面的某个方法。<br>@Signature注解需要定义三个东西：</p>
-<p>定义拦截的类 Executor、ParameterHandler、StatementHandler、ResultSetHandler当中的一个<br>Class&lt;?&gt; type();</p>
-<p>在定义拦截类的基础之上，在定义拦截的方法<br>String method();</p>
-<p>在定义拦截方法的基础之上在定义拦截的方法对应的参数，<br>因方法里面可能重载，不指定参数列表，不能确定是对应拦截的方法<br>Class&lt;?&gt;[] args();</p>
-<p>我们查看代码，发现拦截的类选择的是StatementHandler，目前不太了解mybatis的源码，但是查询资料之后发现毫无疑问是四大对象最重要的一个，它的任务就是和数据库对话。在它这里会使用parameterHandler和ResultSetHandler对象为我们绑定SQL参数和组装最后的结果返回。</p>
-<p>拦截的方法是prepare，预编译阶段</p>
-<p>参数是{Connection.class, Integer.class}</p>
-<p>回到那个自定义拦截器类 继承了Interceptor。intercept里面就放着怎么把sql变成我们想要的那种动态分库分表的逻辑。<br>首先几行代码拿到dbRouterStrategy注解，看他是不是true<br>如果是，我们去拿sql语句，如下所示：</p>
-<p>INSERT INTO user_strategy_export<br>        (u_id, activity_id, order_id, strategy_id, strategy_mode,<br>         grant_type, grant_date, grant_state, award_id, award_type,<br>         award_name, award_content, uuid, create_time, update_time)<br>        VALUES<br>        (?,?,?,?,?,<br>         ?,?,?,?,?,<br>         ?,?,?,now(),now())</p>
-<p>他利用一个matcher找到 INTO user_strategy_export这段语句。为什么？因为INTO后面跟着的就是表，至于是哪个表，在上面已经提到了，就是DBContextHolder。这里就实现了分表。</p>
-<p>至于分库，我们重写了determineCurrentLookupKey方法，这个方法被determineTargetDataSource调用，determineTargetDataSource被getConnection调用，getConection可以追溯到DataSource接口的getConnection抽象方法。但是我还不知道determineCurrentLookupKey什么时候被调用？？</p>
-<p>所以就去查了查多数据源的处理机制的一些文章，发现和自己想的有区别，我一直以为调用DAO层的方法，应该先切面再切换数据源最后才是DAO的逻辑（毕竟我看不到什么时候切换数据源，但是DBRouter注解就是直勾勾的放在DAO方法上面的），结果文章中提到其实是先切换数据源，然后切面方法，最后DAO逻辑。文章给出的原因是事务中不支持数据源切换。<br>但是我打断点还是没找到调用determineCurrentLookupKey的那段代码，可惜。</p>
-<p>最后就是把这些配置到DataSourceAutoConfig，打包给我们的项目。</p>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Kommentieren und teilen
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
-                            aria-label=": 章节：7-10，同时回顾一下4-6的内容"
-                        >
-                            章节：7-10，同时回顾一下4-6的内容
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-04-04T00:00:00+08:00">
-	
-		    04 Apr 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <p>7-10，同时回顾一下4-6的内容</p>
-<p>第六节的重点是模版模式。</p>
-<p>模版模式是定义一个算法的骨架，并允许子类为一个或多个步骤提供实现。在第六节中这个算法骨架（抽象模版类）是AbstractDrawBase，这个类中有通用的比如对于抽奖结果的包装，也有抽象方法比如执行抽奖算法（这个在子类中实现）。小傅哥在这个基础上又把一些一些通用的数据服务抽象出新的一层DrawStrategySupport，这个算是一种优化，但是他本质也属于抽象模版类的一部分。</p>
-<p>而我们抽奖则需要抽奖策略（怎么个抽法），这就是第五节的东西—策略模式：</p>
-<p>对象的某个行为，在不同场景中有不同的实现方式，这样就可以将这些实现方式定义成一组策略，每个实现类对应一个策略，在不同的场景就使用不同的实现类，并且可以自由切换策略。</p>
-<p>其实看完第六节会发现第五节和第六节很像，也是抽象出了一个接口和一个抽象模版类，其他的子类继承抽象模版类实现randomDraw（）方法，不同的实现对应不同的算法，具体算法我们自己可以修改逻辑、补充内容等操作。</p>
-<p>在这时候我们发现策略模式和模版模式很像，但是是有一些区别的：</p>
-<p>模板模式：问题处理的流程已经被定义好，父类实现通用的逻辑（当然你也可以再抽象出一层），子类实现个性化逻辑。</p>
-<p>策略模式：父类定义一组抽象算法，子类自己实现自己的。每个策略完成的功能是重复的，同一时间，只能选择其中的一种，即互斥的</p>
-<p>策略模式核心在使用者的策略，按照自己的策略去替换。模板方法模式核心在子类的怎么实现。</p>
-<p>举个例子：</p>
-<p>模版模式： 父类：早上6点吃饭，晚上6点吃面。子类1：早上6点吃稀饭，晚上6点吃泡面。子类2：早上6点吃干饭，晚上6点吃挂面。</p>
-<p>策略模式：父类：早晚进食。子类1:早上5点吃面，晚上5点吃面。子类2:早上7点吃饭，晚上7点吃饭。子类3:早上不吃，晚上不吃…</p>
-<p>第八节：状态模式</p>
-<p>当一个对象的内在状态改变时，允许改变其行为，把不同状态当做一个类，解决对象在多种状态转换时，需要对外输出不同的行为的问题。</p>
-<p>同样的有抽象模版类（AbstractState，当然你要自己提炼一个接口大概也没什么问题），多个具体实现的子类。要有一个Context类，这个类持有State，负责保持并切换当前的状态，当状态变化时，修改这个State。在项目中应该是活动创建的时候初始化状态，后续收到一些通知（比如：快递公司揽件，发送目的地，菜鸟驿站收到快递）修改活动中的状态变量就可以，非常方面。</p>
-<p>第九节：ID生成策略</p>
-<p>也是策略模型，因为目前就一个id生成的要求，也无需什么流程啊，也不涉及什么状态改变，不同情境下使用不同类型的id，所以策略模式最佳。</p>
-<p>第十节：分库分表</p>
-<p>内容多，也是这几天最花时间的，bug奇多，自己不小心把application.yml文件里面的配置写错了，然后报空指针，找不到bean，我还以为自己打包有问题呢；因为自己的版本和傅哥的不太一样，总报一些依赖错误，还有什么commons-lang、commons-beanutils依赖缺失。自己的的项目工程包名是自定义的，和傅哥的cn.itedus.lottery和那个cn.bugstack不一样，中途修改的时候感觉对理解还是有益处的。</p>
-<p>之后再对第十节做一次总结，加深感悟。</p>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Kommentieren und teilen
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
                             href="/2023/04/04/JVM/"
                             aria-label=": JVM"
                         >
@@ -409,7 +258,7 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="1、Java内存区域"><a href="#1、Java内存区域" class="headerlink" title="1、Java内存区域"></a>1、Java内存区域</h1><p>主要有五大部分：程序计数器（私有）、虚拟机栈（私有）、本地方法栈（私有）、堆（公有）、方法区（公有），不过在8之后，永久代就已经被元空间代替了，而元空间在本地内存。</p>
+                    <h1 id="1、JVM内存结构"><a href="#1、JVM内存结构" class="headerlink" title="1、JVM内存结构"></a>1、JVM内存结构</h1><p>主要有五大部分：程序计数器（私有）、虚拟机栈（私有）、本地方法栈（私有）、堆（公有）、方法区（公有），不过在8之后，永久代就已经被元空间代替了，而元空间在本地内存。</p>
 <p><img src="/../images/JVM/java-runtime-data-areas-jdk1.8.png" alt="Java 运行时数据区域（JDK1.8 ）"></p>
 <p>1、程序计数器</p>
 <blockquote>
@@ -503,7 +352,7 @@
 <h2 id="4、解析"><a href="#4、解析" class="headerlink" title="4、解析"></a>4、解析</h2><p>把常量池中的符号引用转化为直接引用的阶段。有类和接口解析，字段解析，方法解析等。实际上就是先把类加载到方法区里面，然后返回相应直接引用。</p>
 <p>我们拿字段解析举个例子，先解析这个字段表所在的类或接口，假设成功解析为C。我们就在C的字段表里面找有没有匹配的简单名称和字段描述符，如果有就直接返回。没有就找C的接口和父接口，看看有没有匹配的简单名称和字段描述符。如果又返回，没有就按继承关系找父类有没有匹配的，否则就失败。</p>
 <p>但是方法解析有一点不一样，他有一部分是不能解析的，如果 Human h &#x3D; new Man。这种可能方法调用不能确定，这里就解析不了。能解析的叫非虚方法，不能解析的叫虚方法。虚方法需要使用另外一种调用形式就是分派，分派分为静态动态，虚方法静态分派实现重载（静态类型），动态分派实现重写（invokevirtual，先找到这个动态类型，如果有这个方法那就直接用，如果没有，我们再去找他的父类）。</p>
-<h2 id="5、初始化"><a href="#5、初始化" class="headerlink" title="5、初始化"></a>5、初始化</h2><p>初始化就是执行类构造器的过程，而这个类构造器做的事情就是对类中所有类变量的赋值操作和所有静态语句块的操作。</p>
+<h2 id="5、初始化"><a href="#5、初始化" class="headerlink" title="5、初始化"></a>5、初始化</h2><p>初始化就是执行类构造器的过程，而这个类构造器做的事情就是对类中所有类变量的赋值操作和所有<font color='green'><u><em><strong>静态</strong></em></u></font>语句块的操作。</p>
 <p>顺序就是语句在源文件的顺序</p>
 <h1 id="5、类加载器"><a href="#5、类加载器" class="headerlink" title="5、类加载器"></a>5、类加载器</h1><p>类加载器的作用就是实现类加载过程中的加载这一步，通过双亲委派机制去维护一个三层的组织架构。</p>
 <p>三层：</p>
@@ -523,7 +372,7 @@
 </blockquote>
 <p>2、高层的类加载器（<code>SharedClassLoader</code>）借助子类加载器（ <code>WebAppClassLoader</code>）来加载业务类</p>
 <blockquote>
-<p>解决方案：线程上下文类加载器。	线程上下文类加载器的原理是将一个类加载器保存在线程私有数据里，跟线程绑定，然后在需要的时候取出来使用。这个类加载器通常是由应用程序或者容器（如 Tomcat）设置的。</p>
+<p>解决方案：线程上下文类加载器。	线程上下文类加载器的原理是将一个类加载器保存在线程私有数据里，跟线程绑定，然后在需要的时候取出来使用。这个类加载器通常是由应用程序或者容器（如 Tomcat）设置的。类加载冲突问题</p>
 </blockquote>
 <p>3、OSGI实现模块化热部署，把类加载从双亲委派变成更加复杂的网状结构。</p>
 <h2 id="模块化"><a href="#模块化" class="headerlink" title="模块化"></a>模块化</h2><p><strong>什么是JDK9模块化系统</strong></p>
@@ -643,9 +492,10 @@
 <p>3）重新标记，因为和用户线程一起进行，对于漏标问题的解决方案是（写后屏障+增量更新（<font color='green'><u><em><strong>就是把新增加的引用进行记录</strong></em></u></font>））。（STW）</p>
 <p>4）并发清除，清除对象，因为策略是标记-清除，不需要移动所以同样选择了并发的方式。</p>
 <p>缺点：</p>
-<p>1）对处理资源敏感，而且大于1&#x2F;4。CMS的默认收集线程数量是（处理器数量+3）&#x2F;4</p>
+<p>1）对处理资源敏感，而且大于1&#x2F;4。CMS的默认收集线程数量是（处理器数量+3）&#x2F;4。</p>
 <p>2）无法处理浮动垃圾（用户线程使得原来某些对象不是垃圾，但是当 CMS 进行清理的时候变成了垃圾，从可达到不可达，但是没扫出来），有可能触发full gc</p>
 <p>3）用的是标记清除，会有内存碎片</p>
+<p>​	</p>
 <h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><blockquote>
 <p>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。</p>
 <p>为了加快搜索，G1是使用card table和RSet。</p>
@@ -711,7 +561,7 @@
 </ul>
 <h2 id="JVM调优参数"><a href="#JVM调优参数" class="headerlink" title="JVM调优参数"></a>JVM调优参数</h2><p>jar包启动的时候java和 -jar直接可以去配置jvm的参数</p>
 <h2 id="JVM调优的参数有哪些？"><a href="#JVM调优的参数有哪些？" class="headerlink" title="JVM调优的参数有哪些？"></a>JVM调优的参数有哪些？</h2><blockquote>
-<p>设计垃圾回收器 </p>
+<p>换垃圾回收器 </p>
 <p>堆空间大小</p>
 <p>虚拟机栈大小</p>
 <p>eden区和幸存者区的大小比例</p>
@@ -719,7 +569,7 @@
 </blockquote>
 <h2 id="JVM调优工具"><a href="#JVM调优工具" class="headerlink" title="JVM调优工具"></a>JVM调优工具</h2><blockquote>
 <p><font color='red'><u><em><strong>命令：</strong></em></u></font></p>
-<p>jsp + jstack 查看进程内线程的堆栈信息</p>
+<p>jps + jstack 查看进程内线程的堆栈信息</p>
 <p>jmap -dump 生成一个内存快照的信息</p>
 <p>jstat ：JVM性能监测工具。 显示伊甸区 幸存者区、老年区的比例</p>
 <p><font color='red'><u><em><strong>可视化工具：</strong></em></u></font></p>

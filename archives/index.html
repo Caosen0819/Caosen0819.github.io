@@ -261,14 +261,7 @@
                     <p>InnoDB最重要的点：行锁设计、MVCC、外键</p>
 <p>首先来了解一下InnoDB的体系架构：</p>
 <h1 id="体系架构"><a href="#体系架构" class="headerlink" title="体系架构"></a>体系架构</h1><p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231004235405057.png" alt="image-20231004235405057"></p>
-<p>InnoDB有很多内存块，组成内存池，负责的工作：</p>
-<blockquote>
-<p>维护所有线程</p>
-<p>缓存磁盘的数据</p>
-<p>重做日志缓冲</p>
-</blockquote>
-<p>后台线程的主要作用就是：刷新内存池中的数据，保证缓冲池里的是最新的数据。把已修改的数据文件刷新到磁盘文件，</p>
-<p><font color='red'><u><em><strong>体系架构可以用一句话概括，就是由很多内存块组成的缓冲池去维护所有的线程，缓存磁盘数据，重做缓冲。所以他可以从两方面来讲：一个是内存，一个是线程。</strong></em></u></font></p>
+<p>我觉的用一句话概括，就是由很多内存块组成的内存池维护一系列后台线程，然后这些后台线程去负责最重要的工作。主要是内存和后台线程。</p>
 <h2 id="1、后台线程"><a href="#1、后台线程" class="headerlink" title="1、后台线程"></a>1、后台线程</h2><blockquote>
 <p>主要有：</p>
 <p><font color='red'><u><em><strong>master thread</strong></em></u></font>：最重要的，脏页刷新、合并insert buffer，undo 页的回收，redolog。不过后来脏页回收放到了单独的线程，也就是page thread</p>
@@ -495,7 +488,9 @@
 <p><font color='red'><u><em><strong>b+树索引 （b+树只能找到数据行所在的页，然后把页读到内存里面，进行查找）</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>哈希索引（自动生成）</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>全文索引</strong></em></u></font></p>
-<h2 id="1、B-树索引"><a href="#1、B-树索引" class="headerlink" title="1、B+树索引"></a>1、B+树索引</h2><blockquote>
+<h2 id="1、B-树索引"><a href="#1、B-树索引" class="headerlink" title="1、B+树索引"></a>1、B+树索引</h2><p>为什么不用b树，b树的非叶子节点会保存数据，b+树不会，所以b树能保存的指针就好了，这样树的高度就会变大。</p>
+<p>为什么不用红黑树，红黑树是一个二叉树，这个高度肯定是不如b+树这样的多叉树，然后我们时间消耗上，就是这个磁盘io很关键。</p>
+<blockquote>
 <p>b+树是为了磁盘或其他直接存取辅助设备设计的一种多叉平衡查找树</p>
 <p>b+树的所有记录结点都是按照键值的大小顺序存放到同一层的叶子结点，他们之间通过叶子结点指针进行连接，中间的都是searchkey</p>
 <h3 id=""><a href="#" class="headerlink" title=""></a></h3></blockquote>
@@ -688,7 +683,7 @@
 <p>一个是creator_trx_id，就是你这个事务的id。</p>
 <p><font color='red'><u><em><strong>如果比mintexid小或者等于creatoridexid，我们可以看得见。</strong></em></u></font></p>
 <p>比如一条记录旧版本里面有三条记录：10，20，30。然后我们的事务id是15，m_ids里面有20，30。这里的min_trx_id就是20，我们的15比她小，说明还没有提交。因为隔离性所以肯定是看不到的，然后再去找更前面版本，我们就找到了10，发现10可以，所以我们这次读到的数据就是事务id为10的那一个版本。</p>
-<h2 id="3、一致性锁定读（当前读）"><a href="#3、一致性锁定读（当前读）" class="headerlink" title="3、一致性锁定读（当前读）"></a>3、一致性锁定读（当前读）</h2><p>有时候用户需要些显式的对读操作进行加锁保证一致性。 <font color='red'><u><em><strong>select for update还有update也是当前读</strong></em></u></font></p>
+<h2 id="3、一致性锁定读（当前读）"><a href="#3、一致性锁定读（当前读）" class="headerlink" title="3、一致性锁定读（当前读）"></a>3、一致性锁定读（当前读）</h2><p>有时候用户需要些显式的对读操作进行加锁保证一致性。 <font color='red'><u><em><strong>select for share mode， for update还有update也是当前读</strong></em></u></font></p>
 <p>![image-20231115193544143](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115193544143.png)</p>
 <h2 id="5、锁问题（并发事务带来的问题）"><a href="#5、锁问题（并发事务带来的问题）" class="headerlink" title="5、锁问题（并发事务带来的问题）"></a>5、锁问题（并发事务带来的问题）</h2><h3 id="1、脏读"><a href="#1、脏读" class="headerlink" title="1、脏读"></a>1、脏读</h3><p><font color='blue'><u><em><strong>读到了其他事务没有提交的数据</strong></em></u></font>，违反了隔离性。但是脏读发生的隔离级别最少也得是read uncommitted，而我们的数据库默认是可重复读，所以一般在生产环境中，发生的并不多。</p>
 <h3 id="2、不可重复读-or-幻读"><a href="#2、不可重复读-or-幻读" class="headerlink" title="2、不可重复读 or 幻读"></a>2、不可重复读 or 幻读</h3><p>不可重复读：两次读，读的不一样。</p>
@@ -1022,12 +1017,10 @@
 <h2 id="模版模式"><a href="#模版模式" class="headerlink" title="模版模式"></a>模版模式</h2><p>模版模式的主要思路就是把自己要实现的功能抽象成一组<strong>步骤</strong>，也就是在抽象类中定义算法的骨架，具体实现留给子类。但是这里有一点非常重要，就是模版类的流程是定义好的，或者说定死了，子类就是在每一个步骤中实现自己的个性化。</p>
 <h2 id="工厂模式"><a href="#工厂模式" class="headerlink" title="工厂模式"></a>工厂模式</h2><blockquote>
 <p>工厂模式有三种，简单工厂、工厂模式、抽象工厂模式。</p>
-<p><font color='red'><u>**简单工厂只适合单一产品的生产，他的思路很简单，就是根据不同信息new出来不同的对象。比如车 **</u></font></p>
+<p><font color='red'><u>**简单工厂（工厂不是抽象的）只适合单一产品的生产，他的思路很简单，就是根据不同信息new出来不同的对象。比如车 **</u></font></p>
 <p><font color='red'><u><em><strong>工厂模式是把原来的工厂作为抽象模型创建不同的子类工厂生产不同的商品。</strong></em></u></font></p>
-<p><font color='red'><u><em>*<em><strong>抽象工厂模式</strong>就考虑了一个工厂生产多等级的产品，说得简单点就是在抽象工厂里面增加生产其他产品的接口，子类去实现它。</em>*</em></u></font></p>
+<p><font color='red'><u><em>*<em><strong>抽象工厂模式</strong>就考虑了产品族的问题，一个工厂可以生产多等级的产品，说得简单点就是在抽象工厂里面增加生产其他产品的接口，子类去实现它。</em>*</em></u></font></p>
 </blockquote>
-<p>将同一个具体工厂所生产的<strong>位于不同等级（种类）的一组产品称为一个产品族</strong>。</p>
-<p>抽象工厂是需要理解产品族和产品等级两个概念。</p>
 <h2 id="组合模式"><a href="#组合模式" class="headerlink" title="组合模式"></a>组合模式</h2><p>组合模式用树形结构描述整体与部分的关系中 。最顶层的节点称为根节点 ，根节点下面可以包含树枝节点和叶子节点 ，树枝节点下面又可以包含树枝节点和叶子节点。宗旨是通过将单个对象（叶子节点）和组合对象（树枝节点）用相同的接口进行表示 ，使得客户对单个对象和组合对象的使用具有一致性</p>
 <h2 id="代理模式"><a href="#代理模式" class="headerlink" title="代理模式"></a>代理模式</h2><blockquote>
 <p>代理分成<font color='blue'><u><em><strong>静态代理和动态代理</strong></em></u></font>，静态代理需要自己实现对每一个方法对代理，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。</p>
@@ -1044,17 +1037,6 @@
 <p><strong>二者区别</strong><br>总结一下两者的区别吧：</p>
 <p>JDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承 java.lang.reflect.Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰<br>JDK 和 CGLIB 动态代理都是在运行期生成字节码。而 JDK 是直接写 Class 字节码；而 CGLIB 使用 ASM 框架写 Class 字节码（不鼓励直接使用ASM，因为它要求你必须对 JVM 内部结构包括 class 文件的格式和指令集都很熟悉）<br>JDK 通过反射调用方法，CGLIB 通过 FastClass 机制直接调用方法。所以，CGLIB 执行的效率较高<br>JDK 核心是实现 InvocationHandler接口，使用 invoke()方法进行面向切面的处理，调用相应的通知；CGLIB 动态代理是利用 asm 开源包，对代理对象类的 class 文件加载进来，通过修改其字节码生成子类来处理。核心是实现 MethodInterceptor 接口，使用 intercept() 方法进行面向切面的处理，调用相应的通知。</p>
 </blockquote>
-<h2 id="策略模式-1"><a href="#策略模式-1" class="headerlink" title="策略模式"></a>策略模式</h2><ul>
-<li><h2 id="讲一讲策略模式以及在项目的应用？"><a href="#讲一讲策略模式以及在项目的应用？" class="headerlink" title="讲一讲策略模式以及在项目的应用？"></a><strong>讲一讲策略模式以及在项目的应用？</strong></h2></li>
-</ul>
-<p>在我的项目里面也是这样的，我们在抽奖算法和分布式ID生成算法这两个使用了这个策略模式，抽奖的时候用概率可变还是概率不变的抽奖算法，拿着抽奖算法的id去map里面拿，生产订单id的时候用的雪花还是美团改进的，也是直接去map里面拿</p>
-<h2 id="模版模式-1"><a href="#模版模式-1" class="headerlink" title="模版模式"></a>模版模式</h2><ul>
-<li><h2 id="讲一讲模版模式以及在项目的应用？"><a href="#讲一讲模版模式以及在项目的应用？" class="headerlink" title="讲一讲模版模式以及在项目的应用？"></a><strong>讲一讲模版模式以及在项目的应用？</strong></h2></li>
-</ul>
-<p>模版模式的主要思路就是把自己要实现的功能抽象成一组<strong>步骤</strong>，也就是在抽象类中定义算法的骨架，具体实现留给子类。但是这里有一点非常重要，就是模版类的流程是定义好的，或者说定死了，子类就是在每一个步骤中实现自己的个性化。</p>
-<p>在我的项目中，我对抽奖流程用了模版模式</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 1. 获取抽奖策略</span></span><br><span class="line"><span class="comment">// 2. 校验抽奖策略是否已经初始化到内存</span></span><br><span class="line"><span class="comment">// 3. 获取不在抽奖范围内的列表，包括：奖品库存为空、风控策略、临时调整等</span></span><br><span class="line"><span class="comment">// 4. 执行抽奖算法</span></span><br><span class="line"><span class="comment">// 5. 包装中奖结果</span></span><br></pre></td></tr></table></figure>
-
 <h2 id="工厂模式-1"><a href="#工厂模式-1" class="headerlink" title="工厂模式"></a>工厂模式</h2><ul>
 <li><h2 id="讲一讲简单工厂模式以及在项目中的应用？"><a href="#讲一讲简单工厂模式以及在项目中的应用？" class="headerlink" title="讲一讲简单工厂模式以及在项目中的应用？"></a><strong>讲一讲简单工厂模式以及在项目中的应用？</strong></h2></li>
 </ul>
@@ -1069,23 +1051,14 @@
 </blockquote>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">抽象组件</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Component</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line">具体组件（需要被装饰的组件）</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConcreteComponent</span> <span class="keyword">extends</span> <span class="title class_">Component</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;具体组件处理业务逻辑&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">抽象装饰器（继承、实现抽象组件，并持有抽象组件）</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Decorator</span> <span class="keyword">extends</span> <span class="title class_">Component</span> &#123;</span><br><span class="line"></span><br><span class="line">     * 抽象组件</span><br><span class="line">    <span class="keyword">public</span> Component component;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Decorator</span><span class="params">(Component component)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.component = component;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        component.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">具体装饰器A继承抽象装饰器</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConcreteDecorator</span> <span class="keyword">extends</span> <span class="title class_">Decorator</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ConcreteDecorator</span><span class="params">(Component component)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(component);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">before</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;ConcreteDecorator前置操作....&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">after</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;ConcreteDecorator后置操作....&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">组件本身执行的动作</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        before();</span><br><span class="line">        component.execute();</span><br><span class="line">        after();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">decorator 通用写法测试</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">//创建需要被装饰的组件</span></span><br><span class="line">        <span class="type">Component</span> <span class="variable">component</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConcreteComponent</span>();</span><br><span class="line">        <span class="comment">//给对象透明的增加功能并调用</span></span><br><span class="line">        <span class="type">Decorator</span> <span class="variable">decorator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConcreteDecorator</span>(component);</span><br><span class="line">        decorator.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-
-
 <h2 id="适配器模式"><a href="#适配器模式" class="headerlink" title="适配器模式"></a>适配器模式</h2><ul>
 <li>目标角色（Target）：该角色定义把其他类转换为何种接口。</li>
 <li>源角色（Adaptee）：被适配的对象</li>
 <li>适配器角色（Adapter）：该对象将源对象转换成目标接口</li>
 </ul>
-<p>总结一下就是：我们在适配器里面实现目标角色的接口，然后在这个接口里面去调用源角色的方法。</p>
+<p>总结一下就是：<font color='green'><u><em><strong>我们在适配器里面实现目标角色的接口，然后在这个接口里面去调用源角色的方法</strong></em></u></font>。</p>
 <p>如果这个源角色类需继承，那我们就叫类适配器。如果直接作为适配器的一个变量，那么就叫做对象适配器。</p>
 <p>分为两类：类适配器和 对象适配器</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 翻译</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> source 母语</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> target 要翻译成的语种</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> words 内容</span></span><br><span class="line"><span class="comment"> */</span>’</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Target</span> &#123;</span><br><span class="line">		<span class="keyword">void</span> <span class="title function_">translate</span><span class="params">(String source,String target,String words)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/8</span></span><br><span class="line"><span class="comment"> * 源对象(source）：充当翻译</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Translator</span> &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">//英——》汉</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">translateInZh</span><span class="params">(String words)</span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="string">&quot;hello world！&quot;</span>.equals(words))&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;翻译成中文：”你好世界！“&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">//汉——》英</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">translateInEn</span><span class="params">(String words)</span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="string">&quot;你好世界！&quot;</span>.equals(words))&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;Translate in English：”hello world！“&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/11</span></span><br><span class="line"><span class="comment"> * 类适配器：通过多重继承目标接口和被适配者类方式来实现适配</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ClassAdapter</span> <span class="keyword">extends</span> <span class="title class_">Translator</span> <span class="keyword">implements</span> <span class="title class_">Target</span> &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">translate</span><span class="params">(String source, String target, String words)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="string">&quot;中文&quot;</span>.equals(source) &amp;&amp; <span class="string">&quot;英文&quot;</span>.equals(target)) &#123;</span><br><span class="line">            <span class="comment">//汉--》英</span></span><br><span class="line">            <span class="built_in">this</span>.translateInEn(words);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">//英--》汉</span></span><br><span class="line">            <span class="built_in">this</span>.translateInZh(words);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/11</span></span><br><span class="line"><span class="comment"> * 对象适配器：使用组合的方式</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ObjectAdapter</span> <span class="keyword">implements</span> <span class="title class_">Target</span> &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> Translator translator=<span class="keyword">new</span> <span class="title class_">Translator</span>();</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">translate</span><span class="params">(String source, String target, String words)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="string">&quot;中文&quot;</span>.equals(source) &amp;&amp; <span class="string">&quot;英文&quot;</span>.equals(target)) &#123;</span><br><span class="line">            <span class="comment">//汉--》英</span></span><br><span class="line">            translator.translateInEn(words);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">//英--》汉</span></span><br><span class="line">            translator.translateInZh(words);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
 <h2 id="桥接模式"><a href="#桥接模式" class="headerlink" title="桥接模式"></a>桥接模式</h2><p><strong>桥接模式通过将继承改为组合的方式来解决这个问题</strong>。具体来说，就是抽取其中一个维度并使之成为独立的类层次，这样就可以在初始类中引用这个新层次的对象，从而使得一个类不必拥有所有的状态和行为。	</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BridgeD</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Color</span> <span class="variable">color</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">yellow</span>();</span><br><span class="line">        <span class="type">bag1</span> <span class="variable">bag1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">bag1</span>(color);</span><br><span class="line">        bag1.get();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Color</span>&#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">get</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">yellow</span> <span class="keyword">implements</span> <span class="title class_">Color</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;yellow&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">bag</span> &#123;</span><br><span class="line">    Color color;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">bag</span><span class="params">(Color color)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.color = color;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">        color.get();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">bag1</span> <span class="keyword">extends</span> <span class="title class_">bag</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">bag1</span><span class="params">(Color color)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(color);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;bag1&quot;</span>);</span><br><span class="line">        <span class="built_in">super</span>.get();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
@@ -1469,645 +1442,6 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/09/30/shua/"
-                            aria-label=": Java刷题"
-                        >
-                            Java刷题
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-09-30T00:00:00+08:00">
-	
-		    30 Sep 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">int left = 0;</span><br><span class="line">        int right = data.length - 1;</span><br><span class="line">        //二分左右界</span><br><span class="line">        while(left &lt;= right)&#123;</span><br><span class="line">            int mid = (left + right) / 2;</span><br><span class="line">            if(data[mid] &lt; k)</span><br><span class="line">                left = mid + 1;</span><br><span class="line">            else if(data[mid] &gt; k)</span><br><span class="line">                right = mid - 1;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
-
-<h1 id="二叉树"><a href="#二叉树" class="headerlink" title="二叉树"></a>二叉树</h1><blockquote>
-<p>难：<font color='red'><u><em><strong>序列化二叉树</strong></em></u></font>  层序遍历或者先序遍历</p>
-<p><font color='blue'><u><em><strong>递归</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>前序遍历、中序遍历、后序遍历、最大深度（等于左右子树最大的+1）。</strong></em></u></font>全部都是递归解决，无非就是赋值和两个递归顺序换一下</p>
-<p><font color='red'><u><em><strong>重建二叉树</strong></em></u></font></p>
-<p><img src="/../images/shua/image-20231107163434834.png" alt="image-20231107163434834"></p>
-<p><font color='red'><u><em><strong>对称二叉树：</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>合并二叉树</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>二叉树镜像</strong></em></u></font>，</p>
-<p><font color='red'><u><em><strong>判断是不是平衡树</strong></em></u></font> 、靠深度</p>
-<p><font color='red'><u>***二叉搜索树的最近公共祖先(按照值搜索，所以四种分类，左左，右右，中，相等) ***</u></font>  </p>
-<p><font color='red'><u><em><strong>在二叉树中找到两个节点的最近公共祖先（按照节点搜索值对比，分3类，左右子树都有，左找到右没找到，右找到左没找到，出现相等说明找到了，就返回节点）</strong></em></u></font> :这些递归稍显复杂</p>
-<p>还有很多是依赖于前序遍历解决的：<font color='red'><u><em><strong>二叉搜索树与双向链表</strong></em></u></font>，<font color='red'><u><em><strong>判断是不是二叉搜索树</strong></em></u></font></p>
-</blockquote>
-<blockquote>
-<p><font color='blue'><u><em><strong>BFS广度搜索</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>求二叉树的层序遍历、按之字形顺序打印二叉树</strong></em></u></font>。都是<font color='green'><u><em><strong>BFS广度搜索</strong></em></u></font>，不过代码值得一看</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">Queue&lt;TreeNode&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;TreeNode&gt;();</span><br><span class="line">list.add(root);</span><br><span class="line"><span class="keyword">while</span> (!list.isEmpty()) &#123;</span><br><span class="line">    ArrayList&lt;Integer&gt; temp = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;Integer&gt;();</span><br><span class="line">    <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> list.size();</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="type">TreeNode</span> <span class="variable">t</span> <span class="operator">=</span> list.poll();</span><br><span class="line">        temp.add(t.val);</span><br><span class="line">        <span class="keyword">if</span> (t.left != <span class="literal">null</span>) &#123;</span><br><span class="line">            list.add(t.left);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (t.right != <span class="literal">null</span>) &#123;</span><br><span class="line">            list.add(t.right);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    array.add(temp);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</blockquote>
-<blockquote>
-<p><font color='red'><u><em><strong>二叉树中和为某一值的路径(一)</strong></em></u></font>，深度搜索，比较简单。</p>
-</blockquote>
-<h1 id="TIPS"><a href="#TIPS" class="headerlink" title="TIPS"></a>TIPS</h1><p>注意Integer和Int，基础和引用的&#x3D;&#x3D;是不一样的，在此基础上形成的stack vector，List也是这样</p>
-<h1 id="递归"><a href="#递归" class="headerlink" title="递归"></a><strong>递归</strong></h1><p>递归判断两个值是否相等或者对称这种题目，或者先判断两个空，然后判断一个空</p>
-<p>if (root1 &#x3D;&#x3D; null &amp;&amp; root2 &#x3D;&#x3D; null) 两个都为空的情况</p>
-<p>if(root1 &#x3D;&#x3D; null || root2 &#x3D;&#x3D; null || root1.val !&#x3D; root2.val) 一个为空的情况</p>
-<p>结束条件判断中，建议判断已知的。</p>
-<p>结束标志一般一个是null，一个是结束值。</p>
-<p>递归中的凭据，如果是多个数组、Treenode、链表，用坐标也许会很麻烦，可以先尝试原本的类型，比如数组，就用子数组。因为数组如果用坐标判断长度是不是0会比较麻烦</p>
-<p><img src="/../images/shua/image-20231001132922742.png" alt="image-20231001132922742"></p>
-<p>如果能做一次这种就好了</p>
-<p>递归函数体一般分三部分</p>
-<p>1、结束</p>
-<p>2、主要函数操作，比如visit【】&#x3D;true</p>
-<p>3、列举 dfs</p>
-<p>如果是两个匹配，可以用被匹配的长度作为结束判断条件之一,比如两个字符都匹配完，某个字符匹配完某个字符没有匹配完</p>
-<h1 id="动态规划"><a href="#动态规划" class="headerlink" title="动态规划"></a>动态规划</h1><p><font color='blue'><u><em><strong>状态定义</strong></em></u></font>：<font color='red'><u><em><strong>要么是以i结尾、要么是前i个、要么是从i到j</strong></em></u></font></p>
-<p><font color='blue'><u><em><strong>状态转移函数：</strong></em></u></font><font color='red'><u><em><strong>这个就是各种各样了</strong></em></u></font></p>
-<p><font color='blue'><u><em><strong>状态初始化</strong></em></u></font> ：<font color='red'><u>***如果是一维数组，可能初始前1个，也可能初始化前两个。如果是两个数组，可能初始化第一行第一列。那辅助表就是二维数组，最好比原来的宽长都多1位 ***</u></font></p>
-<p>例题:</p>
-<blockquote>
-<p><font color='green'><u><em><strong>最长回文子串</strong></em></u></font>：用两维度的数组，表示从j到i。最后返回最长的</p>
-<p><font color='green'><u><em><strong>最长不含重复字符的子字符串</strong></em></u></font>: 需要借助一个map存key和index，这里用到了Math.min</p>
-<p><font color='green'><u><em><strong>最长公共子序列(二</strong></em></u></font>)：数组的意义：<font color='red'><u><em><strong>s1的前i个字符串和s2的前j个字符串的最长公共子序列</strong></em></u></font>。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>(s1.charAt(i) == s2.charAt(j)) &#123;</span><br><span class="line">             array[i][j] = array[i - <span class="number">1</span>][j - <span class="number">1</span>] + String.valueOf(s2.charAt(j));                  </span><br><span class="line">              <span class="comment">// = min([i-1,j],[i-1][j-1]+1)</span></span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">              <span class="type">String</span> <span class="variable">temp</span> <span class="operator">=</span> array[i][j - <span class="number">1</span>];</span><br><span class="line">              <span class="keyword">if</span> (array[i][j-<span class="number">1</span>].length() &gt; array[i-<span class="number">1</span>][j].length()) &#123;</span><br><span class="line">                  array[i][j] = array[i][j-<span class="number">1</span>];</span><br><span class="line">              &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                  array[i][j] = array[i-<span class="number">1</span>][j];</span><br><span class="line">              &#125;</span><br><span class="line">              </span><br><span class="line">          &#125;</span><br></pre></td></tr></table></figure>
-
-<p><font color='green'><u><em><strong>最长公共子串</strong></em></u></font>：与上面的差别在于子串是连续的。<font color='red'><u><em><strong>这里就是以s1中以第i个字符结尾和s2中以第j个字符结尾的最长公共子串</strong></em></u></font>。判断更简单</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (str1.charAt(i) == str2.charAt(j)) &#123;                   </span><br><span class="line">            array[i][j] = array[i - <span class="number">1</span>][j - <span class="number">1</span>] + String.valueOf(str1.charAt(i));</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            array[i][j] = <span class="string">&quot;&quot;</span>;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
-
-<p><font color='green'><u><em><strong>最长上升子序列</strong></em></u></font>：<font color='red'><u><em><strong>以第i个字符结尾的最长子序列</strong></em></u></font></p>
-</blockquote>
-<p><font color='green'><u><em><strong>不同路径的数目(一)</strong></em></u></font> <font color='green'><u><em><strong>矩阵的最小路径和</strong></em></u></font> 这两个比较简单，就是得<font color='red'><u><em><strong>初始化第一列和第一行</strong></em></u></font></p>
-<p><font color='green'><u><em><strong>兑换零钱(一)</strong></em></u></font>：这个就是两个循环，第二个循环遍历纸币集合。</p>
-<blockquote>
-<p><font color='green'><u><em><strong>连续子数组的最大和</strong></em></u></font>：前i个</p>
-<p><font color='green'><u><em><strong>连续子数组的最大和(二)</strong></em></u></font> ：以i结尾，不过判断需要些思考</p>
-</blockquote>
-<blockquote>
-<p><font color='green'><u><strong>跳台阶：</strong></u></font>数组的意义是第i个</p>
-<p><font color='green'><u><em><strong>跳台阶扩展问题</strong></em></u></font> ：比较简单，双重循环。</p>
-<p><font color='green'><u><em><strong>最小花费爬楼梯</strong></em></u></font>：跳到第i个台阶最少花费跳几次。关键在于<font color='red'><u><em><strong>初始化两个0.</strong></em></u></font></p>
-</blockquote>
-<blockquote>
-<p><font color='green'><u><em><strong>买卖股票的最好时机(一)</strong></em></u></font>：初始化一个二维的【i】【2】大小。只能买一次，所以和当前的比</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&gt;<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; length; i++) &#123;</span><br><span class="line">           a[i][<span class="number">0</span>] = Math.max(a[i - <span class="number">1</span>][<span class="number">0</span>], a[i - <span class="number">1</span>][<span class="number">1</span>] + prices[i]);</span><br><span class="line">           a[i][<span class="number">1</span>] = Math.max(a[i - <span class="number">1</span>][<span class="number">1</span>], -prices[i]);</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
-
-<p><font color='green'><u><em><strong>买卖股票的最好时机(二)</strong></em></u></font>，初始化一样，但是可以买卖多次，不过必须先买后卖。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&gt;<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; length; i++) &#123;</span><br><span class="line">           dp[i][<span class="number">0</span>] = Math.max(dp[i - <span class="number">1</span>][<span class="number">1</span>] + prices[i], dp[i - <span class="number">1</span>][<span class="number">0</span>]);</span><br><span class="line">           dp[i][<span class="number">1</span>] = Math.max(dp[i - <span class="number">1</span>][<span class="number">0</span>] - prices[i], dp[i - <span class="number">1</span>][<span class="number">1</span>]);</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<p><font color='green'><u><em><strong>买卖股票的最好时机(三)</strong></em></u></font>：这个初始化就不一样了，【i】【4】。<font color='red'><u><em><strong>可以考虑维度的问题</strong></em></u></font></p>
-</blockquote>
-<blockquote>
-<p><font color='green'><u><em><strong>打家劫舍(一)</strong></em></u></font>：这个比较正常。数组的意思是前i个</p>
-<p><font color='green'><u>*** 打家劫舍(二)***</u></font>：多了一个环形的条件，其实就是分两种情形，第一类要第一个不要最后一个；第二不要第一个（dp[0] &#x3D; 0）要最后一个。数组的意义也是前i个。</p>
-<p><font color='green'><u><em><strong>打家劫舍三</strong></em></u></font> ：分两种状态，直接dfs返回的时候，用new int[2]返回两种状态下的不同最大值。一种状态是选中，一种是不选中</p>
-</blockquote>
-<blockquote>
-<p><font color='green'><u><em><strong>矩形覆盖</strong></em></u></font> 简单 dp[i] &#x3D; dp[i - 1] + dp[i - 2] ;</p>
-<p><font color='green'><u>*** 把数字翻译成字符串***</u></font>:也不是很难</p>
-</blockquote>
-<blockquote>
-<p><font color='green'><u><em><strong>最长有效括号</strong></em></u></font></p>
-</blockquote>
-<h1 id="链表"><a href="#链表" class="headerlink" title="链表"></a>链表</h1><p><font color='red'><u><em><strong>判断有没有环形 ：</strong></em></u></font> 一个走两步一个走一步，重要的是while里面是&amp;&amp;，如果碰到了就代表有环</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ListNode</span> <span class="variable">pre</span> <span class="operator">=</span> head;</span><br><span class="line">        <span class="type">ListNode</span> <span class="variable">nextt</span> <span class="operator">=</span> pre;</span><br><span class="line">        <span class="keyword">while</span> (nextt != <span class="literal">null</span> &amp;&amp; pre != <span class="literal">null</span>) &#123;</span><br><span class="line">            pre = pre.next;</span><br><span class="line">            <span class="keyword">if</span> (nextt.next != <span class="literal">null</span>) &#123;</span><br><span class="line">                nextt = nextt.next.next;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;      </span><br><span class="line">            <span class="keyword">if</span> (pre == nextt) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;            </span><br><span class="line">            &#125;           </span><br><span class="line">        &#125;  </span><br></pre></td></tr></table></figure>
-
-<p><font color='red'><u><em><strong>链表相加(二)</strong></em></u></font><code>就是反转在做操作，其他的就是一些小细节没什么大不了的</code></p>
-<p><font color='red'><u><em><strong>反转链表</strong></em></u></font> <code> 就是new一个新的链表头，或者栈</code>。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">while</span> (head != <span class="literal">null</span>) &#123;</span><br><span class="line">           <span class="type">ListNode</span> <span class="variable">tmp</span> <span class="operator">=</span> head.next;</span><br><span class="line">           head.next = newHead;</span><br><span class="line">           newHead = head;</span><br><span class="line">           head = tmp;</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
-
-<p><font color='red'><u><em><strong>链表内指定区间反转</strong></em></u></font><code>这个和上面那个一样，但是更加复杂</code></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">for (int i = 0; i &lt; n - m; i++) &#123;</span><br><span class="line">            ListNode tmp = cur.next;</span><br><span class="line">            cur.next = tmp.next;</span><br><span class="line">            tmp.next = pre.next;</span><br><span class="line">            pre.next = tmp;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
-
-<p>上面这两个题目其实关键在反转，其实就是三步：1）记录当前的下个节点tmp；2）当前的节点的下一个是下一个的下一个（tmp的下一个）；3）tmp的下一个是反转开始前节点的下一个pre或者head；4）pre。next &#x3D; tmp</p>
-<p>上面两个不同的点在于，<font color='red'><u><em><strong>第一个和后面的节点不是连在一起的，第二个是连在一起的</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>链表中的节点每k个一组翻转</strong></em></u></font>    <code>递归反转</code></p>
-<p><font color='red'><u><em><strong>单链表的排序</strong></em></u></font><code>一种是直接用arraylist存每个节点的值，自己排完，再构造链表，另一种方法就是直接归并排序</code></p>
-<h1 id="堆-x2F-栈-x2F-队列-x2F-hashmap"><a href="#堆-x2F-栈-x2F-队列-x2F-hashmap" class="headerlink" title="堆&#x2F;栈&#x2F;队列&#x2F;hashmap"></a>堆&#x2F;栈&#x2F;队列&#x2F;hashmap</h1><blockquote>
-<p><font color='red'><u><em><strong>栈</strong></em></u></font></p>
-<p><strong>用两个栈实现队列</strong>: <code>难度不大</code></p>
-<p><strong>包含min函数的栈</strong>：<code>双栈法，就是定义一个辅助栈作为存min的栈</code></p>
-<p><strong>有效括号序列</strong>：<code>借助一个栈就可以</code></p>
-</blockquote>
-<blockquote>
-<p> <font color='red'><u><em><strong>堆</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>最小的K个数</strong></em></u></font>: <code>用一个大顶堆可以</code> 关键是这里priorityqueue需要你给comparator</p>
-<p><font color='red'><u><em><strong>寻找第k大的数</strong></em></u></font>： <code>和上面的一样用堆结构，不过不同之处在于用的是</code><font color='red'><u><em><strong>小顶堆</strong></em></u></font> ，<code>并且comparator返回得到不一样</code></p>
-<p><font color='red'><u><em><strong>数据流中的中位数</strong></em></u></font>：<code>这个有些难度，用的是</code> 双堆法。一个大顶堆放小的一般，一个小顶堆放大的一半。奇数的时候放入大顶堆，偶数放入小顶堆。放入过程判断大小，做调解。</p>
-</blockquote>
-<blockquote>
-<p><font color='red'><u><em><strong>栈</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>表达式求值</strong></em></u></font> 这个是这里面最难得一个，用一个栈做，思想就是，减法就是加负号，所以对加减直接保留在栈里面，认为都是加法，最后遍历栈加起来就可以。如果遇到乘除，就得做运算，polllast出末尾然后做乘除然后add，每次做完运算num都为0。做运算的时候是要和上一个符号判断的，建议看代码</p>
-</blockquote>
-<blockquote>
-<p><font color='red'><u>**Hashmap **</u></font></p>
-<p><font color='red'><u><em><strong>两数之和</strong></em></u></font> : 很简单，用hashmap更简单</p>
-<p><font color='red'><u><em><strong>数组中出现次数超过一半的数字</strong></em></u></font> ： 很简单</p>
-<p><font color='red'><u><em><strong>缺失的第一个正整数</strong></em></u></font> ; 很简单</p>
-<p><font color='red'><u><em><strong>三数之和</strong></em></u></font>：这个是这一块最难的一题目。用哈希可以得到答案，但是不能通过，有顺序的原因。具体做法是：先sort，然后外面一个循环作为第一个值，循环里面一个left &#x3D; i + 1，一个right &#x3D; length - 1.这样三个值，然后left 和 right向中间靠拢。</p>
-</blockquote>
-<h1 id="模拟"><a href="#模拟" class="headerlink" title="模拟"></a>模拟</h1><blockquote>
-<p><font color='red'><u><em><strong>旋转数组</strong></em></u></font>：关键在于三次反转</p>
-<p><font color='red'><u><em><strong>螺旋矩阵</strong></em></u></font>：按着圈走就行了，比较简单</p>
-<p><font color='red'><u><em><strong>顺时针旋转矩阵</strong></em></u></font>：这个有两种方法，一种new一个数组；然后双重循环<code>array[i][j] = mat[n -1 - j][i];</code></p>
-<p>还有一种方法就是，先沿着左对角线翻转，然后每一行翻转。</p>
-<p><font color='red'><u><em><strong>设计LRU缓存结构</strong></em></u></font>：用双向链表（自己构造node）和一个hashmap来实现，比较麻烦。</p>
-<p><font color='red'><u><em><strong>扑克牌顺子</strong></em></u></font> ：这个就是先排序，找最大最小，最大最小之间的差小于5</p>
-<p><font color='red'><u><em><strong>把字符串转换成整数(atoi)</strong></em></u></font> 这个就是按照他的步骤走，不难，就是需要调整两下</p>
-<p><font color='red'><u><em><strong>构建乘积数组</strong></em></u></font> 右上三角形为一个数组，左下三角形为一个数组。两个数组乘起来。</p>
-<p><font color='red'><u><em><strong>整数中1出现的次数（从1到n整数中1出现的次数）</strong></em></u></font>：遍历每个位置等于1的数量，都加起来。</p>
-<p><font color='red'><u><em><strong>把数组排成最小的数</strong></em></u></font> 加一个比较器就可以	</p>
-<p><font color='red'><u><em><strong>和为S的连续正数序列</strong></em></u></font> : 双指针 滑动窗口</p>
-<p><font color='red'><u><em><strong>左旋转字符串</strong></em></u></font>: 多次旋转</p>
-</blockquote>
-<h1 id="字符串"><a href="#字符串" class="headerlink" title="字符串"></a>字符串</h1><blockquote>
-<p>基本就是：翻转 切割 遍历</p>
-<p><font color='red'><u><em><strong>字符串变形</strong></em></u></font> ：这个就是变成sb后 翻转 ，然后对非空的再反转</p>
-<p><font color='red'><u><em><strong>最长公共前缀</strong></em></u></font> ：这个也挺烦的，就是直接遍历第一个，双重循环。</p>
-<p><font color='red'><u><em><strong>IP地址验证</strong></em></u></font>：主要是split（ ，-1）；分完之后，循环遍历切好的集合，看看有没有什么不符合的条件。</p>
-<p><font color='red'><u><em><strong>大数加法</strong></em></u></font>： 用栈，循环从后往前遍历两个字符串。</p>
-</blockquote>
-<h1 id="双指针"><a href="#双指针" class="headerlink" title="双指针"></a>双指针</h1><blockquote>
-<p><font color='red'><u><em><strong>双指针指的是在遍历对象的过程中，不是普通的使用单个指针进行访问，而是使用两个指针（特殊情况甚至可以多个），两个指针或是同方向访问两个链表、或是同方向访问一个链表（快慢指针）、或是相反方向扫描（对撞指针），从而达到我们需要的目的。</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>合并两个有序的队列</strong></em></u></font>：可以用归并排序，这个排序需要重点记住</p>
-<blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">guibing</span><span class="params">(<span class="type">int</span> a[], <span class="type">int</span> temp[], <span class="type">int</span>  left, <span class="type">int</span> right)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (left &gt;= right ) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//hebing</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> (left + right) / <span class="number">2</span>;</span><br><span class="line">        guibing(a,temp,left, mid);</span><br><span class="line">        guibing(a,temp, mid + <span class="number">1</span>, right);</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> left, j = mid + <span class="number">1</span>, k = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (i &lt;= mid &amp;&amp; j &lt;= right )&#123;</span><br><span class="line">            <span class="keyword">if</span> (a[i] &lt; a[j]) &#123;</span><br><span class="line">                temp[k++] = a[i++];</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                temp[k++] = a[j++];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (i &lt;= mid )&#123;</span><br><span class="line">            temp[k++] = a[i++];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (j &lt;= right )&#123;</span><br><span class="line">            temp[k++] = a[j++];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">t</span> <span class="operator">=</span> <span class="number">0</span>; t&lt; right - left + <span class="number">1</span>; t++) &#123;</span><br><span class="line">            a[left + t] = temp[t];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-</blockquote>
-<p><font color='red'><u><em><strong>合并区间</strong></em></u></font>：关键在于先排序，然后每次都和队列尾部的比较就可以。</p>
-<p><font color='red'><u><em><strong>最长无重复子数组</strong></em></u></font>：这个双重循环+Set集合</p>
-<p><font color='red'><u><em><strong>盛水最多的容器</strong></em></u></font> 前指针 + 后指针 向中间靠拢</p>
-<p><font color='red'><u><em><strong>接雨水问题</strong></em></u></font>： 前指针 + 后指针 向中间靠拢</p>
-</blockquote>
-<p>难：正则表达式</p>
-<p>二和指数：用map</p>
-<p>三和之数：不用map，双重循环，每一层循环都要注意和前面那个数进行对比重复</p>
-<p>单调栈：</p>
-<p>柱状图</p>
-<p>最大矩阵</p>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/09/30/shua/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Kommentieren und teilen
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2023/09/30/hot/"
-                            aria-label=": Hot100"
-                        >
-                            Hot100
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-09-30T00:00:00+08:00">
-	
-		    30 Sep 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <p>:cactus:最长回文串：动态规划，boolean</p>
-<p>:cactus:没有重复字符的最长子串：借助map的滑动窗口</p>
-<p>:cactus:寻找两个正序数组的中位数：</p>
-<p>:cactus:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/container-with-most-water/">盛最多水的容器</a> : 双指针</p>
-<p>:cactus:Lru : 多练，两个指针+Map</p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/regular-expression-matching/">:cactus:正则表达式匹配</a>: 动态规划，条件较复杂	</p>
-<p>:cactus:三数之和：两个循环，第二个循环用前后双指针。两个循环里面都要做去重，都是和前一个对比</p>
-<p>:cactus:括号生产：较简单的dfs:cactus:</p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/group-anagrams/">:cactus:字母异位词分组</a> : 简单的</p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/sliding-window-maximum/">:cactus:滑动窗口最大值</a> :  单调队列，用linkedlist</p>
-<p>:cactus:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/next-permutation?envType=featured-list&envId=2cktkvj?envType=featured-list&envId=2cktkvj">下一个排列</a> : 要推导一下，先一个循环从右往左找到第一个a[i] &lt;a[i + 1]，然后再用一个和上面那个同等级的循环去从右往左找到第:cactus:一个小于a[i]的交换，然后Arrays.sort(nums, left + 1, n);</p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/longest-valid-parentheses/">:cactus:最长有效括号</a> : <font color='blue'><u><em><strong>动态规划</strong></em></u></font> 很有趣</p>
-<p>:cactus:不同路径 ： 动态规划</p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/subarray-sum-equals-k/">:cactus: 和为 K 的子数组</a> ：<font color='blue'><u><em><strong>不是动态规划</strong></em></u></font> <font color='blue'><u><em><strong>是前缀和 + map</strong></em></u></font>, 很有趣。1 2 3 4 5 6, 每次判断前j个减去前i个是不是等于k，用map优化</p>
-<p>:cactus:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/partition-equal-subset-sum/">分割等和子集</a> :  <font color='red'><u><em><strong>动态规划</strong></em></u></font> 这个非常重要, 背包问题，<font color='red'><u><em><strong>int[n] [target]</strong></em></u></font>  </p>
-<p>:cactus:<font color='red'><u><em><strong><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/jump-game/">跳跃游戏</a>：不是动态规划，从小遍历到n，然后每次遍历判断</strong></em></u></font></p>
-<details>
-    for (int i = 0; i < nums.length; i++) {
-            if (k < i) {
-                return false;
-            }
-            k = Math.max(k, i + nums[i]);
-        }
-</details>
----
-
-<p>:cactus:电话号码的字母组合 : 回溯</p>
-<p><font color='red'><u><em><strong><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/daily-temperatures/">:cactus:每日温度</a> 如果能想到用单调栈 就会比较简单。遍历的每次都先从栈里面弹出比自己小的。</strong></em></u></font></p>
-<details>
-  de.offerLast(0);
-        for (int i = 1; i < n; i++) {
-            while (!de.isEmpty() && temperatures[de.peekLast()] < temperatures[i]) {
-                int t = de.pollLast();
-                res[t] = i - t;
-            }
-            de.offerLast(i);
-        }
-</details>
----
-
-<p>:cactus:<font color='red'><u><em><strong>搜索旋转排序数组 : 二分法，</strong></em></u></font></p>
-<details>
-  if (nums[0] <= nums[mid]) {
-            if ( target <= nums[mid] && target >= nums[left] ) {
-                return find(nums, target, left, mid - 1);
-            } else {
-                return find(nums, target, mid + 1, right);
-            }
-        } else {
-            if ( target >= nums[mid] && target <= nums[right]) {
-                return find(nums, target, mid + 1, right);
-            } else {
-                return find(nums, target, left, mid - 1);
-            }
-        }
-</details>
----
-
-<p>:cactus:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/course-schedule/">课程表</a> : DFS 分三个状态，分别是未搜索0，搜索中1， 结束2. <font color='red'><u><em><strong>多做————–</strong></em></u></font></p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/binary-tree-maximum-path-sum/">:cactus:二叉树中的最大路径和</a> : 回溯，挺有意思的</p>
-<details>
-  int Lson = Math.max(recurtion(root.left), 0);
-        int Rson = Math.max(recurtion(root.right), 0);
-        maxV = Math.max(maxV, root.val + Lson + Rson);
-        return root.val + Math.max(Lson, Rson);
-</details>
----
-
-<p>:cactus:链表排序：<font color='red'><u><em><strong>需要很熟练</strong></em></u></font></p>
-<details>
-    public ListNode sort(ListNode head) {
-        // find mid point
-        if (head == null) {
-            return null;
-        } else if (head.next == null) {
-            return head;
-        }
-        ListNode pre = head;
-        ListNode left = head;
-        ListNode right = head.next;
-        while (right != null && right.next != null) {
-            pre = left;
-            left = left.next;
-            right = right.next.next;
-  else {
-                tmp.next = tmpRight;
-                tmpRight = tmpRight.next;
-                tmp = tmp.next;
-            }
-</details>
-
-<hr>
-<p>:cactus:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/merge-k-sorted-lists/">合并 K 个升序链表</a> 用最小堆 </p>
-<p>:cactus:全排列：dfs 加一个辅助的set</p>
-<p>:cactus:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/subsets/">子集</a> :DFS 然后用到当前的位置</p>
-<details>
-  public void dfs(int[] nums, int nowIndex, Deque<Integer> ll) {
-        if (nowIndex == nums.length) {
-            list.add(new ArrayList<>(ll));
-            return;
-        }
-        ll.offerLast(nums[nowIndex]);
-        dfs(nums, nowIndex + 1, ll);
-        ll.removeLast();
-        dfs(nums, nowIndex + 1, ll);
-    }
-</details>
-
-<hr>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/implement-trie-prefix-tree/">:cactus:实现 Trie (前缀树)</a> ：用字典，很重要，因为第二次没想起来</p>
-<details>
-  private Trie[] childen;
-    private boolean isEnd;
-    public Trie() {
-        childen = new Trie[26];
-        isEnd = false;
-    }
-  public void insert(String word) {
-        Trie node = this;
-        for (int i = 0; i < word.length(); i++) {
-            char ch = word.charAt(i);
-            int index = ch - 'a';
-            if (node.childen[index] == null) {
-                node.childen[index] = new Trie();   
-            }
-            node = node.childen[index];
-        }
-        node.isEnd = true;
-    }
-</details>
-
-<hr>
-<p>:cactus:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/word-break/">单词拆分</a> ：简单的dp</p>
-<details>
-  for (int i = 1; i <= n; i++) {
-            for (int j = 0; j < i; j++) {
-                String tmp = s.substring(j, i);
-                if (dp[j] == true && set.contains(tmp)) {
-                    dp[i] = true;
-                }
-            }
-        }
-</details>
-
-<hr>
-<p>:cactus: <a target="_blank" rel="noopener" href="https://leetcode.cn/problems/maximum-product-subarray/">乘积最大子数组</a> : 需要两个dp数组，一个最小，一个最大,对比的时候要用两个Math.max Math.min哈哈</p>
-<p>:question::question::question::question::question: <a target="_blank" rel="noopener" href="https://leetcode.cn/problems/unique-binary-search-trees/">不同的二叉搜索树</a> 没写出来</p>
-<details>
-  public int numTrees(int n) {
-        int dp[] = new int[n + 1];
-        dp[0] = 1;
-        dp[1] = 1;
-        for (int i = 2; i <= n; i++) {
-            for (int j = 1; j <= i; j ++) {
-                dp[i] += dp[j - 1] * dp[i - j];
-            }
-        }
-        return dp[n];
-    }
-</details>
-
-<hr>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/largest-rectangle-in-histogram/">:question::question::question::question::question:柱状图中最大的矩形 </a> 一开始没写出来 <font color='red'><u><em><strong>单调栈</strong></em></u></font></p>
-<details>
-  for (int i = 0; i < heights.length; i++) {
-            while (!de.isEmpty() && heights[de.peekLast()] >= heights[i]) {
-                de.pollLast();
-            }
-            left[i] = (de.isEmpty() ? -1 : de.peekLast());
-            de.offerLast(i);
-        }
-        de.clear();
-        for (int i = n - 1; i >= 0; i --) {
-            while (!de.isEmpty() && heights[de.peekLast()] >= heights[i]) {
-                de.pollLast();
-      }
-        right[i] = (de.isEmpty() ? n : de.peekLast());
-        de.offerLast(i);
-    }
-  </details>
-
-<p>:question::question::question::question::question:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/minimum-window-substring/">最小覆盖子串</a> ：滑动窗口+两个map对比，两个map对比的关键在于if (windows.getOrDefault(entries.getKey(), 0) &lt; entries.getValue()) </p>
-<p>:question::question::question::question::question:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/"> 从前序与中序遍历序列构造二叉树</a> <font color='red'><u><em><strong>很重要， 四个未知参数</strong></em></u></font></p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/sort-colors/">:question::question::question::question::question:颜色分类</a> ，<font color='red'><u><em><strong>好几次没写出来</strong></em></u></font> 双指针，一个指代0，一个指代1，遇到1交换p1++，遇到0，交换，然后如果p0&lt;p1也要交换。p1++ p0++</p>
-<p>:question::question::question::question::question:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/validate-binary-search-tree/">验证二叉搜索树</a> <font color='red'><u><em><strong>没做出来</strong></em></u></font></p>
-<p>:question::question::question::question::question: <a target="_blank" rel="noopener" href="https://leetcode.cn/problems/shortest-unsorted-continuous-subarray/"> 最短无序连续子数组</a> <font color='red'><u><em><strong>没做出来</strong></em></u></font>  双指针，一次遍历，更新max 和 min</p>
-<details>
-        int max = Integer.MIN_VALUE, right = -1;
-        int min = Integer.MAX_VALUE, left = -1;
-        int n = nums.length;
-        for (int i = 0; i < nums.length; i ++) {
-            if (nums[i] < max) {
-                right = i; // num【i】比前面的最大值小 有问题，把i记录下来，
-            } else {
-                max = nums[i]; // max > 前面所有的， 没问题 更新最大值
-            }
-            if (min < nums[n - 1 - i]) {
-                left = n - 1 - i;
-            } else {
-                min = nums[n - 1 - i];
-            }
-        }
-        return right == -1 ? 0 : right - left + 1;
-</details>
-
-<p>:question::question::question::question::question:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/flatten-binary-tree-to-linked-list/">二叉树展开为链表</a>  <font color='red'><u><em><strong>没写出来 先序遍历的逆序遍历</strong></em></u></font></p>
-<p>:question::question::question::question::question: <a target="_blank" rel="noopener" href="https://leetcode.cn/problems/convert-bst-to-greater-tree/">把二叉搜索树转换为累加树</a>  <font color='red'><u><em><strong>没写出来 中序遍历的逆序遍历</strong></em></u></font></p>
-<p>:question::question::question::question::question:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/evaluate-division/">除法求值</a> 先构造图，然后dfs</p>
-<p>:question::question::question::question::question:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/meeting-rooms-ii/">会议室 II</a> 用优先级队列</p>
-<details>
-  class Solution {
-    public int minMeetingRooms(int[][] intervals) {
-        PriorityQueue<int[]> qp = new PriorityQueue<>(new Comparator<int[]>() {
-            public int compare(int[] a, int[] b){
-                if (a[0] == b[0]) {
-                    return a[1] - b[1];
-                } else {
-                    return a[0] - b[0];
-                }
-            }
-        });
-        for (int[] inin : intervals) {
-            qp.add(new int[]{inin[0], 1});
-            qp.add(new int[]{inin[1], -1});
-        }
-        int count = 0;
-        int maxv = 0;
-        while (!qp.isEmpty()) {
-            count += qp.remove()[1];
-            maxv = Math.max(maxv, count);
-        }
-        return maxv;
-    }
-}
-</details>
-
-<p>:question::question::question::question::question: <a target="_blank" rel="noopener" href="https://leetcode.cn/problems/path-sum-iii/">路径总和 III</a> <font color='red'><u><em><strong>前缀和，没做出来</strong></em></u></font> </p>
-<details>
-   public void dfs(TreeNode root, Map<Long, Integer> prefix, long curr, int targetSum) {
-        if (root == null) {
-            return;
-        }
-        curr += root.val;
-        count += prefix.getOrDefault(curr - targetSum, 0);
-        prefix.put(curr, prefix.getOrDefault(curr, 0) + 1);
-        dfs(root.left, prefix, curr, targetSum);
-        dfs(root.right, prefix, curr, targetSum);
-        prefix.put(curr, prefix.getOrDefault(curr, 0) - 1);
-    }
-</details>
-
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/find-the-duplicate-number/">寻找重复数</a> <font color='red'><u><em><strong>没写出来</strong></em></u></font> 二分查找，每次二分都遍历，看看mid对应的《&#x3D;mid 的个数，如果大于mid，说明重复的在left，mid；反之mid+1， left</p>
-<details>
-  int left = 0, right = n - 1;
-        while (left < right) {
-            int mid = (left + right) / 2;
-            int curCount = 0;
-            for (int i = 0; i < n; i++) {
-                if (nums[i] <= mid) {
-                    curCount++;
-                }
-            }
-            if (curCount > mid) {
-                right = mid;
-            } else {
-                left = mid + 1;
-            }
-        }
-        return left;
-</details>
-
-<p>:cactus:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/task-scheduler/">任务调度器</a> 自己写出来了，不过用的是模拟的方法，其实还有另外的规律的方法:</p>
-<details>
-  HashMap<Character, Integer> map = new HashMap<>();
-        for (int i = 0; i < tasks.length; i ++) {
-            map.put(tasks[i], map.getOrDefault(tasks[i], 0) + 1);
-        }
-        int bufa = 0;
-        while (!map.isEmpty()) {
-            int count = 0;
-            List<Character> tmp =  new ArrayList<>(map.keySet());
-            Collections.sort(tmp, new Comparator<Character>() {
-                public int compare(Character a, Character b) {
-                return map.get(b) - map.get(a);
-                }
-            });
-            for (Character ch : tmp) {
-                if (map.get(ch) == 1) {
-                     map.remove(ch);
-                 }  else {
-                    map.put(ch, map.get(ch) - 1);
-                 }
-                 count++;
-                 bufa++;
-                 if (count > n) {
-                     break;
-                 }
-            }
-            if (map.isEmpty()) {
-                break;
-            }
-            while (count <= n) {
-                count++;
-                bufa++;
-            }           
-        }
-        return bufa;
-</details>
-
-
-
-
-
-<p>:cactus:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/house-robber-iii/">打家劫舍 III</a> 回溯，<font color='red'><u><em><strong>很重要得会</strong></em></u></font></p>
-<p>:cactus:最长递增子序列: 很简单的dp，但是一开始没想到</p>
-<p>:cactus:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/find-all-anagrams-in-a-string/">找到字符串中所有字母异位词 </a> 用两个map 指定大小的滑动窗口慢慢划过去就好，不难，注意.equal</p>
-<details>
-  int n = nums.length;
-        int dp[] = new int[n];
-        dp[0] = 1;
-        int max = 1;
-        for (int i = 1; i < n; i ++) {
-            dp[i] = 1;
-            for (int j = 0; j < i; j++) {
-                if (nums[i] > nums[j]) {
-                    dp[i] = Math.max(dp[i], dp[j] + 1);
-                } 
-            }
-            max = Math.max(max, dp[i]);
-        }
-        return max;
-</details>
-
-<hr>
-<p>:cactus:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-tree/"> 二叉树的最近公共祖先</a> : dfs </p>
-<p>:cactus:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/top-k-frequent-elements/">前 K 个高频元素</a> ：第二遍自己写出来了，就是map统计个数，然后把频率变成key，放到另外一个HashMap&lt;Integer, ArrayList<Integer>&gt; map22 &#x3D; new HashMap&lt;&gt;();里面</p>
-<p>:cactus:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/diameter-of-binary-tree/">二叉树的直径 </a> 第二次没想起来，其实就是求节点数量，不难</p>
-<p>:cactus: <a target="_blank" rel="noopener" href="https://leetcode.cn/problems/word-search/">单词搜索</a> 挺有意思的，不难</p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/product-of-array-except-self/">:cactus:除自身以外数组的乘积</a> ：弄个left数组和right数组</p>
-<p>:cactus: <a target="_blank" rel="noopener" href="https://leetcode.cn/problems/palindromic-substrings/">回文子串</a> : 动态规划  不难 二维动态数组</p>
-<p>:cactus:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/maximum-subarray/">最大子数组和</a> 动态规划 不难</p>
-<p>:evergreen_tree:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-cooldown/">买卖股票的最佳时机含冷冻期</a>：dp【n】【2】 两个状态 <font color='red'><u><em><strong>第二次没写出来</strong></em></u></font></p>
-<p>:evergreen_tree:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/combination-sum/">组合总和</a> dfs</p>
-<p>:evergreen_tree:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/queue-reconstruction-by-height/">根据身高重建队列</a> : 排序：先通过元素1降序，然后元素2升序。<font color='red'><u><em><strong>然后利用list的按位插入</strong></em></u></font>：核心思想：高的先排好，矮的插入</p>
-<p>:evergreen_tree:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/decode-string/">字符串解码</a> 很有意思，<font color='red'><u><em><strong>两个栈</strong></em></u></font></p>
-<p>:thumbsup: <a target="_blank" rel="noopener" href="https://leetcode.cn/problems/maximal-rectangle/">最大矩形</a> 困难题， 单调栈，很有趣，值得学习</p>
-<p>:tangerine:<a target="_blank" rel="noopener" href="https://leetcode.cn/problems/find-all-numbers-disappeared-in-an-array/">找到所有数组中消失的数字</a> 没写出来</p>
-<hr>
-<p>简单的一些：</p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/min-stack/">最小栈</a> : 用两个栈</p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/search-a-2d-matrix-ii/">搜索二维矩阵 II</a> 从右上角开始遍历</p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/merge-two-binary-trees/">合并二叉树</a> <font color='red'><u><em><strong>递归</strong></em></u></font></p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/intersection-of-two-linked-lists/">相交链表</a> </p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/symmetric-tree/">对称二叉树</a> : 很简单的回溯，不能不会</p>
-<p>只出现一次的数字 : <font color='red'><u><em><strong>异或</strong></em></u></font></p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/palindrome-linked-list/">回文链表</a> : 反转链表，对比，反正的时候需要用新的node</p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/remove-nth-node-from-end-of-list/">删除链表的倒数第 N 个结点</a> : 双指针，关键在构造一个首节点</p>
-<p>最大正方形：简单的dp</p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/find-first-and-last-position-of-element-in-sorted-array/">在排序数组中查找元素的第一个和最后一个位置</a>  两次logn</p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/move-zeroes/">移动零</a> :最好还是回忆一下</p>
-<p>旋转矩阵</p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/counting-bits/">比特位计数</a></p>
-<p><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/hamming-distance/">汉明距离</a> <font color='red'><u><em><strong>异或 位运算符</strong></em></u></font></p>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/09/30/hot/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Kommentieren und teilen
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
                             href="/2023/09/08/JUC/"
                             aria-label=": JUC"
                         >
@@ -2154,8 +1488,11 @@
 <h3 id="1、volatile"><a href="#1、volatile" class="headerlink" title="1、volatile"></a>1、volatile</h3><blockquote>
 <p><font color='blue'><u><em><strong>volatile具备可见性、有序性但是不具备原子性。他的内存语义是，当写一个volatile变量，jmm会把该线程对应的本地内存中共享变量刷新到主内存,读一个volatile变量，jmm会把该线程对应的本地内存置为无效，然后从主内存里面读，他的实现依赖于一个lock指令，然后我们讲一下怎么用到这个lock。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>我们知道单线程下，由于asifserial的存在，指令执行结果是具备顺序一致性。但是在多线程环境下，重排序会导致各个线程看到的全局执行顺序不一致。</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>1、第一个就是store buffer和invalid queue的原因，会出现脏读的问题，读到脏数据就代表其实在全局执行顺序上重排序了。</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>2、第二个就是多线程的数据依赖性不被考虑，编译器和处理器会出现重排序。</strong></em></u></font></p>
+<ul>
+<li><strong>1、编译器重排序：</strong> 例如将循环内重复调用的操作提前到循环外执行；</li>
+<li><strong>2、处理器系统重排序：</strong> 例如指令并行技术将多条指令重叠执行，或者使用分支预测技术提前执行分支的指令，并把计算结果放到重排列缓冲区（Reorder Buffer）的硬件缓存中，当程序真的进入分支后直接使用缓存中的结算结果；</li>
+<li><strong>3、存储器系统重排序：</strong> 例如写缓冲区和失效队列机制，即是可见性问题，从内存的角度也是指令重排问题。</li>
+</ul>
 <p>解决办法就是<font color='green'><u>*** Memory Barrier（内存屏障）***</u></font>。借助内存屏障可以很好地保证了顺序一致性。</p>
 <p>JMM就是有4种屏障，（cpu三种，读屏障，写屏障，全屏障）</p>
 <blockquote>
@@ -2437,6 +1774,10 @@
 </blockquote>
 <h3 id="Future"><a href="#Future" class="headerlink" title="Future"></a><strong>Future</strong></h3><p>主线程处理一些耗时的任务的时候，可以把这个交给子线程，然后子线程解决后返回结果给主线程。</p>
 <p>future就是一个用于处理异步任务的接口，futuretask实现了runnable和future，他有三个状态，未启动、启动、完成。如果在未启动和启动的时候执行get方法，就会阻塞调用get方法的线程。</p>
+<p>颜屹钧：钧的话，本来想取一个君子的君，代表那种不轻言放弃、凛然正义的君子，但是君是属于水，就换成了钧，钧的话，本身就有尊贵的意思，然后还可以通“均”，这个均就有均衡的意思，各个方面都不差。</p>
+<p>颜屹琛：琛，属金，本身是宝玉的意思，和小宝、66的瑾和瑜是一类意思，而且取得人少。</p>
+<p>颜屹正。正属于金，反过来还刚好是正义。希望孩子刚正不阿，笔画也少点，寓意肯定是极好的。</p>
+<p>颜屹心：取自“钧是人也,或从其大体,或从其小体,何也”–《孟子》。这句话的意思是：孟子说，同样是人，有的人注重身体重要部分，有的人注重身体次要部分。这是因为眼睛、耳朵等器官不会思考，容易被外物所蒙蔽，而心这个器官则有思考的能力，一思考就会有所得，不思考就得不到。所以，如果首先把心这个身体的重要部分树立起来，其他次要部分就不会被引入迷途，这样便可以成为君子。刚刚好，嫂子说过希望孩子有想法，前面那个屹也能对上树立，也蛮适合。不过这个“心”有一个问题，有人说属于金，有人说属于火。</p>
 
                     
                         
@@ -2651,7 +1992,7 @@
 >
 >- **初始容量大小和每次扩充容量大小的不同：** ① 创建时如果不指定容量初始值，`Hashtable` 默认的初始大小为 11，之后每次扩充，容量变为原来的 2n+1。`HashMap` 默认的初始化大小为 16。之后每次扩充，容量变为原来的 2 倍。② 创建时如果给定了容量初始值，那么 `Hashtable` 会直接使用你给定的大小，而 `HashMap` 会将其扩充为 2 的幂次方大小（`HashMap` 中的`tableSizeFor()`方法保证，下面给出了源代码）。也就是说 `HashMap` 总是使用 2 的幂作为哈希表的大小,后面会介绍到为什么是 2 的幂次方。
 >
->- **底层数据结构：** **hashmap 数组+链表+红黑树*，hashtable * **数组+链表**
+>- **底层数据结构：** **hashmap 数组+链表+红黑树，hashtable 数组+链表**
 
 
 
@@ -2685,7 +2026,13 @@ Comparator 除了可以通过创建自定义比较器外，还可以通过[匿�
 
 **AOP是什么？**
 
-> <font color='red'><u>***aop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。**然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop*****</u></font>
+> <font color='red'><u>***aop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。**然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop*** 底层是动态代理JDK和CGLIB**</u></font>
+
+IOC
+
+控制反转的意思，他是把对象创建和对象之间的调用过程，交给spring进行管理。
+
+
 
 **有没有使用过AOP**
 
@@ -2706,11 +2053,9 @@ Comparator 除了可以通过创建自定义比较器外，还可以通过[匿�
 >
 > 2、用**BeanDefinitionReader**把Bean解析成BeanDefinition结构，放到beanDefinitionMap
 >
-> 3、**BeanFactoryPostProcessor**：可以对Bean的元信息进行修改，但是一般不做
->
 > 4、BeanFactory 实例化（构造函数和set），通过反射创建Bean
 >
-> 5、依赖注入、普通、单向、双向
+> 5、依赖注入
 >
 > 6、处理三个Aware接口，	
 >
@@ -2719,16 +2064,38 @@ Comparator 除了可以通过创建自定义比较器外，还可以通过[匿�
 > 8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）
 >
 > 9、***BeanPostProcessor：自定义的逻辑*** aop核心底层动态代理
->
-> 
 
-**Bean的循环引用？**
+
+
+**Bean的循环依赖？**
 
 Spring解决这个是用三级缓存或者懒加载（构造函数的循环依赖问题），三次缓存中：一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。
 
-为什么三层？
+**为什么三层？**
 
-aop
+**所以如果没有AOP的话确实可以两级缓存就可以解决循环依赖的问题，如果加上AOP，两级缓存是无法解决的。如果对象被AOP代理了，我每次从三级缓存中拿到singleFactory对象，执行getObject()方法会产生新的代理对象，所以还要借助另外一个缓存来保存产生的代理对象**
+
+![image-20231222001434059](../images/Java基础知识/image-20231222001434059.png)
+
+
+
+**Spring用到的设计模式**
+
+单例模式：这个在创建Bean的时候用到，创建单例Bean的时候会先去缓存里面找，如果找不到，在触发createBean方法。
+
+工厂模式：就是BeanFactory接口了
+
+代理模式：就是aop。jdk和cglib
+
+模版模式：jdbcTemplate
+
+
+
+**容器初始化流程**
+
+
+
+
 
 
 
@@ -2773,10 +2140,10 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/"
-                            aria-label=": 计算机网络复习1"
+                            href="/2023/07/08/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/"
+                            aria-label=": 输入网络，期间发生了什么？"
                         >
-                            计算机网络复习1
+                            输入网络，期间发生了什么？
                         </a>
                     
                 </h1>
@@ -2798,49 +2165,27 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
             </div>
             
                 <div class="postShorten-content">
-                    <p>计算机网络整体的学习可以按照tcpip网络模型进行学习。我们的总结也是这样的</p>
-<p>Tcp&#x2F;ip网络模型分别是应用层、传输层、网络层、数据链路层</p>
-<p>这里面前三层比较重要，数据链路层复杂的方面涉及实际的物理知识所以我们只对逻辑思想上做一个学习，</p>
-<p>那每一层分别学的是什么呢？</p>
-<p>应用层：HTTP  HTTPS TLS</p>
-<p>传输层：tcp udp </p>
-<p>网络层：ipv4 v6</p>
-<p>基本上就是这样子</p>
-<p>TCP 连接传输协议，这是传输层的，很多应用层的协议在传输层都是使用这个的，比如HTTP</p>
-<h1 id="TCP和UCP的不同"><a href="#TCP和UCP的不同" class="headerlink" title="TCP和UCP的不同"></a>TCP和UCP的不同</h1><blockquote>
-<p>那tcp和udp的差距是，tcp相比udp多了很多为了可靠连接所增加的特性，比如三次握手、四次挥手、流量控制，拥塞控制，超时重传，就是为了数据能可靠的传到对方。udp他不用建立连接，不保证可靠交付，所以效率高。</p>
-<p>除此之外，还有一个很大的不同就是tcp是会分片的，但是udp是不会分片。在这里我们还要知道的一点是在网络层，也就是ip协议中还是会分片的，大小是MTU。但是对于tcp来说因为你要是在ip层才分片，我为了保证可靠，我假设12345 丢了一个2，那我就要12345全部重新发，这样不好，所以我们就在tcp层也分片，大小是MSS。而udp不用可靠，所以他不用分片。</p>
-</blockquote>
-<p>但是过程中究竟是请求-应答模式还是什么模式，那就是后面的不同版本做出的更新。</p>
-<p>但是他并不是不能做到可靠传输，因为udp只是传输层，我们还可以在应用层做出一定的限制来保证传输是可靠的，比如quic协议，当然这是困难的。</p>
-<h1 id="那我们这里用输入网址到显示，来串联一下整体的流程："><a href="#那我们这里用输入网址到显示，来串联一下整体的流程：" class="headerlink" title="那我们这里用输入网址到显示，来串联一下整体的流程："></a>那我们这里用输入网址到显示，来串联一下整体的流程：</h1><p>首先是解析URL，得到三个信息，一个协议、一个域名、一个路径。</p>
-<p>（浏览器缓存 -&gt; 操作系统缓存-&gt;本地DNS服务器-&gt;根域名服务器-&gt;顶级域名服务器-&gt;权威域名服务器）</p>
-<p>根据域名，我们可以先去浏览器缓存里面找有没有，如果有，就直接返回，如果没有那就问操作系统的缓存再去看hosts文件，如果都没有，那就看走下面</p>
-<p>客户端首先会发出一个 DNS 请求，问 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 是啥，发给本地 DNS 服务器。</p>
-<p>本地域名服务器收到客户端的请求后，如果缓存里的表格能找到 <a target="_blank" rel="noopener" href="http://www.xx.com,则它直接返回/">www.xx.com，则它直接返回</a> IP 地址。如果没有，本地 DNS 会去问它的根域名服务器，根 DNS 收到来自本地 DNS 的请求后，返回一个.com的顶级域名服务器地址。</p>
+                    <h1 id="输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？"><a href="#输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？" class="headerlink" title="输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？"></a>输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？</h1><h2 id="1、解析url"><a href="#1、解析url" class="headerlink" title="1、解析url"></a>1、解析url</h2><p>首先，就是对我们输入的url进行解析，一般可以得到三个信息：协议，web服务器，文件的路径</p>
+<p>拿到这三个信息之后我们就可以包装成一个http请求信息</p>
+<p>![image-20230728193306158](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193306158.png)</p>
+<p>如图所示，一个是请求一个是响应报文</p>
+<p>那我们生产出一个消息之后就要开始发送？那应该怎么发？往哪里发？</p>
+<p>这就需要下面的知识。</p>
+<h2 id="地址查询-——-DNS"><a href="#地址查询-——-DNS" class="headerlink" title="地址查询 —— DNS"></a>地址查询 —— DNS</h2><p>基于我们已经拿到的web服务器域名，我们可以先去浏览器缓存里面找有没有，如果有，就直接返回，如果没有那就问操作系统的缓存再去看hosts文件，如果都没有，那就看走下面</p>
+<p>客户端首先会发出一个 DNS 请求，问 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 是啥，并发给本地 DNS 服务器（也就是客户端的 TCP&#x2F;IP 设置中填写的 DNS 服务器地址）。</p>
+<p>本地域名服务器收到客户端的请求后，如果缓存里的表格能找到 <a target="_blank" rel="noopener" href="http://www.xx.com,则它直接返回/">www.xx.com，则它直接返回</a> IP 地址。如果没有，本地 DNS 会去问它的根域名服务器：“老大， 能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？” 根域名服务器是最高层次的，它不直接用于域名解析，但能指明一条道路。</p>
+<p>根 DNS 收到来自本地 DNS 的请求后，发现后置是 .com，说：“<a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 这个域名归 .com 区域管理”，我给你 .com 顶级域名服务器地址给你，你去问问它吧。”</p>
 <p>本地 DNS 收到顶级域名服务器的地址后，发起请求问“老二， 你能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？”</p>
-<p>顶级域名服务器说：“我给你负责 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 区域的权威域名服务器的地址，你去问它应该能问到”。</p>
-<p>本地 DNS 于是转向问权威 DNS 服务器：“老三，<a href="http://www.xx.com对应的IP是啥呀？”">www.xx.com对应的IP是啥呀？”</a> server.com 的权威 DNS 服务器，它是域名解析结果的原出处。为啥叫权威呢？就是我的域名我做主。</p>
-<p>权威 DNS 服务器查询后将对应的 IP 地址 X.X.X.X 告诉本地 DNS，本地域名服务器返回给我们。这时候我们要先建立连接，进行三次握手，然后数据传输。但是要把消息发到对应ip也不是一件容易事情。通过调用 Socket 库，来委托协议栈工作。首当其冲肯定是TCP，其实就是加一个tcp报文头部（源端口、目的端口之后的），然后由IP模块把数据封装成网络包，就是加一个IP头（源IP、目的IP）这时候你就知道了起点和终点。但是还不知道路径怎么规划，这个就需要ARP协议。具体就是先查ARP缓存，没有的话发一个ARP广播。网卡会把数字信号转为电信号，通过网线发送出去。中间会通过交换机（）、路由器，总之就是做FCS校验后，查询<strong>路由表</strong>找到转发的目标，然后重新加一个mac头（同样是ARP），发出去</p>
-<h4 id="1、解析url"><a href="#1、解析url" class="headerlink" title="1、解析url"></a>1、解析url</h4><p><font color='red'><u><em><strong>解析之后得到三个信息，一个协议，一个是web服务器域名，一个是请求文件的路径（可选）。这时候客户端生产自己的HTTP请求报文</strong></em></u></font></p>
-<p>格式如下，方法get，url没有默认index什么的，版本HTTP1.1，字段名就很多，然后是数据，这个数据也是后面一直包装的根数据。</p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193306158.png" alt="image-20230728193306158">	</p>
-<h2 id="地址查询-——-DNS"><a href="#地址查询-——-DNS" class="headerlink" title="地址查询 —— DNS"></a>地址查询 —— DNS</h2><p>（浏览器缓存 -&gt; 操作系统缓存-&gt;本地DNS服务器-&gt;根域名服务器-&gt;顶级域名服务器-&gt;权威域名服务器）</p>
-<p>基于我们已经拿到的web服务器域名，我们可以先去浏览器缓存里面找有没有，如果有，就直接返回，如果没有那就问操作系统的缓存再去看hosts文件，如果都没有，那就看走下面</p>
-<p>客户端首先会发出一个 DNS 请求，问 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 是啥，发给本地 DNS 服务器。</p>
-<p>本地域名服务器收到客户端的请求后，如果缓存里的表格能找到 <a target="_blank" rel="noopener" href="http://www.xx.com,则它直接返回/">www.xx.com，则它直接返回</a> IP 地址。如果没有，本地 DNS 会去问它的根域名服务器，根 DNS 收到来自本地 DNS 的请求后，返回一个.com的顶级域名服务器地址。</p>
-<p>本地 DNS 收到顶级域名服务器的地址后，发起请求问“老二， 你能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？”</p>
-<p>顶级域名服务器说：“我给你负责 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 区域的权威域名服务器的地址，你去问它应该能问到”。</p>
+<p>顶级域名服务器说：“我给你负责 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 区域的权威 DNS 服务器的地址，你去问它应该能问到”。</p>
 <p>本地 DNS 于是转向问权威 DNS 服务器：“老三，<a href="http://www.xx.com对应的IP是啥呀？”">www.xx.com对应的IP是啥呀？”</a> server.com 的权威 DNS 服务器，它是域名解析结果的原出处。为啥叫权威呢？就是我的域名我做主。</p>
 <p>权威 DNS 服务器查询后将对应的 IP 地址 X.X.X.X 告诉本地 DNS。</p>
-<p>本地 DNS 再将 IP 地址返回客户端，我们要先建立连接，进行三次握手，然后数据传输。</p>
-<p>消息传输的过程是我们拿到IP之后，通过调用 Socket 库，来委托协议栈工作。首当其冲肯定是TCP，其实就是加一个tcp报文头部（源端口、目的端口之后的），然后由IP模块把数据封装成网络包，就是加一个IP头（源IP、目的IP）这时候你就知道了起点和终点。但是还不知道路径怎么规划，这个就需要ARP协议。具体就是先查ARP缓存，没有的话发一个ARP广播。网卡会把数字信号转为电信号，通过网线发送出去。中间会通过交换机（）、路由器，总之就是做FCS校验后，查询<strong>路由表</strong>找到转发的目标，然后重新加一个mac头（同样是ARP），发出去</p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193808617.png" alt="image-20230728193808617"></p>
+<p>本地 DNS 再将 IP 地址返回客户端，客户端和目标建立连接</p>
+<p>![image-20230728193808617](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193808617.png)</p>
 <p>通过dns或者缓存获取到ip地址之后，我们就要为发送做一些准备，首先浏览器通过调用 Socket 库，来委托协议栈工作。</p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193955912.png" alt="image-20230728193955912"></p>
+<p>![image-20230728193955912](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193955912.png)</p>
 <p>说是协议栈，其实就是中间tcp udp ip这些协议。那下面我们就来仔细的看看</p>
 <h2 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h2><p>tcp段的头如下所示：</p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728194108402.png" alt="image-20230728194108402"></p>
+<p>![image-20230728194108402](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728194108402.png)</p>
 <p>TCP 传输数据之前，要先三次握手建立连接</p>
 <p>前提：客户端 为closed状态，服务端变成listen状态</p>
 <p>连接：</p>
@@ -2850,19 +2195,19 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
 <p>服务端收到ack也变成了establish状态</p>
 <p>所以三次握手目的是<strong>保证双方都有发送和接收的能力</strong>。</p>
 <p>假设我们已经建立了连接，我们要发送消息，但是消息要遵循tcp协议，他的消息大小是有限制的，不是每一次都可以发送全部消息。具体要求如下：</p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728195857751.png" alt="image-20230728195857751"></p>
+<p>![image-20230728195857751](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728195857751.png)</p>
 <ul>
 <li><code>MTU</code>：一个网络包的最大长度，以太网中一般为 <code>1500</code> 字节。</li>
 <li><code>MSS</code>：除去 IP 和 TCP 头部之后，一个网络包所能容纳的 TCP 数据的最大长度</li>
 </ul>
-<p>所以如果HTTP请求消息超过mss，那么就要分段发送。</p>
+<p>所以如果http请求消息超过mss，那么就要分段发送。</p>
 <p>到这里我们得到了一个tcp的报文段或者说包，下面我们就要把这个包发送给网络层，因为在传输层我们就是服务应用层，然后对好端口，确定好协议，之后的事情就不归传输层管控了。</p>
 <p>到这里，我们的数据包的格式如下所示：</p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728200405680.png" alt="image-20230728200405680"></p>
-<h2 id="定位IP"><a href="#定位IP" class="headerlink" title="定位IP"></a>定位IP</h2><p>ip协议的最重要的功能就是寻址和路由，他要做到这两点就需要你遵循ip协议，那么遵循的要求就是你加一个ip头<img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728200452235.png" alt="image-20230728200452235"></p>
+<p>![image-20230728200405680](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728200405680.png)</p>
+<h2 id="定位IP"><a href="#定位IP" class="headerlink" title="定位IP"></a>定位IP</h2><p>ip协议的最重要的功能就是寻址和路由，他要做到这两点就需要你遵循ip协议，那么遵循的要求就是你加一个ip头![image-20230728200452235](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728200452235.png)</p>
 <p>加上ip头之后我们就知道了我们的源ip和目的ip地址，那么起点站和终点站就已经知道了</p>
 <p>可以现在又有一个小问题，那就是路径怎么规划呢？这时候就需要用到Mac地址</p>
-<h2 id="mac地址"><a href="#mac地址" class="headerlink" title="mac地址"></a>mac地址</h2><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728202408619.png" alt="image-20230728202408619"></p>
+<h2 id="mac地址"><a href="#mac地址" class="headerlink" title="mac地址"></a>mac地址</h2><p><img src="/../images/typora-user-images/image-20230728202408619.png" alt="image-20230728202408619"></p>
 <ul>
 <li>先查询 ARP 缓存，如果其中已经保存了对方的 MAC 地址，就不需要发送 ARP 查询，直接使用 ARP 缓存中的地址。</li>
 <li>而当 ARP 缓存中不存在对方 MAC 地址时，则发送 ARP 广播查询</li>
@@ -2870,7 +2215,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
 <p>也就是说到了网络接口层，要发了，结果不知道往哪里发，这时候就按照上面两步得到mac地址</p>
 <p>因为上面已经得到了ip地址，所以直接喊话：这个 IP 地址是谁的？请把你的 MAC 地址告诉我，就得到mac地址了。</p>
 <p>到这里数据包还差最后一层包装</p>
-<h2 id="出口–网卡"><a href="#出口–网卡" class="headerlink" title="出口–网卡"></a>出口–网卡</h2><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728204942674.png" alt="image-20230728204942674"></p>
+<h2 id="出口–网卡"><a href="#出口–网卡" class="headerlink" title="出口–网卡"></a>出口–网卡</h2><p>![image-20230728204942674](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728204942674.png)</p>
 <p>最后一层包装就是上面图片提到的报头和起始帧分界符和fcs帧校验序列</p>
 <p>网卡驱动获取网络包之后，会将其<strong>复制</strong>到网卡内的缓存区中，接着会在其<strong>开头加上报头和起始帧分界符，在末尾加上用于检测错误的帧校验序列</strong>。</p>
 <p>到这里数据包就真正的包装结束了，最后网卡会将包转为电信号，通过网线发送出去。！！</p>
@@ -2881,239 +2226,24 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
 <p>计算机的网卡本身具有 MAC 地址，并通过核对收到的包的接收方 MAC 地址判断是不是发给自己的，如果不是发给自己的则丢弃；相对地，交换机的端口不核对接收方 MAC 地址，而是直接接收所有的包并存放到缓冲区中。因此，和网卡不同，<strong>交换机的端口不具有 MAC 地址</strong>。</p>
 <h3 id="查询MAC-地址表"><a href="#查询MAC-地址表" class="headerlink" title="查询MAC 地址表"></a>查询<strong>MAC 地址表</strong></h3><p>如果找到，就发送到相应的端口，如果找不到，那说明该mac地址的设备还没有向我们交换机发送过包，那这时候我们主动的向除了源端口的所有端口都发送一遍，因为后面的设备他自己都有检测功能，所以不需要担心</p>
 <p>这时候要么就发送到位，要么就可能离开子网了，离开子网需要用到路由器</p>
-<h2 id="出境大门–路由器"><a href="#出境大门–路由器" class="headerlink" title="出境大门–路由器"></a>出境大门–路由器</h2><h3 id="路由器的包接收操作"><a href="#路由器的包接收操作" class="headerlink" title="路由器的包接收操作"></a>路由器的包接收操作</h3><blockquote>
-<p>1、首先，电信号到达网线接口部分，路由器中的模块会将电信号转成数字信号，然后通过包末尾的 <code>FCS</code> 进行错误校验。</p>
-<p>2、检查 MAC 头部中的<strong>接收方 MAC 地址</strong>，看看是不是发给自己的包，如果是就放到接收缓冲区中，否则就丢弃这个包。</p>
-<p>3、路由器就会<strong>去掉</strong>包开头的 MAC 头部。</p>
-</blockquote>
-<h3 id="路由器的发送操作"><a href="#路由器的发送操作" class="headerlink" title="路由器的发送操作"></a>路由器的发送操作</h3><p><font color='red'><u><em>*<em><strong>匹配路由表确定输出端口并判断转发目标</strong>。</em>*而路由器则会忽略主机号部分，只匹配网络号部分 这里用的是最长匹配，</em><em>如果匹配上了，我们就看下他的网关列，如果网关是一个 IP 地址，那就是我们的转发目标，如果为空，那就是终点了。下面通过通过 ARP协议根据 IP 地址查询 MAC 地址，路由器也有 ARP 缓存，因此首先会在 ARP 缓存中查询，如果找不到则发送 ARP 查询请求。</em>**</u></font></p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20231025123050860.png" alt="image-20231025123050860"></p>
+<h2 id="出境大门–路由器"><a href="#出境大门–路由器" class="headerlink" title="出境大门–路由器"></a>出境大门–路由器</h2><h3 id="路由器的包接收操作"><a href="#路由器的包接收操作" class="headerlink" title="路由器的包接收操作"></a>路由器的包接收操作</h3><p>首先，电信号到达网线接口部分，路由器中的模块会将电信号转成数字信号，然后通过包末尾的 <code>FCS</code> 进行错误校验。</p>
+<p>如果没问题则检查 MAC 头部中的<strong>接收方 MAC 地址</strong>，看看是不是发给自己的包，如果是就放到接收缓冲区中，否则就丢弃这个包。</p>
+<p>完成包接收操作之后，路由器就会<strong>去掉</strong>包开头的 MAC 头部。</p>
+<p><strong>MAC 头部的作用就是将包送达路由器</strong>，其中的接收方 MAC 地址就是路由器端口的 MAC 地址。因此，当包到达路由器之后，MAC 头部的任务就完成了，于是 MAC 头部就会<strong>被丢弃</strong>。</p>
+<p>接下来，路由器会根据 MAC 头部后方的 <code>IP</code> 头部中的内容进行包的转发操作。</p>
+<h3 id="路由器的发送操作"><a href="#路由器的发送操作" class="headerlink" title="路由器的发送操作"></a>路由器的发送操作</h3><p>首先，我们需要根据<strong>路由表的网关列</strong>判断对方的地址。</p>
+<ul>
+<li>如果网关是一个 IP 地址，则这个IP 地址就是我们要转发到的目标地址，<strong>还未抵达终点</strong>，还需继续需要路由器转发。</li>
+<li>如果网关为空，则 IP 头部中的接收方 IP 地址就是要转发到的目标地址，也是就终于找到 IP 包头里的目标地址了，说明<strong>已抵达终点</strong>。</li>
+</ul>
+<p>反正我们从路由表知道了ip地址，那么我们同样用这个地址去查mac地址</p>
 <p>接下来是发送方 MAC 地址字段，这里填写输出端口的 MAC 地址。还有一个以太类型字段，填写 <code>0800</code> （十六进制）表示 IP 协议。</p>
 <p>网络包完成后，接下来会将其转换成电信号并通过端口发送出去。这一步的工作过程和计算机也是相同的。</p>
 <p>发送出去的网络包会通过<strong>交换机</strong>到达下一个路由器。由于接收方 MAC 地址就是下一个路由器的地址，所以交换机会根据这一地址将包传输到下一个路由器。</p>
-<h1 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h1><p>这边举个例子<img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230729000740012.png" alt="image-20230729000740012"></p>
+<h1 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h1><p>这边举个例子![image-20230729000740012](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230729000740012.png)</p>
 <p>子网1某个设备想要发送数据给子网2的某个设备</p>
 <p>首先源ip和目的ip是知道的，如果只是简单的arp群发这个ip问是谁的ip地址，其实是找不到的，所以判断是否为同一子网，如果不是，就把目的mac改成网关的mac，然后数据发送到网关，这时候官网一查mac地址，发现属于子网2的设备，这时候修改源mac为自己的mac，修改目的mac为设备的地址，从子网2的网卡发出。</p>
 <p>大多数情况下一个子网的默认网关就是一个，就基本代表着出口。复杂情况就需要某种选择算法了</p>
-<h2 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP"></a>HTTP</h2><p>超文本传输协议，就是两点之间超越普通文本范畴的文本（包括文本视频图片等等）的一种协议</p>
-<h4 id="HTTP常见状态码"><a href="#HTTP常见状态码" class="headerlink" title="HTTP常见状态码"></a>HTTP常见状态码</h4><blockquote>
-<table>
-<thead>
-<tr>
-<th>1XX 代表提示信息</th>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody><tr>
-<td>2XX 这个就是成功的状态吗</td>
-<td>200 普通的正常的成功</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>3XX 代表重定向</td>
-<td>301 永久重定向</td>
-<td>302 临时重定向</td>
-<td>304 缓存重定向</td>
-<td></td>
-</tr>
-<tr>
-<td>4XX 代表客户端的报文错误</td>
-<td>400 比较笼统的</td>
-<td>404 没找到</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>5XX 代表服务器端端报文错误</td>
-<td>500 同样比较笼统</td>
-<td>503 请稍后再访问</td>
-<td></td>
-<td></td>
-</tr>
-</tbody></table>
-</blockquote>
-<h4 id="常见的字段"><a href="#常见的字段" class="headerlink" title="常见的字段"></a>常见的字段</h4><blockquote>
-<p>host</p>
-<p>content-length</p>
-<p>content-type</p>
-<p>connection </p>
-<p>content-encodeing</p>
-</blockquote>
-<h4 id="HTTP-Get和Post区别"><a href="#HTTP-Get和Post区别" class="headerlink" title="HTTP://Get和Post区别"></a><a target="_blank" rel="noopener" href="http://get和post区别/">HTTP://Get和Post区别</a></h4><blockquote>
-<p>额，get和post在请求行会有method的区别，实际中，其实get也可以带数据，post也可以不带数据。所以我觉得最大的区别还是在于语义的，get是读取的语义，post是有一种处理操作的语义。最后get是安全幂等，post不安全也不幂等。</p>
-</blockquote>
-<h4 id="HTTP缓存"><a href="#HTTP缓存" class="headerlink" title="HTTP缓存"></a>HTTP缓存</h4><blockquote>
-<p>包括强制缓存和协商缓存</p>
-<p>强制缓存就是浏览器缓存没有过期，那我就直接使用浏览器的缓存，一般用Cache-Control，相对时间。</p>
-<p>协商缓存是有两种，一种时间，一种依赖唯一标识</p>
-<p>1、请求头部里面的if modified since 和响应头部last- modified</p>
-<p>响应信息的头部会有last modified，然后我们会带这个ifmodifiedsince：时间，去访问服务器，服务器看到之后，就拿自己的Last modified去对比 如果没改，返回304，如果改了，返回200</p>
-<p>2、Etag 唯一标识</p>
-<p>流程一样，但是etag优先级更高，因为 if modified since还是基于时间，而时间本身可能有一些限制。</p>
-<p>1、有可能没有修改文件，但是文件的最后修改时间会变化</p>
-<p>2、秒级以内的操作也许不能充分做出响应</p>
-</blockquote>
-<h4 id="HTTP优缺点"><a href="#HTTP优缺点" class="headerlink" title="HTTP优缺点"></a>HTTP优缺点</h4><p><strong>优点：</strong></p>
-<blockquote>
-<p>简单，灵活易扩充，应用广泛跨平台</p>
-</blockquote>
-<p><strong>缺点：</strong></p>
-<blockquote>
-<p>1、HTTP无状态的。</p>
-<p>在此基础上出现了cookie技术，他就是通过在请求和响应报文里面增加cookie信息，来控制客户端的状态</p>
-<p>2、明文传输。</p>
-<p>3、不安全 也是最重要的原因</p>
-<blockquote>
-<p>账号信息不安全</p>
-<p>不验证对方的身份</p>
-<p>无法证明报文的完整性</p>
-</blockquote>
-</blockquote>
-<p><strong>HTTP1.1改进</strong></p>
-<blockquote>
-<p>1、HTTP1.1在HTTP1.0的基础上提出了长连接，之前是《请求-应答》模式就是你发完应答完，关闭连接，想要进行下一次通信，那就得重新建立连接，现在可以建立一次连接之后，就可以 发收发收发收 只要一方没有明确提出断开连接，那么就一直连着</p>
-<p>2、管道通信，HTTP1.1支持管道，就是所有请求都处于管道内部，我们可以发发发，而不需要等他先回复再发第二个，你可以发发发，减少了时间</p>
-<p>但是这里有一个问题，HTTP是基于tcp的所以服务端会按照顺序接收请求。</p>
-<p>所以说，HTTP1.1可以解决发送端的对头阻塞，但是无法解决接受端的对头阻塞</p>
-<p>然而！然而！HTTP1.1默认不开启管道，</p>
-</blockquote>
-<h2 id="HTTPS"><a href="#HTTPS" class="headerlink" title="HTTPS"></a>HTTPS</h2><h3 id="HTTPS和HTTP的区别？"><a href="#HTTPS和HTTP的区别？" class="headerlink" title="HTTPS和HTTP的区别？"></a>HTTPS和HTTP的区别？</h3><p><font color='red'><u><em><strong>Https在Http的基础上加入了TLS协议，在三次握手之后还要进行TLS握手，有RSA、ECDHE。这个TLS握手的过程中就用到了信息加密、数字签名、身份证书。</strong></em></u></font></p>
-<h3 id="TLS"><a href="#TLS" class="headerlink" title="TLS"></a>TLS</h3><p><strong>1、信息加密</strong></p>
-<p>使用的是混合加密，<font color='red'><u><em><strong>非对称加密是在TLS握手的时候，对称加密是在传输数据的时候。</strong></em></u></font></p>
-<p>非对成加密安全，非对称加密速度更快。</p>
-<p><strong>2、数字签名（一个哈希值），身份证书（经过CA私钥加密的服务器公钥+内容+数字签名），这两个可以一起讲</strong></p>
-<p>整体流程：服务器发送公钥和数字签名发到CA里面，CA用自己的私钥加密服务器的公钥和数字签名，这个就是证书！然后客户端发来请求的时候，服务器就把自己的证书发过去，客户端收到证书，用CA的公钥解密，得到了服务器的公钥和服务器的数字签名，这个签名我们上面讲了一个是原始内容一个是私钥对于哈希值的加密，那我们怎么验证呢？就是用公钥去解密加密项得到一个哈希值，再对原始内容做同样的哈希操作，判断两个哈希值到底一不一样，一样代表认证成功，否则，认证失败。</p>
-<h4 id="3、TLS的秘钥交换算法"><a href="#3、TLS的秘钥交换算法" class="headerlink" title="3、TLS的秘钥交换算法"></a>3、TLS的秘钥交换算法</h4><p>TLS的密钥交换算法不同，那么连接步骤也不同，我们会介绍两种</p>
-<h5 id="RSA"><a href="#RSA" class="headerlink" title="RSA"></a>RSA</h5><p><strong>1、客户端 &gt; 服务端。</strong></p>
-<blockquote>
-<p>Client Hello：client 随机数 + TLS版本号+密码套件，密码套件可以说是一组配置的整合信息罢了</p>
-</blockquote>
-<p><strong>2、客户端 &lt; 服务端。</strong></p>
-<blockquote>
-<p>Server Hello:server随机数+确认版本号+确认密码套件</p>
-<p>Certificate: 证书</p>
-<p>Server Hello Done：</p>
-</blockquote>
-<p>当然这里收到之后，先校验，校验流程如下：</p>
-<p>首先我们知道了数字签名有原始内容和对于哈希值加密的数字签名，我们对原始内容加密（签名算法），对数字签名解密（CA公钥）</p>
-<p>当然，其中有一个问题就是证书的信任问题？为什么？</p>
-<p>因为我们得到的证书不一定是CA签发的，假如是中间机构签发的百度证书，那么我们就不能用内置的本地CA证书中的公钥去认证，所以我们先找签发机构，发现是一个中间机构，我们向中间机构请求证书，收到证书后发现这个机构的签发者是CA，那么我们可以用CA去认证中间的这个证书，这个证书被认证了 ，那么百度的也就认证了。</p>
-<p><strong>3、客户端 &gt; 服务端 使用服务器的公钥加密pre-master随机数发给服务端</strong></p>
-<blockquote>
-<p>Client Key Exchange: 用第二步解密得到的公钥加密pre-master</p>
-<p>Change Cipher spec：改用会话秘钥加密通信，</p>
-<p>Finished：所有握手数据的摘要，再用会话密钥（master secret）加密一下，让服务器做个验证</p>
-</blockquote>
-<p><strong>4、客户端 &lt; 服务端 服务端发送 加密算法改变通知，和握手结束通知</strong></p>
-<blockquote>
-<p>Change Cipher spec：改用会话秘钥加密通信</p>
-<p>Finished: 所有握手数据的摘要，再用会话密钥（master secret）加密一下，让服务器做个验证</p>
-</blockquote>
-<p>上面这个就是RSA的基本流程，但是基于RSA的HTTPS依旧存在《前向安全》的问题，客户端发送给服务端的随机数要用服务端的公钥加密，如果服务端私钥泄密，那么所有的TLS通讯就将被破解</p>
-<h5 id="ECDHE"><a href="#ECDHE" class="headerlink" title="ECDHE"></a>ECDHE</h5><p>讲过程之前，可以先说一下这个算法。先讲一下前身DH算法。这个算法依赖的就是对数运算的基础上加了「模运算」。我们对数算法知道对数得到真数很简单，但是从真数得到对数是很难的。</p>
-<p><strong>1、客户端 &gt; 服务端。</strong></p>
-<blockquote>
-<p>Client Hello：client 随机数 + TLS版本号+密码套件，密码套件可以说是一组配置的整合信息罢了</p>
-</blockquote>
-<p><strong>2、客户端 &lt; 服务端。</strong></p>
-<blockquote>
-<p>Server Hello:server随机数+确认版本号+确认密码套件</p>
-<p>Certificate: 证书</p>
-<p><strong>Server Key Exchange</strong>：选择椭圆曲线，和根据椭圆曲线的基点公钥，发给客户端</p>
-<p>Server Hello Done：</p>
-</blockquote>
-<p><strong>3、客户端 &gt; 服务端 使用服务器的公钥加密pre-master随机数发给服务端</strong></p>
-<blockquote>
-<p>Client Key Exchange: 生成一个随机数作为客户端的私钥，根据前面信息生成<strong>客户端的公钥</strong>，发给服务端。<font color='red'><u><em><strong>至此，双方都有对方的椭圆曲线公钥、自己的椭圆曲线私钥、椭圆曲线基点 G。所以能算出x，两个随机数+x就是最后的秘钥</strong></em></u></font></p>
-<p>Change Cipher spec：改用会话秘钥加密通信，</p>
-<p><strong>Encrypted Handshake Message</strong>：所有握手数据的摘要，再用会话密钥加密一下，让服务器做个验证</p>
-</blockquote>
-<p><strong>4、客户端 &lt; 服务端 服务端发送 加密算法改变通知，和握手结束通知</strong></p>
-<blockquote>
-<p>Change Cipher spec：改用会话秘钥加密通信</p>
-<p>Encrypted Handshake Message: 所有握手数据的摘要，再用会话密钥（master secret）加密一下，让服务器做个验证</p>
-</blockquote>
-<p>RSA和ECDHE的区别</p>
-<ul>
-<li>RSA 密钥协商算法「不支持」前向保密，ECDHE 密钥协商算法「支持」前向保密；</li>
-<li>使用了 RSA 密钥协商算法，TLS 完成四次握手后，才能进行应用数据传输，而对于 ECDHE 算法，客户端可以不用等服务端的最后一次 TLS 握手，就可以提前发出加密的 HTTP 数据，节省了一个消息的往返时间（这个是 RFC 文档规定的，具体原因文档没有说明，所以这点我也不太明白）；</li>
-<li>使用 ECDHE， 在 TLS 第 2 次握手中，会出现服务器端发出的「Server Key Exchange」消息，而 RSA 握手过程没有该消息</li>
-</ul>
-<h4 id="HTTPS怎么实现数据的完整性？"><a href="#HTTPS怎么实现数据的完整性？" class="headerlink" title="HTTPS怎么实现数据的完整性？"></a>HTTPS怎么实现数据的完整性？</h4><p>刚才我们提到了TLS可以解决三个问题，包括完整性，</p>
-<p>其实TLS在实现上包括了握手协议和记录协议</p>
-<p>​	握手协议就是四次握手+后续加密来保护应用程序</p>
-<p>​	记录协议负责保护数据的完整性和来源</p>
-<p>所以我们来看记录协议：，他的实现就是负责对消息（HTTP数据）的压缩，加密和数据认证<img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230802185945107.png" alt="	"></p>
-<p>这里还是应用层，消息被分割后进行压缩，加上消息验证码，加密，加密后加上一个报头，后面就是交给tcp层，传输层</p>
-<h4 id="HTTPS一定安全吗"><a href="#HTTPS一定安全吗" class="headerlink" title="HTTPS一定安全吗"></a>HTTPS一定安全吗</h4><p>理论上这个协议是安全的，HTTPS其实就是加了个TLS协议，那就是问这个TLS是不是安全的</p>
-<p>而TLS就是按四次握手</p>
-<p>1、第一种方法：返回的证书，他大概率是伪造的，但是我们如果接受了，那就不一样了，你接受了服务器的证书，相当于信任了，那后面的通信就会被监听</p>
-<p>2、直接植入根证书也会导致这种情况</p>
-<p>所以关键就是对于证书的认证</p>
-<h3 id="HTTP1-1-gt-HTTP-2-gt-HTTP3"><a href="#HTTP1-1-gt-HTTP-2-gt-HTTP3" class="headerlink" title="HTTP1.1  -&gt; HTTP 2 -&gt; HTTP3"></a>HTTP1.1  -&gt; HTTP 2 -&gt; HTTP3</h3><p><font color='red'><u><em><strong>HTTP1.1在HTTP1.0的基础上增了长连接和管道，解决了发送方的对头阻塞</strong></em></u></font></p>
-<p>缺点：header是没有压缩的，只压缩了body部分，接收方会有对头阻塞，服务端智能被动响应</p>
-<p><font color='red'><u><em><strong>HTTP2在是基于HTTPS的，所以安全性肯定有保障</strong></em></u></font></p>
-<p><strong>1、头部压缩</strong></p>
-<p>HTTP2会压缩头部，会帮你压缩消除重复的部分，用的是HPACK算法</p>
-<p><font color='red'><u><em><strong>这就是HPACK算法，HPACK包括三个部分（静态字典、动态字典、huffman编码），字段名会被静态表或者动态表的index代替，huffman编码则是去压缩Value的值。</strong></em></u></font></p>
-<blockquote>
-<p><strong>静态表</strong></p>
-<p>表中的参数都是提前定义好的，只有固定的 61个值。如果头部字段在静态表里面，第一个字节是01+静态表的Index，第二个字节代表是否使用Huffman编码+长度。后面就是内容。</p>
-<p><strong>动态表</strong></p>
-<p>重复的字段会被放到动态表里面，编码什么的和静态表一样</p>
-</blockquote>
-<p><strong>2、二进制格式</strong></p>
-<p>HTTP2不像是HTTP1是纯文本的报文，而是全部改成了二进制，头部和数据题都是二进制，统称帧</p>
-<p><strong>3、并发传输，引入了流的机制</strong></p>
-<p>一条tcp连接有多个流，每个流可以包含一个或者多个message，这个message就是请求或者响应，message里面有一个或者多个frame帧，不同的HTTP请求有独一无二的帧，所以可以乱序发送，后面会按照streamid组装，<strong>同一 Stream 内部的帧必须是严格有序的</strong></p>
-<p><font color='red'><u><em><strong>HTTP3，把tcp换成了udp，但是为了可靠，推出了QUIC</strong></em></u></font></p>
-<blockquote>
-<p>1、接住了流、没有对头阻塞</p>
-<blockquote>
-<p>但是各个流之间是相互独立的，一个流阻塞了，另外的流不会阻塞，这样就保证了没有对头阻塞</p>
-</blockquote>
-<p>2、QUIC包括了TLS，所以连接更快</p>
-<blockquote>
-<p>因为HTTP2里面tcp和TLS是分层的先三次握手然后四次握手，这样需要3个rtt。然而quic内部携带了TLS，而且TLS1.3只需要一个rtt就可以完成密钥的协商。就是说，第一次发送的时候就已经把签名算法、随机数都发给服务端了，甚至在第二次可以达到0rtt</p>
-</blockquote>
-<p>3、连接迁移</p>
-<blockquote>
-<p>tcp是四元组，而quic是基于dcp的，他是靠<font color='red'><u><em><strong>连接id</strong></em></u></font>来标记通信，所以ip换了也没事</p>
-</blockquote>
-<p>4、头部压缩变成了QPACK</p>
-<blockquote>
-<p>静态表变成91项，动态编码方式换了</p>
-</blockquote>
-</blockquote>
-<h4 id="HTTP1-1请求怎么优化"><a href="#HTTP1-1请求怎么优化" class="headerlink" title="HTTP1.1请求怎么优化"></a>HTTP1.1请求怎么优化</h4><p>一方面是HTTP发送的问题，一方面是他本身数据的问题</p>
-<p>1、首先肯定是避免HTTP请求：缓存技术</p>
-<p>2、减少重定向，这个就是把重定向请求交给代理服务器</p>
-<p>3、合并请求，就是把多个访问小文件的请求合并成一个大的</p>
-<p>4、延迟发送，只访问看得到的资源</p>
-<p>5、无损压缩，accept- encoding：gzip br </p>
-<p>6、有损压缩，webP png</p>
-<h4 id="HTTPS怎么优化"><a href="#HTTPS怎么优化" class="headerlink" title="HTTPS怎么优化"></a>HTTPS怎么优化</h4><p>HTTPs对于HTTP多了一个TLS，关键就是通过非对成加密握手得到对成加密的会话密钥</p>
-<ul>
-<li>提高cpu</li>
-<li>升级linux </li>
-<li>对密钥交换过程进行优化</li>
-<li>RSA要四次握手，慢，安全性不高，我们可以缓存eche密钥交换算法，曲线选择x25519，对成加密算法，也可以换aes128</li>
-<li>TLS升级1.3，升级的地方在于hello和公钥交换两个消息合并成一个消息</li>
-<li>证书优化，分为传输优化和验证优化。</li>
-</ul>
-<p>传输：服务器证书选择椭圆曲线</p>
-<p>验证：验证的过程中不仅需要ca还需要是否被ca吊销；crl是吊销列表，ca定期更新，但是实时性不好，ocsp，向ca fan song请求，返回状态，这个增加了请求开销，万一网络不好或者ca繁忙就会出现延迟；oscp stapling，服务器向ca定期查证书状态，然后在握手阶段就直接发给客户端，这样客户端就不用再去请求了。</p>
-<ul>
-<li>会话复用：session id 和session ticket</li>
-</ul>
-<p>session id：首次连接后，在内存缓存会话密钥，用session id标识，再次连接的时候，会在hello消息中带上这个，服务器收到这个就从缓存里面找，直接回复会话状态，跳过中间流程</p>
-<p>缺点是，内存压力大</p>
-<p>session ticket：类似于cookie，把缓存的工作交给客户端，首次连接，会加密这个发给客户端缓存起来，第二次连接，客户端会发送ticket，服务器解密后验证日期是否有效，没问题就恢复会话。</p>
 
                     
                         
@@ -3123,7 +2253,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                     
                         <p>
                             <a
-                                href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/#post-footer"
+                                href="/2023/07/08/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
@@ -3146,7 +2276,259 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A03/"
+                            href="/2023/07/08/Kafka/"
+                            aria-label=": Kafka知识"
+                        >
+                            Kafka知识
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-07-08T00:00:00+08:00">
+	
+		    08 Jul 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>常见面试问题：</p>
+<h2 id="Kafka高性能的设计"><a href="#Kafka高性能的设计" class="headerlink" title="Kafka高性能的设计"></a><strong>Kafka高性能的设计</strong></h2><p><font color='red'><u><em><strong>1）分区设计，可以实现并行操作。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>2）磁盘顺序写</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>3）MMF+页缓存</strong></em></u></font> 即使kafka是顺序写，这个本身比较快，但是即使这样，速度也追不上内存。所以Kafka不是实时写入磁盘，而是先把数据写到页缓存里面，满足一定条件在刷回磁盘。它的工作原理是MMF，直接利用操作系统的页缓存来实现磁盘文件到物理内存的直接映射，完成映射之后你对物理内存的操作会被同步到硬盘上（操作系统在适当的时候）。</p>
+<p><font color='red'><u><em><strong>4）零拷贝</strong></em></u></font></p>
+<p>传统的io，先读取、再发送，实际经过 4 次 copy。</p>
+<p>分别是：</p>
+<ol>
+<li>第一次：将磁盘文件，读到内核缓冲区；</li>
+<li>第二次：将内核缓冲区的数据，copy 到 application 应用程序的 buffer；</li>
+<li>第三步：将 application 应用程序 buffer 中的数据，copy 到 socket 网络发送缓冲区(属于操作系统内核的缓冲区)；</li>
+<li>第四次：将 socket buffer 的数据，copy 到网卡，由网卡进行网络传输。</li>
+</ol>
+<p>零拷贝是只拷贝两次，</p>
+<ul>
+<li>transferTo() 方法引发 DMA 引擎将文件内容拷贝到内核缓冲区。数据拷贝到 socket缓存区，文件描述可以代替数据拷贝</li>
+<li>DMA 引擎直接把数据从内核缓冲区传输到协议引擎，</li>
+</ul>
+<p><strong>DMA（直接存储器访问）用来提供在外设和存储器之间或者存储器和存储器之间的高速数据传输，他本质是一个硬件技术，就是比如你要把外设A的数据传到内存B，你直接给A和B之间加一条数据通路，然后给几个配件就可以实现，传输操作交给DMAC控制器（类似CPU）</strong></p>
+<p><img src="/../images/Kafka/image-20231116011032880.png" alt="image-20231116011032880"></p>
+<h2 id="Kafka的高可用了解过吗"><a href="#Kafka的高可用了解过吗" class="headerlink" title="Kafka的高可用了解过吗"></a>Kafka的高可用了解过吗</h2><ul>
+<li><p>集群：首先kafka集群由多个broker组成，一个broker宕机，其余的broker依旧提供服务。</p>
+</li>
+<li><p>副本机制：一个topic有多个分区，每个分区有多个副本 、存在不同的broker里面。然后如果leader故障了，会从ISR中选举新的leader（ISR中存活，并且排在AR列表前面的优先），通过高水位线保持同步。如果Follower挂了，先踢出ISR，如果恢复那就等日志末端位移追上leader的HW。</p>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th><strong>1.follower故障流程</strong></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><img src="/../images/Kafka/b01dad78f006b40d82e719fe71caeb78.png" alt="image-20220902210759125"></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2.leader故障流程</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><img src="/../images/Kafka/1f96e55810be5ff8cbf64c04b5d37315.png" alt="image-20220902210830344"></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+</blockquote>
+</li>
+</ul>
+<h2 id="消息保证消息不丢失？可靠性"><a href="#消息保证消息不丢失？可靠性" class="headerlink" title="消息保证消息不丢失？可靠性"></a>消息保证消息不丢失？可靠性</h2><blockquote>
+<p>分成三个方面分析：</p>
+<ul>
+<li>消息生产者发送丢失：</li>
+</ul>
+<blockquote>
+<p>异步发送，发送失败使用回调进行记录或者重发 </p>
+<p>重试机制</p>
+</blockquote>
+<p>broker存储丢失：</p>
+<blockquote>
+<p>依赖一个ACK确认机制</p>
+<p>0：发了就不管了</p>
+<p>1：需要leader成功接收</p>
+<p>-1：所有ISR的follower都成功接收才可以</p>
+</blockquote>
+<p>消费者消费丢失：</p>
+<blockquote>
+<p>取消自动提交（自动提交5s一次，会导致重复消费和消息丢失），改为手动。然后有三种方式：同步、异步、同步+异步组合提交</p>
+</blockquote>
+</blockquote>
+<h2 id="重复消费问题怎么解决？"><a href="#重复消费问题怎么解决？" class="headerlink" title="重复消费问题怎么解决？"></a>重复消费问题怎么解决？</h2><p>重复消费的话也分生产者和消费者。</p>
+<p>生产者：生产者自带的重试机制，单分区内是可以用幂等性解决的。</p>
+<p>消费者：消费者重复消费是因为自动提交，首先最好关闭自动提交，然后开启手动提交。用同步+异步的组合方式。最好我们给了一个保底的方案，就是防重字段。</p>
+<h2 id="怎么保证顺序性-？"><a href="#怎么保证顺序性-？" class="headerlink" title="怎么保证顺序性 ？"></a>怎么保证顺序性 ？</h2><p>一个topic的数据会通过那个分区分配器分发到某个分区，如果会发到多个分区，我们是不能保证顺序性的，但是我们可以用幂等性保证在一个分区内是顺序的。因为生产者发送消息给broker的时候会携带PID和sequence number，一个是生产者的id，一个是消息的序列号。我们靠这个可以保证顺序性。所以我们尽可能的要把消息发到一个分区里面。那这个就要配合分区器来使用，如果你指定了分区号或者指定key，那就代表指定了某个分区，这样就能实现顺序性。如果你用没有指定，他就会用随机粘性分区策略，那就不能保证顺序性。</p>
+<blockquote>
+<p>生产者发送消息给broker的时候会携带PID和sequence number，一个是生产者的id，一个是消息的序列号。</p>
+<p>broker中会在内存维护一个pid+分区对应的序列号。如果收到的序列号正好比内存序列号大一，才存储消息，如果小于内存序列号，意味着消息重复，那么会丢弃消息，并应答。如果远大于内存序列号，意味着消息丢失，会抛出异常。</p>
+<p>了解：</p>
+<p>至少一次（At Least Once）： ACK级别设置为-1 + 分区副本大于等于2 + ISR里应答的最小副本数量&gt;&#x3D;2。可以保证数据不丢失，但是不能保证数据不重复。<br>最多一次（At Most Once）：ACK级别设置为0 。可以保证数据不重复，但是不能保证数据不丢失。<br>精确一次（Exactly Once）：至少一次 + 幂等性 。 Kafka 0.11版本引入一项重大特性：幂等性和事务。</p>
+</blockquote>
+<blockquote>
+<p>AR &#x3D; ISR + ORS</p>
+<p>ISR 表示在保持一定程度同步的 follower 副本；</p>
+<p>OSR 表示不能保持一定程度同步的follower副本</p>
+</blockquote>
+<p><strong>数据完全可靠条件 &#x3D; ACK级别设置为-1 + 分区副本大于等于2 + ISR里应答的最小副本数量大于等于2</strong></p>
+<blockquote>
+<p>幂等性只能保证的是在单分区单会话内不重复。如果设计到跨区，为了保证同时发的多条消息，要么全成功，要么全失败。kafka引入了事务</p>
+<p>开启事务需要producer设置transactional.id的值并同时开启幂等性。</p>
+<h2 id="定位事务协调器"><a href="#定位事务协调器" class="headerlink" title="定位事务协调器"></a>定位事务协调器</h2><p>其本质也是一个后端的broker，只是这个broker起到了针对当前事务的协调作用，它是在transaction_state特殊主题里面根据transcationid%50在一个特殊主题里面选出对应节点。</p>
+<p>事务初始化</p>
+<p>事务启动，消息发送</p>
+<p>事务提交</p>
+</blockquote>
+<h2 id="Kafka文件存储机制"><a href="#Kafka文件存储机制" class="headerlink" title="Kafka文件存储机制"></a>Kafka文件存储机制</h2><p>文件存储实际是按分区存的，一个分区对应多个segment（删除和查找方便），每一个segment里面都有三个文件，分别是log日志文件，index索引文件，timeindex时间戳索引文件，producer的数据会追加到log里面，每次往log里面写4k数据，就会到index文件写一条索引。</p>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928232748011.png" alt="在这里插入图片描述"></p>
+<h2 id="Kafka数据清理机制"><a href="#Kafka数据清理机制" class="headerlink" title="Kafka数据清理机制"></a>Kafka数据清理机制</h2><p>Kafka提供了两种日志清理策略。</p>
+<p>日志删除(delete) : 日志删除也分两种</p>
+<p>​		按照时间，当消息保存的时间超过指定的时间（默认七天），就会触发清理</p>
+<p>​		按照文件大小：当topic所有 分区的数据总和达到了默认的阈值（1G），就开始删除最久的消息	</p>
+<p>日志压缩(compact) :针对每个消息的key进行整合，对于有相同key的不同value值，只保留最后一个版本。</p>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928233315113.png" alt="在这里插入图片描述"></p>
+<h4 id="数据积压-（-消费者如何提高吞吐量）"><a href="#数据积压-（-消费者如何提高吞吐量）" class="headerlink" title="数据积压 （ 消费者如何提高吞吐量）"></a>数据积压 （ 消费者如何提高吞吐量）</h4><p>1、增加分区数和消费者数量</p>
+<p>2、提高消费者每次拉取的数量</p>
+<p>3、调整linger.ms 和 batch_size</p>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929001531640.png" alt="在这里插入图片描述"></p>
+<h2 id="Kafka由三个方面会涉及到选举："><a href="#Kafka由三个方面会涉及到选举：" class="headerlink" title="Kafka由三个方面会涉及到选举："></a>Kafka由三个方面会涉及到选举：</h2><ul>
+<li>broker（控制器）选leader</li>
+</ul>
+<blockquote>
+<p>集群中由很多的broker选出一个leader，其他事follower。负责主题创建删除，管理broker，分区重分配，分区leader选举等等</p>
+<p>方法简单粗暴：</p>
+<p>每个broker都有唯一的brokerId，启动后会去竞争注册zookeeper上的Controller结点，谁先抢到，谁就是broker leader。一般第一个broker都是controller。而其他broker会监听该结点事件，以便后续leader下线后触发重新选举。</p>
+<p><img src="/../images/Kafka/12b4f076e8f82c66b00ec8782433649f.png" alt="image-20220902200901222"></p>
+</blockquote>
+<ul>
+<li>分区多副本选leader<ul>
+<li>有controller节点控制，决策是：ISR中存活，并且排在AR列表前面的优先，同时必须在isr里面。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p><img src="/../images/Kafka/e5c14b9c17123faf3eefa58a22ab0668-20230928225949575.png" alt="image-20220902201352868"></p>
+</blockquote>
+<ul>
+<li>消费者选Leader</li>
+</ul>
+<p>先用groupid%50 得到一个分区，这个分区所属的节点的消费者协调器就作为这个消费者组的老大，每个消费者向这个协调器发送joinGroup请求，具体的选举方法是，取出HashMap里面的第一个，就是消费者组的信息是放在一个hashmap里面的，我么选的时候是直接拿出第一个就好。所以比较偏随机。</p>
+<h1 id="1、定义"><a href="#1、定义" class="headerlink" title="1、定义"></a>1、定义</h1><p>分布式的基于发布订阅模式的消息队列</p>
+<p>主要应用场景包括：<strong>缓存消峰</strong>、<strong>解耦</strong>和<strong>异步通信。</strong></p>
+<p>消息队列有两种模式：</p>
+<ul>
+<li>点对点模式：一个消费者消费一个主题，数据被消费后会删除</li>
+<li>发布订阅模式：多个消费者消费多个主题，数据被消费不会删除</li>
+</ul>
+<p><strong>基础架构</strong>：</p>
+<p><img src="/../images/Kafka/708e86e70504f41234b05cb3cc30dea7.png" alt="image-20220902125656203"></p>
+<p>（1）Producer：消息生产者，就是向 Kafka broker 发消息的客户端。</p>
+<p>（2）Consumer：消息消费者，向 Kafka broker 取消息的客户端。</p>
+<p>（3）Consumer Group（CG）：消费者组，由多个 consumer 组成。消费者组内每个消费者负责消费不同分区的数据，一个分区只能由一个组内消费者消费；消费者组之间互不影响。所有的消费者都属于某个消费者组，即消费者组是逻辑上的一个订阅者。</p>
+<p>（4）Broker：一台 Kafka 服务器就是一个 broker。一个集群由多个 broker 组成。一个broker 可以容纳多个 topic。</p>
+<p>（5）Topic：可以理解为一个队列，生产者和消费者面向的都是一个 topic。</p>
+<p>（6）Partition：为了实现扩展性，一个非常大的 topic 可以分布到多个 broker（即服务器）上，一个 topic 可以分为多个 partition，每个 partition 是一个有序的队列。</p>
+<p>（7）Replica：副本。一个 topic 的每个分区都有若干个副本，一个 Leader 和若干个Follower。</p>
+<p>（8）Leader：每个分区多个副本的“主”，生产者发送数据的对象，以及消费者消费数据的对象都是 Leader。</p>
+<p>（9）Follower：每个分区多个副本中的“从”，实时从 Leader 中同步数据，保持和Leader 数据的同步。Leader 发生故障时，某个 Follower 会成为新的 Leader。</p>
+<p>其实总的流程就是生产者发送数据到kafka，然后消费者从kafka拉取数据。所以架构中最主要的就是生产者、kafka集群和消费者这三个，其他的很多知识都是为了这三个服务的。</p>
+<h1 id="2、生产者"><a href="#2、生产者" class="headerlink" title="2、生产者"></a>2、生产者</h1><p> 在消息发送的过程中，涉及到两个线程，<font color='red'><u><em><strong>main线程和sender线程。</strong></em></u></font></p>
+<p>main线程的流程就是<strong>producer</strong>（就是生产者）、然后拦截器（相当于留了一个供我们修改的接口）、<strong>序列化器</strong>（消息发送总要有一种形式，什么json啊）、分区器（我们事先其实是分好了区，但是发送消息的时候发送到那一个区？<strong>分区器</strong>，他有一个默认的分区器DefaultPartitioner，支持三种分区策略 1) 指定分区； 2）指定key，计算hash得分区； 3）指定随机粘性分区；（4）还可以自定义分区器（见代码）（下图））<img src="/../images/Kafka/18a0b6ba56db8e5b16b3d6fac9ba7fb7.png" alt="image-20220902163808502"></p>
+<p>但是，并不是来一条消息就发一次，他是把消息加入到一个叫消息累加器里面，然后进行批量发送，一次是16k，32M大小的内存。 我看了下代码，就是 累加器的存储形式为ConcurrentMap&lt;TopicPartition, Deque<ProducerBatch>&gt;，一个分区对应一个双端队列</p>
+<p>真正的发送要靠sender线程。发送的时机是：当双端队列中的DQueue满足 batch.size 或者 linger.ms 条件时触发sender线程。 同时Sender线程默认每个分区容纳5个未确认的消息，消息发送失败后会进行重试。</p>
+<p><img src="/../images/Kafka/cd41370a872e70b75435f35692925370.png" alt="image-20220902155220662"></p>
+<h1 id="3、Broker"><a href="#3、Broker" class="headerlink" title="3、Broker"></a>3、Broker</h1><h2 id="Broker架构"><a href="#Broker架构" class="headerlink" title="Broker架构"></a>Broker架构</h2><p>一台机器一个broker</p>
+<p><img src="/../images/Kafka/image-20231024150746020.png" alt="image-20231024150746020"></p>
+<p><strong>Zookeeper</strong>的作用</p>
+<p>Zookeeper在Kafka中扮演了重要的角色，kafka使用zookeeper进行<font color='red'><u><em><strong>元数据管理，保存broker注册信息，包括主题（Topic）、分区（Partition）信息等，选择分区leader。</strong></em></u></font></p>
+<p><img src="/../images/Kafka/b1f0ebc535b00384be6bf81540c5f416.png" alt="image-20220902200249692"></p>
+<h2 id="kafka分区策略"><a href="#kafka分区策略" class="headerlink" title="kafka分区策略"></a>kafka分区策略</h2><p>如果 kafka 服务器只有 4 个节点，那么设置 kafka 的分区数大于服务器台数，在 kafka底层如何分配存储副本呢？</p>
+<ul>
+<li>这里如果用默认的就是如下</li>
+</ul>
+<p><img src="/../images/Kafka/15514da0f22aca9e3017fa2305733ba4.png" alt="image-20220902211334365"></p>
+<ul>
+<li>也可以手动指定</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ vim increase-replication-factor.json</span><br><span class="line">输入如下内容：</span><br><span class="line">&#123;</span><br><span class="line">&quot;version&quot;:1,</span><br><span class="line">&quot;partitions&quot;:[</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[0,1]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[0,1]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:2,&quot;replicas&quot;:[1,0]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:3,&quot;replicas&quot;:[1,0]&#125;]</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="1、分区自动调整"><a href="#1、分区自动调整" class="headerlink" title="1、分区自动调整"></a><strong>1、分区自动调整</strong></h3><p>这个是指broker故障，leader集中在某台broker上的情况，造成集群负载不均衡，这时候就需要分区平衡。那他一般有个比例，就是不平衡比例超过10%，就需要再平衡。</p>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16.png" alt="在这里插入图片描述"></p>
+<h1 id="4、kafka消费者"><a href="#4、kafka消费者" class="headerlink" title="4、kafka消费者"></a>4、kafka消费者</h1><h2 id="1、Kafka-消费方式（拉）"><a href="#1、Kafka-消费方式（拉）" class="headerlink" title="1、Kafka 消费方式（拉）"></a>1、Kafka 消费方式（拉）</h2><p>​	<img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928234825729.png" alt="在这里插入图片描述"></p>
+<h2 id="2、消费者工作流程"><a href="#2、消费者工作流程" class="headerlink" title="2、消费者工作流程"></a>2、消费者工作流程</h2><p><strong>消费者组初始化流程</strong></p>
+<p><a target="_blank" rel="noopener" href="https://baijiahao.baidu.com/s?id=1767477534734641183&amp;wfr=spider&amp;for=pc">https://baijiahao.baidu.com/s?id=1767477534734641183&amp;wfr=spider&amp;for=pc</a></p>
+<p>多个消费者协调器发送JoinGroup请求，协调器选一个消费者leader，消费者leader指定消费方案，并发送给协调器，协调器把这个方案通知到每一个消费者。</p>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235058845.png" alt="在这里插入图片描述"></p>
+<p><strong>消费者组详细消费流程</strong></p>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235306060.png" alt="在这里插入图片描述"></p>
+<h2 id="4、消费者分区的分配"><a href="#4、消费者分区的分配" class="headerlink" title="4、消费者分区的分配"></a>4、消费者分区的分配</h2><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235523539.png" alt="在这里插入图片描述"></p>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235554746.png" alt="在这里插入图片描述"></p>
+<h5 id="Range-分区分配再平衡案例"><a href="#Range-分区分配再平衡案例" class="headerlink" title="Range 分区分配再平衡案例"></a><strong>Range 分区分配再平衡案例</strong></h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235744058.png" alt="在这里插入图片描述"></p>
+<h5 id="RoundRobin-以及再平衡原理"><a href="#RoundRobin-以及再平衡原理" class="headerlink" title="RoundRobin 以及再平衡原理"></a>RoundRobin 以及再平衡原理</h5><h5 id=""><a href="#" class="headerlink" title=""></a></h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000334551.png" alt="在这里插入图片描述"></p>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000415710.png" alt="在这里插入图片描述"></p>
+<h5 id="Sticky-以及再平衡"><a href="#Sticky-以及再平衡" class="headerlink" title="Sticky 以及再平衡"></a>Sticky 以及再平衡</h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000640458.png" alt="在这里插入图片描述"></p>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000653360.png" alt="在这里插入图片描述"></p>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000715131.png" alt="在这里插入图片描述"></p>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000728390.png" alt="在这里插入图片描述"></p>
+<h2 id="5、offset-位移"><a href="#5、offset-位移" class="headerlink" title="5、offset 位移"></a>5、offset 位移</h2><h5 id="1、offset-的默认维护"><a href="#1、offset-的默认维护" class="headerlink" title="1、offset 的默认维护"></a>1、offset 的默认维护</h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000851750.png" alt="在这里插入图片描述"></p>
+<p>__consumer_offsets 主题里面采用 key 和 value 的方式存储数据。</p>
+<p>key 是group.id+topic+分区号，value 就是当前 offset 的值。</p>
+<p>offset是消费者提交的，分为自动提交和手动提交。</p>
+<p>自动提交会出现重复消费的问题。默认5s提交一次</p>
+<p>手动提交会出现漏消费的问题，因为消费完数据后，如果来不及调用哪个sync函数，消费者宕机，就会丢失数据。</p>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929001509066.png" alt="在这里插入图片描述"></p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/07/08/Kafka/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Kommentieren und teilen
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C3/"
                             aria-label=": 计算机网络复习3"
                         >
                             计算机网络复习3
@@ -3207,7 +2589,197 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                     
                         <p>
                             <a
-                                href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A03/#post-footer"
+                                href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C3/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Kommentieren und teilen
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+                            aria-label=": 计算机网络复习2"
+                        >
+                            计算机网络复习2
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-07-08T00:00:00+08:00">
+	
+		    08 Jul 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h2 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h2><h3 id="1、TCP和UDP"><a href="#1、TCP和UDP" class="headerlink" title="1、TCP和UDP"></a>1、<strong>TCP和UDP</strong></h3><p><strong>UDP和TCP可以共用一个端口，因为是完全独立的两个软件模块</strong></p>
+<h3 id="2、为什么不能两次握手或者四次握手？"><a href="#2、为什么不能两次握手或者四次握手？" class="headerlink" title="2、为什么不能两次握手或者四次握手？"></a>2、为什么不能两次握手或者四次握手？</h3><blockquote>
+<p>两次握手：在两次握手的时候，服务端没有中间状态给客户端来阻止历史连接，也就是服务端会多建立一个历史连接浪费资源，因为收到syn就变成established。这里靠序列号同步就知道了</p>
+<p>四次握手：四次握手无非就是，你给我发我返回同意，我给你发你返回同意，但是第二和第三部完全可以合并，所以三次就ok了。</p>
+</blockquote>
+<h3 id="3、为什么，每次建立连接序列号都要求不一样？"><a href="#3、为什么，每次建立连接序列号都要求不一样？" class="headerlink" title="3、为什么，每次建立连接序列号都要求不一样？"></a>3、为什么，每次建立连接序列号都要求不一样？</h3><p>1、防止历史报文被下一个连接接受，如果每次都从特定的值开始，那历史报文就可能被下一个连接接受。</p>
+<p>2、防止黑客伪造的相同序列号被接受</p>
+<h3 id="4、那这个序列号是怎么随机产生的？"><a href="#4、那这个序列号是怎么随机产生的？" class="headerlink" title="4、那这个序列号是怎么随机产生的？"></a>4、那这个序列号是怎么随机产生的？</h3><p>rfc提高了序列号ISN随机生成算法：ISN &#x3D; M + F</p>
+<p>m是计时器，四微秒+1</p>
+<p>F是哈希算法根据四元组推出来的</p>
+<h3 id="5、为什么ip层会分片，TCP还分片，"><a href="#5、为什么ip层会分片，TCP还分片，" class="headerlink" title="5、为什么ip层会分片，TCP还分片，"></a>5、为什么ip层会分片，TCP还分片，</h3><p>因为ip不能超时重传，所以只能靠tcp，而万一ip层丢了一部分，那么ip层就不能组装成一个完整的tcp报文，也就不可能发给接收方tcp层，所以发送方的tcp层就会重发整个tcp报文，所以我们最好就是自己分片，然后缺什么发什么，直接以MSS为单位就可以了</p>
+<h3 id="6、TCP三次握手过程丢失问题"><a href="#6、TCP三次握手过程丢失问题" class="headerlink" title="6、TCP三次握手过程丢失问题"></a>6、TCP三次握手过程丢失问题</h3><blockquote>
+<p>第一次握手丢失，会发生什么？</p>
+<p>触发超时重传，每次重传次数是上一次两倍，报文最大重传次数由 <code>tcp_syn_retries</code></p>
+<p>第二次握手丢失，会发生什么？</p>
+<p>客户端和服务端都会重传，重传次数分别有tcp_syn_retries和tcp_synack_retries决定</p>
+<p>第三次握手丢失了，会发生什么？</p>
+<p>这里有一点很关键，就是ack报文是不会重传的，所以服务端会认为自己的syn+ack没发到，触发重传机制，服务端重传，次数由tcp_synack_retries决定</p>
+</blockquote>
+<h3 id="7、半连接状态和全连接状态"><a href="#7、半连接状态和全连接状态" class="headerlink" title="7、半连接状态和全连接状态"></a>7、半连接状态和全连接状态</h3><ul>
+<li>半连接队列，也称 SYN 队列；</li>
+<li>全连接队列，也称 accept 队列；</li>
+</ul>
+<p>正常流程：</p>
+<ul>
+<li>当服务端接收到客户端的 SYN 报文时，会创建一个半连接的对象，然后将其加入到内核的「 SYN 队列」；</li>
+<li>接着发送 SYN + ACK 给客户端，等待客户端回应 ACK 报文；</li>
+<li>服务端接收到 ACK 报文后，从「 SYN 队列」取出一个半连接对象，然后创建一个新的连接对象放入到「 Accept 队列」；</li>
+<li>应用通过调用 <code>accpet()</code> socket 接口，从「 Accept 队列」取出连接对象。</li>
+</ul>
+<p>所以这样子就出会先一些问题</p>
+<p>受到SYN攻击怎么办？就是说半连接状态很多怎么办？</p>
+<ul>
+<li>调大 netdev_max_backlog；缓冲队列</li>
+<li>增大 TCP 半连接队列；</li>
+<li>开启 tcp_syncookies；不用建立半连接</li>
+<li>减少 SYN+ACK 重传次数</li>
+</ul>
+<h3 id="8、TCP四次挥手"><a href="#8、TCP四次挥手" class="headerlink" title="8、TCP四次挥手"></a>8、TCP四次挥手</h3><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803130523828.png" alt="image-20230803130523828"></p>
+<blockquote>
+<p>msl是报文最大生存时间，ip头有一个ttl字段，这个字段代表可以经历的最大路由数</p>
+<p>msl大于等于ttl消耗为0的时间，默认60</p>
+</blockquote>
+<blockquote>
+<p><strong>为什么需要这个timewait状态</strong></p>
+<p>1<font color='red'><u><em><strong>、也是为了防止接收历史连接中的第三次挥手</strong></em></u></font>。这个时间<strong>足以让两个方向上的数据包都被丢弃，使得原来连接的数据包在网络中都自然消失。</strong></p>
+<p>2、也就是说，TIME-WAIT 作用是<strong>等待足够的时间以确保最后的 ACK 能让被动关闭方接收，从而帮助其正常关闭。</strong></p>
+</blockquote>
+<blockquote>
+<p><font color='red'><u><em><strong>为什么4次？</strong></em></u></font></p>
+<p>服务端可能还有数据要发给客户端，所以需要先处理自己的最后流程，然后给客户端发送一个fin报文，也就是说，第二次握手和第三次握手大概率是不同步的。</p>
+<p><font color='red'><u><em><strong>特定情况下，可以变成三次，刚刚好没有数据。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>第一次挥手丢失，会发生什么？</strong></em></u></font></p>
+<p>客户端收不到来自服务端的ack报文，那么就会触发超时重传，这个次数是由tcp_orphan_retries决定的</p>
+<p><font color='red'><u><em><strong>第二次挥手丢失，会发生什么？</strong></em></u></font></p>
+<p>ACK 报文是不会重传的,所以首先客户端还是会触发超时重传，这个次数是由tcp_orphan_retries决定的</p>
+<p><font color='red'><u><em><strong>第三次丢失，会发生什么？</strong></em></u></font></p>
+<p>相当于服务端一直收不到来自客户端的ack，那么服务端会触发超时重传,次数达到后还没收到，断开连接。</p>
+<p>而客户端已经进入了fin_wait2状态，一直等，如果超过设定的时间tcp_fin_timeout ，断开连接。</p>
+<p><font color='red'><u><em><strong>第四次丢失，会发生什么？</strong></em></u></font></p>
+<p>服务端一直收不到，那么触发超时重传，这时候因为客户端已经是timewait状态，所以每一次重传都会重置2msl定时器，超过时间就close，而服务端同样的重传几次之后close</p>
+</blockquote>
+<blockquote>
+<p><strong>如果建立了连接，结果客户端故障了，不发送消息，但是服务端一直establish</strong></p>
+<p>tcp搞了个保活机制，隔一段时间发送探测报文，没有得到相应则认为tcp死亡，</p>
+<p>但是，这个保活机制时间太长了，我们自己在应用层实现一个心跳机制，一般web服务软件都会提供keepalive-timeout状态</p>
+<p><strong>如果服务器的进程崩溃了，那发生什么</strong></p>
+<p>其实连接信息是由内核维护的，所以服务端的内核还是会发送fin报文进行四次挥手</p>
+</blockquote>
+<h3 id="9、可靠性保证方法"><a href="#9、可靠性保证方法" class="headerlink" title="9、可靠性保证方法"></a>9、可靠性保证方法</h3><blockquote>
+<h3 id="重传机制"><a href="#重传机制" class="headerlink" title="重传机制"></a>重传机制</h3><p><font color='red'><u><em><strong>重传分为超时重传和快速重传两种。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>超时重传：超过时间进行重传，时间RTO</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>快速重传：收到三个相同的 ACK 报文时，重传丢失的报文段。这里的问题在于传一个还是传所有，这里引入了SACK和DSACK机制</strong></em></u></font></p>
+<p>SACK：服务端把已经收到的数据信息驾到tcp头部的选项里面，告诉发送发我收到了哪些</p>
+<p>后面又出现了D-SACK：这是用来告诉发送方哪些被重复接受了了</p>
+<h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h3><p>操作系统开辟的一个缓存空间，发送方在收到ACK应答之前，在缓冲区中保留已发送的数据。如果按期收到确认应答，此时数据就可以从缓存区清除</p>
+<p>TCP头部里面既有一个字段叫窗口大小，就是用来告诉发送端自己还有多少缓冲区可以使用，所以窗口大小一般由接收方决定</p>
+<h3 id="拥塞控制"><a href="#拥塞控制" class="headerlink" title="拥塞控制"></a>拥塞控制</h3><p>网络发生拥塞，那么tcp就会降低自己的发送量，防止网络负担加重</p>
+<p>慢启动 一开始是1，就是可以传1个mss，然后收到应答变成2，4，8，16…..</p>
+<p>拥塞避免 触碰到<font color='green'><u><em><strong>慢启动门限</strong></em></u></font>就是用拥塞避免，变成线性的，收到一个ack cwnd增加1&#x2F;cwnd（拥塞窗口）</p>
+<p>如果网络发生了拥塞，也就是重传。重传分两种，如果是超时重传，就慢启动门限变成cwnd&#x2F;2，cwnd&#x3D;1重新开始慢启动</p>
+<p>如果是快速重传，拥塞窗口和慢启动门限都设置为拥塞窗口的一半，然后拥塞窗口+3，继续发送重复的，如果收到新数据的ACK，快速恢复结束，进入拥塞避免。</p>
+<p>握手优化就是调整重传次数、半连接队列，全连接队列</p>
+<p>挥手就是调整：重传次数、FINwait2状态时间、</p>
+<p>传输速度的话就是调整：接收方缓冲区大小、发送方缓冲区大小、窗口大小，打开缓冲区动态调节。</p>
+<h3 id="流量控制"><a href="#流量控制" class="headerlink" title="流量控制"></a>流量控制</h3><p>避免发送方的数据填满接收方</p>
+</blockquote>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803161404210.png" alt="image-20230803161404210"></p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803163142196.png" alt="image-20230803163142196"></p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803163236556.png" alt="image-20230803163236556"></p>
+<blockquote>
+<h4 id="如何理解字节流"><a href="#如何理解字节流" class="headerlink" title="如何理解字节流"></a>如何理解字节流</h4><p>udp操作系统不会对齐拆分，所以每一个udp就是一个消息的边界.然而tcp是会分片的，这时候，接收方如果不知道消息的长度或者边界，是无法读取消息的，<strong>不能认为一个用户消息对应一个TCP报文，正因为这样，TCP是面向字节流的协议。</strong></p>
+<p><strong>没有accept，能建立tcp连接吗</strong></p>
+<p>可以</p>
+<p><strong>已经建立的tcp，收到syn会发生什么</strong></p>
+<p>新的syn首先看看端口是不是一样，如果不一样的话，就建立新的连接，老的那个如果一直不发消息就会触发tcp保活机制</p>
+<p>如果相同（可能就是宕机重传），其实会返回一个challenge ack，携带正确的序列号的确认号的ack报文，这时候客户端确认号收到这个，发现不是自己期望收到的，就会返回rst，这样，服务器就释放了连接</p>
+<h4 id="如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗"><a href="#如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗" class="headerlink" title="如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗"></a>如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗</h4><p>先到的fin包其实是乱序的，所以会进入乱序队列，等数据真正的到了，才会回头检查这个fin，然后给服务端发这个。</p>
+<h4 id="如果timewait状态收到syn？会怎么样？"><a href="#如果timewait状态收到syn？会怎么样？" class="headerlink" title="如果timewait状态收到syn？会怎么样？"></a>如果timewait状态收到syn？会怎么样？</h4><p>还是先看序列号时间戳吧，如果确实合法，那应该会重新进入三次握手阶段，</p>
+<p>如果不合法，就会返回一个和第四次挥手一样的ack，这时候服务端收到发现不是自己的，就回复一个rst报文</p>
+<h4 id="服务端没有-listen，客户端发起连接建立，会发生什么？"><a href="#服务端没有-listen，客户端发起连接建立，会发生什么？" class="headerlink" title="服务端没有 listen，客户端发起连接建立，会发生什么？"></a>服务端没有 listen，客户端发起连接建立，会发生什么？</h4><p><strong>服务端如果只 bind 了 IP 地址和端口，而没有调用 listen 的话，然后客户端对服务端发起了连接建立，服务端会回 RST 报文</strong></p>
+<h4 id="Tcp连接，断电和进程崩溃有什么区别？没有保活机制"><a href="#Tcp连接，断电和进程崩溃有什么区别？没有保活机制" class="headerlink" title="Tcp连接，断电和进程崩溃有什么区别？没有保活机制"></a>Tcp连接，断电和进程崩溃有什么区别？没有保活机制</h4><p>客户端主机崩溃，没有保活机制，那就无法感知到，一直处于establish</p>
+<p>进程崩溃，内核还是会发送fin完成4次挥手</p>
+<h4 id="客户端主机宕机，又迅速重启"><a href="#客户端主机宕机，又迅速重启" class="headerlink" title="客户端主机宕机，又迅速重启"></a>客户端主机宕机，又迅速重启</h4><p><strong>只要有一方重启完成后，收到之前 TCP 连接的报文，都会回复 RST 报文，以断开连接</strong></p>
+<h4 id="拔掉网线tcp连接还在吗"><a href="#拔掉网线tcp连接还在吗" class="headerlink" title="拔掉网线tcp连接还在吗"></a>拔掉网线tcp连接还在吗</h4><p>在的，tcp连接信息是存储于内核的一个结构体，网线断了，但是结构体不会改变</p>
+<ul>
+<li>拔掉网线后，有数据传输；</li>
+<li>如果在重传前网线插回去了，那我觉得应该什么事情都没发生</li>
+<li>如果没插回去，那么就超时重传几次之后，认为此连接死亡，就断开连接，即使后面插回来了，客户端向服务端发送请求，也不是连接的状态，那么服务端就会返回rst</li>
+<li>拔掉网线后，没有数据传输</li>
+<li>如果开启了保活机制，那就探测几次，如果有工作就重制保活时间，如果客户端没有正常工作，就断开连接</li>
+<li>如果没有开启保活机制，就一直连着</li>
+</ul>
+</blockquote>
+<h4 id="HTTPS-中-TLS-和-TCP-能同时握手吗？"><a href="#HTTPS-中-TLS-和-TCP-能同时握手吗？" class="headerlink" title="HTTPS 中 TLS 和 TCP 能同时握手吗？"></a>HTTPS 中 TLS 和 TCP 能同时握手吗？</h4><p>可能，但是有条件</p>
+<ul>
+<li><strong>客户端和服务端都开启了 TCP Fast Open 功能，且 TLS 版本是 1.3；</strong></li>
+<li><strong>客户端和服务端已经完成过一次通信。</strong></li>
+</ul>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803205908513.png" alt="image-20230803205908513"></p>
+<p>TCP Fast Open定义<br>TCP Fast Open（TFO）是用来加速连续TCP连接的数据交互的TCP协议扩展，原理如下：在TCP三次握手的过程中，当用户首次访问Server时，发送SYN包，Server根据用户IP生成Cookie（已加密），并与SYN-ACK一同发回Client；当Client随后重连时，在SYN包携带TCP Cookie；如果Server校验合法，则在用户回复ACK前就可以直接发送数据；否则按照正常三次握手进行<br><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803210533146.png" alt="image-20230803210533146"></p>
+<p>所以就是在第二次以后的通信过程中，tcp open fast在ack发回来之前直接进行tls1.3</p>
+<h4 id="quic怎么实现可靠传输"><a href="#quic怎么实现可靠传输" class="headerlink" title="quic怎么实现可靠传输"></a>quic怎么实现可靠传输</h4><p>总的来说，<strong>QUIC 通过单向递增的 Packet Number，配合 Stream ID 与 Offset 字段信息，可以支持乱序确认而不影响数据包的正确组装</strong>，</p>
+<p>Packet Number 是严格递增，即使重传报文的 Packet Number 也是递增的，既然重传数据包的 Packet N+M 与丢失数据包的 Packet N 编号并不一致，我们怎么确定这两个数据包的内容一样呢？</p>
+<p>所以引入 Frame Header 这一层，<strong>通过 Stream ID + Offset 字段信息实现数据的有序性</strong>，通过比较两个数据包的 Stream ID 与 Stream Offset ，如果都是一致，就说明这两个数据包的内容一致。</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803212833705.png"></p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803213009597.png" alt="image-20230803213009597"></p>
+<h3 id="QUIC怎么解决对头阻塞"><a href="#QUIC怎么解决对头阻塞" class="headerlink" title="QUIC怎么解决对头阻塞"></a>QUIC怎么解决对头阻塞</h3><p><strong>QUIC 给每一个 Stream 都分配了一个独立的滑动窗口，都是相互独立的，各自控制的滑动窗口</strong>。</p>
+<h3 id="QUIC-是如何做流量控制的？"><a href="#QUIC-是如何做流量控制的？" class="headerlink" title="QUIC 是如何做流量控制的？"></a>QUIC 是如何做流量控制的？</h3><p>QUIC 实现流量控制的方式：</p>
+<ul>
+<li>通过 window_update 帧告诉对端自己可以接收的字节数，这样发送方就不会发送超过这个数量的数据。 如果消耗数据的长度大于了最大接收窗口的一半发送</li>
+<li>通过 BlockFrame 告诉对端由于流量控制被阻塞了，无法发送数据。</li>
+</ul>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
@@ -3236,7 +2808,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
             </a>
           </li>
         
-        <li class="pagination-number">Seite 1 von 4</li>
+        <li class="pagination-number">Seite 1 von 5</li>
     </ul>
 </div>
 

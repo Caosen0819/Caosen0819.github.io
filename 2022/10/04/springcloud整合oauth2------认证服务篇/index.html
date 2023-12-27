@@ -1,0 +1,672 @@
+
+<!DOCTYPE html>
+<html lang="zh-CH">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="森">
+    <title>springcloud整合oauth2------认证服务篇 - 森</title>
+    <meta name="author" content="CSEN">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"Auth认证服务1、AuthorizationServerConfig【事先准备】：方法、LoadRolePermissionService  调用—&gt; PermissionServiceImpl作用：\t从数据库中将url-&gt;角色对应关系加载到Redis中\n\n**方法1:\tlistRolePermission **\n\n先从数据库获取permissons\n根据roleid从数据库中找权限数据\n根据permissionid从数据库中找数据\n到此为止，构造了每一个permission对应所需要的权限一共后续使用\n简化一下，放入redis\n\n\n\n【1】AuthorizationServerConfig 继承—&gt; AuthorizationServerConfigurerAdapter作用：\t配置认证中心，就是授权服务器配置\n方法1： configure(ClientDetailsServiceConfigurer clients)/** * 配置客户端详情，并不是所有的客户端都能接入授权服务 * 用来配置客户端详情服务（ClientDetailsService）， * 客户端详情信息在这里进行初始化， * 你能够把客户端详情信息写死在这里或者是通过数据库来存储调取详情信息  */\n\n**一、重写configure(ClientDetailsServiceConfigurer clients)方法主要配置客户端，就是告诉auth服务，我有什么客户，每一个客户又是什么样子的**，\n定义两个client_id，及客户端可以通过不同的client_id来获取不同的令牌；\nclient_id为test1的令牌有效时间为3600秒，client_id为test2的令牌有效时间为7200秒；\nclient_id为test1的refresh_token（下面会介绍到）有效时间为864000秒，即10天，也就是说在这10天内都可以通过refresh_token来换取新的令牌；\n在获取client_id为test1的令牌的时候，scope只能指定为all，a，b或c中的某个值，否则将获取失败；\n只能通过密码模式(password)来获取client_id为test1的令牌，而test2则无限制。\n\n二、导入方法有以下几种：\n内存，自己测试的时候比较推荐，后续数据库啊什么的\n数据库，使用JdbcClientDetailsService，JdbcClientDetailsService自己是有一个默认的字段的表的，所以程序是从数据库中的oauth_client_details表中加载客户端信息，\n总而言之，就是配置把客户端信息从数据源拿过来。后面需要授权验证，要用到，所以先配。\n\n方法2： configure(AuthorizationServerEndpointsConfigurer endpoints)——上面和客户端有关，而这个则直接和令牌有关，比如配置授权（authorization）以及令牌（token）的访问端点和令牌服务(token services)，还有一些其他的，比如异常啊什么的，下面有例子。\n/*** 配置令牌访问的端点*/\n\n令牌端点可用于以编程方式请求令牌（非常重要，四种方式）,下面是配置的例子\nendpoints        //设置异常WebResponseExceptionTranslator，用于处理用户名，密码错误、授权类型不正确的异常        .exceptionTranslator(new OAuthServerWebResponseExceptionTranslator())        //授权码模式所需要的authorizationCodeServices        .authorizationCodeServices(authorizationCodeServices())        //密码模式所需要的authenticationManager        .authenticationManager(authenticationManager)        //令牌管理服务，无论哪种模式都需要        .tokenServices(tokenServices())        //添加进入tokenGranter        .tokenGranter(new CompositeTokenGranter(tokenGranters))        //只允许POST提交访问令牌，uri：/oauth/token        .allowedTokenEndpointRequestMethods(HttpMethod.POST);\n\n一、authenticationManager （建议必须配置）  （密码授权管理器），见文件SecurityConfig这个配置类\n在Spring Security中，AuthenticationManager的默认实现是ProviderManager，而且它不直接自己处理认证请求，而是委托给其所配置的AuthenticationProvider列表，然后会依次使用每一个AuthenticationProvider进行认证，如果有一个AuthenticationProvider认证后的结果不为null，则表示该AuthenticationProvider已经认证成功，之后的AuthenticationProvider将不再继续认证。然后直接以该AuthenticationProvider的认证结果作为ProviderManager的认证结果。如果所有的AuthenticationProvider的认证结果都为null，则表示认证失败，将抛出一个ProviderNotFoundException。校验认证请求最常用的方法是根据请求的用户名加载对应的UserDetails，然后比对UserDetails的密码与认证请求的密码是否一致，一致则表示认证通过。Spring Security内部的DaoAuthenticationProvider就是使用的这种方式。其内部使用UserDetailsService来负责加载UserDetails。在认证成功以后会使用加载的UserDetails来封装要返回的Authentication对象，加载的UserDetails对象是包含用户权限等信息的。认证成功返回的Authentication对象将会保存在当前的SecurityContext中\n\n二、令牌本身内容的配置（建议必须配置）I、 两种方式，【1】直接在endpoint这里配。\n【2】自己写个bean注入，举个例子：\nII、tokenServices()  就在本文件注入,由于是授权服务，所以涉及到颁发令牌，那么有关令牌的管理，比如过期时间，是jwt还是什么格式，客户端存储策略，都在这里@Beanpublic AuthorizationServerTokenServices tokenServices() &#123;    System.out.println(&quot;令牌管理服务的配置&quot;);    DefaultTokenServices services = new DefaultTokenServices();    //客户端端配置策略    services.setClientDetailsService(clientDetailsService);    //支持令牌的刷新    services.setSupportRefreshToken(true);    //令牌服务    services.setTokenStore(tokenStore);    //access_token的过期时间    services.setAccessTokenValiditySeconds(60 * 60 * 24 * 3);    //refresh_token的过期时间    services.setRefreshTokenValiditySeconds(60 * 60 * 24 * 3);    //设置令牌增强，使用JwtAccessTokenConverter进行转换    services.setTokenEnhancer(jwtAccessTokenConverter);    return services;&#125;\n\nIII、根据项目的要求去选择令牌的内容配置，一般来说都是jwt或者jwt+自定义内容。\n把令牌变成jwt格式很简单，按下面2两步操作即可，反正就是\n\n~~~@Configurationpublic class JWTokenConfig {\n@Bean\npublic TokenStore jwtTokenStore() &#123;\n    return new JwtTokenStore(jwtAccessTokenConverter());\n&#125;\n\n@Bean\npublic JwtAccessTokenConverter jwtAccessTokenConverter() &#123;\n    JwtAccessTokenConverter accessTokenConverter = new JwtAccessTokenConverter();\n    accessTokenConverter.setSigningKey(&quot;test_key&quot;); // 签名密钥\n    return accessTokenConverter;\n&#125;\n\n}\n* ~~~java      services.setTokenStore(tokenStore);\n\n\n自定义的话，同样简单，按下面的操作来做，无非就是先写一些配置，然后把配置注入adapter\n\n&#96;&#96;&#96;java@Componentpublic class JwtTokenEnhancer implements TokenEnhancer {@Overridepublic OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {    SecurityUser securityUser &#x3D; (SecurityUser) authentication.getPrincipal();    Map&lt;String, Object&gt; info &#x3D; new HashMap&lt;&gt;();    &#x2F;&#x2F;把用户ID设置到JWT中    info.put(“id”, securityUser.getId());    info.put(“client_id”,securityUser.getClientId());    ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(info);    return accessToken;}}  * ~~~    tokenEnhancer(enhancerChain)    ~~~##### **三、tokenGranter(new CompositeTokenGranter(tokenGranters))    自定义授权  非常重要**作用：自定义授权获取token，下面我们来看一看源码是怎么获取token的，在我们发起oauth/token，请求获取token时，实际上是请求Tokenpoint类的postAccessToken或者getacesstoken方法，相当于调用了一个controller方法，根据请求的方法是get还是post，但其实内部还是调用post的方法。在TokenEndPoint 获取令牌过程中, 有个这样的步骤:~~~javaOAuth2AccessToken token = getTokenGranter().grant(tokenRequest.getGrantType(), tokenRequest);~~~postAccessToken这个方法中，在这个方法的132行调用TokenGranter类的grant方法来获取token，**&lt;u&gt;这个方法也是最重要的&lt;/u&gt;**，通过这个方法我们可以对请求的参数进行校验是否合法，是否给予令牌。TokenGranter是一个接口，它有多个实现类，CompositeTokenGranter是其中之一，在grant方法中，会循环遍历所有的授权方式，根据请求参数携带的授权方式码，来匹配对应的授权处理实现类，调用实现类中的grant方法。那么关键点来了，请求参数中携带的是我们**&lt;u&gt;自定义的授权方式码&lt;/u&gt;**，如果要匹配上，那么首先我们要创建自定义的授权处理类，然后把这个授权处理类放入Spring Security默认的授权处理集合中，这样才能循环匹配上，进行下一步。和以前的做法一样：创建自定义授权处理类，我们可以继承TokenGranter来实现自定义的身份验证以便获取token，而AbstractTokenGranter是一个继承TokenGranter的实现类，一般我们都会继承这个类进行使用。这一点已经得到验证，可以看下面的流程。| 实现类                            | 对应的授权模式  || --------------------------------- | --------------- || AuthorizationCodeTokenGranter     | 授权码模式      || ClientCredentialsTokenGranter     | 客户端模式      || ImplicitTokenGranter              | implicit 模式   || RefreshTokenGranter               | 刷新 token 模式 || ResourceOwnerPasswordTokenGranter | 密码模式        |**这些类都继承了AbstractTokenGranter** **AbstractTokenGranter   调用-------&gt;getAccessToken --------&gt;getOAuth2Authentication****根据 client、tokenRequest 从 OAuth2RequestFactory 中创建一个 OAuth2Request, 进而可得到 OAuth2Authentication (存放着用户的认证信息)。****通过 tokenService 去创建 OAuth2AccessToken (存放着用户的 token信息、过期时间)。**###### **I、————所以，这里加入自定的tokenGrant，也就是要自定义自己的授权方法 去 授权 自定义的令牌——————**自定义至关重要的一点就是修改**getOAuth2Authentication**方法 （主要文件见sms文件夹和即可）具体修改不讲，修改的流程就是1、**组装自定义模式的认证信息** 2、**用authenticationManager去调用内部自定义的Provider认证这个认证信息，认证规则自然是写在Provider里面**。可借鉴 https://blog.csdn.net/m0_38031406/article/details/89316342###### **II、&lt;u&gt;所以实现方式：继承AbstractTokenGranter + 重写 getOAuth2Authentication方法。&lt;/u&gt;**~~~@Overrideprotected OAuth2Authentication getOAuth2Authentication(ClientDetails client, TokenRequest tokenRequest) &#123;    Map&lt;String, String&gt; parameters = new LinkedHashMap&lt;&gt;(tokenRequest.getRequestParameters());    String mobile = parameters.get(&quot;mobile&quot;);    String password = parameters.get(&quot;password&quot;);    //将其中的密码移除    parameters.remove(&quot;password&quot;);    //自定义的token类    Authentication userAuth = new MobilePasswordAuthenticationToken(mobile, password);    ((AbstractAuthenticationToken) userAuth).setDetails(parameters);    //调用AuthenticationManager进行认证，内部会根据MobileAuthenticationToken找到对应的Provider进行认证    userAuth = authenticationManager.authenticate(userAuth);    if (userAuth == null || !userAuth.isAuthenticated()) &#123;        throw new InvalidGrantException(&quot;Could not authenticate mobile: &quot; + mobile);    &#125;    OAuth2Request storedOAuth2Request = getRequestFactory().createOAuth2Request(client, tokenRequest);    return new OAuth2Authentication(storedOAuth2Request, userAuth);&#125;~~~这里调用了AuthenticationManager认证，后面回调用自定义的XXXXXAuthenticationProvider###### **III、注入**~~~.tokenGranter(new CompositeTokenGranter(tokenGranters))~~~##### **四、new OAuthServerWebResponseExceptionTranslator()**  也是自己配置的见文件夹**Exception**自定义异常翻译器，针对用户名、密码异常，授权类型不支持的异常进行处理-----**关键是用户**##### **五、authorizationCodeServices()就在本文件注入**##### **六、待续**。。。。。。#### **方法3： configure(AuthorizationServerSecurityConfigurer security)**```java/** * 配置令牌访问的安全约束（） */\n\n\n\n一、配置OAuthServerClientCredentialsTokenEndpointFilter——主要是客户端的验证/** * @author 客户端异常处理 * 自定义的客户端认证的过滤器，根据客户端的id、秘钥进行认证 * 重写这个过滤器用于自定义异常处理 * 具体认证的逻辑依然使用ClientCredentialsTokenEndpointFilter，只是设置一下AuthenticationEntryPoint为定制 */    @Overridepublic void configure(AuthorizationServerSecurityConfigurer security) &#123;        System.out.println(&quot;配置令牌访问的安全约束&quot;);      //自定义ClientCredentialsTokenEndpointFilter，用于处理客户端id，密码错误的异常        OAuthServerClientCredentialsTokenEndpointFilter endpointFilter = new OAuthServerClientCredentialsTokenEndpointFilter(security,authenticationEntryPoint);        endpointFilter.afterPropertiesSet();        security.addTokenEndpointAuthenticationFilter(endpointFilter);        security                .authenticationEntryPoint(authenticationEntryPoint)                //开启/oauth/token_key验证端口权限访问                .tokenKeyAccess(&quot;permitAll()&quot;)                //开启/oauth/check_token验证端口认证权限访问                .checkTokenAccess(&quot;permitAll()&quot;);                //一定不要添加allowFormAuthenticationForClients，否则自定义的OAuthServerClientCredentialsTokenEndpointFilter不生效//                .allowFormAuthenticationForClients();    &#125;&#125;\n\nI、具体认证的逻辑依然使用ClientCredentialsTokenEndpointFilter，只是设置一下AuthenticationEntryPoint为定制既然如此，我们就去看自定义的AuthenticationEntryPoint，这里没改，实际中可以改\npublic class OAuthServerAuthenticationEntryPoint implements AuthenticationEntryPoint &#123;    /**     * 认证失败处理器会调用这个方法返回提示信息     * TODO 实际开发中可以自己定义，此处直接返回JSON数据：客户端认证失败错误提示     */    @Override    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException &#123;        ResponseUtils.result(response,new ResultMsg(ResultCode.CLIENT_AUTHENTICATION_FAILED.getCode(),ResultCode.CLIENT_AUTHENTICATION_FAILED.getMsg(),null));    &#125;&#125;\n\nII、endpointFilter.afterPropertiesSet(); 认证成功怎么办，认真失败怎么办，这里可以自定义哈哈/** * 设置AuthenticationEntryPoint主要逻辑 */@Overridepublic void afterPropertiesSet() &#123;    System.out.println(&quot;设置AuthenticationEntryPoint主要逻辑&quot;);    //TODO 定制认证失败处理器，开发中可以自己修改    setAuthenticationFailureHandler((request, response, exception) -&gt; &#123;        if (exception instanceof BadCredentialsException) &#123;            exception = new BadCredentialsException(exception.getMessage(), new BadClientCredentialsException());        &#125;        authenticationEntryPoint.commence(request, response, exception);    &#125;);    //成功处理器，和父类相同，为空即可。    setAuthenticationSuccessHandler((request, response, authentication) -&gt; &#123;    &#125;);&#125;\n\nIII、security.addTokenEndpointAuthenticationFilter(endpointFilter);\n注入 自定义相应异常的过滤链\n\n2、springconfig介绍一个比较完整的securityconfig配置@Configuration//开启判断用户对某个控制层的方法是否具有访问权限的功能@EnableGlobalMethodSecurity(prePostEnabled = true)@EnableWebSecuritypublic class SecurityConfig extends WebSecurityConfigurerAdapter &#123;    //注入自定义的UserDetailService    @Autowired    @Lazy    private UserDetailsServiceImpl userDetailsServiceImpl;    @Autowired    private StringRedisTemplate stringRedisTemplate;    //替换默认AuthenticationManager中的UserDetailService，使用数据库用户认证方式登录    //1. 一旦通过 configure 方法自定义 AuthenticationManager实现 就回将工厂中自动配置AuthenticationManager 进行覆盖    //2. 一旦通过 configure 方法自定义 AuthenticationManager实现 需要在实现中指定认证数据源对象 UserDetailService 实例    //3. 一旦通过 configure 方法自定义 AuthenticationManager实现 这种方式创建AuthenticationManager对象工厂内部本地一个 AuthenticationManager 对象 不允许在其他自定义组件中进行注入    @Override    protected void configure(AuthenticationManagerBuilder builder) throws Exception &#123;        builder.userDetailsService(userDetailsServiceImpl);    &#125;    /**     * BCryptPasswordEncoder相关知识：     * 用户表的密码通常使用MD5等不可逆算法加密后存储，为防止彩虹表破解更会先使用一个特定的字符串（如域名）加密，然后再使用一个随机的salt（盐值）加密。     * 特定字符串是程序代码中固定的，salt是每个密码单独随机，一般给用户表加一个字段单独存储，比较麻烦。     * BCrypt算法将salt随机并混入最终加密后的密码，验证时也无需单独提供之前的salt，从而无需单独处理salt问题。     */    @Bean    public BCryptPasswordEncoder passwordEncoder() &#123;        return new BCryptPasswordEncoder();    &#125;    //将自定义AuthenticationManager在工厂中进行暴露,可以在任何位置注入    @Override    @Bean    public AuthenticationManager authenticationManagerBean() throws Exception &#123;        return super.authenticationManagerBean();    &#125;    //HttpSecurity配置    @Override    protected void configure(HttpSecurity http) throws Exception &#123;        http.cors(withDefaults())                // 禁用 CSRF                .csrf().disable()                .authorizeRequests()                // 指定的接口直接放行                // swagger                .antMatchers(SecurityConstants.SWAGGER_WHITELIST).permitAll()                .antMatchers(SecurityConstants.H2_CONSOLE).permitAll()                .antMatchers(HttpMethod.POST, SecurityConstants.SYSTEM_WHITELIST).permitAll()                // 其他的接口都需要认证后才能请求                .anyRequest().authenticated()                .and()                //添加自定义Filter                .addFilter(new JwtAuthorizationFilter(authenticationManager(), stringRedisTemplate))                // 不需要session（不创建会话）                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()                // 授权异常处理                .exceptionHandling()                // json提示用户没有登录不需要用户跳转到登录页面去                .authenticationEntryPoint(new JwtAuthenticationEntryPoint())                // 权限拦截器，提示用户没有当前权限                .accessDeniedHandler(new JwtAccessDeniedHandler());        // 防止H2 web 页面的Frame 被拦截        http.headers().frameOptions().disable();    &#125;    /**     * Cors配置优化     **/    @Bean    CorsConfigurationSource corsConfigurationSource() &#123;        org.springframework.web.cors.CorsConfiguration configuration = new CorsConfiguration();        configuration.setAllowedOrigins(singletonList(&quot;*&quot;));        // configuration.setAllowedOriginPatterns(singletonList(&quot;*&quot;));        configuration.setAllowedHeaders(singletonList(&quot;*&quot;));        configuration.setAllowedMethods(Arrays.asList(&quot;GET&quot;, &quot;POST&quot;, &quot;DELETE&quot;, &quot;PUT&quot;, &quot;OPTIONS&quot;));        configuration.setExposedHeaders(singletonList(SecurityConstants.TOKEN_HEADER));        configuration.setAllowCredentials(false);        configuration.setMaxAge(3600L);        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();        source.registerCorsConfiguration(&quot;/**&quot;, configuration);        return source;    &#125;&#125;\n","dateCreated":"2022-10-04T13:35:52+08:00","dateModified":"2023-12-27T16:06:12+08:00","datePublished":"2022-10-04T13:35:52+08:00","description":"","headline":"springcloud整合oauth2------认证服务篇","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/","keywords":"Oauth2, 整合中间件"}</script>
+    <meta name="description" content="Auth认证服务1、AuthorizationServerConfig【事先准备】：方法、LoadRolePermissionService  调用—&gt; PermissionServiceImpl作用：	从数据库中将url-&gt;角色对应关系加载到Redis中  **方法1:	listRolePermission **  先从数据库获取permissons 根据roleid从数据库中找权限">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="springcloud整合oauth2------认证服务篇">
+<meta property="og:url" content="http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/index.html">
+<meta property="og:site_name" content="森">
+<meta property="og:description" content="Auth认证服务1、AuthorizationServerConfig【事先准备】：方法、LoadRolePermissionService  调用—&gt; PermissionServiceImpl作用：	从数据库中将url-&gt;角色对应关系加载到Redis中  **方法1:	listRolePermission **  先从数据库获取permissons 根据roleid从数据库中找权限">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2022-10-04T05:35:52.000Z">
+<meta property="article:modified_time" content="2023-12-27T08:06:12.454Z">
+<meta property="article:author" content="CSEN">
+<meta property="article:tag" content="Oauth2">
+<meta property="article:tag" content="整合中间件">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/head.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-w816scvuzwavitjylabixcb3ofuoklqul47j3rgwu1r0mxrxvbdehvp2jk5s.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            森
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Öffne den Link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Lesen Sie mehr über den Autor"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                </a>
+                <h4 class="sidebar-profile-name">CSEN</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="档案"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">档案</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="搜索"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/Caosen0819"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title=".github"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">.github</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            springcloud整合oauth2------认证服务篇
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2022-10-04T13:35:52+08:00">
+	
+		    04 Oct 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h1 id="Auth认证服务"><a href="#Auth认证服务" class="headerlink" title="Auth认证服务"></a><strong>Auth认证服务</strong></h1><h2 id="1、AuthorizationServerConfig"><a href="#1、AuthorizationServerConfig" class="headerlink" title="1、AuthorizationServerConfig"></a><strong>1、AuthorizationServerConfig</strong></h2><h3 id="【事先准备】："><a href="#【事先准备】：" class="headerlink" title="【事先准备】："></a><strong>【事先准备】：</strong></h3><h4 id="方法、LoadRolePermissionService-调用—-gt-PermissionServiceImpl"><a href="#方法、LoadRolePermissionService-调用—-gt-PermissionServiceImpl" class="headerlink" title="方法、LoadRolePermissionService  调用—&gt; PermissionServiceImpl"></a><strong>方法、LoadRolePermissionService  调用—&gt; PermissionServiceImpl</strong></h4><p><strong>作用：	从数据库中将url-&gt;角色对应关系加载到Redis中</strong></p>
+<ul>
+<li>**方法1:	listRolePermission **</li>
+<li><ul>
+<li>先从数据库获取permissons</li>
+<li>根据roleid从数据库中找权限数据</li>
+<li>根据permissionid从数据库中找数据</li>
+<li>到此为止，构造了每一个permission对应所需要的权限一共后续使用</li>
+<li>简化一下，放入redis</li>
+</ul>
+</li>
+</ul>
+<h3 id="【1】AuthorizationServerConfig-继承—-gt-AuthorizationServerConfigurerAdapter"><a href="#【1】AuthorizationServerConfig-继承—-gt-AuthorizationServerConfigurerAdapter" class="headerlink" title="【1】AuthorizationServerConfig 继承—&gt; AuthorizationServerConfigurerAdapter"></a><strong>【1】AuthorizationServerConfig 继承—&gt; AuthorizationServerConfigurerAdapter</strong></h3><p><strong>作用：	配置认证中心，就是授权服务器配置</strong></p>
+<h4 id="方法1：-configure-ClientDetailsServiceConfigurer-clients"><a href="#方法1：-configure-ClientDetailsServiceConfigurer-clients" class="headerlink" title="方法1： configure(ClientDetailsServiceConfigurer clients)"></a><strong>方法1： configure(ClientDetailsServiceConfigurer clients)</strong></h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 配置客户端详情，并不是所有的客户端都能接入授权服务</span><br><span class="line"> * 用来配置客户端详情服务（ClientDetailsService），</span><br><span class="line"> * 客户端详情信息在这里进行初始化，</span><br><span class="line"> * 你能够把客户端详情信息写死在这里或者是通过数据库来存储调取详情信息</span><br><span class="line"> </span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+
+<h5 id="一、重写configure-ClientDetailsServiceConfigurer-clients-方法主要配置客户端，就是告诉auth服务，我有什么客户，每一个客户又是什么样子的-，"><a href="#一、重写configure-ClientDetailsServiceConfigurer-clients-方法主要配置客户端，就是告诉auth服务，我有什么客户，每一个客户又是什么样子的-，" class="headerlink" title="**一、重写configure(ClientDetailsServiceConfigurer clients)方法主要配置客户端，就是告诉auth服务，我有什么客户，每一个客户又是什么样子的**，"></a>**一、<u>重写configure(ClientDetailsServiceConfigurer clients)方法主要配置客户端，就是告诉auth服务，我有什么客户，每一个客户又是什么样子的</u>**，</h5><ol>
+<li>定义两个client_id，及客户端可以通过不同的client_id来获取不同的令牌；</li>
+<li>client_id为test1的令牌有效时间为3600秒，client_id为test2的令牌有效时间为7200秒；</li>
+<li>client_id为test1的refresh_token（下面会介绍到）有效时间为864000秒，即10天，也就是说在这10天内都可以通过refresh_token来换取新的令牌；</li>
+<li>在获取client_id为test1的令牌的时候，scope只能指定为all，a，b或c中的某个值，否则将获取失败；</li>
+<li>只能通过密码模式(password)来获取client_id为test1的令牌，而test2则无限制。</li>
+</ol>
+<h5 id="二、导入方法有以下几种："><a href="#二、导入方法有以下几种：" class="headerlink" title="二、导入方法有以下几种："></a><strong>二、导入方法有以下几种：</strong></h5><ul>
+<li><strong>内存</strong>，自己测试的时候比较推荐，后续数据库啊什么的</li>
+<li><strong>数据库</strong>，使用JdbcClientDetailsService，JdbcClientDetailsService自己是有一个默认的字段的表的，所以程序是从数据库中的oauth_client_details表中加载客户端信息，</li>
+<li>总而言之，就是配置把客户端信息从数据源拿过来。后面需要授权验证，要用到，所以先配。</li>
+</ul>
+<h4 id="方法2：-configure-AuthorizationServerEndpointsConfigurer-endpoints-——"><a href="#方法2：-configure-AuthorizationServerEndpointsConfigurer-endpoints-——" class="headerlink" title="方法2： configure(AuthorizationServerEndpointsConfigurer endpoints)——"></a><strong>方法2： configure(AuthorizationServerEndpointsConfigurer endpoints)——</strong></h4><p>上面和客户端有关，而这个则直接和令牌有关，比如<u><strong>配置授权（authorization）</strong></u>以及<u><strong>令牌（token）的访问端点</strong></u>和<u><strong>令牌服务(token services)</strong></u>，还有一些其他的，比如异常啊什么的，下面有例子。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 配置令牌访问的端点</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>令牌端点可用于以编程方式请求令牌（非常重要，四种方式）,下面是配置的例子</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">endpoints</span><br><span class="line">        <span class="comment">//设置异常WebResponseExceptionTranslator，用于处理用户名，密码错误、授权类型不正确的异常</span></span><br><span class="line">        .exceptionTranslator(<span class="keyword">new</span> <span class="title class_">OAuthServerWebResponseExceptionTranslator</span>())</span><br><span class="line">        <span class="comment">//授权码模式所需要的authorizationCodeServices</span></span><br><span class="line">        .authorizationCodeServices(authorizationCodeServices())</span><br><span class="line">        <span class="comment">//密码模式所需要的authenticationManager</span></span><br><span class="line">        .authenticationManager(authenticationManager)</span><br><span class="line">        <span class="comment">//令牌管理服务，无论哪种模式都需要</span></span><br><span class="line">        .tokenServices(tokenServices())</span><br><span class="line">        <span class="comment">//添加进入tokenGranter</span></span><br><span class="line">        .tokenGranter(<span class="keyword">new</span> <span class="title class_">CompositeTokenGranter</span>(tokenGranters))</span><br><span class="line">        <span class="comment">//只允许POST提交访问令牌，uri：/oauth/token</span></span><br><span class="line">        .allowedTokenEndpointRequestMethods(HttpMethod.POST);</span><br></pre></td></tr></table></figure>
+
+<h5 id="一、authenticationManager-（建议必须配置）-（密码授权管理器），见文件SecurityConfig这个配置类"><a href="#一、authenticationManager-（建议必须配置）-（密码授权管理器），见文件SecurityConfig这个配置类" class="headerlink" title="一、authenticationManager （建议必须配置）  （密码授权管理器），见文件SecurityConfig这个配置类"></a><strong>一、<u>authenticationManager （建议必须配置）  （密码授权管理器），见文件SecurityConfig这个配置类</u></strong></h5><ul>
+<li>在Spring Security中，AuthenticationManager的默认实现是ProviderManager，而且它不直接自己处理认证请求，而是委托给其所配置的AuthenticationProvider列表，然后会依次使用每一个AuthenticationProvider进行认证，如果有一个AuthenticationProvider认证后的结果不为null，则表示该AuthenticationProvider已经认证成功，之后的AuthenticationProvider将不再继续认证。然后直接以该AuthenticationProvider的认证结果作为ProviderManager的认证结果。如果所有的AuthenticationProvider的认证结果都为null，则表示认证失败，将抛出一个ProviderNotFoundException。<br>校验认证请求最常用的方法是根据请求的用户名加载对应的UserDetails，然后比对UserDetails的密码与认证请求的密码是否一致，一致则表示认证通过。<br>Spring Security内部的DaoAuthenticationProvider就是使用的这种方式。其内部使用UserDetailsService来负责加载UserDetails。在认证成功以后会使用加载的UserDetails来封装要返回的Authentication对象，加载的UserDetails对象是包含用户权限等信息的。认证成功返回的Authentication对象将会保存在当前的SecurityContext中</li>
+</ul>
+<h5 id="二、令牌本身内容的配置（建议必须配置）"><a href="#二、令牌本身内容的配置（建议必须配置）" class="headerlink" title="二、令牌本身内容的配置（建议必须配置）"></a><u><strong>二、令牌本身内容的配置（建议必须配置）</strong></u></h5><h6 id="I、-两种方式，"><a href="#I、-两种方式，" class="headerlink" title="I、 两种方式，"></a><u><strong>I、 两种方式，</strong></u></h6><p>【1】直接在endpoint这里配。</p>
+<p>【2】自己写个bean注入，举个例子：</p>
+<h6 id="II、tokenServices-就在本文件注入-由于是授权服务，所以涉及到颁发令牌，那么有关令牌的管理，比如过期时间，是jwt还是什么格式，客户端存储策略，都在这里"><a href="#II、tokenServices-就在本文件注入-由于是授权服务，所以涉及到颁发令牌，那么有关令牌的管理，比如过期时间，是jwt还是什么格式，客户端存储策略，都在这里" class="headerlink" title="II、tokenServices()  就在本文件注入,由于是授权服务，所以涉及到颁发令牌，那么有关令牌的管理，比如过期时间，是jwt还是什么格式，客户端存储策略，都在这里"></a><strong>II、tokenServices()</strong>  <strong>就在本文件注入,由于是授权服务，所以涉及到颁发令牌，那么有关令牌的管理，比如过期时间，是jwt还是什么格式，客户端存储策略，都在这里</strong></h6><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Bean</span><br><span class="line">public AuthorizationServerTokenServices tokenServices() &#123;</span><br><span class="line">    System.out.println(&quot;令牌管理服务的配置&quot;);</span><br><span class="line">    DefaultTokenServices services = new DefaultTokenServices();</span><br><span class="line">    //客户端端配置策略</span><br><span class="line">    services.setClientDetailsService(clientDetailsService);</span><br><span class="line">    //支持令牌的刷新</span><br><span class="line">    services.setSupportRefreshToken(true);</span><br><span class="line">    //令牌服务</span><br><span class="line">    services.setTokenStore(tokenStore);</span><br><span class="line">    //access_token的过期时间</span><br><span class="line">    services.setAccessTokenValiditySeconds(60 * 60 * 24 * 3);</span><br><span class="line">    //refresh_token的过期时间</span><br><span class="line">    services.setRefreshTokenValiditySeconds(60 * 60 * 24 * 3);</span><br><span class="line"></span><br><span class="line">    //设置令牌增强，使用JwtAccessTokenConverter进行转换</span><br><span class="line">    services.setTokenEnhancer(jwtAccessTokenConverter);</span><br><span class="line">    return services;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="III、根据项目的要求去选择令牌的内容配置，一般来说都是jwt或者jwt-自定义内容。"><a href="#III、根据项目的要求去选择令牌的内容配置，一般来说都是jwt或者jwt-自定义内容。" class="headerlink" title="III、根据项目的要求去选择令牌的内容配置，一般来说都是jwt或者jwt+自定义内容。"></a><strong><u>III、根据项目的要求去选择令牌的内容配置，一般来说都是jwt或者jwt+自定义内容。</u></strong></h6><ul>
+<li><p>把令牌变成jwt格式很简单，按下面2两步操作即可，反正就是</p>
+<ul>
+<li><p>~~~<br>@Configuration<br>public class JWTokenConfig {</p>
+<pre><code>@Bean
+public TokenStore jwtTokenStore() &#123;
+    return new JwtTokenStore(jwtAccessTokenConverter());
+&#125;
+
+@Bean
+public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
+    JwtAccessTokenConverter accessTokenConverter = new JwtAccessTokenConverter();
+    accessTokenConverter.setSigningKey(&quot;test_key&quot;); // 签名密钥
+    return accessTokenConverter;
+&#125;
+</code></pre>
+<p>}</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">* ~~~java</span><br><span class="line">      services.setTokenStore(tokenStore);</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>自定义的话，同样简单，按下面的操作来做，无非就是先写一些配置，然后把配置注入adapter</p>
+<ul>
+<li>&#96;&#96;&#96;java<br>@Component<br>public class JwtTokenEnhancer implements TokenEnhancer {<br>@Override<br>public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {<br>    SecurityUser securityUser &#x3D; (SecurityUser) authentication.getPrincipal();<br>    Map&lt;String, Object&gt; info &#x3D; new HashMap&lt;&gt;();<br>    &#x2F;&#x2F;把用户ID设置到JWT中<br>    info.put(“id”, securityUser.getId());<br>    info.put(“client_id”,securityUser.getClientId());<br>    ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(info);<br>    return accessToken;<br>}<br>}<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">  * ~~~</span><br><span class="line">    tokenEnhancer(enhancerChain)</span><br><span class="line">    ~~~</span><br><span class="line"></span><br><span class="line">##### **三、tokenGranter(new CompositeTokenGranter(tokenGranters))    自定义授权  非常重要**</span><br><span class="line"></span><br><span class="line">作用：自定义授权获取token，下面我们来看一看源码是怎么获取token的，在我们发起oauth/token，请求获取token时，实际上是请求Tokenpoint类的postAccessToken或者getacesstoken方法，相当于调用了一个controller方法，根据请求的方法是get还是post，但其实内部还是调用post的方法。</span><br><span class="line"></span><br><span class="line">在TokenEndPoint 获取令牌过程中, 有个这样的步骤:</span><br><span class="line"></span><br><span class="line">~~~java</span><br><span class="line">OAuth2AccessToken token = getTokenGranter().grant(tokenRequest.getGrantType(), tokenRequest);</span><br><span class="line">~~~</span><br><span class="line"></span><br><span class="line">postAccessToken这个方法中，在这个方法的132行调用TokenGranter类的grant方法来获取token，**&lt;u&gt;这个方法也是最重要的&lt;/u&gt;**，通过这个方法我们可以对请求的参数进行校验是否合法，是否给予令牌。</span><br><span class="line"></span><br><span class="line">TokenGranter是一个接口，它有多个实现类，CompositeTokenGranter是其中之一，在grant方法中，会循环遍历所有的授权方式，根据请求参数携带的授权方式码，来匹配对应的授权处理实现类，调用实现类中的grant方法。那么关键点来了，请求参数中携带的是我们**&lt;u&gt;自定义的授权方式码&lt;/u&gt;**，如果要匹配上，那么首先我们要创建自定义的授权处理类，然后把这个授权处理类放入Spring Security默认的授权处理集合中，这样才能循环匹配上，进行下一步。</span><br><span class="line"></span><br><span class="line">和以前的做法一样：创建自定义授权处理类，我们可以继承TokenGranter来实现自定义的身份验证以便获取token，而AbstractTokenGranter是一个继承TokenGranter的实现类，一般我们都会继承这个类进行使用。这一点已经得到验证，可以看下面的流程。</span><br><span class="line"></span><br><span class="line">| 实现类                            | 对应的授权模式  |</span><br><span class="line">| --------------------------------- | --------------- |</span><br><span class="line">| AuthorizationCodeTokenGranter     | 授权码模式      |</span><br><span class="line">| ClientCredentialsTokenGranter     | 客户端模式      |</span><br><span class="line">| ImplicitTokenGranter              | implicit 模式   |</span><br><span class="line">| RefreshTokenGranter               | 刷新 token 模式 |</span><br><span class="line">| ResourceOwnerPasswordTokenGranter | 密码模式        |</span><br><span class="line"></span><br><span class="line">**这些类都继承了AbstractTokenGranter** </span><br><span class="line"></span><br><span class="line">**AbstractTokenGranter   调用-------&gt;getAccessToken --------&gt;getOAuth2Authentication**</span><br><span class="line"></span><br><span class="line">**根据 client、tokenRequest 从 OAuth2RequestFactory 中创建一个 OAuth2Request, 进而可得到 OAuth2Authentication (存放着用户的认证信息)。**</span><br><span class="line"></span><br><span class="line">**通过 tokenService 去创建 OAuth2AccessToken (存放着用户的 token信息、过期时间)。**</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">###### **I、————所以，这里加入自定的tokenGrant，也就是要自定义自己的授权方法 去 授权 自定义的令牌——————**</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">自定义至关重要的一点就是修改**getOAuth2Authentication**方法 （主要文件见sms文件夹和即可）</span><br><span class="line"></span><br><span class="line">具体修改不讲，修改的流程就是1、**组装自定义模式的认证信息** 2、**用authenticationManager去调用内部自定义的Provider认证这个认证信息，认证规则自然是写在Provider里面**。可借鉴 https://blog.csdn.net/m0_38031406/article/details/89316342</span><br><span class="line"></span><br><span class="line">###### **II、&lt;u&gt;所以实现方式：继承AbstractTokenGranter + 重写 getOAuth2Authentication方法。&lt;/u&gt;**</span><br><span class="line"></span><br><span class="line">~~~</span><br><span class="line">@Override</span><br><span class="line">protected OAuth2Authentication getOAuth2Authentication(ClientDetails client, TokenRequest tokenRequest) &#123;</span><br><span class="line">    Map&lt;String, String&gt; parameters = new LinkedHashMap&lt;&gt;(tokenRequest.getRequestParameters());</span><br><span class="line">    String mobile = parameters.get(&quot;mobile&quot;);</span><br><span class="line">    String password = parameters.get(&quot;password&quot;);</span><br><span class="line">    //将其中的密码移除</span><br><span class="line">    parameters.remove(&quot;password&quot;);</span><br><span class="line">    //自定义的token类</span><br><span class="line">    Authentication userAuth = new MobilePasswordAuthenticationToken(mobile, password);</span><br><span class="line"></span><br><span class="line">    ((AbstractAuthenticationToken) userAuth).setDetails(parameters);</span><br><span class="line">    //调用AuthenticationManager进行认证，内部会根据MobileAuthenticationToken找到对应的Provider进行认证</span><br><span class="line">    userAuth = authenticationManager.authenticate(userAuth);</span><br><span class="line">    if (userAuth == null || !userAuth.isAuthenticated()) &#123;</span><br><span class="line">        throw new InvalidGrantException(&quot;Could not authenticate mobile: &quot; + mobile);</span><br><span class="line">    &#125;</span><br><span class="line">    OAuth2Request storedOAuth2Request = getRequestFactory().createOAuth2Request(client, tokenRequest);</span><br><span class="line">    return new OAuth2Authentication(storedOAuth2Request, userAuth);</span><br><span class="line">&#125;</span><br><span class="line">~~~</span><br><span class="line"></span><br><span class="line">这里调用了AuthenticationManager认证，后面回调用自定义的XXXXXAuthenticationProvider</span><br><span class="line"></span><br><span class="line">###### **III、注入**</span><br><span class="line"></span><br><span class="line">~~~</span><br><span class="line">.tokenGranter(new CompositeTokenGranter(tokenGranters))</span><br><span class="line">~~~</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">##### **四、new OAuthServerWebResponseExceptionTranslator()**  也是自己配置的见文件夹**Exception**</span><br><span class="line"></span><br><span class="line">自定义异常翻译器，针对用户名、密码异常，授权类型不支持的异常进行处理-----**关键是用户**</span><br><span class="line"></span><br><span class="line">##### **五、authorizationCodeServices()就在本文件注入**</span><br><span class="line"></span><br><span class="line">##### **六、待续**。。。。。。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#### **方法3： configure(AuthorizationServerSecurityConfigurer security)**</span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line">/**</span><br><span class="line"> * 配置令牌访问的安全约束（）</span><br><span class="line"> */</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<h5 id="一、配置OAuthServerClientCredentialsTokenEndpointFilter——主要是客户端的验证"><a href="#一、配置OAuthServerClientCredentialsTokenEndpointFilter——主要是客户端的验证" class="headerlink" title="一、配置OAuthServerClientCredentialsTokenEndpointFilter——主要是客户端的验证"></a><strong>一、配置OAuthServerClientCredentialsTokenEndpointFilter——主要是客户端的验证</strong></h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> 客户端异常处理</span></span><br><span class="line"><span class="comment"> * 自定义的客户端认证的过滤器，根据客户端的id、秘钥进行认证</span></span><br><span class="line"><span class="comment"> * 重写这个过滤器用于自定义异常处理</span></span><br><span class="line"><span class="comment"> * 具体认证的逻辑依然使用ClientCredentialsTokenEndpointFilter，只是设置一下AuthenticationEntryPoint为定制</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configure</span><span class="params">(AuthorizationServerSecurityConfigurer security)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;配置令牌访问的安全约束&quot;</span>);</span><br><span class="line">      <span class="comment">//自定义ClientCredentialsTokenEndpointFilter，用于处理客户端id，密码错误的异常</span></span><br><span class="line">        <span class="type">OAuthServerClientCredentialsTokenEndpointFilter</span> <span class="variable">endpointFilter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">OAuthServerClientCredentialsTokenEndpointFilter</span>(security,authenticationEntryPoint);</span><br><span class="line">        endpointFilter.afterPropertiesSet();</span><br><span class="line">        security.addTokenEndpointAuthenticationFilter(endpointFilter);</span><br><span class="line"></span><br><span class="line">        security</span><br><span class="line">                .authenticationEntryPoint(authenticationEntryPoint)</span><br><span class="line">                <span class="comment">//开启/oauth/token_key验证端口权限访问</span></span><br><span class="line">                .tokenKeyAccess(<span class="string">&quot;permitAll()&quot;</span>)</span><br><span class="line">                <span class="comment">//开启/oauth/check_token验证端口认证权限访问</span></span><br><span class="line">                .checkTokenAccess(<span class="string">&quot;permitAll()&quot;</span>);</span><br><span class="line">                <span class="comment">//一定不要添加allowFormAuthenticationForClients，否则自定义的OAuthServerClientCredentialsTokenEndpointFilter不生效</span></span><br><span class="line"><span class="comment">//                .allowFormAuthenticationForClients();</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="I、具体认证的逻辑依然使用ClientCredentialsTokenEndpointFilter，只是设置一下AuthenticationEntryPoint为定制"><a href="#I、具体认证的逻辑依然使用ClientCredentialsTokenEndpointFilter，只是设置一下AuthenticationEntryPoint为定制" class="headerlink" title="I、具体认证的逻辑依然使用ClientCredentialsTokenEndpointFilter，只是设置一下AuthenticationEntryPoint为定制"></a><strong>I、具体认证的逻辑依然使用ClientCredentialsTokenEndpointFilter，只是设置一下AuthenticationEntryPoint为定制</strong></h6><p><strong>既然如此，我们就去看自定义的AuthenticationEntryPoint</strong>，这里没改，实际中可以改</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OAuthServerAuthenticationEntryPoint</span> <span class="keyword">implements</span> <span class="title class_">AuthenticationEntryPoint</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 认证失败处理器会调用这个方法返回提示信息</span></span><br><span class="line"><span class="comment">     * TODO 实际开发中可以自己定义，此处直接返回JSON数据：客户端认证失败错误提示</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">commence</span><span class="params">(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        ResponseUtils.result(response,<span class="keyword">new</span> <span class="title class_">ResultMsg</span>(ResultCode.CLIENT_AUTHENTICATION_FAILED.getCode(),ResultCode.CLIENT_AUTHENTICATION_FAILED.getMsg(),<span class="literal">null</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="II、endpointFilter-afterPropertiesSet-认证成功怎么办，认真失败怎么办，这里可以自定义哈哈"><a href="#II、endpointFilter-afterPropertiesSet-认证成功怎么办，认真失败怎么办，这里可以自定义哈哈" class="headerlink" title="II、endpointFilter.afterPropertiesSet(); 认证成功怎么办，认真失败怎么办，这里可以自定义哈哈"></a><strong>II、endpointFilter.afterPropertiesSet();</strong> 认证成功怎么办，认真失败怎么办，这里可以自定义哈哈</h6><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 设置AuthenticationEntryPoint主要逻辑</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">afterPropertiesSet</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;设置AuthenticationEntryPoint主要逻辑&quot;</span>);</span><br><span class="line">    <span class="comment">//TODO 定制认证失败处理器，开发中可以自己修改</span></span><br><span class="line">    setAuthenticationFailureHandler((request, response, exception) -&gt; &#123;</span><br><span class="line">        <span class="keyword">if</span> (exception <span class="keyword">instanceof</span> BadCredentialsException) &#123;</span><br><span class="line">            exception = <span class="keyword">new</span> <span class="title class_">BadCredentialsException</span>(exception.getMessage(), <span class="keyword">new</span> <span class="title class_">BadClientCredentialsException</span>());</span><br><span class="line">        &#125;</span><br><span class="line">        authenticationEntryPoint.commence(request, response, exception);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="comment">//成功处理器，和父类相同，为空即可。</span></span><br><span class="line">    setAuthenticationSuccessHandler((request, response, authentication) -&gt; &#123;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="III、security-addTokenEndpointAuthenticationFilter-endpointFilter"><a href="#III、security-addTokenEndpointAuthenticationFilter-endpointFilter" class="headerlink" title="III、security.addTokenEndpointAuthenticationFilter(endpointFilter);"></a><strong>III、security.addTokenEndpointAuthenticationFilter(endpointFilter);</strong></h6><ul>
+<li>注入 自定义相应异常的过滤链</li>
+</ul>
+<h2 id="2、springconfig"><a href="#2、springconfig" class="headerlink" title="2、springconfig"></a><strong>2、springconfig</strong></h2><h3 id="介绍一个比较完整的securityconfig配置"><a href="#介绍一个比较完整的securityconfig配置" class="headerlink" title="介绍一个比较完整的securityconfig配置"></a><strong>介绍一个比较完整的securityconfig配置</strong></h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="comment">//开启判断用户对某个控制层的方法是否具有访问权限的功能</span></span><br><span class="line"><span class="meta">@EnableGlobalMethodSecurity(prePostEnabled = true)</span></span><br><span class="line"><span class="meta">@EnableWebSecurity</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SecurityConfig</span> <span class="keyword">extends</span> <span class="title class_">WebSecurityConfigurerAdapter</span> &#123;</span><br><span class="line">    <span class="comment">//注入自定义的UserDetailService</span></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="meta">@Lazy</span></span><br><span class="line">    <span class="keyword">private</span> UserDetailsServiceImpl userDetailsServiceImpl;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> StringRedisTemplate stringRedisTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//替换默认AuthenticationManager中的UserDetailService，使用数据库用户认证方式登录</span></span><br><span class="line">    <span class="comment">//1. 一旦通过 configure 方法自定义 AuthenticationManager实现 就回将工厂中自动配置AuthenticationManager 进行覆盖</span></span><br><span class="line">    <span class="comment">//2. 一旦通过 configure 方法自定义 AuthenticationManager实现 需要在实现中指定认证数据源对象 UserDetailService 实例</span></span><br><span class="line">    <span class="comment">//3. 一旦通过 configure 方法自定义 AuthenticationManager实现 这种方式创建AuthenticationManager对象工厂内部本地一个 AuthenticationManager 对象 不允许在其他自定义组件中进行注入</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">configure</span><span class="params">(AuthenticationManagerBuilder builder)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        builder.userDetailsService(userDetailsServiceImpl);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * BCryptPasswordEncoder相关知识：</span></span><br><span class="line"><span class="comment">     * 用户表的密码通常使用MD5等不可逆算法加密后存储，为防止彩虹表破解更会先使用一个特定的字符串（如域名）加密，然后再使用一个随机的salt（盐值）加密。</span></span><br><span class="line"><span class="comment">     * 特定字符串是程序代码中固定的，salt是每个密码单独随机，一般给用户表加一个字段单独存储，比较麻烦。</span></span><br><span class="line"><span class="comment">     * BCrypt算法将salt随机并混入最终加密后的密码，验证时也无需单独提供之前的salt，从而无需单独处理salt问题。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> BCryptPasswordEncoder <span class="title function_">passwordEncoder</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">BCryptPasswordEncoder</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//将自定义AuthenticationManager在工厂中进行暴露,可以在任何位置注入</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> AuthenticationManager <span class="title function_">authenticationManagerBean</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">super</span>.authenticationManagerBean();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//HttpSecurity配置</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">configure</span><span class="params">(HttpSecurity http)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        http.cors(withDefaults())</span><br><span class="line">                <span class="comment">// 禁用 CSRF</span></span><br><span class="line">                .csrf().disable()</span><br><span class="line">                .authorizeRequests()</span><br><span class="line">                <span class="comment">// 指定的接口直接放行</span></span><br><span class="line">                <span class="comment">// swagger</span></span><br><span class="line">                .antMatchers(SecurityConstants.SWAGGER_WHITELIST).permitAll()</span><br><span class="line">                .antMatchers(SecurityConstants.H2_CONSOLE).permitAll()</span><br><span class="line">                .antMatchers(HttpMethod.POST, SecurityConstants.SYSTEM_WHITELIST).permitAll()</span><br><span class="line">                <span class="comment">// 其他的接口都需要认证后才能请求</span></span><br><span class="line">                .anyRequest().authenticated()</span><br><span class="line">                .and()</span><br><span class="line">                <span class="comment">//添加自定义Filter</span></span><br><span class="line">                .addFilter(<span class="keyword">new</span> <span class="title class_">JwtAuthorizationFilter</span>(authenticationManager(), stringRedisTemplate))</span><br><span class="line">                <span class="comment">// 不需要session（不创建会话）</span></span><br><span class="line">                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()</span><br><span class="line">                <span class="comment">// 授权异常处理</span></span><br><span class="line">                .exceptionHandling()</span><br><span class="line">                <span class="comment">// json提示用户没有登录不需要用户跳转到登录页面去</span></span><br><span class="line">                .authenticationEntryPoint(<span class="keyword">new</span> <span class="title class_">JwtAuthenticationEntryPoint</span>())</span><br><span class="line">                <span class="comment">// 权限拦截器，提示用户没有当前权限</span></span><br><span class="line">                .accessDeniedHandler(<span class="keyword">new</span> <span class="title class_">JwtAccessDeniedHandler</span>());</span><br><span class="line">        <span class="comment">// 防止H2 web 页面的Frame 被拦截</span></span><br><span class="line">        http.headers().frameOptions().disable();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Cors配置优化</span></span><br><span class="line"><span class="comment">     **/</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    CorsConfigurationSource <span class="title function_">corsConfigurationSource</span><span class="params">()</span> &#123;</span><br><span class="line">        org.springframework.web.cors.<span class="type">CorsConfiguration</span> <span class="variable">configuration</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CorsConfiguration</span>();</span><br><span class="line">        configuration.setAllowedOrigins(singletonList(<span class="string">&quot;*&quot;</span>));</span><br><span class="line">        <span class="comment">// configuration.setAllowedOriginPatterns(singletonList(&quot;*&quot;));</span></span><br><span class="line">        configuration.setAllowedHeaders(singletonList(<span class="string">&quot;*&quot;</span>));</span><br><span class="line">        configuration.setAllowedMethods(Arrays.asList(<span class="string">&quot;GET&quot;</span>, <span class="string">&quot;POST&quot;</span>, <span class="string">&quot;DELETE&quot;</span>, <span class="string">&quot;PUT&quot;</span>, <span class="string">&quot;OPTIONS&quot;</span>));</span><br><span class="line">        configuration.setExposedHeaders(singletonList(SecurityConstants.TOKEN_HEADER));</span><br><span class="line">        configuration.setAllowCredentials(<span class="literal">false</span>);</span><br><span class="line">        configuration.setMaxAge(<span class="number">3600L</span>);</span><br><span class="line">        <span class="type">UrlBasedCorsConfigurationSource</span> <span class="variable">source</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UrlBasedCorsConfigurationSource</span>();</span><br><span class="line">        source.registerCorsConfiguration(<span class="string">&quot;/**&quot;</span>, configuration);</span><br><span class="line">        <span class="keyword">return</span> source;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/Oauth2/" rel="tag">Oauth2</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/%E6%95%B4%E5%90%88%E4%B8%AD%E9%97%B4%E4%BB%B6/" rel="tag">整合中间件</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1_%E5%89%AF%E6%9C%AC/"
+                    data-tooltip="springboot整合OAuth2认证服务"
+                    aria-label="FRÜHER: springboot整合OAuth2认证服务"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC/"
+                    data-tooltip="springcloud整合oauth2------认证服务篇"
+                    aria-label="NÄCHSTER: springcloud整合oauth2------认证服务篇"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1_%E5%89%AF%E6%9C%AC/"
+                    data-tooltip="springboot整合OAuth2认证服务"
+                    aria-label="FRÜHER: springboot整合OAuth2认证服务"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC/"
+                    data-tooltip="springcloud整合oauth2------认证服务篇"
+                    aria-label="NÄCHSTER: springcloud整合oauth2------认证服务篇"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                        aria-label="Teilen auf Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                        aria-label="Teilen auf Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                        aria-label="Teilen auf Google Plus"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+            <h4 id="about-card-name">CSEN</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                浙江温州
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-39paoi2hupf5wmw7ojejrxpco6edftjriz5ezbtp4grymrdceksftgan2adp.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+
+    </body>
+</html>

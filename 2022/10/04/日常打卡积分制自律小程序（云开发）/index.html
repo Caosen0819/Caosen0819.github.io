@@ -1,0 +1,620 @@
+
+<!DOCTYPE html>
+<html lang="zh-CH">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="森">
+    <title>日常打卡积分制自律小程序（云开发） - 森</title>
+    <meta name="author" content="CSEN">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"@TOC\n展示首页挑战积分 和挑战次数，与云开发有关\n自律广场具备点赞和收藏功能，图片可放大查看详情有发布地址\n发布功能\n日常页面可发布今日任务，小程序会在该时间段微信通知你打卡\n我的页面\n指南\n我的点赞\n我的收藏\n其余三个功能其余三个功能就是清除和反馈功能\n总结第一次做微信小程序，很有意思的经历\n","dateCreated":"2022-10-04T13:35:52+08:00","dateModified":"2023-12-27T16:09:42+08:00","datePublished":"2022-10-04T13:35:52+08:00","description":"","headline":"日常打卡积分制自律小程序（云开发）","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/","keywords":"微信小程序"}</script>
+    <meta name="description" content="@TOC 展示首页挑战积分 和挑战次数，与云开发有关 自律广场具备点赞和收藏功能，图片可放大查看详情有发布地址 发布功能 日常页面可发布今日任务，小程序会在该时间段微信通知你打卡 我的页面 指南 我的点赞 我的收藏 其余三个功能其余三个功能就是清除和反馈功能 总结第一次做微信小程序，很有意思的经历">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="日常打卡积分制自律小程序（云开发）">
+<meta property="og:url" content="http://example.com/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/index.html">
+<meta property="og:site_name" content="森">
+<meta property="og:description" content="@TOC 展示首页挑战积分 和挑战次数，与云开发有关 自律广场具备点赞和收藏功能，图片可放大查看详情有发布地址 发布功能 日常页面可发布今日任务，小程序会在该时间段微信通知你打卡 我的页面 指南 我的点赞 我的收藏 其余三个功能其余三个功能就是清除和反馈功能 总结第一次做微信小程序，很有意思的经历">
+<meta property="og:locale" content="zh_CH">
+<meta property="og:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901669.png">
+<meta property="og:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901621.png">
+<meta property="og:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901854.png">
+<meta property="og:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16.png">
+<meta property="og:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901529.png">
+<meta property="og:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901628.png">
+<meta property="og:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901754.png">
+<meta property="og:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901624.png">
+<meta property="og:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901602.png">
+<meta property="og:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901797.png">
+<meta property="og:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901642.png">
+<meta property="og:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901757-3664541.png">
+<meta property="og:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901732.png">
+<meta property="og:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901757.png">
+<meta property="article:published_time" content="2022-10-04T05:35:52.000Z">
+<meta property="article:modified_time" content="2023-12-27T08:09:42.190Z">
+<meta property="article:author" content="CSEN">
+<meta property="article:tag" content="微信小程序">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901669.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/head.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-w816scvuzwavitjylabixcb3ofuoklqul47j3rgwu1r0mxrxvbdehvp2jk5s.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            森
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Öffne den Link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Lesen Sie mehr über den Autor"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                </a>
+                <h4 class="sidebar-profile-name">CSEN</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="档案"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">档案</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="搜索"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/Caosen0819"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title=".github"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">.github</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            日常打卡积分制自律小程序（云开发）
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2022-10-04T13:35:52+08:00">
+	
+		    04 Oct 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F/">微信小程序</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>@<a href="%E6%96%87%E7%AB%A0%E7%9B%AE%E5%BD%95">TOC</a></p>
+<h1 id="展示"><a href="#展示" class="headerlink" title="展示"></a>展示</h1><h2 id="首页"><a href="#首页" class="headerlink" title="首页"></a>首页</h2><p>挑战积分 和挑战次数，与云开发有关<br><img src="/../images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901669.png" alt="在这里插入图片描述"></p>
+<h2 id="自律广场"><a href="#自律广场" class="headerlink" title="自律广场"></a>自律广场</h2><p>具备点赞和收藏功能，图片可放大查看详情<br>有发布地址<br><img src="/../images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901621.png" alt="在这里插入图片描述"><br><img src="/../images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901854.png" alt="在这里插入图片描述"><br><img src="/../images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16.png" alt="在这里插入图片描述"></p>
+<h2 id="发布功能"><a href="#发布功能" class="headerlink" title="发布功能"></a>发布功能</h2><p><img src="/../images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901529.png" alt="在这里插入图片描述"><br><img src="/../images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901628.png" alt="在这里插入图片描述"></p>
+<h2 id="日常页面"><a href="#日常页面" class="headerlink" title="日常页面"></a>日常页面</h2><p>可发布今日任务，小程序会在该时间段微信通知你打卡<br><img src="/../images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901754.png" alt="在这里插入图片描述"><br><img src="/../images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901624.png" alt="在这里插入图片描述"></p>
+<h2 id="我的页面"><a href="#我的页面" class="headerlink" title="我的页面"></a>我的页面</h2><p><img src="/../images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901602.png" alt="在这里插入图片描述"></p>
+<h3 id="指南"><a href="#指南" class="headerlink" title="指南"></a>指南</h3><p><img src="/../images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901797.png" alt="在这里插入图片描述"></p>
+<h3 id="我的点赞"><a href="#我的点赞" class="headerlink" title="我的点赞"></a>我的点赞</h3><p><img src="/../images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901642.png" alt="在这里插入图片描述"></p>
+<h3 id="我的收藏"><a href="#我的收藏" class="headerlink" title="我的收藏"></a>我的收藏</h3><p><img src="/../images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901757-3664541.png" alt="在这里插入图片描述"></p>
+<h3 id="其余三个功能"><a href="#其余三个功能" class="headerlink" title="其余三个功能"></a>其余三个功能</h3><p>其余三个功能就是清除和反馈功能<br><img src="/../images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901732.png" alt="在这里插入图片描述"><br><img src="/../images/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC2/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227160901757.png" alt="在这里插入图片描述"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>第一次做微信小程序，很有意思的经历</p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F/" rel="tag">微信小程序</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+                    data-tooltip="养生打卡健康小程序（云开发）"
+                    aria-label="FRÜHER: 养生打卡健康小程序（云开发）"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1_%E5%89%AF%E6%9C%AC/"
+                    data-tooltip="springboot整合OAuth2认证服务"
+                    aria-label="NÄCHSTER: springboot整合OAuth2认证服务"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+                    data-tooltip="养生打卡健康小程序（云开发）"
+                    aria-label="FRÜHER: 养生打卡健康小程序（云开发）"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1_%E5%89%AF%E6%9C%AC/"
+                    data-tooltip="springboot整合OAuth2认证服务"
+                    aria-label="NÄCHSTER: springboot整合OAuth2认证服务"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+                        aria-label="Teilen auf Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+                        aria-label="Teilen auf Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+                        aria-label="Teilen auf Google Plus"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+            <h4 id="about-card-name">CSEN</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                浙江温州
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-39paoi2hupf5wmw7ojejrxpco6edftjriz5ezbtp4grymrdceksftgan2adp.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+
+    </body>
+</html>

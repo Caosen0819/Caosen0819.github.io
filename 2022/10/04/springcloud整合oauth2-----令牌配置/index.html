@@ -1,0 +1,627 @@
+
+<!DOCTYPE html>
+<html lang="zh-CH">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="森">
+    <title>springcloud整合oauth2-----令牌配置 - 森</title>
+    <meta name="author" content="CSEN">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"令牌配置【1】令牌本身的配置\n令牌相关的配置都放在了AccessTokenConfig这个配置类中，代码如下：\n\n@Configurationpublic class AccessTokenConfig &#123;    /**     * 令牌的存储策略     */    @Bean    public TokenStore tokenStore() &#123;        //使用JwtTokenStore生成JWT令牌        return new JwtTokenStore(jwtAccessTokenConverter());    &#125;    /**     * JwtAccessTokenConverter     * TokenEnhancer的子类，在JWT编码的令牌值和OAuth身份验证信息之间进行转换。     * TODO：后期可以使用非对称加密     */    @Bean    public JwtAccessTokenConverter jwtAccessTokenConverter()&#123;        JwtAccessTokenConverter converter = new JwtAccessTokenEnhancer();        // 设置秘钥        converter.setSigningKey(TokenConstant.SIGN_KEY);        /*         * 设置自定义得的令牌转换器，从map中转换身份信息         * fix(*)：修复刷新令牌无法获取用户详细信息的问题         */        converter.setAccessTokenConverter(new JwtEnhanceAccessTokenConverter());        return converter;    &#125;    /**     * JWT令牌增强，继承JwtAccessTokenConverter     * 将业务所需的额外信息放入令牌中，这样下游微服务就能解析令牌获取     */    public static class JwtAccessTokenEnhancer extends JwtAccessTokenConverter &#123;        /**         * 重写enhance方法，在其中扩展         */        @Override        public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) &#123;            Object principal = authentication.getUserAuthentication().getPrincipal();            if (principal instanceof SecurityUser)&#123;                //获取userDetailService中查询到用户信息                SecurityUser user=(SecurityUser)principal;                //将额外的信息放入到LinkedHashMap中                LinkedHashMap&lt;String,Object&gt; extendInformation=new LinkedHashMap&lt;&gt;();                //设置用户的userId                extendInformation.put(TokenConstant.USER_ID,user.getUserId());                //添加到additionalInformation                ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(extendInformation);            &#125;            return super.enhance(accessToken, authentication);        &#125;    &#125;&#125;\n\n\n1、JwtAccessTokenConverter\n\n令牌增强类，用于JWT令牌和OAuth身份进行转换\n@Beanpublic JwtAccessTokenConverter jwtAccessTokenConverter()&#123;    JwtAccessTokenConverter converter = new JwtAccessTokenEnhancer();    // 设置秘钥    converter.setSigningKey(TokenConstant.SIGN_KEY);    /*     * 设置自定义得的令牌转换器，从map中转换身份信息     * fix(*)：修复刷新令牌无法获取用户详细信息的问题     */    converter.setAccessTokenConverter(new JwtEnhanceAccessTokenConverter());    return converter;&#125;\n\n\n2、TokenStore\n\n令牌的存储策略，这里使用的是JwtTokenStore，使用JWT的令牌生成方式，其实还有以下两个比较常用的方式\n\n\nRedisTokenStore：将令牌存储到Redis中，此种方式相对于内存方式来说性能更好\nJdbcTokenStore：将令牌存储到数据库中，需要新建从对应的表，有兴趣的可以尝试\n\n\n3、SIGN_KEY\n\n\nJWT签名的秘钥，这里使用的是对称加密，资源服务中也要使用相同的秘钥进行校验和解析JWT令牌。\n【2】令牌管理服务的配置这个放在了AuthorizationServerConfig这个配置类中，代码如下：\n\n使用的是DefaultTokenServices这个实现类，其中可以配置令牌相关的内容，比如access_token、refresh_token的过期时间，默认时间分别为12小时、30天。\n最重要的一行代码当然是设置令牌增强，使用JWT方式生产令牌，如下：services.setTokenEnhancer(jwtAccessTokenConverter);\n\n@Beanpublic AuthorizationServerTokenServices tokenServices() &#123;    System.out.println(&quot;令牌管理服务的配置&quot;);    DefaultTokenServices services = new DefaultTokenServices();    //客户端端配置策略    services.setClientDetailsService(clientDetailsService);    //支持令牌的刷新    services.setSupportRefreshToken(true);    //令牌服务    services.setTokenStore(tokenStore);    //access_token的过期时间    services.setAccessTokenValiditySeconds(60 * 60 * 24 * 3);    //refresh_token的过期时间    services.setRefreshTokenValiditySeconds(60 * 60 * 24 * 3);    //设置令牌增强，使用JwtAccessTokenConverter进行转换    services.setTokenEnhancer(jwtAccessTokenConverter);    return services;&#125;\n\n【3】、令牌访问端点添加tokenServices","dateCreated":"2022-10-04T13:35:52+08:00","dateModified":"2023-12-27T16:04:02+08:00","datePublished":"2022-10-04T13:35:52+08:00","description":"","headline":"springcloud整合oauth2-----令牌配置","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/","keywords":"Oauth2, 整合中间件"}</script>
+    <meta name="description" content="令牌配置【1】令牌本身的配置 令牌相关的配置都放在了AccessTokenConfig这个配置类中，代码如下：  @Configurationpublic class AccessTokenConfig &amp;#123;    &#x2F;**     * 令牌的存储策略     *&#x2F;    @Bean    public TokenStore tokenStore() &amp;#123;        &#x2F;&#x2F;使用Jw">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="springcloud整合oauth2-----令牌配置">
+<meta property="og:url" content="http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/index.html">
+<meta property="og:site_name" content="森">
+<meta property="og:description" content="令牌配置【1】令牌本身的配置 令牌相关的配置都放在了AccessTokenConfig这个配置类中，代码如下：  @Configurationpublic class AccessTokenConfig &amp;#123;    &#x2F;**     * 令牌的存储策略     *&#x2F;    @Bean    public TokenStore tokenStore() &amp;#123;        &#x2F;&#x2F;使用Jw">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2022-10-04T05:35:52.000Z">
+<meta property="article:modified_time" content="2023-12-27T08:04:02.401Z">
+<meta property="article:author" content="CSEN">
+<meta property="article:tag" content="Oauth2">
+<meta property="article:tag" content="整合中间件">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/head.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-w816scvuzwavitjylabixcb3ofuoklqul47j3rgwu1r0mxrxvbdehvp2jk5s.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            森
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Öffne den Link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Lesen Sie mehr über den Autor"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                </a>
+                <h4 class="sidebar-profile-name">CSEN</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="档案"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">档案</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="搜索"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/Caosen0819"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title=".github"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">.github</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            springcloud整合oauth2-----令牌配置
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2022-10-04T13:35:52+08:00">
+	
+		    04 Oct 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h1 id="令牌配置"><a href="#令牌配置" class="headerlink" title="令牌配置"></a>令牌配置</h1><h2 id="【1】令牌本身的配置"><a href="#【1】令牌本身的配置" class="headerlink" title="【1】令牌本身的配置"></a>【1】令牌本身的配置</h2><ul>
+<li>令牌相关的配置都放在了AccessTokenConfig这个配置类中，代码如下：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">public class AccessTokenConfig &#123;</span><br><span class="line">    /**</span><br><span class="line">     * 令牌的存储策略</span><br><span class="line">     */</span><br><span class="line">    @Bean</span><br><span class="line">    public TokenStore tokenStore() &#123;</span><br><span class="line">        //使用JwtTokenStore生成JWT令牌</span><br><span class="line">        return new JwtTokenStore(jwtAccessTokenConverter());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * JwtAccessTokenConverter</span><br><span class="line">     * TokenEnhancer的子类，在JWT编码的令牌值和OAuth身份验证信息之间进行转换。</span><br><span class="line">     * TODO：后期可以使用非对称加密</span><br><span class="line">     */</span><br><span class="line">    @Bean</span><br><span class="line">    public JwtAccessTokenConverter jwtAccessTokenConverter()&#123;</span><br><span class="line">        JwtAccessTokenConverter converter = new JwtAccessTokenEnhancer();</span><br><span class="line">        // 设置秘钥</span><br><span class="line">        converter.setSigningKey(TokenConstant.SIGN_KEY);</span><br><span class="line">        /*</span><br><span class="line">         * 设置自定义得的令牌转换器，从map中转换身份信息</span><br><span class="line">         * fix(*)：修复刷新令牌无法获取用户详细信息的问题</span><br><span class="line">         */</span><br><span class="line">        converter.setAccessTokenConverter(new JwtEnhanceAccessTokenConverter());</span><br><span class="line">        return converter;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * JWT令牌增强，继承JwtAccessTokenConverter</span><br><span class="line">     * 将业务所需的额外信息放入令牌中，这样下游微服务就能解析令牌获取</span><br><span class="line">     */</span><br><span class="line">    public static class JwtAccessTokenEnhancer extends JwtAccessTokenConverter &#123;</span><br><span class="line">        /**</span><br><span class="line">         * 重写enhance方法，在其中扩展</span><br><span class="line">         */</span><br><span class="line">        @Override</span><br><span class="line">        public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) &#123;</span><br><span class="line">            Object principal = authentication.getUserAuthentication().getPrincipal();</span><br><span class="line">            if (principal instanceof SecurityUser)&#123;</span><br><span class="line">                //获取userDetailService中查询到用户信息</span><br><span class="line">                SecurityUser user=(SecurityUser)principal;</span><br><span class="line">                //将额外的信息放入到LinkedHashMap中</span><br><span class="line">                LinkedHashMap&lt;String,Object&gt; extendInformation=new LinkedHashMap&lt;&gt;();</span><br><span class="line">                //设置用户的userId</span><br><span class="line">                extendInformation.put(TokenConstant.USER_ID,user.getUserId());</span><br><span class="line">                //添加到additionalInformation</span><br><span class="line">                ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(extendInformation);</span><br><span class="line">            &#125;</span><br><span class="line">            return super.enhance(accessToken, authentication);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>1、JwtAccessTokenConverter</strong></li>
+</ul>
+<p>令牌增强类，用于JWT令牌和OAuth身份进行转换</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Bean</span><br><span class="line">public JwtAccessTokenConverter jwtAccessTokenConverter()&#123;</span><br><span class="line">    JwtAccessTokenConverter converter = new JwtAccessTokenEnhancer();</span><br><span class="line">    // 设置秘钥</span><br><span class="line">    converter.setSigningKey(TokenConstant.SIGN_KEY);</span><br><span class="line">    /*</span><br><span class="line">     * 设置自定义得的令牌转换器，从map中转换身份信息</span><br><span class="line">     * fix(*)：修复刷新令牌无法获取用户详细信息的问题</span><br><span class="line">     */</span><br><span class="line">    converter.setAccessTokenConverter(new JwtEnhanceAccessTokenConverter());</span><br><span class="line">    return converter;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>2、TokenStore</strong></li>
+</ul>
+<p>令牌的存储策略，这里使用的是JwtTokenStore，使用JWT的令牌生成方式，其实还有以下两个比较常用的方式</p>
+<ul>
+<li><ul>
+<li>RedisTokenStore：将令牌存储到Redis中，此种方式相对于内存方式来说性能更好</li>
+<li>JdbcTokenStore：将令牌存储到数据库中，需要新建从对应的表，有兴趣的可以尝试</li>
+</ul>
+</li>
+<li><p><strong>3</strong>、<strong>SIGN_KEY</strong></p>
+</li>
+</ul>
+<p>JWT签名的秘钥，这里使用的是对称加密，资源服务中也要使用相同的秘钥进行校验和解析JWT令牌。</p>
+<h2 id="【2】令牌管理服务的配置"><a href="#【2】令牌管理服务的配置" class="headerlink" title="【2】令牌管理服务的配置"></a>【2】令牌管理服务的配置</h2><p><strong>这个放在了AuthorizationServerConfig这个配置类中，代码如下：</strong></p>
+<ul>
+<li><strong>使用的是DefaultTokenServices这个实现类，其中可以配置令牌相关的内容，比如access_token、refresh_token的过期时间，默认时间分别为12小时、30天。</strong></li>
+<li><strong>最重要的一行代码当然是设置令牌增强，使用JWT方式生产令牌，如下：services.setTokenEnhancer(jwtAccessTokenConverter);</strong></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> AuthorizationServerTokenServices <span class="title function_">tokenServices</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;令牌管理服务的配置&quot;</span>);</span><br><span class="line">    <span class="type">DefaultTokenServices</span> <span class="variable">services</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DefaultTokenServices</span>();</span><br><span class="line">    <span class="comment">//客户端端配置策略</span></span><br><span class="line">    services.setClientDetailsService(clientDetailsService);</span><br><span class="line">    <span class="comment">//支持令牌的刷新</span></span><br><span class="line">    services.setSupportRefreshToken(<span class="literal">true</span>);</span><br><span class="line">    <span class="comment">//令牌服务</span></span><br><span class="line">    services.setTokenStore(tokenStore);</span><br><span class="line">    <span class="comment">//access_token的过期时间</span></span><br><span class="line">    services.setAccessTokenValiditySeconds(<span class="number">60</span> * <span class="number">60</span> * <span class="number">24</span> * <span class="number">3</span>);</span><br><span class="line">    <span class="comment">//refresh_token的过期时间</span></span><br><span class="line">    services.setRefreshTokenValiditySeconds(<span class="number">60</span> * <span class="number">60</span> * <span class="number">24</span> * <span class="number">3</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//设置令牌增强，使用JwtAccessTokenConverter进行转换</span></span><br><span class="line">    services.setTokenEnhancer(jwtAccessTokenConverter);</span><br><span class="line">    <span class="keyword">return</span> services;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="【3】、令牌访问端点添加tokenServices"><a href="#【3】、令牌访问端点添加tokenServices" class="headerlink" title="【3】、令牌访问端点添加tokenServices"></a>【3】、令牌访问端点添加tokenServices</h2>
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/Oauth2/" rel="tag">Oauth2</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/%E6%95%B4%E5%90%88%E4%B8%AD%E9%97%B4%E4%BB%B6/" rel="tag">整合中间件</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/springboot%E6%95%B4%E5%90%88elasticsearch8.2%E6%8A%A5%E9%94%99unable%20to%20parse%20response%20body%20for%20Response%7BrequestLine/"
+                    data-tooltip="springboot整合elasticsearch8.2报错unable to parse response body for Response{requestLine"
+                    aria-label="FRÜHER: springboot整合elasticsearch8.2报错unable to parse response body for Response{requestLine"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                    data-tooltip="springcloud整合oauth2-----鉴权服务篇"
+                    aria-label="NÄCHSTER: springcloud整合oauth2-----鉴权服务篇"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/springboot%E6%95%B4%E5%90%88elasticsearch8.2%E6%8A%A5%E9%94%99unable%20to%20parse%20response%20body%20for%20Response%7BrequestLine/"
+                    data-tooltip="springboot整合elasticsearch8.2报错unable to parse response body for Response{requestLine"
+                    aria-label="FRÜHER: springboot整合elasticsearch8.2报错unable to parse response body for Response{requestLine"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                    data-tooltip="springcloud整合oauth2-----鉴权服务篇"
+                    aria-label="NÄCHSTER: springcloud整合oauth2-----鉴权服务篇"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+                        aria-label="Teilen auf Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+                        aria-label="Teilen auf Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+                        aria-label="Teilen auf Google Plus"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+            <h4 id="about-card-name">CSEN</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                浙江温州
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-39paoi2hupf5wmw7ojejrxpco6edftjriz5ezbtp4grymrdceksftgan2adp.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+
+    </body>
+</html>

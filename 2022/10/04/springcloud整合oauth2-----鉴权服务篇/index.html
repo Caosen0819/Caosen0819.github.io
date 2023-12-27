@@ -1,0 +1,640 @@
+
+<!DOCTYPE html>
+<html lang="zh-CH">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="森">
+    <title>springcloud整合oauth2-----鉴权服务篇 - 森</title>
+    <meta name="author" content="CSEN">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"鉴权服务和授权服务，许多程序都是围绕着配置类进行的，所以我们直接看配置类\n【1】AccessTokenConfig  令牌的一些配置\n和授权服务一致，因为令牌要从授权服务到网关，再到客户端，不管是为了现在的还是后续的操作，最好配置，当然，用不到也可以不配，看你用不用得到。\n\n【2】JwtAuthenticationManager token认证管理器/** * @author 公众号：码猿技术专栏 * JWT认证管理器，主要的作用就是对携带过来的token进行校验，比如过期时间，加密方式等 * 一旦token校验通过，则交给鉴权管理器进行鉴权 */\n\n@Overridepublic Mono&lt;Authentication&gt; authenticate(Authentication authentication) &#123;    System.out.println(&quot;第六步***来到JWT认证管理器 检验token&quot;);    return Mono.justOrEmpty(authentication)            .filter(a -&gt; a instanceof BearerTokenAuthenticationToken)            .cast(BearerTokenAuthenticationToken.class)            .map(BearerTokenAuthenticationToken::getToken)            .flatMap((accessToken -&gt; &#123;                OAuth2AccessToken oAuth2AccessToken = this.tokenStore.readAccessToken(accessToken);                //根据access_token从数据库获取不到OAuth2AccessToken                if (oAuth2AccessToken == null) &#123;                    return Mono.error(new InvalidTokenException(&quot;无效的token！&quot;));                &#125; else if (oAuth2AccessToken.isExpired()) &#123;                    return Mono.error(new InvalidTokenException(&quot;token已过期！&quot;));                &#125;                OAuth2Authentication oAuth2Authentication = this.tokenStore.readAuthentication(accessToken);                if (oAuth2Authentication == null) &#123;                    return Mono.error(new InvalidTokenException(&quot;无效的token！&quot;));                &#125; else &#123;                    return Mono.just(oAuth2Authentication);                &#125;            &#125;)).cast(Authentication.class);&#125;\n\n\n\n【3】JwtAccessManagerV2——-认证管理器自定义\n作用：认证管理的作用就是获取传递过来的令牌，对其进行解析、验签、过期时间判定。就是作为的鉴权\n获取调用方法【get&#x2F;post…】+uri.getPath()  合成完整路径例如：【uri.getPath()】\n从redis里面获取获取所有的uri-&gt;角色对应关系\n去链接里面找到和自己这次申请链接完全一致的那一个键值对，而这个键值对的值恰恰就是【权限集合】\n把自己的权限先从mono中解析出来，然后匹配，如果超级管理员，放行；如果存在交集，则通过；否则失败\n\n异常\n\nRequestAuthenticationEntryPoint\n\n用于处理没有登录或token过期时的自定义返回结果\n\n\nRequestAccessDeniedHandler\n\n自定义返回结果：没有权限访问时\n\n\nRequestAuthenticationEntryPoint\n\n用于处理没有登录或token过期时的自定义返回结果\n\n\n\n【4】 SecurityConfig  在webflux中使用security1、webFluxSecurityFilterChain——把之前的配置整合链路\n这里使用的是webFluxSecurityFilterChain\nhttp下的功能可以借鉴http://events.jianshu.io/p/8ad366b97e18\n\n    SecurityWebFilterChain webFluxSecurityFilterChain(ServerHttpSecurity http) throws Exception&#123;    //认证过滤器，放入认证管理器tokenAuthenticationManager    AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(tokenAuthenticationManager);    System.out.println(&quot;认证过滤器，放入认证管理器tokenAuthenticationManager&quot;);    authenticationWebFilter.setServerAuthenticationConverter(new ServerBearerTokenAuthenticationConverter());    http            .httpBasic().disable()            .csrf().disable()            .authorizeExchange()            //白名单直接放行            .pathMatchers(ArrayUtil.toArray(sysConfig.getIgnoreUrls(),String.class)).permitAll()            //其他的请求必须鉴权，使用鉴权管理器            .anyExchange().access(accessManager)            //鉴权的异常处理，权限不足，token失效            .and().exceptionHandling()            .authenticationEntryPoint(requestAuthenticationEntryPoint)            .accessDeniedHandler(requestAccessDeniedHandler)            .and()            // 跨域过滤器            .addFilterAt(corsFilter, SecurityWebFiltersOrder.CORS)            //token的认证过滤器，用于校验token和认证            .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION);    return http.build();&#125;\n\n一、加入了【2】的自定义令牌认证管理器二、加入了【3】的鉴权管理器**2、白名单放行 **//白名单直接放行.pathMatchers(ArrayUtil.toArray(sysConfig.getIgnoreUrls(),String.class)).permitAll()//其他的请求必须鉴权，使用鉴权管理器.anyExchange().access(accessManager)\n\n3、鉴权的异常处理//鉴权的异常处理，权限不足，token失效.and().exceptionHandling().authenticationEntryPoint(requestAuthenticationEntryPoint).accessDeniedHandler(requestAccessDeniedHandler)\n\n","dateCreated":"2022-10-04T13:35:52+08:00","dateModified":"2023-12-27T16:05:35+08:00","datePublished":"2022-10-04T13:35:52+08:00","description":"","headline":"springcloud整合oauth2-----鉴权服务篇","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/","keywords":"Oauth2, 整合中间件"}</script>
+    <meta name="description" content="鉴权服务和授权服务，许多程序都是围绕着配置类进行的，所以我们直接看配置类 【1】AccessTokenConfig  令牌的一些配置 和授权服务一致，因为令牌要从授权服务到网关，再到客户端，不管是为了现在的还是后续的操作，最好配置，当然，用不到也可以不配，看你用不用得到。  【2】JwtAuthenticationManager token认证管理器&#x2F;** * @author 公众号：码猿技术专栏">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="springcloud整合oauth2-----鉴权服务篇">
+<meta property="og:url" content="http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/index.html">
+<meta property="og:site_name" content="森">
+<meta property="og:description" content="鉴权服务和授权服务，许多程序都是围绕着配置类进行的，所以我们直接看配置类 【1】AccessTokenConfig  令牌的一些配置 和授权服务一致，因为令牌要从授权服务到网关，再到客户端，不管是为了现在的还是后续的操作，最好配置，当然，用不到也可以不配，看你用不用得到。  【2】JwtAuthenticationManager token认证管理器&#x2F;** * @author 公众号：码猿技术专栏">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2022-10-04T05:35:52.000Z">
+<meta property="article:modified_time" content="2023-12-27T08:05:35.398Z">
+<meta property="article:author" content="CSEN">
+<meta property="article:tag" content="Oauth2">
+<meta property="article:tag" content="整合中间件">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/head.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-w816scvuzwavitjylabixcb3ofuoklqul47j3rgwu1r0mxrxvbdehvp2jk5s.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            森
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Öffne den Link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Lesen Sie mehr über den Autor"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                </a>
+                <h4 class="sidebar-profile-name">CSEN</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="档案"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">档案</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="搜索"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/Caosen0819"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title=".github"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">.github</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            springcloud整合oauth2-----鉴权服务篇
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2022-10-04T13:35:52+08:00">
+	
+		    04 Oct 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h1 id="鉴权服务"><a href="#鉴权服务" class="headerlink" title="鉴权服务"></a>鉴权服务</h1><p>和授权服务，许多程序都是围绕着配置类进行的，所以我们直接看配置类</p>
+<h2 id="【1】AccessTokenConfig-令牌的一些配置"><a href="#【1】AccessTokenConfig-令牌的一些配置" class="headerlink" title="【1】AccessTokenConfig  令牌的一些配置"></a><strong>【1】AccessTokenConfig</strong>  令牌的一些配置</h2><ul>
+<li>和授权服务一致，因为令牌要从授权服务到网关，再到客户端，不管是为了现在的还是后续的操作，最好配置，当然，用不到也可以不配，看你用不用得到。</li>
+</ul>
+<h2 id="【2】JwtAuthenticationManager-token认证管理器"><a href="#【2】JwtAuthenticationManager-token认证管理器" class="headerlink" title="【2】JwtAuthenticationManager token认证管理器"></a><strong>【2】JwtAuthenticationManager token认证管理器</strong></h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> 公众号：码猿技术专栏</span></span><br><span class="line"><span class="comment"> * JWT认证管理器，主要的作用就是对携带过来的token进行校验，比如过期时间，加密方式等</span></span><br><span class="line"><span class="comment"> * 一旦token校验通过，则交给鉴权管理器进行鉴权</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> Mono&lt;Authentication&gt; <span class="title function_">authenticate</span><span class="params">(Authentication authentication)</span> &#123;</span><br><span class="line"></span><br><span class="line">    System.out.println(<span class="string">&quot;第六步***来到JWT认证管理器 检验token&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> Mono.justOrEmpty(authentication)</span><br><span class="line">            .filter(a -&gt; a <span class="keyword">instanceof</span> BearerTokenAuthenticationToken)</span><br><span class="line">            .cast(BearerTokenAuthenticationToken.class)</span><br><span class="line">            .map(BearerTokenAuthenticationToken::getToken)</span><br><span class="line">            .flatMap((accessToken -&gt; &#123;</span><br><span class="line">                <span class="type">OAuth2AccessToken</span> <span class="variable">oAuth2AccessToken</span> <span class="operator">=</span> <span class="built_in">this</span>.tokenStore.readAccessToken(accessToken);</span><br><span class="line">                <span class="comment">//根据access_token从数据库获取不到OAuth2AccessToken</span></span><br><span class="line">                <span class="keyword">if</span> (oAuth2AccessToken == <span class="literal">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">return</span> Mono.error(<span class="keyword">new</span> <span class="title class_">InvalidTokenException</span>(<span class="string">&quot;无效的token！&quot;</span>));</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (oAuth2AccessToken.isExpired()) &#123;</span><br><span class="line">                    <span class="keyword">return</span> Mono.error(<span class="keyword">new</span> <span class="title class_">InvalidTokenException</span>(<span class="string">&quot;token已过期！&quot;</span>));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="type">OAuth2Authentication</span> <span class="variable">oAuth2Authentication</span> <span class="operator">=</span> <span class="built_in">this</span>.tokenStore.readAuthentication(accessToken);</span><br><span class="line">                <span class="keyword">if</span> (oAuth2Authentication == <span class="literal">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">return</span> Mono.error(<span class="keyword">new</span> <span class="title class_">InvalidTokenException</span>(<span class="string">&quot;无效的token！&quot;</span>));</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">return</span> Mono.just(oAuth2Authentication);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;)).cast(Authentication.class);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="【3】JwtAccessManagerV2——-认证管理器自定义"><a href="#【3】JwtAccessManagerV2——-认证管理器自定义" class="headerlink" title="【3】JwtAccessManagerV2——-认证管理器自定义"></a><strong>【3】JwtAccessManagerV2——-认证管理器自定义</strong></h2><ul>
+<li>作用：认证管理的作用就是获取传递过来的令牌，对其进行解析、验签、过期时间判定。就是作为的鉴权</li>
+<li>获取调用方法【get&#x2F;post…】+uri.getPath()  合成完整路径例如：【uri.getPath()】</li>
+<li>从redis里面获取获取所有的uri-&gt;角色对应关系</li>
+<li>去链接里面找到和自己这次申请链接完全一致的那一个键值对，而这个键值对的值恰恰就是【权限集合】</li>
+<li>把自己的权限先从mono中解析出来，然后匹配，如果超级管理员，放行；如果存在交集，则通过；否则失败</li>
+</ul>
+<p>异常</p>
+<ul>
+<li><p>RequestAuthenticationEntryPoint</p>
+<ul>
+<li>用于处理没有登录或token过期时的自定义返回结果</li>
+</ul>
+</li>
+<li><p>RequestAccessDeniedHandler</p>
+<ul>
+<li>自定义返回结果：没有权限访问时</li>
+</ul>
+</li>
+<li><p>RequestAuthenticationEntryPoint</p>
+<ul>
+<li>用于处理没有登录或token过期时的自定义返回结果</li>
+</ul>
+</li>
+</ul>
+<h2 id="【4】-SecurityConfig-在webflux中使用security"><a href="#【4】-SecurityConfig-在webflux中使用security" class="headerlink" title="【4】 SecurityConfig  在webflux中使用security"></a><strong>【4】 SecurityConfig  在webflux中使用security</strong></h2><h3 id="1、webFluxSecurityFilterChain——把之前的配置整合链路"><a href="#1、webFluxSecurityFilterChain——把之前的配置整合链路" class="headerlink" title="1、webFluxSecurityFilterChain——把之前的配置整合链路"></a><strong>1、webFluxSecurityFilterChain——把之前的配置整合链路</strong></h3><ul>
+<li><strong>这里使用的是webFluxSecurityFilterChain</strong></li>
+<li>http下的功能可以借鉴<a target="_blank" rel="noopener" href="http://events.jianshu.io/p/8ad366b97e18">http://events.jianshu.io/p/8ad366b97e18</a></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    SecurityWebFilterChain webFluxSecurityFilterChain(ServerHttpSecurity http) throws Exception&#123;</span><br><span class="line">    //认证过滤器，放入认证管理器tokenAuthenticationManager</span><br><span class="line">    AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(tokenAuthenticationManager);</span><br><span class="line">    System.out.println(&quot;认证过滤器，放入认证管理器tokenAuthenticationManager&quot;);</span><br><span class="line">    authenticationWebFilter.setServerAuthenticationConverter(new ServerBearerTokenAuthenticationConverter());</span><br><span class="line"></span><br><span class="line">    http</span><br><span class="line">            .httpBasic().disable()</span><br><span class="line">            .csrf().disable()</span><br><span class="line">            .authorizeExchange()</span><br><span class="line">            //白名单直接放行</span><br><span class="line">            .pathMatchers(ArrayUtil.toArray(sysConfig.getIgnoreUrls(),String.class)).permitAll()</span><br><span class="line">            //其他的请求必须鉴权，使用鉴权管理器</span><br><span class="line">            .anyExchange().access(accessManager)</span><br><span class="line">            //鉴权的异常处理，权限不足，token失效</span><br><span class="line">            .and().exceptionHandling()</span><br><span class="line">            .authenticationEntryPoint(requestAuthenticationEntryPoint)</span><br><span class="line">            .accessDeniedHandler(requestAccessDeniedHandler)</span><br><span class="line">            .and()</span><br><span class="line">            // 跨域过滤器</span><br><span class="line">            .addFilterAt(corsFilter, SecurityWebFiltersOrder.CORS)</span><br><span class="line">            //token的认证过滤器，用于校验token和认证</span><br><span class="line">            .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION);</span><br><span class="line">    return http.build();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="一、加入了【2】的自定义令牌认证管理器"><a href="#一、加入了【2】的自定义令牌认证管理器" class="headerlink" title="一、加入了【2】的自定义令牌认证管理器"></a><strong>一、加入了【2】的自定义令牌认证管理器</strong></h4><h4 id="二、加入了【3】的鉴权管理器"><a href="#二、加入了【3】的鉴权管理器" class="headerlink" title="二、加入了【3】的鉴权管理器"></a><strong>二、加入了【3】的鉴权管理器</strong></h4><h3 id="2、白名单放行"><a href="#2、白名单放行" class="headerlink" title="**2、白名单放行 **"></a>**2、白名单放行 **</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//白名单直接放行</span><br><span class="line">.pathMatchers(ArrayUtil.toArray(sysConfig.getIgnoreUrls(),String.class)).permitAll()</span><br><span class="line">//其他的请求必须鉴权，使用鉴权管理器</span><br><span class="line">.anyExchange().access(accessManager)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3、鉴权的异常处理"><a href="#3、鉴权的异常处理" class="headerlink" title="3、鉴权的异常处理"></a><strong>3、鉴权的异常处理</strong></h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//鉴权的异常处理，权限不足，token失效</span><br><span class="line">.and().exceptionHandling()</span><br><span class="line">.authenticationEntryPoint(requestAuthenticationEntryPoint)</span><br><span class="line">.accessDeniedHandler(requestAccessDeniedHandler)</span><br></pre></td></tr></table></figure>
+
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1>
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/Oauth2/" rel="tag">Oauth2</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/%E6%95%B4%E5%90%88%E4%B8%AD%E9%97%B4%E4%BB%B6/" rel="tag">整合中间件</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+                    data-tooltip="springcloud整合oauth2-----令牌配置"
+                    aria-label="FRÜHER: springcloud整合oauth2-----令牌配置"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86springsecurity/"
+                    data-tooltip="springcloud整合oauth2-----前置知识springsecurity"
+                    aria-label="NÄCHSTER: springcloud整合oauth2-----前置知识springsecurity"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+                    data-tooltip="springcloud整合oauth2-----令牌配置"
+                    aria-label="FRÜHER: springcloud整合oauth2-----令牌配置"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86springsecurity/"
+                    data-tooltip="springcloud整合oauth2-----前置知识springsecurity"
+                    aria-label="NÄCHSTER: springcloud整合oauth2-----前置知识springsecurity"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                        aria-label="Teilen auf Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                        aria-label="Teilen auf Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+                        aria-label="Teilen auf Google Plus"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+            <h4 id="about-card-name">CSEN</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                浙江温州
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-39paoi2hupf5wmw7ojejrxpco6edftjriz5ezbtp4grymrdceksftgan2adp.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+
+    </body>
+</html>

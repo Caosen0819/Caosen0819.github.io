@@ -1,0 +1,736 @@
+
+<!DOCTYPE html>
+<html lang="zh-CH">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="森">
+    <title>计算机网络复习2 - 森</title>
+    <meta name="author" content="CSEN">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"TCP1、TCP和UDPUDP和TCP可以共用一个端口，因为是完全独立的两个软件模块\n2、为什么不能两次握手或者四次握手？\n两次握手：在两次握手的时候，服务端没有中间状态给客户端来阻止历史连接，也就是服务端会多建立一个历史连接浪费资源，因为收到syn就变成established。这里靠序列号同步就知道了\n四次握手：四次握手无非就是，你给我发我返回同意，我给你发你返回同意，但是第二和第三部完全可以合并，所以三次就ok了。\n\n3、为什么，每次建立连接序列号都要求不一样？1、防止历史报文被下一个连接接受，如果每次都从特定的值开始，那历史报文就可能被下一个连接接受。\n2、防止黑客伪造的相同序列号被接受\n4、那这个序列号是怎么随机产生的？rfc提高了序列号ISN随机生成算法：ISN &#x3D; M + F\nm是计时器，四微秒+1\nF是哈希算法根据四元组推出来的\n5、为什么ip层会分片，TCP还分片，因为ip不能超时重传，所以只能靠tcp，而万一ip层丢了一部分，那么ip层就不能组装成一个完整的tcp报文，也就不可能发给接收方tcp层，所以发送方的tcp层就会重发整个tcp报文，所以我们最好就是自己分片，然后缺什么发什么，直接以MSS为单位就可以了\n6、TCP三次握手过程丢失问题\n第一次握手丢失，会发生什么？\n触发超时重传，每次重传次数是上一次两倍，报文最大重传次数由 tcp_syn_retries\n第二次握手丢失，会发生什么？\n客户端和服务端都会重传，重传次数分别有tcp_syn_retries和tcp_synack_retries决定\n第三次握手丢失了，会发生什么？\n这里有一点很关键，就是ack报文是不会重传的，所以服务端会认为自己的syn+ack没发到，触发重传机制，服务端重传，次数由tcp_synack_retries决定\n\n7、半连接状态和全连接状态\n半连接队列，也称 SYN 队列；\n全连接队列，也称 accept 队列；\n\n正常流程：\n\n当服务端接收到客户端的 SYN 报文时，会创建一个半连接的对象，然后将其加入到内核的「 SYN 队列」；\n接着发送 SYN + ACK 给客户端，等待客户端回应 ACK 报文；\n服务端接收到 ACK 报文后，从「 SYN 队列」取出一个半连接对象，然后创建一个新的连接对象放入到「 Accept 队列」；\n应用通过调用 accpet() socket 接口，从「 Accept 队列」取出连接对象。\n\n所以这样子就出会先一些问题\n受到SYN攻击怎么办？就是说半连接状态很多怎么办？\n\n调大 netdev_max_backlog；缓冲队列\n增大 TCP 半连接队列；\n开启 tcp_syncookies；不用建立半连接\n减少 SYN+ACK 重传次数\n\n8、TCP四次挥手\n\nmsl是报文最大生存时间，ip头有一个ttl字段，这个字段代表可以经历的最大路由数\nmsl大于等于ttl消耗为0的时间，默认60\n\n\n为什么需要这个timewait状态\n1、也是为了防止接收历史连接中的第三次挥手。这个时间足以让两个方向上的数据包都被丢弃，使得原来连接的数据包在网络中都自然消失。\n2、也就是说，TIME-WAIT 作用是等待足够的时间以确保最后的 ACK 能让被动关闭方接收，从而帮助其正常关闭。\n\n\n为什么4次？\n服务端可能还有数据要发给客户端，所以需要先处理自己的最后流程，然后给客户端发送一个fin报文，也就是说，第二次握手和第三次握手大概率是不同步的。\n特定情况下，可以变成三次，刚刚好没有数据。\n第一次挥手丢失，会发生什么？\n客户端收不到来自服务端的ack报文，那么就会触发超时重传，这个次数是由tcp_orphan_retries决定的\n第二次挥手丢失，会发生什么？\nACK 报文是不会重传的,所以首先客户端还是会触发超时重传，这个次数是由tcp_orphan_retries决定的\n第三次丢失，会发生什么？\n相当于服务端一直收不到来自客户端的ack，那么服务端会触发超时重传,次数达到后还没收到，断开连接。\n而客户端已经进入了fin_wait2状态，一直等，如果超过设定的时间tcp_fin_timeout ，断开连接。\n第四次丢失，会发生什么？\n服务端一直收不到，那么触发超时重传，这时候因为客户端已经是timewait状态，所以每一次重传都会重置2msl定时器，超过时间就close，而服务端同样的重传几次之后close\n\n\n如果建立了连接，结果客户端故障了，不发送消息，但是服务端一直establish\ntcp搞了个保活机制，隔一段时间发送探测报文，没有得到相应则认为tcp死亡，\n但是，这个保活机制时间太长了，我们自己在应用层实现一个心跳机制，一般web服务软件都会提供keepalive-timeout状态\n如果服务器的进程崩溃了，那发生什么\n其实连接信息是由内核维护的，所以服务端的内核还是会发送fin报文进行四次挥手\n\n9、可靠性保证方法\n重传机制重传分为超时重传和快速重传两种。\n超时重传：超过时间进行重传，时间RTO\n快速重传：收到三个相同的 ACK 报文时，重传丢失的报文段。这里的问题在于传一个还是传所有，这里引入了SACK和DSACK机制\nSACK：服务端把已经收到的数据信息驾到tcp头部的选项里面，告诉发送发我收到了哪些\n后面又出现了D-SACK：这是用来告诉发送方哪些被重复接受了了\n滑动窗口操作系统开辟的一个缓存空间，发送方在收到ACK应答之前，在缓冲区中保留已发送的数据。如果按期收到确认应答，此时数据就可以从缓存区清除\nTCP头部里面既有一个字段叫窗口大小，就是用来告诉发送端自己还有多少缓冲区可以使用，所以窗口大小一般由接收方决定\n拥塞控制网络发生拥塞，那么tcp就会降低自己的发送量，防止网络负担加重\n慢启动 一开始是1，就是可以传1个mss，然后收到应答变成2，4，8，16…..\n拥塞避免 触碰到慢启动门限就是用拥塞避免，变成线性的，收到一个ack cwnd增加1&#x2F;cwnd（拥塞窗口）\n如果网络发生了拥塞，也就是重传。重传分两种，如果是超时重传，就慢启动门限变成cwnd&#x2F;2，cwnd&#x3D;1重新开始慢启动\n如果是快速重传，拥塞窗口和慢启动门限都设置为拥塞窗口的一半，然后拥塞窗口+3，继续发送重复的，如果收到新数据的ACK，快速恢复结束，进入拥塞避免。\n握手优化就是调整重传次数、半连接队列，全连接队列\n挥手就是调整：重传次数、FINwait2状态时间、\n传输速度的话就是调整：接收方缓冲区大小、发送方缓冲区大小、窗口大小，打开缓冲区动态调节。\n流量控制避免发送方的数据填满接收方\n\n\n\n\n\n如何理解字节流udp操作系统不会对齐拆分，所以每一个udp就是一个消息的边界.然而tcp是会分片的，这时候，接收方如果不知道消息的长度或者边界，是无法读取消息的，不能认为一个用户消息对应一个TCP报文，正因为这样，TCP是面向字节流的协议。\n没有accept，能建立tcp连接吗\n可以\n已经建立的tcp，收到syn会发生什么\n新的syn首先看看端口是不是一样，如果不一样的话，就建立新的连接，老的那个如果一直不发消息就会触发tcp保活机制\n如果相同（可能就是宕机重传），其实会返回一个challenge ack，携带正确的序列号的确认号的ack报文，这时候客户端确认号收到这个，发现不是自己期望收到的，就会返回rst，这样，服务器就释放了连接\n如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗先到的fin包其实是乱序的，所以会进入乱序队列，等数据真正的到了，才会回头检查这个fin，然后给服务端发这个。\n如果timewait状态收到syn？会怎么样？还是先看序列号时间戳吧，如果确实合法，那应该会重新进入三次握手阶段，\n如果不合法，就会返回一个和第四次挥手一样的ack，这时候服务端收到发现不是自己的，就回复一个rst报文\n服务端没有 listen，客户端发起连接建立，会发生什么？服务端如果只 bind 了 IP 地址和端口，而没有调用 listen 的话，然后客户端对服务端发起了连接建立，服务端会回 RST 报文\nTcp连接，断电和进程崩溃有什么区别？没有保活机制客户端主机崩溃，没有保活机制，那就无法感知到，一直处于establish\n进程崩溃，内核还是会发送fin完成4次挥手\n客户端主机宕机，又迅速重启只要有一方重启完成后，收到之前 TCP 连接的报文，都会回复 RST 报文，以断开连接\n拔掉网线tcp连接还在吗在的，tcp连接信息是存储于内核的一个结构体，网线断了，但是结构体不会改变\n\n拔掉网线后，有数据传输；\n如果在重传前网线插回去了，那我觉得应该什么事情都没发生\n如果没插回去，那么就超时重传几次之后，认为此连接死亡，就断开连接，即使后面插回来了，客户端向服务端发送请求，也不是连接的状态，那么服务端就会返回rst\n拔掉网线后，没有数据传输\n如果开启了保活机制，那就探测几次，如果有工作就重制保活时间，如果客户端没有正常工作，就断开连接\n如果没有开启保活机制，就一直连着\n\n\nHTTPS 中 TLS 和 TCP 能同时握手吗？可能，但是有条件\n\n客户端和服务端都开启了 TCP Fast Open 功能，且 TLS 版本是 1.3；\n客户端和服务端已经完成过一次通信。\n\n\nTCP Fast Open定义TCP Fast Open（TFO）是用来加速连续TCP连接的数据交互的TCP协议扩展，原理如下：在TCP三次握手的过程中，当用户首次访问Server时，发送SYN包，Server根据用户IP生成Cookie（已加密），并与SYN-ACK一同发回Client；当Client随后重连时，在SYN包携带TCP Cookie；如果Server校验合法，则在用户回复ACK前就可以直接发送数据；否则按照正常三次握手进行\n所以就是在第二次以后的通信过程中，tcp open fast在ack发回来之前直接进行tls1.3\nquic怎么实现可靠传输总的来说，QUIC 通过单向递增的 Packet Number，配合 Stream ID 与 Offset 字段信息，可以支持乱序确认而不影响数据包的正确组装，\nPacket Number 是严格递增，即使重传报文的 Packet Number 也是递增的，既然重传数据包的 Packet N+M 与丢失数据包的 Packet N 编号并不一致，我们怎么确定这两个数据包的内容一样呢？\n所以引入 Frame Header 这一层，通过 Stream ID + Offset 字段信息实现数据的有序性，通过比较两个数据包的 Stream ID 与 Stream Offset ，如果都是一致，就说明这两个数据包的内容一致。\n\n\nQUIC怎么解决对头阻塞QUIC 给每一个 Stream 都分配了一个独立的滑动窗口，都是相互独立的，各自控制的滑动窗口。\nQUIC 是如何做流量控制的？QUIC 实现流量控制的方式：\n\n通过 window_update 帧告诉对端自己可以接收的字节数，这样发送方就不会发送超过这个数量的数据。 如果消耗数据的长度大于了最大接收窗口的一半发送\n通过 BlockFrame 告诉对端由于流量控制被阻塞了，无法发送数据。\n\n","dateCreated":"2023-07-08T00:00:00+08:00","dateModified":"2023-12-18T12:34:02+08:00","datePublished":"2023-07-08T00:00:00+08:00","description":"","headline":"计算机网络复习2","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/","keywords":"计算机网络"}</script>
+    <meta name="description" content="TCP1、TCP和UDPUDP和TCP可以共用一个端口，因为是完全独立的两个软件模块 2、为什么不能两次握手或者四次握手？ 两次握手：在两次握手的时候，服务端没有中间状态给客户端来阻止历史连接，也就是服务端会多建立一个历史连接浪费资源，因为收到syn就变成established。这里靠序列号同步就知道了 四次握手：四次握手无非就是，你给我发我返回同意，我给你发你返回同意，但是第二和第三部完全可以合">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="计算机网络复习2">
+<meta property="og:url" content="http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/index.html">
+<meta property="og:site_name" content="森">
+<meta property="og:description" content="TCP1、TCP和UDPUDP和TCP可以共用一个端口，因为是完全独立的两个软件模块 2、为什么不能两次握手或者四次握手？ 两次握手：在两次握手的时候，服务端没有中间状态给客户端来阻止历史连接，也就是服务端会多建立一个历史连接浪费资源，因为收到syn就变成established。这里靠序列号同步就知道了 四次握手：四次握手无非就是，你给我发我返回同意，我给你发你返回同意，但是第二和第三部完全可以合">
+<meta property="og:locale" content="zh_CH">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803130523828.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803161404210.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803163142196.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803163236556.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803205908513.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803210533146.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803212833705.png">
+<meta property="og:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803213009597.png">
+<meta property="article:published_time" content="2023-07-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-12-18T04:34:02.403Z">
+<meta property="article:author" content="CSEN">
+<meta property="article:tag" content="计算机网络">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803130523828.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/head.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-w816scvuzwavitjylabixcb3ofuoklqul47j3rgwu1r0mxrxvbdehvp2jk5s.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            森
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Öffne den Link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Lesen Sie mehr über den Autor"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                </a>
+                <h4 class="sidebar-profile-name">CSEN</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="档案"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">档案</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="搜索"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/Caosen0819"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title=".github"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">.github</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            计算机网络复习2
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2023-07-08T00:00:00+08:00">
+	
+		    08 Jul 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h2 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h2><h3 id="1、TCP和UDP"><a href="#1、TCP和UDP" class="headerlink" title="1、TCP和UDP"></a>1、<strong>TCP和UDP</strong></h3><p><strong>UDP和TCP可以共用一个端口，因为是完全独立的两个软件模块</strong></p>
+<h3 id="2、为什么不能两次握手或者四次握手？"><a href="#2、为什么不能两次握手或者四次握手？" class="headerlink" title="2、为什么不能两次握手或者四次握手？"></a>2、为什么不能两次握手或者四次握手？</h3><blockquote>
+<p>两次握手：在两次握手的时候，服务端没有中间状态给客户端来阻止历史连接，也就是服务端会多建立一个历史连接浪费资源，因为收到syn就变成established。这里靠序列号同步就知道了</p>
+<p>四次握手：四次握手无非就是，你给我发我返回同意，我给你发你返回同意，但是第二和第三部完全可以合并，所以三次就ok了。</p>
+</blockquote>
+<h3 id="3、为什么，每次建立连接序列号都要求不一样？"><a href="#3、为什么，每次建立连接序列号都要求不一样？" class="headerlink" title="3、为什么，每次建立连接序列号都要求不一样？"></a>3、为什么，每次建立连接序列号都要求不一样？</h3><p>1、防止历史报文被下一个连接接受，如果每次都从特定的值开始，那历史报文就可能被下一个连接接受。</p>
+<p>2、防止黑客伪造的相同序列号被接受</p>
+<h3 id="4、那这个序列号是怎么随机产生的？"><a href="#4、那这个序列号是怎么随机产生的？" class="headerlink" title="4、那这个序列号是怎么随机产生的？"></a>4、那这个序列号是怎么随机产生的？</h3><p>rfc提高了序列号ISN随机生成算法：ISN &#x3D; M + F</p>
+<p>m是计时器，四微秒+1</p>
+<p>F是哈希算法根据四元组推出来的</p>
+<h3 id="5、为什么ip层会分片，TCP还分片，"><a href="#5、为什么ip层会分片，TCP还分片，" class="headerlink" title="5、为什么ip层会分片，TCP还分片，"></a>5、为什么ip层会分片，TCP还分片，</h3><p>因为ip不能超时重传，所以只能靠tcp，而万一ip层丢了一部分，那么ip层就不能组装成一个完整的tcp报文，也就不可能发给接收方tcp层，所以发送方的tcp层就会重发整个tcp报文，所以我们最好就是自己分片，然后缺什么发什么，直接以MSS为单位就可以了</p>
+<h3 id="6、TCP三次握手过程丢失问题"><a href="#6、TCP三次握手过程丢失问题" class="headerlink" title="6、TCP三次握手过程丢失问题"></a>6、TCP三次握手过程丢失问题</h3><blockquote>
+<p>第一次握手丢失，会发生什么？</p>
+<p>触发超时重传，每次重传次数是上一次两倍，报文最大重传次数由 <code>tcp_syn_retries</code></p>
+<p>第二次握手丢失，会发生什么？</p>
+<p>客户端和服务端都会重传，重传次数分别有tcp_syn_retries和tcp_synack_retries决定</p>
+<p>第三次握手丢失了，会发生什么？</p>
+<p>这里有一点很关键，就是ack报文是不会重传的，所以服务端会认为自己的syn+ack没发到，触发重传机制，服务端重传，次数由tcp_synack_retries决定</p>
+</blockquote>
+<h3 id="7、半连接状态和全连接状态"><a href="#7、半连接状态和全连接状态" class="headerlink" title="7、半连接状态和全连接状态"></a>7、半连接状态和全连接状态</h3><ul>
+<li>半连接队列，也称 SYN 队列；</li>
+<li>全连接队列，也称 accept 队列；</li>
+</ul>
+<p>正常流程：</p>
+<ul>
+<li>当服务端接收到客户端的 SYN 报文时，会创建一个半连接的对象，然后将其加入到内核的「 SYN 队列」；</li>
+<li>接着发送 SYN + ACK 给客户端，等待客户端回应 ACK 报文；</li>
+<li>服务端接收到 ACK 报文后，从「 SYN 队列」取出一个半连接对象，然后创建一个新的连接对象放入到「 Accept 队列」；</li>
+<li>应用通过调用 <code>accpet()</code> socket 接口，从「 Accept 队列」取出连接对象。</li>
+</ul>
+<p>所以这样子就出会先一些问题</p>
+<p>受到SYN攻击怎么办？就是说半连接状态很多怎么办？</p>
+<ul>
+<li>调大 netdev_max_backlog；缓冲队列</li>
+<li>增大 TCP 半连接队列；</li>
+<li>开启 tcp_syncookies；不用建立半连接</li>
+<li>减少 SYN+ACK 重传次数</li>
+</ul>
+<h3 id="8、TCP四次挥手"><a href="#8、TCP四次挥手" class="headerlink" title="8、TCP四次挥手"></a>8、TCP四次挥手</h3><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803130523828.png" alt="image-20230803130523828"></p>
+<blockquote>
+<p>msl是报文最大生存时间，ip头有一个ttl字段，这个字段代表可以经历的最大路由数</p>
+<p>msl大于等于ttl消耗为0的时间，默认60</p>
+</blockquote>
+<blockquote>
+<p><strong>为什么需要这个timewait状态</strong></p>
+<p>1<font color='red'><u><em><strong>、也是为了防止接收历史连接中的第三次挥手</strong></em></u></font>。这个时间<strong>足以让两个方向上的数据包都被丢弃，使得原来连接的数据包在网络中都自然消失。</strong></p>
+<p>2、也就是说，TIME-WAIT 作用是<strong>等待足够的时间以确保最后的 ACK 能让被动关闭方接收，从而帮助其正常关闭。</strong></p>
+</blockquote>
+<blockquote>
+<p><font color='red'><u><em><strong>为什么4次？</strong></em></u></font></p>
+<p>服务端可能还有数据要发给客户端，所以需要先处理自己的最后流程，然后给客户端发送一个fin报文，也就是说，第二次握手和第三次握手大概率是不同步的。</p>
+<p><font color='red'><u><em><strong>特定情况下，可以变成三次，刚刚好没有数据。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>第一次挥手丢失，会发生什么？</strong></em></u></font></p>
+<p>客户端收不到来自服务端的ack报文，那么就会触发超时重传，这个次数是由tcp_orphan_retries决定的</p>
+<p><font color='red'><u><em><strong>第二次挥手丢失，会发生什么？</strong></em></u></font></p>
+<p>ACK 报文是不会重传的,所以首先客户端还是会触发超时重传，这个次数是由tcp_orphan_retries决定的</p>
+<p><font color='red'><u><em><strong>第三次丢失，会发生什么？</strong></em></u></font></p>
+<p>相当于服务端一直收不到来自客户端的ack，那么服务端会触发超时重传,次数达到后还没收到，断开连接。</p>
+<p>而客户端已经进入了fin_wait2状态，一直等，如果超过设定的时间tcp_fin_timeout ，断开连接。</p>
+<p><font color='red'><u><em><strong>第四次丢失，会发生什么？</strong></em></u></font></p>
+<p>服务端一直收不到，那么触发超时重传，这时候因为客户端已经是timewait状态，所以每一次重传都会重置2msl定时器，超过时间就close，而服务端同样的重传几次之后close</p>
+</blockquote>
+<blockquote>
+<p><strong>如果建立了连接，结果客户端故障了，不发送消息，但是服务端一直establish</strong></p>
+<p>tcp搞了个保活机制，隔一段时间发送探测报文，没有得到相应则认为tcp死亡，</p>
+<p>但是，这个保活机制时间太长了，我们自己在应用层实现一个心跳机制，一般web服务软件都会提供keepalive-timeout状态</p>
+<p><strong>如果服务器的进程崩溃了，那发生什么</strong></p>
+<p>其实连接信息是由内核维护的，所以服务端的内核还是会发送fin报文进行四次挥手</p>
+</blockquote>
+<h3 id="9、可靠性保证方法"><a href="#9、可靠性保证方法" class="headerlink" title="9、可靠性保证方法"></a>9、可靠性保证方法</h3><blockquote>
+<h3 id="重传机制"><a href="#重传机制" class="headerlink" title="重传机制"></a>重传机制</h3><p><font color='red'><u><em><strong>重传分为超时重传和快速重传两种。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>超时重传：超过时间进行重传，时间RTO</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>快速重传：收到三个相同的 ACK 报文时，重传丢失的报文段。这里的问题在于传一个还是传所有，这里引入了SACK和DSACK机制</strong></em></u></font></p>
+<p>SACK：服务端把已经收到的数据信息驾到tcp头部的选项里面，告诉发送发我收到了哪些</p>
+<p>后面又出现了D-SACK：这是用来告诉发送方哪些被重复接受了了</p>
+<h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h3><p>操作系统开辟的一个缓存空间，发送方在收到ACK应答之前，在缓冲区中保留已发送的数据。如果按期收到确认应答，此时数据就可以从缓存区清除</p>
+<p>TCP头部里面既有一个字段叫窗口大小，就是用来告诉发送端自己还有多少缓冲区可以使用，所以窗口大小一般由接收方决定</p>
+<h3 id="拥塞控制"><a href="#拥塞控制" class="headerlink" title="拥塞控制"></a>拥塞控制</h3><p>网络发生拥塞，那么tcp就会降低自己的发送量，防止网络负担加重</p>
+<p>慢启动 一开始是1，就是可以传1个mss，然后收到应答变成2，4，8，16…..</p>
+<p>拥塞避免 触碰到<font color='green'><u><em><strong>慢启动门限</strong></em></u></font>就是用拥塞避免，变成线性的，收到一个ack cwnd增加1&#x2F;cwnd（拥塞窗口）</p>
+<p>如果网络发生了拥塞，也就是重传。重传分两种，如果是超时重传，就慢启动门限变成cwnd&#x2F;2，cwnd&#x3D;1重新开始慢启动</p>
+<p>如果是快速重传，拥塞窗口和慢启动门限都设置为拥塞窗口的一半，然后拥塞窗口+3，继续发送重复的，如果收到新数据的ACK，快速恢复结束，进入拥塞避免。</p>
+<p>握手优化就是调整重传次数、半连接队列，全连接队列</p>
+<p>挥手就是调整：重传次数、FINwait2状态时间、</p>
+<p>传输速度的话就是调整：接收方缓冲区大小、发送方缓冲区大小、窗口大小，打开缓冲区动态调节。</p>
+<h3 id="流量控制"><a href="#流量控制" class="headerlink" title="流量控制"></a>流量控制</h3><p>避免发送方的数据填满接收方</p>
+</blockquote>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803161404210.png" alt="image-20230803161404210"></p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803163142196.png" alt="image-20230803163142196"></p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803163236556.png" alt="image-20230803163236556"></p>
+<blockquote>
+<h4 id="如何理解字节流"><a href="#如何理解字节流" class="headerlink" title="如何理解字节流"></a>如何理解字节流</h4><p>udp操作系统不会对齐拆分，所以每一个udp就是一个消息的边界.然而tcp是会分片的，这时候，接收方如果不知道消息的长度或者边界，是无法读取消息的，<strong>不能认为一个用户消息对应一个TCP报文，正因为这样，TCP是面向字节流的协议。</strong></p>
+<p><strong>没有accept，能建立tcp连接吗</strong></p>
+<p>可以</p>
+<p><strong>已经建立的tcp，收到syn会发生什么</strong></p>
+<p>新的syn首先看看端口是不是一样，如果不一样的话，就建立新的连接，老的那个如果一直不发消息就会触发tcp保活机制</p>
+<p>如果相同（可能就是宕机重传），其实会返回一个challenge ack，携带正确的序列号的确认号的ack报文，这时候客户端确认号收到这个，发现不是自己期望收到的，就会返回rst，这样，服务器就释放了连接</p>
+<h4 id="如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗"><a href="#如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗" class="headerlink" title="如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗"></a>如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗</h4><p>先到的fin包其实是乱序的，所以会进入乱序队列，等数据真正的到了，才会回头检查这个fin，然后给服务端发这个。</p>
+<h4 id="如果timewait状态收到syn？会怎么样？"><a href="#如果timewait状态收到syn？会怎么样？" class="headerlink" title="如果timewait状态收到syn？会怎么样？"></a>如果timewait状态收到syn？会怎么样？</h4><p>还是先看序列号时间戳吧，如果确实合法，那应该会重新进入三次握手阶段，</p>
+<p>如果不合法，就会返回一个和第四次挥手一样的ack，这时候服务端收到发现不是自己的，就回复一个rst报文</p>
+<h4 id="服务端没有-listen，客户端发起连接建立，会发生什么？"><a href="#服务端没有-listen，客户端发起连接建立，会发生什么？" class="headerlink" title="服务端没有 listen，客户端发起连接建立，会发生什么？"></a>服务端没有 listen，客户端发起连接建立，会发生什么？</h4><p><strong>服务端如果只 bind 了 IP 地址和端口，而没有调用 listen 的话，然后客户端对服务端发起了连接建立，服务端会回 RST 报文</strong></p>
+<h4 id="Tcp连接，断电和进程崩溃有什么区别？没有保活机制"><a href="#Tcp连接，断电和进程崩溃有什么区别？没有保活机制" class="headerlink" title="Tcp连接，断电和进程崩溃有什么区别？没有保活机制"></a>Tcp连接，断电和进程崩溃有什么区别？没有保活机制</h4><p>客户端主机崩溃，没有保活机制，那就无法感知到，一直处于establish</p>
+<p>进程崩溃，内核还是会发送fin完成4次挥手</p>
+<h4 id="客户端主机宕机，又迅速重启"><a href="#客户端主机宕机，又迅速重启" class="headerlink" title="客户端主机宕机，又迅速重启"></a>客户端主机宕机，又迅速重启</h4><p><strong>只要有一方重启完成后，收到之前 TCP 连接的报文，都会回复 RST 报文，以断开连接</strong></p>
+<h4 id="拔掉网线tcp连接还在吗"><a href="#拔掉网线tcp连接还在吗" class="headerlink" title="拔掉网线tcp连接还在吗"></a>拔掉网线tcp连接还在吗</h4><p>在的，tcp连接信息是存储于内核的一个结构体，网线断了，但是结构体不会改变</p>
+<ul>
+<li>拔掉网线后，有数据传输；</li>
+<li>如果在重传前网线插回去了，那我觉得应该什么事情都没发生</li>
+<li>如果没插回去，那么就超时重传几次之后，认为此连接死亡，就断开连接，即使后面插回来了，客户端向服务端发送请求，也不是连接的状态，那么服务端就会返回rst</li>
+<li>拔掉网线后，没有数据传输</li>
+<li>如果开启了保活机制，那就探测几次，如果有工作就重制保活时间，如果客户端没有正常工作，就断开连接</li>
+<li>如果没有开启保活机制，就一直连着</li>
+</ul>
+</blockquote>
+<h4 id="HTTPS-中-TLS-和-TCP-能同时握手吗？"><a href="#HTTPS-中-TLS-和-TCP-能同时握手吗？" class="headerlink" title="HTTPS 中 TLS 和 TCP 能同时握手吗？"></a>HTTPS 中 TLS 和 TCP 能同时握手吗？</h4><p>可能，但是有条件</p>
+<ul>
+<li><strong>客户端和服务端都开启了 TCP Fast Open 功能，且 TLS 版本是 1.3；</strong></li>
+<li><strong>客户端和服务端已经完成过一次通信。</strong></li>
+</ul>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803205908513.png" alt="image-20230803205908513"></p>
+<p>TCP Fast Open定义<br>TCP Fast Open（TFO）是用来加速连续TCP连接的数据交互的TCP协议扩展，原理如下：在TCP三次握手的过程中，当用户首次访问Server时，发送SYN包，Server根据用户IP生成Cookie（已加密），并与SYN-ACK一同发回Client；当Client随后重连时，在SYN包携带TCP Cookie；如果Server校验合法，则在用户回复ACK前就可以直接发送数据；否则按照正常三次握手进行<br><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803210533146.png" alt="image-20230803210533146"></p>
+<p>所以就是在第二次以后的通信过程中，tcp open fast在ack发回来之前直接进行tls1.3</p>
+<h4 id="quic怎么实现可靠传输"><a href="#quic怎么实现可靠传输" class="headerlink" title="quic怎么实现可靠传输"></a>quic怎么实现可靠传输</h4><p>总的来说，<strong>QUIC 通过单向递增的 Packet Number，配合 Stream ID 与 Offset 字段信息，可以支持乱序确认而不影响数据包的正确组装</strong>，</p>
+<p>Packet Number 是严格递增，即使重传报文的 Packet Number 也是递增的，既然重传数据包的 Packet N+M 与丢失数据包的 Packet N 编号并不一致，我们怎么确定这两个数据包的内容一样呢？</p>
+<p>所以引入 Frame Header 这一层，<strong>通过 Stream ID + Offset 字段信息实现数据的有序性</strong>，通过比较两个数据包的 Stream ID 与 Stream Offset ，如果都是一致，就说明这两个数据包的内容一致。</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803212833705.png"></p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803213009597.png" alt="image-20230803213009597"></p>
+<h3 id="QUIC怎么解决对头阻塞"><a href="#QUIC怎么解决对头阻塞" class="headerlink" title="QUIC怎么解决对头阻塞"></a>QUIC怎么解决对头阻塞</h3><p><strong>QUIC 给每一个 Stream 都分配了一个独立的滑动窗口，都是相互独立的，各自控制的滑动窗口</strong>。</p>
+<h3 id="QUIC-是如何做流量控制的？"><a href="#QUIC-是如何做流量控制的？" class="headerlink" title="QUIC 是如何做流量控制的？"></a>QUIC 是如何做流量控制的？</h3><p>QUIC 实现流量控制的方式：</p>
+<ul>
+<li>通过 window_update 帧告诉对端自己可以接收的字节数，这样发送方就不会发送超过这个数量的数据。 如果消耗数据的长度大于了最大接收窗口的一半发送</li>
+<li>通过 BlockFrame 告诉对端由于流量控制被阻塞了，无法发送数据。</li>
+</ul>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/" rel="tag">计算机网络</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C3/"
+                    data-tooltip="计算机网络复习3"
+                    aria-label="FRÜHER: 计算机网络复习3"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C1/"
+                    data-tooltip="计算机网络复习1"
+                    aria-label="NÄCHSTER: 计算机网络复习1"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C3/"
+                    data-tooltip="计算机网络复习3"
+                    aria-label="FRÜHER: 计算机网络复习3"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C1/"
+                    data-tooltip="计算机网络复习1"
+                    aria-label="NÄCHSTER: 计算机网络复习1"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+                        aria-label="Teilen auf Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+                        aria-label="Teilen auf Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+                        aria-label="Teilen auf Google Plus"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+            <h4 id="about-card-name">CSEN</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                浙江温州
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-39paoi2hupf5wmw7ojejrxpco6edftjriz5ezbtp4grymrdceksftgan2adp.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+
+    </body>
+</html>

@@ -261,14 +261,7 @@
                     <p>InnoDB最重要的点：行锁设计、MVCC、外键</p>
 <p>首先来了解一下InnoDB的体系架构：</p>
 <h1 id="体系架构"><a href="#体系架构" class="headerlink" title="体系架构"></a>体系架构</h1><p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231004235405057.png" alt="image-20231004235405057"></p>
-<p>InnoDB有很多内存块，组成内存池，负责的工作：</p>
-<blockquote>
-<p>维护所有线程</p>
-<p>缓存磁盘的数据</p>
-<p>重做日志缓冲</p>
-</blockquote>
-<p>后台线程的主要作用就是：刷新内存池中的数据，保证缓冲池里的是最新的数据。把已修改的数据文件刷新到磁盘文件，</p>
-<p><font color='red'><u><em><strong>体系架构可以用一句话概括，就是由很多内存块组成的缓冲池去维护所有的线程，缓存磁盘数据，重做缓冲。所以他可以从两方面来讲：一个是内存，一个是线程。</strong></em></u></font></p>
+<p>我觉的用一句话概括，就是由很多内存块组成的内存池维护一系列后台线程，然后这些后台线程去负责最重要的工作。主要是内存和后台线程。</p>
 <h2 id="1、后台线程"><a href="#1、后台线程" class="headerlink" title="1、后台线程"></a>1、后台线程</h2><blockquote>
 <p>主要有：</p>
 <p><font color='red'><u><em><strong>master thread</strong></em></u></font>：最重要的，脏页刷新、合并insert buffer，undo 页的回收，redolog。不过后来脏页回收放到了单独的线程，也就是page thread</p>
@@ -495,7 +488,9 @@
 <p><font color='red'><u><em><strong>b+树索引 （b+树只能找到数据行所在的页，然后把页读到内存里面，进行查找）</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>哈希索引（自动生成）</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>全文索引</strong></em></u></font></p>
-<h2 id="1、B-树索引"><a href="#1、B-树索引" class="headerlink" title="1、B+树索引"></a>1、B+树索引</h2><blockquote>
+<h2 id="1、B-树索引"><a href="#1、B-树索引" class="headerlink" title="1、B+树索引"></a>1、B+树索引</h2><p>为什么不用b树，b树的非叶子节点会保存数据，b+树不会，所以b树能保存的指针就好了，这样树的高度就会变大。</p>
+<p>为什么不用红黑树，红黑树是一个二叉树，这个高度肯定是不如b+树这样的多叉树，然后我们时间消耗上，就是这个磁盘io很关键。</p>
+<blockquote>
 <p>b+树是为了磁盘或其他直接存取辅助设备设计的一种多叉平衡查找树</p>
 <p>b+树的所有记录结点都是按照键值的大小顺序存放到同一层的叶子结点，他们之间通过叶子结点指针进行连接，中间的都是searchkey</p>
 <h3 id=""><a href="#" class="headerlink" title=""></a></h3></blockquote>
@@ -688,7 +683,7 @@
 <p>一个是creator_trx_id，就是你这个事务的id。</p>
 <p><font color='red'><u><em><strong>如果比mintexid小或者等于creatoridexid，我们可以看得见。</strong></em></u></font></p>
 <p>比如一条记录旧版本里面有三条记录：10，20，30。然后我们的事务id是15，m_ids里面有20，30。这里的min_trx_id就是20，我们的15比她小，说明还没有提交。因为隔离性所以肯定是看不到的，然后再去找更前面版本，我们就找到了10，发现10可以，所以我们这次读到的数据就是事务id为10的那一个版本。</p>
-<h2 id="3、一致性锁定读（当前读）"><a href="#3、一致性锁定读（当前读）" class="headerlink" title="3、一致性锁定读（当前读）"></a>3、一致性锁定读（当前读）</h2><p>有时候用户需要些显式的对读操作进行加锁保证一致性。 <font color='red'><u><em><strong>select for update还有update也是当前读</strong></em></u></font></p>
+<h2 id="3、一致性锁定读（当前读）"><a href="#3、一致性锁定读（当前读）" class="headerlink" title="3、一致性锁定读（当前读）"></a>3、一致性锁定读（当前读）</h2><p>有时候用户需要些显式的对读操作进行加锁保证一致性。 <font color='red'><u><em><strong>select for share mode， for update还有update也是当前读</strong></em></u></font></p>
 <p>![image-20231115193544143](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115193544143.png)</p>
 <h2 id="5、锁问题（并发事务带来的问题）"><a href="#5、锁问题（并发事务带来的问题）" class="headerlink" title="5、锁问题（并发事务带来的问题）"></a>5、锁问题（并发事务带来的问题）</h2><h3 id="1、脏读"><a href="#1、脏读" class="headerlink" title="1、脏读"></a>1、脏读</h3><p><font color='blue'><u><em><strong>读到了其他事务没有提交的数据</strong></em></u></font>，违反了隔离性。但是脏读发生的隔离级别最少也得是read uncommitted，而我们的数据库默认是可重复读，所以一般在生产环境中，发生的并不多。</p>
 <h3 id="2、不可重复读-or-幻读"><a href="#2、不可重复读-or-幻读" class="headerlink" title="2、不可重复读 or 幻读"></a>2、不可重复读 or 幻读</h3><p>不可重复读：两次读，读的不一样。</p>

@@ -1,0 +1,648 @@
+
+<!DOCTYPE html>
+<html lang="zh-CH">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="森">
+    <title>springcloud整合oauth2-----异常配置总结 - 森</title>
+    <meta name="author" content="CSEN">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"异常配置【1】认证服务的异常\n用户名，密码错误异常、授权类型异常\n客户端ID、秘钥异常\n\n1、用户名，密码错误异常、授权类型异常针对用户名、密码、授权类型错误的异常解决方式比较复杂，需要定制的比较多。\n一、定制提示信息、响应码这部分根据自己业务需要定制，举个例子，代码如下：\npublic enum ResultCode &#123;    CLIENT_AUTHENTICATION_FAILED(1001,&quot;客户端认证失败&quot;),    USERNAME_OR_PASSWORD_ERROR(1002,&quot;用户名或密码错误&quot;),    UNSUPPORTED_GRANT_TYPE(1003, &quot;不支持的认证模式&quot;),    NO_PERMISSION(1005,&quot;无权限访问！&quot;),    UNAUTHORIZED(401, &quot;系统错误&quot;),    INVALID_TOKEN(1004,&quot;无效的token&quot;);\n\n二、自定义WebResponseExceptionTranslator\n需要自定义一个异常翻译器，默认的是DefaultWebResponseExceptionTranslator，此处必须重写，其中有一个需要实现的方法，如下：\nResponseEntity&lt;T&gt; translate(Exception e) throws Exception;\n\n这个方法就是根据传递过来的Exception判断不同的异常返回特定的信息，这里需要判断的异常的如下：\n\nUnsupportedGrantTypeException：不支持的授权类型异常\nInvalidGrantException：用户名或者密码错误的异常\n\n\n创建一个OAuthServerWebResponseExceptionTranslator实现WebResponseExceptionTranslator，代码如下：\n\n&#96;&#96;&#96;javapublic class OAuthServerWebResponseExceptionTranslator implements WebResponseExceptionTranslator{&#x2F;** * 业务处理方法，重写这个方法返回客户端信息 &#x2F;@Overridepublic ResponseEntity translate(Exception e){    ResultMsg resultMsg &#x3D; doTranslateHandler(e);    return new ResponseEntity&lt;&gt;(resultMsg, HttpStatus.UNAUTHORIZED);}&#x2F;* * 根据异常定制返回信息 * TODO 自己根据业务封装 *&#x2F;private ResultMsg doTranslateHandler(Exception e) {    &#x2F;&#x2F;初始值，系统错误，    ResultCode resultCode &#x3D; ResultCode.UNAUTHORIZED;    &#x2F;&#x2F;判断异常，不支持的认证方式    if(e instanceof UnsupportedGrantTypeException){        resultCode &#x3D; ResultCode.UNSUPPORTED_GRANT_TYPE;        &#x2F;&#x2F;用户名或密码异常    }else if(e instanceof InvalidGrantException){        resultCode &#x3D; ResultCode.USERNAME_OR_PASSWORD_ERROR;    }    return new ResultMsg(resultCode.getCode(),resultCode.getMsg(),null);}}\n#### **三、认证服务配置文件中配置**需要将自定义的异常翻译器**OAuthServerWebResponseExceptionTranslator**在配置文件中配置，很简单，一行代码的事。在**AuthorizationServerConfig**配置文件指定，代码如下：[外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-x0dh3IeZ-1662780344834)(C:\\Users\\CSEN\\AppData\\Roaming\\Typora\\typora-user-images\\image-20220906203102659.png)]#### **四、这么配置的原因*** 我们知道获取令牌的接口为 **/oauth/token**，这个接口定义在**TokenEndpoint#postAccessToken()**（POST请求）方法中，如下图* [外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-AiZNlL02-1662780344835)(C:\\Users\\CSEN\\AppData\\Roaming\\Typora\\typora-user-images\\image-20220906203752062.png)]* 是不是都继承了**OAuth2Exception**，那么尝试在**TokenEndpoint**这个类中找找有没有处理**OAuth2Exception**这个异常的处理器，果然找到了一个 **handleException()** 方法，如下：* [外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-eHeizoig-1662780344836)(C:\\Users\\CSEN\\AppData\\Roaming\\Typora\\typora-user-images\\image-20220906203840232.png)]* 可以看到，这里的异常翻译器已经使用了我们自定义的**OAuthServerWebResponseExceptionTranslator**。可以看下默认的异常翻译器是啥，代码如下：### **2、客户端ID、秘钥异常**这部分比较复杂，想要理解还是需要些基础的，解决这个异常的方案很多，陈某只是介绍其中一种，下面详细介绍。#### **一、定制提示信息、响应码**这部分根据自己业务需要定制，和第一步一样。#### **二、自定义AuthenticationEntryPoint**这个**AuthenticationEntryPoint**是不是很熟悉，前面的文章已经介绍过了，此处需要自定义来返回定制的提示信息。创建**OAuthServerAuthenticationEntryPoint**，实现AuthenticationEntryPoint，重写其中的方法，代码如下：* ```java  public class OAuthServerAuthenticationEntryPoint implements AuthenticationEntryPoint &#123;        /**       * 认证失败处理器会调用这个方法返回提示信息       * TODO 实际开发中可以自己定义，此处直接返回JSON数据：客户端认证失败错误提示       */      @Override      public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException &#123;          ResponseUtils.result(response,new ResultMsg(ResultCode.CLIENT_AUTHENTICATION_FAILED.getCode(),ResultCode.CLIENT_AUTHENTICATION_FAILED.getMsg(),null));      &#125;  &#125;\n\n三、改造ClientCredentialsTokenEndpointFilterClientCredentialsTokenEndpointFilter这个过滤器的主要作用就是校验客户端的ID、秘钥，代码如下：\npublic class OAuthServerClientCredentialsTokenEndpointFilter extends ClientCredentialsTokenEndpointFilter &#123;    private final AuthorizationServerSecurityConfigurer configurer;    private AuthenticationEntryPoint authenticationEntryPoint;    /**     * 构造方法     * @param configurer AuthorizationServerSecurityConfigurer对昂     * @param authenticationEntryPoint 自定义的AuthenticationEntryPoint     */    public OAuthServerClientCredentialsTokenEndpointFilter(AuthorizationServerSecurityConfigurer configurer, AuthenticationEntryPoint authenticationEntryPoint) &#123;        System.out.println(&quot;自定义的客户端认证的过滤器的构造方法&quot;);        this.configurer = configurer;        this.authenticationEntryPoint=authenticationEntryPoint;    &#125;    @Override    public void setAuthenticationEntryPoint(AuthenticationEntryPoint authenticationEntryPoint) &#123;        System.out.println(&quot;setAuthenticationEntryPoint&quot;);        this.authenticationEntryPoint = authenticationEntryPoint;    &#125;    /**     * 需要重写这个方法，返回AuthenticationManager     */    @Override    protected AuthenticationManager getAuthenticationManager() &#123;        System.out.println(&quot;getAuthenticationManager&quot;);        return configurer.and().getSharedObject(AuthenticationManager.class);    &#125;    /**     * 设置AuthenticationEntryPoint主要逻辑     */    @Override    public void afterPropertiesSet() &#123;        System.out.println(&quot;设置AuthenticationEntryPoint主要逻辑&quot;);        //TODO 定制认证失败处理器，开发中可以自己修改        setAuthenticationFailureHandler((request, response, exception) -&gt; &#123;            if (exception instanceof BadCredentialsException) &#123;                exception = new BadCredentialsException(exception.getMessage(), new BadClientCredentialsException());            &#125;            authenticationEntryPoint.commence(request, response, exception);        &#125;);        //成功处理器，和父类相同，为空即可。        setAuthenticationSuccessHandler((request, response, authentication) -&gt; &#123;        &#125;);    &#125;&#125;\n\n有几个重要的部分需要讲一下，如下：\n\n构造方法中需要传入第2步自定义的 OAuthServerAuthenticationEntryPoint\n重写 getAuthenticationManager() 方法返回IOC中的AuthenticationManager\n重写afterPropertiesSet() 方法，用于自定义认证失败、成功处理器，失败处理器中调用OAuthServerAuthenticationEntryPoint进行异常提示信息返回\n\n四、OAuth配置文件中指定过滤器只需要将自定义的过滤器添加到AuthorizationServerSecurityConfigurer中，代码如下：\n@Override    public void configure(AuthorizationServerSecurityConfigurer security) &#123;        System.out.println(&quot;配置令牌访问的安全约束&quot;);        //自定义ClientCredentialsTokenEndpointFilter，用于处理客户端id，密码错误的异常        ①OAuthServerClientCredentialsTokenEndpointFilter endpointFilter = new OAuthServerClientCredentialsTokenEndpointFilter(security,authenticationEntryPoint);       ① endpointFilter.afterPropertiesSet();        ①security.addTokenEndpointAuthenticationFilter(endpointFilter);        security                .authenticationEntryPoint(authenticationEntryPoint)                //开启/oauth/token_key验证端口权限访问                .tokenKeyAccess(&quot;permitAll()&quot;)                //开启/oauth/check_token验证端口认证权限访问                .checkTokenAccess(&quot;permitAll()&quot;);               ② //一定不要添加allowFormAuthenticationForClients，否则自定义的OAuthServerClientCredentialsTokenEndpointFilter不生效//                .allowFormAuthenticationForClients();    &#125;\n\n第①部分是添加过滤器，其中authenticationEntryPoint使用的是第2步自定义的OAuthServerAuthenticationEntryPoint\n第②部分一定要注意：一定要去掉这行代码，具体原因源码解释。\n五、源码追踪I、OAuthServerAuthenticationEntryPoint在何时调用？OAuthServerAuthenticationEntryPoint这个过滤器继承了 AbstractAuthenticationProcessingFilter 这个抽象类，一切的逻辑都在 doFilter() 中，陈某简化了其中的关键代码如下：\npublic void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)\t\t\tthrows IOException, ServletException &#123;    try &#123;        \t//调用子类的attemptAuthentication方法，获取参数并且认证\t\t\tauthResult = attemptAuthentication(request, response);\t\t&#125;\t\tcatch (InternalAuthenticationServiceException failed) &#123;            //一旦认证异常，则调用unsuccessfulAuthentication方法，通过failureHandler处理\t\t\tunsuccessfulAuthentication(request, response, failed);\t\t\treturn;\t\t&#125;\t\tcatch (AuthenticationException failed) &#123;            //一旦认证异常，则调用unsuccessfulAuthentication方法，通过failureHandler处理\t\t\tunsuccessfulAuthentication(request, response, failed);\t\t\treturn;\t\t&#125;\t\t//认证成功，则调用successHandler处理\t\tsuccessfulAuthentication(request, response, chain, authResult);&#125;\n\n关键代码在 unsuccessfulAuthentication() 这个方法中，代码如下\nprotected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException &#123;    SecurityContextHolder.clearContext();    if (this.logger.isDebugEnabled()) &#123;        this.logger.debug(&quot;Authentication request failed: &quot; + failed.toString(), failed);        this.logger.debug(&quot;Updated SecurityContextHolder to contain null Authentication&quot;);        this.logger.debug(&quot;Delegating to authentication failure handler &quot; + this.failureHandler);    &#125;    this.rememberMeServices.loginFail(request, response);    this.failureHandler.onAuthenticationFailure(request, response, failed);&#125;\n\nII、自定义的过滤器如何生效的？这个就要看 AuthorizationServerSecurityConfigurer#configure() 这个方法了，其中有一段代码如下：\nwhile(var2.hasNext()) &#123;    Filter filter = (Filter)var2.next();    http.addFilterBefore(filter, BasicAuthenticationFilter.class);&#125;\n\n也就是说，我们自定义的过滤链被加到了BasicAuthenticationFilter里面\nIII、为什么不能加.allowFormAuthenticationForClients()？还是在 AuthorizationServerSecurityConfigurer#configure() 这个方法中，一旦设置了 allowFormAuthenticationForClients 为true，则会创建 ClientCredentialsTokenEndpointFilter，此时自定义的自然失效了。\n【2】资源服务自定义异常信息下面针对上述两种异常分别定制异常提示信息，这个比认证服务定制简单。\n1、自定义返回结果：没有权限访问时@Componentpublic class RequestAccessDeniedHandler implements ServerAccessDeniedHandler &#123;    @Override    public Mono&lt;Void&gt; handle(ServerWebExchange exchange, AccessDeniedException denied) &#123;        System.out.println(&quot;RequestAccessDeniedHandler&quot;);        ServerHttpResponse response = exchange.getResponse();        response.setStatusCode(HttpStatus.OK);        response.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);        System.out.println(&quot;wuquan2&quot;);        String body= JSONUtil.toJsonStr(new ResultMsg(ResultCode.NO_PERMISSION.getCode(),ResultCode.NO_PERMISSION.getMsg(),null));        DataBuffer buffer =  response.bufferFactory().wrap(body.getBytes(Charset.forName(&quot;UTF-8&quot;)));        return response.writeWith(Mono.just(buffer));    &#125;&#125;\n\n\n\n2、用于处理没有登录或token过期时的自定义返回结果","dateCreated":"2022-10-04T13:35:52+08:00","dateModified":"2023-12-27T16:04:51+08:00","datePublished":"2022-10-04T13:35:52+08:00","description":"","headline":"springcloud整合oauth2-----异常配置总结","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/","keywords":"Oauth2, 整合中间件"}</script>
+    <meta name="description" content="异常配置【1】认证服务的异常 用户名，密码错误异常、授权类型异常 客户端ID、秘钥异常  1、用户名，密码错误异常、授权类型异常针对用户名、密码、授权类型错误的异常解决方式比较复杂，需要定制的比较多。 一、定制提示信息、响应码这部分根据自己业务需要定制，举个例子，代码如下： public enum ResultCode &amp;#123;    CLIENT_AUTHENTICATION_FAILED(">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="springcloud整合oauth2-----异常配置总结">
+<meta property="og:url" content="http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="森">
+<meta property="og:description" content="异常配置【1】认证服务的异常 用户名，密码错误异常、授权类型异常 客户端ID、秘钥异常  1、用户名，密码错误异常、授权类型异常针对用户名、密码、授权类型错误的异常解决方式比较复杂，需要定制的比较多。 一、定制提示信息、响应码这部分根据自己业务需要定制，举个例子，代码如下： public enum ResultCode &amp;#123;    CLIENT_AUTHENTICATION_FAILED(">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2022-10-04T05:35:52.000Z">
+<meta property="article:modified_time" content="2023-12-27T08:04:51.165Z">
+<meta property="article:author" content="CSEN">
+<meta property="article:tag" content="Oauth2">
+<meta property="article:tag" content="整合中间件">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/head.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-w816scvuzwavitjylabixcb3ofuoklqul47j3rgwu1r0mxrxvbdehvp2jk5s.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            森
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Öffne den Link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Lesen Sie mehr über den Autor"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                </a>
+                <h4 class="sidebar-profile-name">CSEN</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="档案"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">档案</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="搜索"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/Caosen0819"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title=".github"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">.github</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            springcloud整合oauth2-----异常配置总结
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2022-10-04T13:35:52+08:00">
+	
+		    04 Oct 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h1 id="异常配置"><a href="#异常配置" class="headerlink" title="异常配置"></a>异常配置</h1><h2 id="【1】认证服务的异常"><a href="#【1】认证服务的异常" class="headerlink" title="【1】认证服务的异常"></a>【1】认证服务的异常</h2><ul>
+<li>用户名，密码错误异常、授权类型异常</li>
+<li>客户端ID、秘钥异常</li>
+</ul>
+<h3 id="1、用户名，密码错误异常、授权类型异常"><a href="#1、用户名，密码错误异常、授权类型异常" class="headerlink" title="1、用户名，密码错误异常、授权类型异常"></a><strong>1、用户名，密码错误异常、授权类型异常</strong></h3><p>针对用户名、密码、授权类型错误的异常解决方式比较复杂，需要定制的比较多。</p>
+<h4 id="一、定制提示信息、响应码"><a href="#一、定制提示信息、响应码" class="headerlink" title="一、定制提示信息、响应码"></a><strong>一、定制提示信息、响应码</strong></h4><p>这部分根据自己业务需要定制，举个例子，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">ResultCode</span> &#123;</span><br><span class="line"></span><br><span class="line">    CLIENT_AUTHENTICATION_FAILED(<span class="number">1001</span>,<span class="string">&quot;客户端认证失败&quot;</span>),</span><br><span class="line"></span><br><span class="line">    USERNAME_OR_PASSWORD_ERROR(<span class="number">1002</span>,<span class="string">&quot;用户名或密码错误&quot;</span>),</span><br><span class="line"></span><br><span class="line">    UNSUPPORTED_GRANT_TYPE(<span class="number">1003</span>, <span class="string">&quot;不支持的认证模式&quot;</span>),</span><br><span class="line"></span><br><span class="line">    NO_PERMISSION(<span class="number">1005</span>,<span class="string">&quot;无权限访问！&quot;</span>),</span><br><span class="line">    UNAUTHORIZED(<span class="number">401</span>, <span class="string">&quot;系统错误&quot;</span>),</span><br><span class="line"></span><br><span class="line">    INVALID_TOKEN(<span class="number">1004</span>,<span class="string">&quot;无效的token&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="二、自定义WebResponseExceptionTranslator"><a href="#二、自定义WebResponseExceptionTranslator" class="headerlink" title="二、自定义WebResponseExceptionTranslator"></a><strong>二、自定义WebResponseExceptionTranslator</strong></h4><ul>
+<li><p>需要自定义一个异常翻译器，默认的是<strong>DefaultWebResponseExceptionTranslator</strong>，此处必须重写，其中有一个需要实现的方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ResponseEntity&lt;T&gt; <span class="title function_">translate</span><span class="params">(Exception e)</span> <span class="keyword">throws</span> Exception;</span><br></pre></td></tr></table></figure>
+
+<p>这个方法就是根据传递过来的<strong>Exception</strong>判断不同的异常返回特定的信息，这里需要判断的异常的如下：</p>
+<ul>
+<li><strong>UnsupportedGrantTypeException</strong>：不支持的授权类型异常</li>
+<li><strong>InvalidGrantException</strong>：用户名或者密码错误的异常</li>
+</ul>
+</li>
+<li><p>创建一个<strong>OAuthServerWebResponseExceptionTranslator</strong>实现<strong>WebResponseExceptionTranslator</strong>，代码如下：</p>
+</li>
+<li><p>&#96;&#96;&#96;java<br>public class OAuthServerWebResponseExceptionTranslator implements WebResponseExceptionTranslator{<br>&#x2F;**<br> * 业务处理方法，重写这个方法返回客户端信息<br> <em>&#x2F;<br>@Override<br>public ResponseEntity<ResultMsg> translate(Exception e){<br>    ResultMsg resultMsg &#x3D; doTranslateHandler(e);<br>    return new ResponseEntity&lt;&gt;(resultMsg, HttpStatus.UNAUTHORIZED);<br>}<br><br>&#x2F;</em>*<br> * 根据异常定制返回信息<br> * TODO 自己根据业务封装<br> *&#x2F;<br>private ResultMsg doTranslateHandler(Exception e) {<br>    &#x2F;&#x2F;初始值，系统错误，<br>    ResultCode resultCode &#x3D; ResultCode.UNAUTHORIZED;<br>    &#x2F;&#x2F;判断异常，不支持的认证方式<br>    if(e instanceof UnsupportedGrantTypeException){<br>        resultCode &#x3D; ResultCode.UNSUPPORTED_GRANT_TYPE;<br>        &#x2F;&#x2F;用户名或密码异常<br>    }else if(e instanceof InvalidGrantException){<br>        resultCode &#x3D; ResultCode.USERNAME_OR_PASSWORD_ERROR;<br>    }<br>    return new ResultMsg(resultCode.getCode(),resultCode.getMsg(),null);<br>}<br>}</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">#### **三、认证服务配置文件中配置**</span><br><span class="line"></span><br><span class="line">需要将自定义的异常翻译器**OAuthServerWebResponseExceptionTranslator**在配置文件中配置，很简单，一行代码的事。</span><br><span class="line"></span><br><span class="line">在**AuthorizationServerConfig**配置文件指定，代码如下：</span><br><span class="line"></span><br><span class="line">[外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-x0dh3IeZ-1662780344834)(C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220906203102659.png)]</span><br><span class="line"></span><br><span class="line">#### **四、这么配置的原因**</span><br><span class="line"></span><br><span class="line">* 我们知道获取令牌的接口为 **/oauth/token**，这个接口定义在**TokenEndpoint#postAccessToken()**（POST请求）方法中，如下图</span><br><span class="line">* [外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-AiZNlL02-1662780344835)(C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220906203752062.png)]</span><br><span class="line">* 是不是都继承了**OAuth2Exception**，那么尝试在**TokenEndpoint**这个类中找找有没有处理**OAuth2Exception**这个异常的处理器，果然找到了一个 **handleException()** 方法，如下：</span><br><span class="line">* [外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-eHeizoig-1662780344836)(C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220906203840232.png)]</span><br><span class="line">* 可以看到，这里的异常翻译器已经使用了我们自定义的**OAuthServerWebResponseExceptionTranslator**。可以看下默认的异常翻译器是啥，代码如下：</span><br><span class="line"></span><br><span class="line">### **2、客户端ID、秘钥异常**</span><br><span class="line"></span><br><span class="line">这部分比较复杂，想要理解还是需要些基础的，解决这个异常的方案很多，陈某只是介绍其中一种，下面详细介绍。</span><br><span class="line"></span><br><span class="line">#### **一、定制提示信息、响应码**</span><br><span class="line"></span><br><span class="line">这部分根据自己业务需要定制，和第一步一样。</span><br><span class="line"></span><br><span class="line">#### **二、自定义AuthenticationEntryPoint**</span><br><span class="line"></span><br><span class="line">这个**AuthenticationEntryPoint**是不是很熟悉，前面的文章已经介绍过了，此处需要自定义来返回定制的提示信息。</span><br><span class="line"></span><br><span class="line">创建**OAuthServerAuthenticationEntryPoint**，实现AuthenticationEntryPoint，重写其中的方法，代码如下：</span><br><span class="line"></span><br><span class="line">* ```java</span><br><span class="line">  public class OAuthServerAuthenticationEntryPoint implements AuthenticationEntryPoint &#123;</span><br><span class="line">  </span><br><span class="line">      /**</span><br><span class="line">       * 认证失败处理器会调用这个方法返回提示信息</span><br><span class="line">       * TODO 实际开发中可以自己定义，此处直接返回JSON数据：客户端认证失败错误提示</span><br><span class="line">       */</span><br><span class="line">      @Override</span><br><span class="line">      public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException &#123;</span><br><span class="line">          ResponseUtils.result(response,new ResultMsg(ResultCode.CLIENT_AUTHENTICATION_FAILED.getCode(),ResultCode.CLIENT_AUTHENTICATION_FAILED.getMsg(),null));</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="三、改造ClientCredentialsTokenEndpointFilter"><a href="#三、改造ClientCredentialsTokenEndpointFilter" class="headerlink" title="三、改造ClientCredentialsTokenEndpointFilter"></a><strong>三、改造ClientCredentialsTokenEndpointFilter</strong></h4><p><strong>ClientCredentialsTokenEndpointFilter</strong>这个过滤器的主要作用就是校验客户端的ID、秘钥，代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class OAuthServerClientCredentialsTokenEndpointFilter extends ClientCredentialsTokenEndpointFilter &#123;</span><br><span class="line"></span><br><span class="line">    private final AuthorizationServerSecurityConfigurer configurer;</span><br><span class="line"></span><br><span class="line">    private AuthenticationEntryPoint authenticationEntryPoint;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 构造方法</span><br><span class="line">     * @param configurer AuthorizationServerSecurityConfigurer对昂</span><br><span class="line">     * @param authenticationEntryPoint 自定义的AuthenticationEntryPoint</span><br><span class="line">     */</span><br><span class="line">    public OAuthServerClientCredentialsTokenEndpointFilter(AuthorizationServerSecurityConfigurer configurer, AuthenticationEntryPoint authenticationEntryPoint) &#123;</span><br><span class="line">        System.out.println(&quot;自定义的客户端认证的过滤器的构造方法&quot;);</span><br><span class="line">        this.configurer = configurer;</span><br><span class="line">        this.authenticationEntryPoint=authenticationEntryPoint;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void setAuthenticationEntryPoint(AuthenticationEntryPoint authenticationEntryPoint) &#123;</span><br><span class="line">        System.out.println(&quot;setAuthenticationEntryPoint&quot;);</span><br><span class="line">        this.authenticationEntryPoint = authenticationEntryPoint;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 需要重写这个方法，返回AuthenticationManager</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    protected AuthenticationManager getAuthenticationManager() &#123;</span><br><span class="line">        System.out.println(&quot;getAuthenticationManager&quot;);</span><br><span class="line">        return configurer.and().getSharedObject(AuthenticationManager.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 设置AuthenticationEntryPoint主要逻辑</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public void afterPropertiesSet() &#123;</span><br><span class="line">        System.out.println(&quot;设置AuthenticationEntryPoint主要逻辑&quot;);</span><br><span class="line">        //TODO 定制认证失败处理器，开发中可以自己修改</span><br><span class="line">        setAuthenticationFailureHandler((request, response, exception) -&gt; &#123;</span><br><span class="line">            if (exception instanceof BadCredentialsException) &#123;</span><br><span class="line">                exception = new BadCredentialsException(exception.getMessage(), new BadClientCredentialsException());</span><br><span class="line">            &#125;</span><br><span class="line">            authenticationEntryPoint.commence(request, response, exception);</span><br><span class="line">        &#125;);</span><br><span class="line">        //成功处理器，和父类相同，为空即可。</span><br><span class="line">        setAuthenticationSuccessHandler((request, response, authentication) -&gt; &#123;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>有几个重要的部分需要讲一下，如下：</p>
+<ul>
+<li>构造方法中需要传入第2步自定义的 <strong>OAuthServerAuthenticationEntryPoint</strong></li>
+<li>重写 <strong>getAuthenticationManager()</strong> 方法返回IOC中的AuthenticationManager</li>
+<li>重写<strong>afterPropertiesSet()</strong> 方法，用于自定义认证失败、成功处理器，失败处理器中调用<strong>OAuthServerAuthenticationEntryPoint</strong>进行异常提示信息返回</li>
+</ul>
+<h4 id="四、OAuth配置文件中指定过滤器"><a href="#四、OAuth配置文件中指定过滤器" class="headerlink" title="四、OAuth配置文件中指定过滤器"></a><strong>四、OAuth配置文件中指定过滤器</strong></h4><p>只需要将自定义的过滤器添加到<strong>AuthorizationServerSecurityConfigurer</strong>中，代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Override</span><br><span class="line">    public void configure(AuthorizationServerSecurityConfigurer security) &#123;</span><br><span class="line">        System.out.println(&quot;配置令牌访问的安全约束&quot;);</span><br><span class="line">        //自定义ClientCredentialsTokenEndpointFilter，用于处理客户端id，密码错误的异常</span><br><span class="line">        ①OAuthServerClientCredentialsTokenEndpointFilter endpointFilter = new OAuthServerClientCredentialsTokenEndpointFilter(security,authenticationEntryPoint);</span><br><span class="line">       ① endpointFilter.afterPropertiesSet();</span><br><span class="line">        ①security.addTokenEndpointAuthenticationFilter(endpointFilter);</span><br><span class="line"></span><br><span class="line">        security</span><br><span class="line">                .authenticationEntryPoint(authenticationEntryPoint)</span><br><span class="line">                //开启/oauth/token_key验证端口权限访问</span><br><span class="line">                .tokenKeyAccess(&quot;permitAll()&quot;)</span><br><span class="line">                //开启/oauth/check_token验证端口认证权限访问</span><br><span class="line">                .checkTokenAccess(&quot;permitAll()&quot;);</span><br><span class="line">               ② //一定不要添加allowFormAuthenticationForClients，否则自定义的OAuthServerClientCredentialsTokenEndpointFilter不生效</span><br><span class="line">//                .allowFormAuthenticationForClients();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>第<strong>①</strong>部分是添加过滤器，其中<strong>authenticationEntryPoint</strong>使用的是第2步自定义的<strong>OAuthServerAuthenticationEntryPoint</strong></p>
+<p>第<strong>②</strong>部分一定要注意：一定要去掉这行代码，具体原因源码解释。</p>
+<h4 id="五、源码追踪"><a href="#五、源码追踪" class="headerlink" title="五、源码追踪"></a><strong>五、源码追踪</strong></h4><h6 id="I、OAuthServerAuthenticationEntryPoint在何时调用？"><a href="#I、OAuthServerAuthenticationEntryPoint在何时调用？" class="headerlink" title="I、OAuthServerAuthenticationEntryPoint在何时调用？"></a><strong>I、OAuthServerAuthenticationEntryPoint在何时调用？</strong></h6><p>OAuthServerAuthenticationEntryPoint这个过滤器继承了 <strong>AbstractAuthenticationProcessingFilter</strong> 这个抽象类，一切的逻辑都在 <strong>doFilter()</strong> 中，陈某简化了其中的关键代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)</span><br><span class="line">			throws IOException, ServletException &#123;</span><br><span class="line">    try &#123;</span><br><span class="line">        	//调用子类的attemptAuthentication方法，获取参数并且认证</span><br><span class="line">			authResult = attemptAuthentication(request, response);</span><br><span class="line">		&#125;</span><br><span class="line">		catch (InternalAuthenticationServiceException failed) &#123;</span><br><span class="line">            //一旦认证异常，则调用unsuccessfulAuthentication方法，通过failureHandler处理</span><br><span class="line">			unsuccessfulAuthentication(request, response, failed);</span><br><span class="line">			return;</span><br><span class="line">		&#125;</span><br><span class="line">		catch (AuthenticationException failed) &#123;</span><br><span class="line">            //一旦认证异常，则调用unsuccessfulAuthentication方法，通过failureHandler处理</span><br><span class="line">			unsuccessfulAuthentication(request, response, failed);</span><br><span class="line">			return;</span><br><span class="line">		&#125;</span><br><span class="line">		//认证成功，则调用successHandler处理</span><br><span class="line">		successfulAuthentication(request, response, chain, authResult);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关键代码在 <strong>unsuccessfulAuthentication()</strong> 这个方法中，代码如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException &#123;</span><br><span class="line">    SecurityContextHolder.clearContext();</span><br><span class="line">    if (this.logger.isDebugEnabled()) &#123;</span><br><span class="line">        this.logger.debug(&quot;Authentication request failed: &quot; + failed.toString(), failed);</span><br><span class="line">        this.logger.debug(&quot;Updated SecurityContextHolder to contain null Authentication&quot;);</span><br><span class="line">        this.logger.debug(&quot;Delegating to authentication failure handler &quot; + this.failureHandler);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    this.rememberMeServices.loginFail(request, response);</span><br><span class="line">    this.failureHandler.onAuthenticationFailure(request, response, failed);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="II、自定义的过滤器如何生效的？"><a href="#II、自定义的过滤器如何生效的？" class="headerlink" title="II、自定义的过滤器如何生效的？"></a><strong>II、自定义的过滤器如何生效的？</strong></h6><p>这个就要看 <strong>AuthorizationServerSecurityConfigurer#configure()</strong> 这个方法了，其中有一段代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">while(var2.hasNext()) &#123;</span><br><span class="line">    Filter filter = (Filter)var2.next();</span><br><span class="line">    http.addFilterBefore(filter, BasicAuthenticationFilter.class);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>也就是说，我们自定义的过滤链被加到了BasicAuthenticationFilter里面</p>
+<h6 id="III、为什么不能加-allowFormAuthenticationForClients-？"><a href="#III、为什么不能加-allowFormAuthenticationForClients-？" class="headerlink" title="III、为什么不能加.allowFormAuthenticationForClients()？"></a><strong>III、为什么不能加.allowFormAuthenticationForClients()？</strong></h6><p>还是在 <strong>AuthorizationServerSecurityConfigurer#configure()</strong> 这个方法中，一旦设置了 <strong>allowFormAuthenticationForClients</strong> 为true，则会创建 <strong>ClientCredentialsTokenEndpointFilter</strong>，此时自定义的自然失效了。</p>
+<h2 id="【2】资源服务自定义异常信息"><a href="#【2】资源服务自定义异常信息" class="headerlink" title="【2】资源服务自定义异常信息"></a><strong>【2】资源服务自定义异常信息</strong></h2><p>下面针对上述两种异常分别定制异常提示信息，这个比认证服务定制简单。</p>
+<h3 id="1、自定义返回结果：没有权限访问时"><a href="#1、自定义返回结果：没有权限访问时" class="headerlink" title="1、自定义返回结果：没有权限访问时"></a><strong>1、自定义返回结果：没有权限访问时</strong></h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RequestAccessDeniedHandler</span> <span class="keyword">implements</span> <span class="title class_">ServerAccessDeniedHandler</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Mono&lt;Void&gt; <span class="title function_">handle</span><span class="params">(ServerWebExchange exchange, AccessDeniedException denied)</span> &#123;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;RequestAccessDeniedHandler&quot;</span>);</span><br><span class="line">        <span class="type">ServerHttpResponse</span> <span class="variable">response</span> <span class="operator">=</span> exchange.getResponse();</span><br><span class="line">        response.setStatusCode(HttpStatus.OK);</span><br><span class="line">        response.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);</span><br><span class="line">        System.out.println(<span class="string">&quot;wuquan2&quot;</span>);</span><br><span class="line"></span><br><span class="line">        String body= JSONUtil.toJsonStr(<span class="keyword">new</span> <span class="title class_">ResultMsg</span>(ResultCode.NO_PERMISSION.getCode(),ResultCode.NO_PERMISSION.getMsg(),<span class="literal">null</span>));</span><br><span class="line">        <span class="type">DataBuffer</span> <span class="variable">buffer</span> <span class="operator">=</span>  response.bufferFactory().wrap(body.getBytes(Charset.forName(<span class="string">&quot;UTF-8&quot;</span>)));</span><br><span class="line">        <span class="keyword">return</span> response.writeWith(Mono.just(buffer));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2、用于处理没有登录或token过期时的自定义返回结果"><a href="#2、用于处理没有登录或token过期时的自定义返回结果" class="headerlink" title="2、用于处理没有登录或token过期时的自定义返回结果"></a><strong>2、用于处理没有登录或token过期时的自定义返回结果</strong></h3>
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/Oauth2/" rel="tag">Oauth2</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/%E6%95%B4%E5%90%88%E4%B8%AD%E9%97%B4%E4%BB%B6/" rel="tag">整合中间件</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86springsecurity/"
+                    data-tooltip="springcloud整合oauth2-----前置知识springsecurity"
+                    aria-label="FRÜHER: springcloud整合oauth2-----前置知识springsecurity"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+                    data-tooltip="养生打卡健康小程序（云开发）"
+                    aria-label="NÄCHSTER: 养生打卡健康小程序（云开发）"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86springsecurity/"
+                    data-tooltip="springcloud整合oauth2-----前置知识springsecurity"
+                    aria-label="FRÜHER: springcloud整合oauth2-----前置知识springsecurity"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/10/04/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+                    data-tooltip="养生打卡健康小程序（云开发）"
+                    aria-label="NÄCHSTER: 养生打卡健康小程序（云开发）"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/"
+                        aria-label="Teilen auf Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/"
+                        aria-label="Teilen auf Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/"
+                        aria-label="Teilen auf Google Plus"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+        
+            <h4 id="about-card-name">CSEN</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                浙江温州
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-39paoi2hupf5wmw7ojejrxpco6edftjriz5ezbtp4grymrdceksftgan2adp.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+
+    </body>
+</html>

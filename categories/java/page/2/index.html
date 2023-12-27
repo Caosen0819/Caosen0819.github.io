@@ -233,10 +233,10 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/07/08/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/"
-                            aria-label=": 输入网络，期间发生了什么？"
+                            href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C1/"
+                            aria-label=": 计算机网络复习1"
                         >
-                            输入网络，期间发生了什么？
+                            计算机网络复习1
                         </a>
                     
                 </h1>
@@ -258,27 +258,50 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？"><a href="#输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？" class="headerlink" title="输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？"></a>输入网络，期间发生了什么，或者说两个设备之间是怎么传输的？</h1><h2 id="1、解析url"><a href="#1、解析url" class="headerlink" title="1、解析url"></a>1、解析url</h2><p>首先，就是对我们输入的url进行解析，一般可以得到三个信息：协议，web服务器，文件的路径</p>
-<p>拿到这三个信息之后我们就可以包装成一个http请求信息</p>
-<p>![image-20230728193306158](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193306158.png)</p>
-<p>如图所示，一个是请求一个是响应报文</p>
-<p>那我们生产出一个消息之后就要开始发送？那应该怎么发？往哪里发？</p>
-<p>这就需要下面的知识。</p>
-<h2 id="地址查询-——-DNS"><a href="#地址查询-——-DNS" class="headerlink" title="地址查询 —— DNS"></a>地址查询 —— DNS</h2><p>基于我们已经拿到的web服务器域名，我们可以先去浏览器缓存里面找有没有，如果有，就直接返回，如果没有那就问操作系统的缓存再去看hosts文件，如果都没有，那就看走下面</p>
-<p>客户端首先会发出一个 DNS 请求，问 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 是啥，并发给本地 DNS 服务器（也就是客户端的 TCP&#x2F;IP 设置中填写的 DNS 服务器地址）。</p>
-<p>本地域名服务器收到客户端的请求后，如果缓存里的表格能找到 <a target="_blank" rel="noopener" href="http://www.xx.com,则它直接返回/">www.xx.com，则它直接返回</a> IP 地址。如果没有，本地 DNS 会去问它的根域名服务器：“老大， 能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？” 根域名服务器是最高层次的，它不直接用于域名解析，但能指明一条道路。</p>
-<p>根 DNS 收到来自本地 DNS 的请求后，发现后置是 .com，说：“<a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 这个域名归 .com 区域管理”，我给你 .com 顶级域名服务器地址给你，你去问问它吧。”</p>
+                    <p>计算机网络整体的学习可以按照tcpip网络模型进行学习。我们的总结也是这样的</p>
+<p>Tcp&#x2F;ip网络模型分别是应用层、传输层、网络层、数据链路层</p>
+<p>这里面前三层比较重要，数据链路层复杂的方面涉及实际的物理知识所以我们只对逻辑思想上做一个学习，</p>
+<p>那每一层分别学的是什么呢？</p>
+<p>应用层：HTTP  HTTPS TLS</p>
+<p>传输层：tcp udp </p>
+<p>网络层：ipv4 v6</p>
+<p>基本上就是这样子</p>
+<p>TCP 连接传输协议，这是传输层的，很多应用层的协议在传输层都是使用这个的，比如HTTP</p>
+<h1 id="TCP和UCP的不同"><a href="#TCP和UCP的不同" class="headerlink" title="TCP和UCP的不同"></a>TCP和UCP的不同</h1><blockquote>
+<p>那tcp和udp的差距是，tcp相比udp多了很多为了可靠连接所增加的特性，比如三次握手、四次挥手、拥塞控制，超时重传，就是为了数据能可靠的传到对方。udp他不用建立连接，不保证可靠交付，所以效率高。</p>
+<p>除此之外，还有一个很大的不同就是tcp是会分片的，但是udp是不会分片。在这里我们还要知道的一点是在网络层，也就是ip协议中还是会分片的，大小是MTU。但是对于tcp来说因为你要是在ip层才分片，我为了保证可靠，我假设12345 丢了一个2，那我就要12345全部重新发，这样不好，所以我们就在tcp层也分片，大小是MSS。而udp不用可靠，所以他不用分片。</p>
+</blockquote>
+<p>报文头也不一样：udp是源端口目的端口，长度校验和。tcp多了很多东西，源端口目的端口，序列号确认号，状态位，首部长度，校验和等等。</p>
+<p>但是过程中究竟是请求-应答模式还是什么模式，那就是后面的不同版本做出的更新。</p>
+<p>但是他并不是不能做到可靠传输，因为udp只是传输层，我们还可以在应用层做出一定的限制来保证传输是可靠的，比如quic协议，当然这是困难的。</p>
+<h1 id="那我们这里用输入网址到显示，来串联一下整体的流程："><a href="#那我们这里用输入网址到显示，来串联一下整体的流程：" class="headerlink" title="那我们这里用输入网址到显示，来串联一下整体的流程："></a>那我们这里用输入网址到显示，来串联一下整体的流程：</h1><p>首先是解析URL，得到三个信息，一个协议、一个域名、一个路径。</p>
+<p>（浏览器缓存 -&gt; 操作系统缓存-&gt;本地DNS服务器-&gt;根域名服务器-&gt;顶级域名服务器-&gt;权威域名服务器）</p>
+<p>根据域名，我们可以先去浏览器缓存里面找有没有，如果有，就直接返回，如果没有那就问操作系统的缓存再去看hosts文件，如果都没有，那就看走下面</p>
+<p>客户端首先会发出一个 DNS 请求，问 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 是啥，发给本地 DNS 服务器。</p>
+<p>本地域名服务器收到客户端的请求后，如果缓存里的表格能找到 <a target="_blank" rel="noopener" href="http://www.xx.com,则它直接返回/">www.xx.com，则它直接返回</a> IP 地址。如果没有，本地 DNS 会去问它的根域名服务器，根 DNS 收到来自本地 DNS 的请求后，返回一个.com的顶级域名服务器地址。</p>
 <p>本地 DNS 收到顶级域名服务器的地址后，发起请求问“老二， 你能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？”</p>
-<p>顶级域名服务器说：“我给你负责 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 区域的权威 DNS 服务器的地址，你去问它应该能问到”。</p>
+<p>顶级域名服务器说：“我给你负责 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 区域的权威域名服务器的地址，你去问它应该能问到”。</p>
+<p>本地 DNS 于是转向问权威 DNS 服务器：“老三，<a href="http://www.xx.com对应的IP是啥呀？”">www.xx.com对应的IP是啥呀？”</a> server.com 的权威 DNS 服务器，它是域名解析结果的原出处。为啥叫权威呢？就是我的域名我做主。</p>
+<p>权威 DNS 服务器查询后将对应的 IP 地址 X.X.X.X 告诉本地 DNS，本地域名服务器返回给我们。这时候我们要先建立连接，进行三次握手，然后数据传输。通过调用 Socket 库，来委托协议栈工作。首当其冲肯定是TCP，其实就是加一个tcp报文头部（源端口、目的端口之的），然后由IP模块把数据封装成网络包，就是加一个IP头（源IP、目的IP）这时候你就知道了起点和终点。但是还不知道路径怎么规划，这个就需要ARP协议。具体就是先查ARP缓存，没有的话发一个ARP广播。网卡会把数字信号转为电信号，通过网线发送出去。中间会通过交换机（）、路由器，总之就是做FCS校验后，查询<strong>路由表</strong>找到转发的目标，然后重新加一个mac头（同样是ARP），发出去</p>
+<h4 id="1、解析url"><a href="#1、解析url" class="headerlink" title="1、解析url"></a>1、解析url</h4><p><font color='red'><u><em><strong>解析之后得到三个信息，一个协议，一个是web服务器域名，一个是请求文件的路径（可选）。这时候客户端生产自己的HTTP请求报文</strong></em></u></font></p>
+<p>格式如下，方法get，url没有默认index什么的，版本HTTP1.1，字段名就很多，然后是数据，这个数据也是后面一直包装的根数据。</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193306158.png" alt="image-20230728193306158">	</p>
+<h2 id="地址查询-——-DNS"><a href="#地址查询-——-DNS" class="headerlink" title="地址查询 —— DNS"></a>地址查询 —— DNS</h2><p>（浏览器缓存 -&gt; 操作系统缓存-&gt;本地DNS服务器-&gt;根域名服务器-&gt;顶级域名服务器-&gt;权威域名服务器）</p>
+<p>基于我们已经拿到的web服务器域名，我们可以先去浏览器缓存里面找有没有，如果有，就直接返回，如果没有那就问操作系统的缓存再去看hosts文件，如果都没有，那就看走下面</p>
+<p>客户端首先会发出一个 DNS 请求，问 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 是啥，发给本地 DNS 服务器。</p>
+<p>本地域名服务器收到客户端的请求后，如果缓存里的表格能找到 <a target="_blank" rel="noopener" href="http://www.xx.com,则它直接返回/">www.xx.com，则它直接返回</a> IP 地址。如果没有，本地 DNS 会去问它的根域名服务器，根 DNS 收到来自本地 DNS 的请求后，返回一个.com的顶级域名服务器地址。</p>
+<p>本地 DNS 收到顶级域名服务器的地址后，发起请求问“老二， 你能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？”</p>
+<p>顶级域名服务器说：“我给你负责 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 区域的权威域名服务器的地址，你去问它应该能问到”。</p>
 <p>本地 DNS 于是转向问权威 DNS 服务器：“老三，<a href="http://www.xx.com对应的IP是啥呀？”">www.xx.com对应的IP是啥呀？”</a> server.com 的权威 DNS 服务器，它是域名解析结果的原出处。为啥叫权威呢？就是我的域名我做主。</p>
 <p>权威 DNS 服务器查询后将对应的 IP 地址 X.X.X.X 告诉本地 DNS。</p>
-<p>本地 DNS 再将 IP 地址返回客户端，客户端和目标建立连接</p>
-<p>![image-20230728193808617](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193808617.png)</p>
+<p>本地 DNS 再将 IP 地址返回客户端，我们要先建立连接，进行三次握手，然后数据传输。</p>
+<p>消息传输的过程是我们拿到IP之后，通过调用 Socket 库，来委托协议栈工作。首当其冲肯定是TCP，其实就是加一个tcp报文头部（源端口、目的端口之后的），然后由IP模块把数据封装成网络包，就是加一个IP头（源IP、目的IP）这时候你就知道了起点和终点。但是还不知道路径怎么规划，这个就需要ARP协议。具体就是先查ARP缓存，没有的话发一个ARP广播。网卡会把数字信号转为电信号，通过网线发送出去。中间会通过交换机（）、路由器，总之就是做FCS校验后，查询<strong>路由表</strong>找到转发的目标，然后重新加一个mac头（同样是ARP），发出去</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193808617.png" alt="image-20230728193808617"></p>
 <p>通过dns或者缓存获取到ip地址之后，我们就要为发送做一些准备，首先浏览器通过调用 Socket 库，来委托协议栈工作。</p>
-<p>![image-20230728193955912](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728193955912.png)</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193955912.png" alt="image-20230728193955912"></p>
 <p>说是协议栈，其实就是中间tcp udp ip这些协议。那下面我们就来仔细的看看</p>
 <h2 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h2><p>tcp段的头如下所示：</p>
-<p>![image-20230728194108402](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728194108402.png)</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728194108402.png" alt="image-20230728194108402"></p>
 <p>TCP 传输数据之前，要先三次握手建立连接</p>
 <p>前提：客户端 为closed状态，服务端变成listen状态</p>
 <p>连接：</p>
@@ -288,19 +311,19 @@
 <p>服务端收到ack也变成了establish状态</p>
 <p>所以三次握手目的是<strong>保证双方都有发送和接收的能力</strong>。</p>
 <p>假设我们已经建立了连接，我们要发送消息，但是消息要遵循tcp协议，他的消息大小是有限制的，不是每一次都可以发送全部消息。具体要求如下：</p>
-<p>![image-20230728195857751](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728195857751.png)</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728195857751.png" alt="image-20230728195857751"></p>
 <ul>
 <li><code>MTU</code>：一个网络包的最大长度，以太网中一般为 <code>1500</code> 字节。</li>
 <li><code>MSS</code>：除去 IP 和 TCP 头部之后，一个网络包所能容纳的 TCP 数据的最大长度</li>
 </ul>
-<p>所以如果http请求消息超过mss，那么就要分段发送。</p>
+<p>所以如果HTTP请求消息超过mss，那么就要分段发送。</p>
 <p>到这里我们得到了一个tcp的报文段或者说包，下面我们就要把这个包发送给网络层，因为在传输层我们就是服务应用层，然后对好端口，确定好协议，之后的事情就不归传输层管控了。</p>
 <p>到这里，我们的数据包的格式如下所示：</p>
-<p>![image-20230728200405680](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728200405680.png)</p>
-<h2 id="定位IP"><a href="#定位IP" class="headerlink" title="定位IP"></a>定位IP</h2><p>ip协议的最重要的功能就是寻址和路由，他要做到这两点就需要你遵循ip协议，那么遵循的要求就是你加一个ip头![image-20230728200452235](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728200452235.png)</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728200405680.png" alt="image-20230728200405680"></p>
+<h2 id="定位IP"><a href="#定位IP" class="headerlink" title="定位IP"></a>定位IP</h2><p>ip协议的最重要的功能就是寻址和路由，他要做到这两点就需要你遵循ip协议，那么遵循的要求就是你加一个ip头<img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728200452235.png" alt="image-20230728200452235"></p>
 <p>加上ip头之后我们就知道了我们的源ip和目的ip地址，那么起点站和终点站就已经知道了</p>
 <p>可以现在又有一个小问题，那就是路径怎么规划呢？这时候就需要用到Mac地址</p>
-<h2 id="mac地址"><a href="#mac地址" class="headerlink" title="mac地址"></a>mac地址</h2><p><img src="/../images/typora-user-images/image-20230728202408619.png" alt="image-20230728202408619"></p>
+<h2 id="mac地址"><a href="#mac地址" class="headerlink" title="mac地址"></a>mac地址</h2><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728202408619.png" alt="image-20230728202408619"></p>
 <ul>
 <li>先查询 ARP 缓存，如果其中已经保存了对方的 MAC 地址，就不需要发送 ARP 查询，直接使用 ARP 缓存中的地址。</li>
 <li>而当 ARP 缓存中不存在对方 MAC 地址时，则发送 ARP 广播查询</li>
@@ -308,7 +331,7 @@
 <p>也就是说到了网络接口层，要发了，结果不知道往哪里发，这时候就按照上面两步得到mac地址</p>
 <p>因为上面已经得到了ip地址，所以直接喊话：这个 IP 地址是谁的？请把你的 MAC 地址告诉我，就得到mac地址了。</p>
 <p>到这里数据包还差最后一层包装</p>
-<h2 id="出口–网卡"><a href="#出口–网卡" class="headerlink" title="出口–网卡"></a>出口–网卡</h2><p>![image-20230728204942674](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230728204942674.png)</p>
+<h2 id="出口–网卡"><a href="#出口–网卡" class="headerlink" title="出口–网卡"></a>出口–网卡</h2><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728204942674.png" alt="image-20230728204942674"></p>
 <p>最后一层包装就是上面图片提到的报头和起始帧分界符和fcs帧校验序列</p>
 <p>网卡驱动获取网络包之后，会将其<strong>复制</strong>到网卡内的缓存区中，接着会在其<strong>开头加上报头和起始帧分界符，在末尾加上用于检测错误的帧校验序列</strong>。</p>
 <p>到这里数据包就真正的包装结束了，最后网卡会将包转为电信号，通过网线发送出去。！！</p>
@@ -319,24 +342,239 @@
 <p>计算机的网卡本身具有 MAC 地址，并通过核对收到的包的接收方 MAC 地址判断是不是发给自己的，如果不是发给自己的则丢弃；相对地，交换机的端口不核对接收方 MAC 地址，而是直接接收所有的包并存放到缓冲区中。因此，和网卡不同，<strong>交换机的端口不具有 MAC 地址</strong>。</p>
 <h3 id="查询MAC-地址表"><a href="#查询MAC-地址表" class="headerlink" title="查询MAC 地址表"></a>查询<strong>MAC 地址表</strong></h3><p>如果找到，就发送到相应的端口，如果找不到，那说明该mac地址的设备还没有向我们交换机发送过包，那这时候我们主动的向除了源端口的所有端口都发送一遍，因为后面的设备他自己都有检测功能，所以不需要担心</p>
 <p>这时候要么就发送到位，要么就可能离开子网了，离开子网需要用到路由器</p>
-<h2 id="出境大门–路由器"><a href="#出境大门–路由器" class="headerlink" title="出境大门–路由器"></a>出境大门–路由器</h2><h3 id="路由器的包接收操作"><a href="#路由器的包接收操作" class="headerlink" title="路由器的包接收操作"></a>路由器的包接收操作</h3><p>首先，电信号到达网线接口部分，路由器中的模块会将电信号转成数字信号，然后通过包末尾的 <code>FCS</code> 进行错误校验。</p>
-<p>如果没问题则检查 MAC 头部中的<strong>接收方 MAC 地址</strong>，看看是不是发给自己的包，如果是就放到接收缓冲区中，否则就丢弃这个包。</p>
-<p>完成包接收操作之后，路由器就会<strong>去掉</strong>包开头的 MAC 头部。</p>
-<p><strong>MAC 头部的作用就是将包送达路由器</strong>，其中的接收方 MAC 地址就是路由器端口的 MAC 地址。因此，当包到达路由器之后，MAC 头部的任务就完成了，于是 MAC 头部就会<strong>被丢弃</strong>。</p>
-<p>接下来，路由器会根据 MAC 头部后方的 <code>IP</code> 头部中的内容进行包的转发操作。</p>
-<h3 id="路由器的发送操作"><a href="#路由器的发送操作" class="headerlink" title="路由器的发送操作"></a>路由器的发送操作</h3><p>首先，我们需要根据<strong>路由表的网关列</strong>判断对方的地址。</p>
-<ul>
-<li>如果网关是一个 IP 地址，则这个IP 地址就是我们要转发到的目标地址，<strong>还未抵达终点</strong>，还需继续需要路由器转发。</li>
-<li>如果网关为空，则 IP 头部中的接收方 IP 地址就是要转发到的目标地址，也是就终于找到 IP 包头里的目标地址了，说明<strong>已抵达终点</strong>。</li>
-</ul>
-<p>反正我们从路由表知道了ip地址，那么我们同样用这个地址去查mac地址</p>
+<h2 id="出境大门–路由器"><a href="#出境大门–路由器" class="headerlink" title="出境大门–路由器"></a>出境大门–路由器</h2><h3 id="路由器的包接收操作"><a href="#路由器的包接收操作" class="headerlink" title="路由器的包接收操作"></a>路由器的包接收操作</h3><blockquote>
+<p>1、首先，电信号到达网线接口部分，路由器中的模块会将电信号转成数字信号，然后通过包末尾的 <code>FCS</code> 进行错误校验。</p>
+<p>2、检查 MAC 头部中的<strong>接收方 MAC 地址</strong>，看看是不是发给自己的包，如果是就放到接收缓冲区中，否则就丢弃这个包。</p>
+<p>3、路由器就会<strong>去掉</strong>包开头的 MAC 头部。</p>
+</blockquote>
+<h3 id="路由器的发送操作"><a href="#路由器的发送操作" class="headerlink" title="路由器的发送操作"></a>路由器的发送操作</h3><p><font color='red'><u><em>*<em><strong>匹配路由表确定输出端口并判断转发目标</strong>。</em>*而路由器则会忽略主机号部分，只匹配网络号部分 这里用的是最长匹配，</em><em>如果匹配上了，我们就看下他的网关列，如果网关是一个 IP 地址，那就是我们的转发目标，如果为空，那就是终点了。下面通过通过 ARP协议根据 IP 地址查询 MAC 地址，路由器也有 ARP 缓存，因此首先会在 ARP 缓存中查询，如果找不到则发送 ARP 查询请求。</em>**</u></font></p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20231025123050860.png" alt="image-20231025123050860"></p>
 <p>接下来是发送方 MAC 地址字段，这里填写输出端口的 MAC 地址。还有一个以太类型字段，填写 <code>0800</code> （十六进制）表示 IP 协议。</p>
 <p>网络包完成后，接下来会将其转换成电信号并通过端口发送出去。这一步的工作过程和计算机也是相同的。</p>
 <p>发送出去的网络包会通过<strong>交换机</strong>到达下一个路由器。由于接收方 MAC 地址就是下一个路由器的地址，所以交换机会根据这一地址将包传输到下一个路由器。</p>
-<h1 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h1><p>这边举个例子![image-20230729000740012](&#x2F;Users&#x2F;csen&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20230729000740012.png)</p>
+<h1 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h1><p>这边举个例子<img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230729000740012.png" alt="image-20230729000740012"></p>
 <p>子网1某个设备想要发送数据给子网2的某个设备</p>
 <p>首先源ip和目的ip是知道的，如果只是简单的arp群发这个ip问是谁的ip地址，其实是找不到的，所以判断是否为同一子网，如果不是，就把目的mac改成网关的mac，然后数据发送到网关，这时候官网一查mac地址，发现属于子网2的设备，这时候修改源mac为自己的mac，修改目的mac为设备的地址，从子网2的网卡发出。</p>
 <p>大多数情况下一个子网的默认网关就是一个，就基本代表着出口。复杂情况就需要某种选择算法了</p>
+<h2 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP"></a>HTTP</h2><p>超文本传输协议，就是两点之间超越普通文本范畴的文本（包括文本视频图片等等）的一种协议</p>
+<h4 id="HTTP常见状态码"><a href="#HTTP常见状态码" class="headerlink" title="HTTP常见状态码"></a>HTTP常见状态码</h4><blockquote>
+<table>
+<thead>
+<tr>
+<th>1XX 代表提示信息</th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2XX 这个就是成功的状态吗</td>
+<td>200 普通的正常的成功</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>3XX 代表重定向</td>
+<td>301 永久重定向</td>
+<td>302 临时重定向</td>
+<td>304 缓存重定向</td>
+<td></td>
+</tr>
+<tr>
+<td>4XX 代表客户端的报文错误</td>
+<td>400 比较笼统的</td>
+<td>404 没找到</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>5XX 代表服务器端端报文错误</td>
+<td>500 同样比较笼统</td>
+<td>503 请稍后再访问</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+</blockquote>
+<h4 id="常见的字段"><a href="#常见的字段" class="headerlink" title="常见的字段"></a>常见的字段</h4><blockquote>
+<p>host</p>
+<p>content-length</p>
+<p>content-type</p>
+<p>connection </p>
+<p>content-encodeing</p>
+</blockquote>
+<h4 id="HTTP-Get和Post区别"><a href="#HTTP-Get和Post区别" class="headerlink" title="HTTP://Get和Post区别"></a><a target="_blank" rel="noopener" href="http://get和post区别/">HTTP://Get和Post区别</a></h4><blockquote>
+<p>额，get和post在请求行会有method的区别，实际中，其实get也可以带数据，post也可以不带数据。所以我觉得最大的区别还是在于语义的，get是读取的语义，post是有一种处理操作的语义。最后get是安全幂等，post不安全也不幂等。</p>
+</blockquote>
+<h4 id="HTTP缓存"><a href="#HTTP缓存" class="headerlink" title="HTTP缓存"></a>HTTP缓存</h4><blockquote>
+<p>包括强制缓存和协商缓存</p>
+<p>强制缓存就是浏览器缓存没有过期，那我就直接使用浏览器的缓存，一般用Cache-Control，相对时间。</p>
+<p>协商缓存是有两种，一种时间，一种依赖唯一标识</p>
+<p>1、请求头部里面的if modified since 和响应头部last- modified</p>
+<p>响应信息的头部会有last modified，然后我们会带这个ifmodifiedsince：时间，去访问服务器，服务器看到之后，就拿自己的Last modified去对比 如果没改，返回304，如果改了，返回200</p>
+<p>2、Etag 唯一标识</p>
+<p>流程一样，但是etag优先级更高，因为 if modified since还是基于时间，而时间本身可能有一些限制。</p>
+<p>1、有可能没有修改文件，但是文件的最后修改时间会变化</p>
+<p>2、秒级以内的操作也许不能充分做出响应</p>
+</blockquote>
+<h4 id="HTTP优缺点"><a href="#HTTP优缺点" class="headerlink" title="HTTP优缺点"></a>HTTP优缺点</h4><p><strong>优点：</strong></p>
+<blockquote>
+<p>简单，灵活易扩充，应用广泛跨平台</p>
+</blockquote>
+<p><strong>缺点：</strong></p>
+<blockquote>
+<p>1、HTTP无状态的。</p>
+<p>在此基础上出现了cookie技术，他就是通过在请求和响应报文里面增加cookie信息，来控制客户端的状态</p>
+<p>2、明文传输。</p>
+<p>3、不安全 也是最重要的原因</p>
+<blockquote>
+<p>账号信息不安全</p>
+<p>不验证对方的身份</p>
+<p>无法证明报文的完整性</p>
+</blockquote>
+</blockquote>
+<p><strong>HTTP1.1改进</strong></p>
+<blockquote>
+<p>1、HTTP1.1在HTTP1.0的基础上提出了长连接，之前是《请求-应答》模式就是你发完应答完，关闭连接，想要进行下一次通信，那就得重新建立连接，现在可以建立一次连接之后，就可以 发收发收发收 只要一方没有明确提出断开连接，那么就一直连着</p>
+<p>2、管道通信，HTTP1.1支持管道，就是所有请求都处于管道内部，我们可以发发发，而不需要等他先回复再发第二个，你可以发发发，减少了时间</p>
+<p>但是这里有一个问题，HTTP是基于tcp的所以服务端会按照顺序接收请求。</p>
+<p>所以说，HTTP1.1可以解决发送端的对头阻塞，但是无法解决接受端的对头阻塞</p>
+<p>然而！然而！HTTP1.1默认不开启管道，</p>
+</blockquote>
+<h2 id="HTTPS"><a href="#HTTPS" class="headerlink" title="HTTPS"></a>HTTPS</h2><h3 id="HTTPS和HTTP的区别？"><a href="#HTTPS和HTTP的区别？" class="headerlink" title="HTTPS和HTTP的区别？"></a>HTTPS和HTTP的区别？</h3><p><font color='red'><u><em><strong>Https在Http的基础上加入了TLS协议，在三次握手之后还要进行TLS握手，有RSA、ECDHE。这个TLS握手的过程中就用到了信息加密、数字签名、身份证书。</strong></em></u></font></p>
+<h3 id="TLS"><a href="#TLS" class="headerlink" title="TLS"></a>TLS</h3><p><strong>1、信息加密</strong></p>
+<p>使用的是混合加密，<font color='red'><u><em><strong>非对称加密是在TLS握手的时候，对称加密是在传输数据的时候。</strong></em></u></font></p>
+<p>非对成加密安全，非对称加密速度更快。</p>
+<p><strong>2、数字签名（一个哈希值），身份证书（经过CA私钥加密的服务器公钥+内容+数字签名），这两个可以一起讲</strong></p>
+<p>整体流程：服务器发送公钥和数字签名发到CA里面，CA用自己的私钥加密服务器的公钥和数字签名，这个就是证书！然后客户端发来请求的时候，服务器就把自己的证书发过去，客户端收到证书，用CA的公钥解密，得到了服务器的公钥和服务器的数字签名，这个签名我们上面讲了一个是原始内容一个是私钥对于哈希值的加密，那我们怎么验证呢？就是用公钥去解密加密项得到一个哈希值，再对原始内容做同样的哈希操作，判断两个哈希值到底一不一样，一样代表认证成功，否则，认证失败。</p>
+<h4 id="3、TLS的秘钥交换算法"><a href="#3、TLS的秘钥交换算法" class="headerlink" title="3、TLS的秘钥交换算法"></a>3、TLS的秘钥交换算法</h4><p>TLS的密钥交换算法不同，那么连接步骤也不同，我们会介绍两种</p>
+<h5 id="RSA"><a href="#RSA" class="headerlink" title="RSA"></a>RSA</h5><p><strong>1、客户端 &gt; 服务端。</strong></p>
+<blockquote>
+<p>Client Hello：client 随机数 + TLS版本号+密码套件，密码套件可以说是一组配置的整合信息罢了</p>
+</blockquote>
+<p><strong>2、客户端 &lt; 服务端。</strong></p>
+<blockquote>
+<p>Server Hello:server随机数+确认版本号+确认密码套件</p>
+<p>Certificate: 证书</p>
+<p>Server Hello Done：</p>
+</blockquote>
+<p>当然这里收到之后，先校验，校验流程如下：</p>
+<p>首先我们知道了数字签名有原始内容和对于哈希值加密的数字签名，我们对原始内容加密（签名算法），对数字签名解密（CA公钥）</p>
+<p>当然，其中有一个问题就是证书的信任问题？为什么？</p>
+<p>因为我们得到的证书不一定是CA签发的，假如是中间机构签发的百度证书，那么我们就不能用内置的本地CA证书中的公钥去认证，所以我们先找签发机构，发现是一个中间机构，我们向中间机构请求证书，收到证书后发现这个机构的签发者是CA，那么我们可以用CA去认证中间的这个证书，这个证书被认证了 ，那么百度的也就认证了。</p>
+<p><strong>3、客户端 &gt; 服务端 使用服务器的公钥加密pre-master随机数发给服务端</strong></p>
+<blockquote>
+<p>Client Key Exchange: 用第二步解密得到的公钥加密pre-master</p>
+<p>Change Cipher spec：改用会话秘钥加密通信，</p>
+<p>Finished：所有握手数据的摘要，再用会话密钥（master secret）加密一下，让服务端做个验证</p>
+</blockquote>
+<p><strong>4、客户端 &lt; 服务端 服务端发送 加密算法改变通知，和握手结束通知</strong></p>
+<blockquote>
+<p>Change Cipher spec：改用会话秘钥加密通信</p>
+<p>Finished: 所有握手数据的摘要，再用会话密钥（master secret）加密一下，让客户端做个验证</p>
+</blockquote>
+<p>上面这个就是RSA的基本流程，但是基于RSA的HTTPS依旧存在《前向安全》的问题，客户端发送给服务端的随机数要用服务端的公钥加密，如果服务端私钥泄密，那么所有的TLS通讯就将被破解</p>
+<h5 id="ECDHE"><a href="#ECDHE" class="headerlink" title="ECDHE"></a>ECDHE</h5><p>讲过程之前，可以先说一下这个算法。先讲一下前身DH算法。这个算法依赖的就是对数运算的基础上加了「模运算」。我们对数算法知道对数得到真数很简单，但是从真数得到对数是很难的。</p>
+<p><strong>1、客户端 &gt; 服务端。</strong></p>
+<blockquote>
+<p>Client Hello：client 随机数 + TLS版本号+密码套件，密码套件可以说是一组配置的整合信息罢了</p>
+</blockquote>
+<p><strong>2、客户端 &lt; 服务端。</strong></p>
+<blockquote>
+<p>Server Hello:server随机数+确认版本号+确认密码套件</p>
+<p>Certificate: 证书</p>
+<p><strong>Server Key Exchange</strong>：选择椭圆曲线，和根据椭圆曲线的基点公钥，发给客户端</p>
+<p>Server Hello Done：</p>
+</blockquote>
+<p><strong>3、客户端 &gt; 服务端 使用服务器的公钥加密pre-master随机数发给服务端</strong></p>
+<blockquote>
+<p>Client Key Exchange: 生成一个随机数作为客户端的私钥，根据前面信息生成<strong>客户端的公钥</strong>，发给服务端。<font color='red'><u><em><strong>至此，双方都有对方的椭圆曲线公钥、自己的椭圆曲线私钥、椭圆曲线基点 G。所以能算出x，两个随机数+x就是最后的秘钥</strong></em></u></font></p>
+<p>Change Cipher spec：改用会话秘钥加密通信，</p>
+<p><strong>Encrypted Handshake Message</strong>：所有握手数据的摘要，再用会话密钥加密一下，让服务器做个验证</p>
+</blockquote>
+<p><strong>4、客户端 &lt; 服务端 服务端发送 加密算法改变通知，和握手结束通知</strong></p>
+<blockquote>
+<p>Change Cipher spec：改用会话秘钥加密通信</p>
+<p>Encrypted Handshake Message: 所有握手数据的摘要，再用会话密钥（master secret）加密一下，让服务器做个验证</p>
+</blockquote>
+<p>RSA和ECDHE的区别</p>
+<ul>
+<li>RSA 密钥协商算法「不支持」前向保密，ECDHE 密钥协商算法「支持」前向保密；</li>
+<li>使用了 RSA 密钥协商算法，TLS 完成四次握手后，才能进行应用数据传输，而对于 ECDHE 算法，客户端可以不用等服务端的最后一次 TLS 握手，就可以提前发出加密的 HTTP 数据，节省了一个消息的往返时间（这个是 RFC 文档规定的，具体原因文档没有说明，所以这点我也不太明白）；</li>
+<li>使用 ECDHE， 在 TLS 第 2 次握手中，会出现服务器端发出的「Server Key Exchange」消息，而 RSA 握手过程没有该消息</li>
+</ul>
+<h4 id="HTTPS怎么实现数据的完整性？"><a href="#HTTPS怎么实现数据的完整性？" class="headerlink" title="HTTPS怎么实现数据的完整性？"></a>HTTPS怎么实现数据的完整性？</h4><p>刚才我们提到了TLS可以解决三个问题，包括完整性，</p>
+<p>其实TLS在实现上包括了握手协议和记录协议</p>
+<p>​	握手协议就是四次握手+后续加密来保护应用程序</p>
+<p>​	记录协议负责保护数据的完整性和来源</p>
+<p>所以我们来看记录协议：，他的实现就是负责对消息（HTTP数据）的压缩，加密和数据认证<img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230802185945107.png" alt="	"></p>
+<p>这里还是应用层，消息被分割后进行压缩，加上消息验证码，加密，加密后加上一个报头，后面就是交给tcp层，传输层</p>
+<h4 id="HTTPS一定安全吗"><a href="#HTTPS一定安全吗" class="headerlink" title="HTTPS一定安全吗"></a>HTTPS一定安全吗</h4><p>理论上这个协议是安全的，HTTPS其实就是加了个TLS协议，那就是问这个TLS是不是安全的</p>
+<p>而TLS就是按四次握手</p>
+<p>1、第一种方法：返回的证书，他大概率是伪造的，但是我们如果接受了，那就不一样了，你接受了服务器的证书，相当于信任了，那后面的通信就会被监听</p>
+<p>2、直接植入根证书也会导致这种情况</p>
+<p>所以关键就是对于证书的认证</p>
+<h3 id="HTTP1-1-gt-HTTP-2-gt-HTTP3"><a href="#HTTP1-1-gt-HTTP-2-gt-HTTP3" class="headerlink" title="HTTP1.1  -&gt; HTTP 2 -&gt; HTTP3"></a>HTTP1.1  -&gt; HTTP 2 -&gt; HTTP3</h3><p><font color='red'><u><em><strong>HTTP1.1在HTTP1.0的基础上增了长连接和管道，解决了发送方的对头阻塞</strong></em></u></font></p>
+<p>缺点：header是没有压缩的，只压缩了body部分，接收方会有对头阻塞，服务端智能被动响应</p>
+<p><font color='red'><u><em><strong>HTTP2在是基于HTTPS的，所以安全性肯定有保障</strong></em></u></font></p>
+<p><strong>1、头部压缩</strong></p>
+<p>HTTP2会压缩头部，会帮你压缩消除重复的部分，用的是HPACK算法</p>
+<p><font color='red'><u><em><strong>这就是HPACK算法，HPACK包括三个部分（静态字典、动态字典、huffman编码），字段名会被静态表或者动态表的index代替，huffman编码则是去压缩Value的值。</strong></em></u></font></p>
+<blockquote>
+<p><strong>静态表</strong></p>
+<p>表中的参数都是提前定义好的，只有固定的 61个值。如果头部字段在静态表里面，第一个字节是01+静态表的Index，第二个字节代表是否使用Huffman编码+长度。后面就是内容。</p>
+<p><strong>动态表</strong></p>
+<p>重复的字段会被放到动态表里面，编码什么的和静态表一样</p>
+</blockquote>
+<p><strong>2、二进制格式</strong></p>
+<p>HTTP2不像是HTTP1是纯文本的报文，而是全部改成了二进制，头部和数据题都是二进制，统称帧</p>
+<p><strong>3、并发传输，引入了流的机制</strong></p>
+<p>一条tcp连接有多个流，每个流可以包含一个或者多个message，这个message就是请求或者响应，message里面有一个或者多个frame帧，不同的HTTP请求有独一无二的帧，所以可以乱序发送，后面会按照streamid组装，<strong>同一 Stream 内部的帧必须是严格有序的</strong></p>
+<p><font color='red'><u><em><strong>HTTP3，把tcp换成了udp，但是为了可靠，推出了QUIC</strong></em></u></font></p>
+<blockquote>
+<p>1、接住了流、没有对头阻塞</p>
+<blockquote>
+<p>但是各个流之间是相互独立的，一个流阻塞了，另外的流不会阻塞，这样就保证了没有对头阻塞</p>
+</blockquote>
+<p>2、QUIC包括了TLS，所以连接更快</p>
+<blockquote>
+<p>因为HTTP2里面tcp和TLS是分层的先三次握手然后四次握手，这样需要3个rtt。然而quic内部携带了TLS，而且TLS1.3只需要一个rtt就可以完成密钥的协商。就是说，第一次发送的时候就已经把签名算法、随机数都发给服务端了，甚至在第二次可以达到0rtt</p>
+</blockquote>
+<p>3、连接迁移和连接建立都更快了</p>
+<blockquote>
+<p>tcp是四元组，而quic是基于dcp的，他是靠<font color='red'><u><em><strong>连接id</strong></em></u></font>来标记通信，所以ip换了也没事</p>
+</blockquote>
+<p>4、头部压缩变成了QPACK</p>
+<blockquote>
+<p>静态表变成91项，动态编码方式换了</p>
+</blockquote>
+</blockquote>
+<h4 id="HTTP1-1请求怎么优化"><a href="#HTTP1-1请求怎么优化" class="headerlink" title="HTTP1.1请求怎么优化"></a>HTTP1.1请求怎么优化</h4><p>一方面是HTTP发送的问题，一方面是他本身数据的问题</p>
+<p>1、首先肯定是避免HTTP请求：缓存技术</p>
+<p>2、减少重定向，这个就是把重定向请求交给代理服务器</p>
+<p>3、合并请求，就是把多个访问小文件的请求合并成一个大的</p>
+<p>4、延迟发送，只访问看得到的资源</p>
+<p>5、无损压缩，accept- encoding：gzip br </p>
+<p>6、有损压缩，webP png</p>
+<h4 id="HTTPS怎么优化"><a href="#HTTPS怎么优化" class="headerlink" title="HTTPS怎么优化"></a>HTTPS怎么优化</h4><p>HTTPs对于HTTP多了一个TLS，关键就是通过非对成加密握手得到对成加密的会话密钥</p>
+<ul>
+<li>提高cpu</li>
+<li>升级linux </li>
+<li>对密钥交换过程进行优化</li>
+<li>RSA要四次握手，慢，安全性不高，我们可以缓存eche密钥交换算法，曲线选择x25519，对成加密算法，也可以换aes128</li>
+<li>TLS升级1.3，升级的地方在于hello和公钥交换两个消息合并成一个消息</li>
+<li>证书优化，分为传输优化和验证优化。</li>
+</ul>
+<p>传输：服务器证书选择椭圆曲线</p>
+<p>验证：验证的过程中不仅需要ca还需要是否被ca吊销；crl是吊销列表，ca定期更新，但是实时性不好，ocsp，向ca fan song请求，返回状态，这个增加了请求开销，万一网络不好或者ca繁忙就会出现延迟；oscp stapling，服务器向ca定期查证书状态，然后在握手阶段就直接发给客户端，这样客户端就不用再去请求了。</p>
+<ul>
+<li>会话复用：session id 和session ticket</li>
+</ul>
+<p>session id：首次连接后，在内存缓存会话密钥，用session id标识，再次连接的时候，会在hello消息中带上这个，服务器收到这个就从缓存里面找，直接回复会话状态，跳过中间流程</p>
+<p>缺点是，内存压力大</p>
+<p>session ticket：类似于cookie，把缓存的工作交给客户端，首次连接，会加密这个发给客户端缓存起来，第二次连接，客户端会发送ticket，服务器解密后验证日期是否有效，没问题就恢复会话。</p>
 
                     
                         
@@ -346,425 +584,7 @@
                     
                         <p>
                             <a
-                                href="/2023/07/08/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Kommentieren und teilen
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/"
-                            aria-label=": 计算机网络复习2"
-                        >
-                            计算机网络复习2
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-07-08T00:00:00+08:00">
-	
-		    08 Jul 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <h2 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h2><h3 id="1、TCP和UDP"><a href="#1、TCP和UDP" class="headerlink" title="1、TCP和UDP"></a>1、<strong>TCP和UDP</strong></h3><p><strong>UDP和TCP可以共用一个端口，因为是完全独立的两个软件模块</strong></p>
-<h3 id="2、为什么不能两次握手或者四次握手？"><a href="#2、为什么不能两次握手或者四次握手？" class="headerlink" title="2、为什么不能两次握手或者四次握手？"></a>2、为什么不能两次握手或者四次握手？</h3><blockquote>
-<p>两次握手：在两次握手的时候，服务端没有中间状态给客户端来阻止历史连接，也就是服务端会多建立一个历史连接浪费资源，因为收到syn就变成established。这里靠序列号同步就知道了</p>
-<p>四次握手：四次握手无非就是，你给我发我返回同意，我给你发你返回同意，但是第二和第三部完全可以合并，所以三次就ok了。</p>
-</blockquote>
-<h3 id="3、为什么，每次建立连接序列号都要求不一样？"><a href="#3、为什么，每次建立连接序列号都要求不一样？" class="headerlink" title="3、为什么，每次建立连接序列号都要求不一样？"></a>3、为什么，每次建立连接序列号都要求不一样？</h3><p>1、防止历史报文被下一个连接接受，如果每次都从特定的值开始，那历史报文就可能被下一个连接接受。</p>
-<p>2、防止黑客伪造的相同序列号被接受</p>
-<h3 id="4、那这个序列号是怎么随机产生的？"><a href="#4、那这个序列号是怎么随机产生的？" class="headerlink" title="4、那这个序列号是怎么随机产生的？"></a>4、那这个序列号是怎么随机产生的？</h3><p>rfc提高了序列号ISN随机生成算法：ISN &#x3D; M + F</p>
-<p>m是计时器，四微秒+1</p>
-<p>F是哈希算法根据四元组推出来的</p>
-<h3 id="5、为什么ip层会分片，TCP还分片，"><a href="#5、为什么ip层会分片，TCP还分片，" class="headerlink" title="5、为什么ip层会分片，TCP还分片，"></a>5、为什么ip层会分片，TCP还分片，</h3><p>因为ip不能超时重传，所以只能靠tcp，而万一ip层丢了一部分，那么ip层就不能组装成一个完整的tcp报文，也就不可能发给接收方tcp层，所以发送方的tcp层就会重发整个tcp报文，所以我们最好就是自己分片，然后缺什么发什么，直接以MSS为单位就可以了</p>
-<h3 id="6、TCP三次握手过程丢失问题"><a href="#6、TCP三次握手过程丢失问题" class="headerlink" title="6、TCP三次握手过程丢失问题"></a>6、TCP三次握手过程丢失问题</h3><blockquote>
-<p>第一次握手丢失，会发生什么？</p>
-<p>触发超时重传，每次重传次数是上一次两倍，报文最大重传次数由 <code>tcp_syn_retries</code></p>
-<p>第二次握手丢失，会发生什么？</p>
-<p>客户端和服务端都会重传，重传次数分别有tcp_syn_retries和tcp_synack_retries决定</p>
-<p>第三次握手丢失了，会发生什么？</p>
-<p>这里有一点很关键，就是ack报文是不会重传的，所以服务端会认为自己的syn+ack没发到，触发重传机制，服务端重传，次数由tcp_synack_retries决定</p>
-</blockquote>
-<h3 id="7、半连接状态和全连接状态"><a href="#7、半连接状态和全连接状态" class="headerlink" title="7、半连接状态和全连接状态"></a>7、半连接状态和全连接状态</h3><ul>
-<li>半连接队列，也称 SYN 队列；</li>
-<li>全连接队列，也称 accept 队列；</li>
-</ul>
-<p>正常流程：</p>
-<ul>
-<li>当服务端接收到客户端的 SYN 报文时，会创建一个半连接的对象，然后将其加入到内核的「 SYN 队列」；</li>
-<li>接着发送 SYN + ACK 给客户端，等待客户端回应 ACK 报文；</li>
-<li>服务端接收到 ACK 报文后，从「 SYN 队列」取出一个半连接对象，然后创建一个新的连接对象放入到「 Accept 队列」；</li>
-<li>应用通过调用 <code>accpet()</code> socket 接口，从「 Accept 队列」取出连接对象。</li>
-</ul>
-<p>所以这样子就出会先一些问题</p>
-<p>受到SYN攻击怎么办？就是说半连接状态很多怎么办？</p>
-<ul>
-<li>调大 netdev_max_backlog；缓冲队列</li>
-<li>增大 TCP 半连接队列；</li>
-<li>开启 tcp_syncookies；不用建立半连接</li>
-<li>减少 SYN+ACK 重传次数</li>
-</ul>
-<h3 id="8、TCP四次挥手"><a href="#8、TCP四次挥手" class="headerlink" title="8、TCP四次挥手"></a>8、TCP四次挥手</h3><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803130523828.png" alt="image-20230803130523828"></p>
-<blockquote>
-<p><font color='red'><u><em><strong>为什么4次？</strong></em></u></font></p>
-<p>服务端可能还有数据要发给客户端，所以需要先处理自己的最后流程，然后给客户端发送一个fin报文，也就是说，第二次握手和第三次握手大概率是不同步的。</p>
-<p><font color='red'><u><em><strong>特定情况下，可以变成三次，刚刚好没有数据。</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>第一次挥手丢失，会发生什么？</strong></em></u></font></p>
-<p>客户端收不到来自服务端的ack报文，那么就会触发超时重传，这个次数是由tcp_orphan_retries决定的</p>
-<p><font color='red'><u><em><strong>第二次挥手丢失，会发生什么？</strong></em></u></font></p>
-<p>ACK 报文是不会重传的,所以首先客户端还是会触发超时重传，这个次数是由tcp_orphan_retries决定的</p>
-<p><font color='red'><u><em><strong>第三次丢失，会发生什么？</strong></em></u></font></p>
-<p>相当于服务端一直收不到来自客户端的ack，那么服务端会触发超时重传,次数达到后还没收到，断开连接。</p>
-<p>而客户端已经进入了fin_wait2状态，一直等，如果超过设定的时间tcp_fin_timeout ，断开连接。</p>
-<p><font color='red'><u><em><strong>第四次丢失，会发生什么？</strong></em></u></font></p>
-<p>服务端一直收不到，那么触发超时重传，这时候因为客户端已经是timewait状态，所以每一次重传都会重置2msl定时器，超过时间就close，而服务端同样的重传几次之后close</p>
-<p>msl是报文最大生存时间，ip头有一个ttl字段，这个字段代表可以经历的最大路由数</p>
-<p>msl大于等于ttl消耗为0的时间，默认60</p>
-</blockquote>
-<blockquote>
-<p><strong>为什么需要这个timewait状态</strong></p>
-<p>1<font color='red'><u><em><strong>、也是为了防止接收历史连接中的第三次挥手</strong></em></u></font>。这个时间<strong>足以让两个方向上的数据包都被丢弃，使得原来连接的数据包在网络中都自然消失。</strong></p>
-<p>2、也就是说，TIME-WAIT 作用是<strong>等待足够的时间以确保最后的 ACK 能让被动关闭方接收，从而帮助其正常关闭。</strong></p>
-<p><strong>如果建立了连接，结果客户端故障了，不发送消息，但是服务端一直establish</strong></p>
-<p>tcp搞了个保活机制，隔一段时间发送探测报文，没有得到相应则认为tcp死亡，</p>
-<p>但是，这个保活机制时间太长了，我们自己在应用层实现一个心跳机制，一般web服务软件都会提供keepalive-timeout状态</p>
-<p><strong>如果服务器的进程崩溃了，那发生什么</strong></p>
-<p>其实连接信息是由内核维护的，所以服务端的内核还是会发送fin报文进行四次挥手</p>
-</blockquote>
-<h3 id="9、可靠性保证方法"><a href="#9、可靠性保证方法" class="headerlink" title="9、可靠性保证方法"></a>9、可靠性保证方法</h3><blockquote>
-<h3 id="重传机制"><a href="#重传机制" class="headerlink" title="重传机制"></a>重传机制</h3><p><font color='red'><u><em><strong>重传分为超时重传和快速重传两种。</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>超时重传：超过时间进行重传，时间RTO</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>快速重传：收到三个相同的 ACK 报文时，重传丢失的报文段。这里的问题在于传一个还是传所有，这里引入了SACK和DSACK机制</strong></em></u></font></p>
-<p>SACK：服务端把已经收到的数据信息驾到tcp头部的选项里面，告诉发送发我收到了哪些</p>
-<p>后面又出现了D-SACK：这是用来告诉发送方哪些被重复接受了了</p>
-<h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h3><p>操作系统开辟的一个缓存空间，发送方在收到ACK应答之前，在缓冲区中保留已发送的数据。如果按期收到确认应答，此时数据就可以从缓存区清除</p>
-<p>TCP头部里面既有一个字段叫窗口大小，就是用来告诉发送端自己还有多少缓冲区可以使用，所以窗口大小一般由接收方决定</p>
-<h3 id="流量控制"><a href="#流量控制" class="headerlink" title="流量控制"></a>流量控制</h3><p>避免发送方的数据填满接收方</p>
-<h3 id="拥塞控制"><a href="#拥塞控制" class="headerlink" title="拥塞控制"></a>拥塞控制</h3><p>网络发生拥塞，那么tcp就会降低自己的发送量，防止网络负担加重</p>
-<p>慢启动 一开始是1，就是可以传1个mss，然后收到应答变成2，4，8，16…..</p>
-<p>拥塞避免 触碰到慢启动门限就是用拥塞避免，变成线性的，收到一个ack cwnd增加1&#x2F;cwnd</p>
-<p>如果网络发生了拥塞，也就是重传。重传分两种，如果是超时重传，就慢启动门限变成cwnd&#x2F;2，cwnd&#x3D;1重新开始慢启动</p>
-<p>如果是快速重传，拥塞窗口和慢启动门限都设置为拥塞窗口的一半，然后拥塞窗口+3，继续发送重复的，如果收到新数据的ACK，快速恢复结束，进入拥塞避免。</p>
-<p>握手优化就是调整重传次数、半连接队列，全连接队列</p>
-<p>挥手就是调整：重传次数、FINwait2状态时间、</p>
-<p>传输速度的话就是调整：接收方缓冲区大小、发送方缓冲区大小、窗口大小，打开缓冲区动态调节。</p>
-</blockquote>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803161404210.png" alt="image-20230803161404210"></p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803163142196.png" alt="image-20230803163142196"></p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803163236556.png" alt="image-20230803163236556"></p>
-<blockquote>
-<h4 id="如何理解字节流"><a href="#如何理解字节流" class="headerlink" title="如何理解字节流"></a>如何理解字节流</h4><p>udp操作系统不会对齐拆分，所以每一个udp就是一个消息的边界.然而tcp是会分片的，这时候，接收方如果不知道消息的长度或者边界，是无法读取消息的，<strong>不能认为一个用户消息对应一个TCP报文，正因为这样，TCP是面向字节流的协议。</strong></p>
-<p><strong>没有accept，能建立tcp连接吗</strong></p>
-<p>可以</p>
-<p><strong>已经建立的tcp，收到syn会发生什么</strong></p>
-<p>新的syn首先看看端口是不是一样，如果不一样的话，就建立新的连接，老的那个如果一直不发消息就会触发tcp保活机制</p>
-<p>如果相同（可能就是宕机重传），其实会返回一个challenge ack，携带正确的序列号的确认号的ack报文，这时候客户端确认号收到这个，发现不是自己期望收到的，就会返回rst，这样，服务器就释放了连接</p>
-<h4 id="如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗"><a href="#如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗" class="headerlink" title="如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗"></a>如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗</h4><p>先到的fin包其实是乱序的，所以会进入乱序队列，等数据真正的到了，才会回头检查这个fin，然后给服务端发这个。</p>
-<h4 id="如果timewait状态收到syn？会怎么样？"><a href="#如果timewait状态收到syn？会怎么样？" class="headerlink" title="如果timewait状态收到syn？会怎么样？"></a>如果timewait状态收到syn？会怎么样？</h4><p>还是先看序列号时间戳吧，如果确实合法，那应该会重新进入三次握手阶段，</p>
-<p>如果不合法，就会返回一个和第四次挥手一样的ack，这时候服务端收到发现不是自己的，就回复一个rst报文</p>
-<h4 id="服务端没有-listen，客户端发起连接建立，会发生什么？"><a href="#服务端没有-listen，客户端发起连接建立，会发生什么？" class="headerlink" title="服务端没有 listen，客户端发起连接建立，会发生什么？"></a>服务端没有 listen，客户端发起连接建立，会发生什么？</h4><p><strong>服务端如果只 bind 了 IP 地址和端口，而没有调用 listen 的话，然后客户端对服务端发起了连接建立，服务端会回 RST 报文</strong></p>
-<h4 id="Tcp连接，断电和进程崩溃有什么区别？没有保活机制"><a href="#Tcp连接，断电和进程崩溃有什么区别？没有保活机制" class="headerlink" title="Tcp连接，断电和进程崩溃有什么区别？没有保活机制"></a>Tcp连接，断电和进程崩溃有什么区别？没有保活机制</h4><p>客户端主机崩溃，没有保活机制，那就无法感知到，一直处于establish</p>
-<p>进程崩溃，内核还是会发送fin完成4次挥手</p>
-<h4 id="客户端主机宕机，又迅速重启"><a href="#客户端主机宕机，又迅速重启" class="headerlink" title="客户端主机宕机，又迅速重启"></a>客户端主机宕机，又迅速重启</h4><p><strong>只要有一方重启完成后，收到之前 TCP 连接的报文，都会回复 RST 报文，以断开连接</strong></p>
-<h4 id="拔掉网线tcp连接还在吗"><a href="#拔掉网线tcp连接还在吗" class="headerlink" title="拔掉网线tcp连接还在吗"></a>拔掉网线tcp连接还在吗</h4><p>在的，tcp连接信息是存储于内核的一个结构体，网线断了，但是结构体不会改变</p>
-<ul>
-<li>拔掉网线后，有数据传输；</li>
-<li>如果在重传前网线插回去了，那我觉得应该什么事情都没发生</li>
-<li>如果没插回去，那么就超时重传几次之后，认为此连接死亡，就断开连接，即使后面插回来了，客户端向服务端发送请求，也不是连接的状态，那么服务端就会返回rst</li>
-<li>拔掉网线后，没有数据传输</li>
-<li>如果开启了保活机制，那就探测几次，如果有工作就重制保活时间，如果客户端没有正常工作，就断开连接</li>
-<li>如果没有开启保活机制，就一直连着</li>
-</ul>
-</blockquote>
-<h4 id="HTTPS-中-TLS-和-TCP-能同时握手吗？"><a href="#HTTPS-中-TLS-和-TCP-能同时握手吗？" class="headerlink" title="HTTPS 中 TLS 和 TCP 能同时握手吗？"></a>HTTPS 中 TLS 和 TCP 能同时握手吗？</h4><p>可能，但是有条件</p>
-<ul>
-<li><strong>客户端和服务端都开启了 TCP Fast Open 功能，且 TLS 版本是 1.3；</strong></li>
-<li><strong>客户端和服务端已经完成过一次通信。</strong></li>
-</ul>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803205908513.png" alt="image-20230803205908513"></p>
-<p>TCP Fast Open定义<br>TCP Fast Open（TFO）是用来加速连续TCP连接的数据交互的TCP协议扩展，原理如下：在TCP三次握手的过程中，当用户首次访问Server时，发送SYN包，Server根据用户IP生成Cookie（已加密），并与SYN-ACK一同发回Client；当Client随后重连时，在SYN包携带TCP Cookie；如果Server校验合法，则在用户回复ACK前就可以直接发送数据；否则按照正常三次握手进行<br><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803210533146.png" alt="image-20230803210533146"></p>
-<p>所以就是在第二次以后的通信过程中，tcp open fast在ack发回来之前直接进行tls1.3</p>
-<h4 id="quic怎么实现可靠传输"><a href="#quic怎么实现可靠传输" class="headerlink" title="quic怎么实现可靠传输"></a>quic怎么实现可靠传输</h4><p>总的来说，<strong>QUIC 通过单向递增的 Packet Number，配合 Stream ID 与 Offset 字段信息，可以支持乱序确认而不影响数据包的正确组装</strong>，</p>
-<p>Packet Number 是严格递增，即使重传报文的 Packet Number 也是递增的，既然重传数据包的 Packet N+M 与丢失数据包的 Packet N 编号并不一致，我们怎么确定这两个数据包的内容一样呢？</p>
-<p>所以引入 Frame Header 这一层，<strong>通过 Stream ID + Offset 字段信息实现数据的有序性</strong>，通过比较两个数据包的 Stream ID 与 Stream Offset ，如果都是一致，就说明这两个数据包的内容一致。</p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803212833705.png"></p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803213009597.png" alt="image-20230803213009597"></p>
-<h3 id="QUIC怎么解决对头阻塞"><a href="#QUIC怎么解决对头阻塞" class="headerlink" title="QUIC怎么解决对头阻塞"></a>QUIC怎么解决对头阻塞</h3><p><strong>QUIC 给每一个 Stream 都分配了一个独立的滑动窗口，都是相互独立的，各自控制的滑动窗口</strong>。</p>
-<h3 id="QUIC-是如何做流量控制的？"><a href="#QUIC-是如何做流量控制的？" class="headerlink" title="QUIC 是如何做流量控制的？"></a>QUIC 是如何做流量控制的？</h3><p>QUIC 实现流量控制的方式：</p>
-<ul>
-<li>通过 window_update 帧告诉对端自己可以接收的字节数，这样发送方就不会发送超过这个数量的数据。 如果消耗数据的长度大于了最大接收窗口的一半发送</li>
-<li>通过 BlockFrame 告诉对端由于流量控制被阻塞了，无法发送数据。</li>
-</ul>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Kommentieren und teilen
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2023/07/08/Kafka/"
-                            aria-label=": Kafka知识"
-                        >
-                            Kafka知识
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-07-08T00:00:00+08:00">
-	
-		    08 Jul 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <p>常见面试问题：</p>
-<h2 id="消息保证消息不丢失？可靠性"><a href="#消息保证消息不丢失？可靠性" class="headerlink" title="消息保证消息不丢失？可靠性"></a>消息保证消息不丢失？可靠性</h2><blockquote>
-<p>分成三个方面分析：</p>
-<ul>
-<li>消息生产者发送丢失：</li>
-</ul>
-<blockquote>
-<p>异步发送，发送失败使用回调进行记录或者重发 </p>
-<p>重试机制</p>
-</blockquote>
-<p>broker存储丢失：</p>
-<blockquote>
-<p>依赖一个ACK确认机制</p>
-<p>0：发了就不管了</p>
-<p>1：需要leader成功接收</p>
-<p>-1：所有ISR的follower都成功接收才可以</p>
-</blockquote>
-<p>消费者消费丢失：</p>
-<blockquote>
-<p>取消自动提交（自动提交5s一次，会导致重复消费和消息丢失），改为手动。然后有三种方式：同步、异步、同步+异步组合提交</p>
-</blockquote>
-</blockquote>
-<h2 id="重复消费问题怎么解决？"><a href="#重复消费问题怎么解决？" class="headerlink" title="重复消费问题怎么解决？"></a>重复消费问题怎么解决？</h2><p>重复消费的话也分生产者和消费者。</p>
-<p>生产者：单分区内是可以用幂等性解决的。跨区的重复消费，多分区就用事务解决，要么都成功要么都失败。</p>
-<p>消费者：首先最好关闭自动提交，然后开启手动提交。用同步+异步的组合方式。最好我们给了一个保底的方案，就是防重字段。</p>
-<h2 id="怎么保证顺序性-？"><a href="#怎么保证顺序性-？" class="headerlink" title="怎么保证顺序性 ？"></a>怎么保证顺序性 ？</h2><p>一个topic的数据会通过那个分区分配器分发到某个分区，如果会发到多个分区，我们是不能保证顺序性的，但是我们可以用幂等性保证在一个分区内是顺序的。因为生产者发送消息给broker的时候会携带PID和sequence number，一个是生产者的id，一个是消息的序列号。我们靠这个可以保证顺序性。所以我们尽可能的要把消息发到一个分区里面。那这个就要配合分区器来使用，如果你指定了分区号或者指定key，那就代表指定了某个分区，这样就能实现顺序性。如果你用没有指定，他就会用随机粘性分区策略，那就不能保证顺序性。</p>
-<blockquote>
-<p>生产者发送消息给broker的时候会携带PID和sequence number，一个是生产者的id，一个是消息的序列号。</p>
-<p>broker中会在内存维护一个pid+分区对应的序列号。如果收到的序列号正好比内存序列号大一，才存储消息，如果小于内存序列号，意味着消息重复，那么会丢弃消息，并应答。如果远大于内存序列号，意味着消息丢失，会抛出异常。</p>
-<p>了解：</p>
-<p>至少一次（At Least Once）： ACK级别设置为-1 + 分区副本大于等于2 + ISR里应答的最小副本数量&gt;&#x3D;2。可以保证数据不丢失，但是不能保证数据不重复。<br>最多一次（At Most Once）：ACK级别设置为0 。可以保证数据不重复，但是不能保证数据不丢失。<br>精确一次（Exactly Once）：至少一次 + 幂等性 。 Kafka 0.11版本引入一项重大特性：幂等性和事务。</p>
-</blockquote>
-<blockquote>
-<p>AR &#x3D; ISR + ORS</p>
-<p>ISR 表示在保持一定程度同步的 follower 副本；</p>
-<p>OSR 表示不能保持一定程度同步的follower副本</p>
-</blockquote>
-<p><strong>数据完全可靠条件 &#x3D; ACK级别设置为-1 + 分区副本大于等于2 + ISR里应答的最小副本数量大于等于2</strong></p>
-<blockquote>
-<p>幂等性只能保证的是在单分区单会话内不重复。如果设计到跨区，为了保证同时发的多条消息，要么全成功，要么全失败。kafka引入了事务</p>
-<p>开启事务需要producer设置transactional.id的值并同时开启幂等性。</p>
-<h2 id="定位事务协调器"><a href="#定位事务协调器" class="headerlink" title="定位事务协调器"></a>定位事务协调器</h2><p>其本质也是一个后端的broker，只是这个broker起到了针对当前事务的协调作用，它是在transaction_state特殊主题里面根据transcationid%50在一个特殊主题里面选出对应节点。</p>
-<p>事务初始化</p>
-<p>事务启动，消息发送</p>
-<p>事务提交</p>
-<blockquote>
-</blockquote>
-</blockquote>
-<h2 id="Kafka的高可用了解过吗"><a href="#Kafka的高可用了解过吗" class="headerlink" title="Kafka的高可用了解过吗"></a>Kafka的高可用了解过吗</h2><ul>
-<li>集群：首先kafka集群由多个broker组成，一个broker宕机，其余的broker依旧提供服务。</li>
-<li>副本机制：一个topic有多个分区，每个分区有多个副本 、存在不同的broker里面。然后如果leader故障了，会从ISR中选举新的leader（ISR中存活，并且排在AR列表前面的优先），通过高水位线保持同步。如果Follower挂了，先踢出ISR，如果恢复那就通过高水位线和日志末端位移进行同步。</li>
-</ul>
-<h3 id="1-follower故障流程"><a href="#1-follower故障流程" class="headerlink" title="1.follower故障流程"></a><strong>1.follower故障流程</strong></h3><p><img src="/../images/Kafka/b01dad78f006b40d82e719fe71caeb78.png" alt="image-20220902210759125"></p>
-<h3 id="2-leader故障流程"><a href="#2-leader故障流程" class="headerlink" title="2.leader故障流程"></a>2.leader故障流程</h3><p><img src="/../images/Kafka/1f96e55810be5ff8cbf64c04b5d37315.png" alt="image-20220902210830344"></p>
-<h2 id="Kafka文件存储机制"><a href="#Kafka文件存储机制" class="headerlink" title="Kafka文件存储机制"></a>Kafka文件存储机制</h2><p>文件存储实际是按分区存的，一个分区对应多个segment（删除和查找方便），每一个segment里面都有三个文件，分别是log日志文件，index索引文件，timeindex时间戳索引文件，producer的数据会追加到log里面，每次往log里面写4k数据，就会到index文件写一条索引。</p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928232748011.png" alt="在这里插入图片描述"></p>
-<h2 id="Kafka数据清理机制"><a href="#Kafka数据清理机制" class="headerlink" title="Kafka数据清理机制"></a>Kafka数据清理机制</h2><p>Kafka提供了两种日志清理策略。</p>
-<p>日志删除(delete) : 日志删除也分两种</p>
-<p>​		按照时间，当消息保存的时间超过指定的时间（默认七天），就会触发清理</p>
-<p>​		按照文件大小：当topic所有 分区的数据总和达到了默认的阈值（1G），就开始删除最久的消息	</p>
-<p>日志压缩(compact) :针对每个消息的key进行整合，对于有相同key的不同value值，只保留最后一个版本。</p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928233315113.png" alt="在这里插入图片描述"></p>
-<h2 id="Kafka高性能的设计"><a href="#Kafka高性能的设计" class="headerlink" title="Kafka高性能的设计"></a><strong>Kafka高性能的设计</strong></h2><p><font color='red'><u><em><strong>1）分区设计，可以实现并行操作。</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>2）磁盘顺序写</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>3）MMF+页缓存</strong></em></u></font> 即使kafka是顺序写，这个本身比较快，但是即使这样，速度也追不上内存。所以Kafka不是实时写入磁盘，而是先把数据写到页缓存里面，满足一定条件在刷回磁盘。它的工作原理是MMF，直接利用操作系统的页缓存来实现磁盘文件到物理内存的直接映射，完成映射之后你对物理内存的操作会被同步到硬盘上（操作系统在适当的时候）。</p>
-<p><font color='red'><u><em><strong>4）零拷贝</strong></em></u></font></p>
-<p>传统的io，先读取、再发送，实际经过 4 次 copy。</p>
-<p>分别是：</p>
-<ol>
-<li>第一次：将磁盘文件，读到内核缓冲区；</li>
-<li>第二次：将内核缓冲区的数据，copy 到 application 应用程序的 buffer；</li>
-<li>第三步：将 application 应用程序 buffer 中的数据，copy 到 socket 网络发送缓冲区(属于操作系统内核的缓冲区)；</li>
-<li>第四次：将 socket buffer 的数据，copy 到网卡，由网卡进行网络传输。</li>
-</ol>
-<p>零拷贝是只拷贝两次，</p>
-<ul>
-<li>transferTo() 方法引发 DMA 引擎将文件内容拷贝到内核缓冲区。</li>
-<li>DMA 引擎直接把数据从内核缓冲区传输到协议引擎，</li>
-</ul>
-<p><strong>DMA（直接存储器访问）用来提供在外设和存储器之间或者存储器和存储器之间的高速数据传输，他本质是一个硬件技术，就是比如你要把外设A的数据传到内存B，你直接给A和B之间加一条数据通路，然后给几个配件就可以实现，传输操作交给DMAC控制器（类似CPU）</strong></p>
-<p><img src="/../images/Kafka/image-20231116011032880.png" alt="image-20231116011032880"></p>
-<h4 id="数据积压-（-消费者如何提高吞吐量）"><a href="#数据积压-（-消费者如何提高吞吐量）" class="headerlink" title="数据积压 （ 消费者如何提高吞吐量）"></a>数据积压 （ 消费者如何提高吞吐量）</h4><p>1、增加分区数和消费者数量</p>
-<p>2、提高消费者每次拉取的数量</p>
-<p>3、调整linger.ms 和 batch_size</p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929001531640.png" alt="在这里插入图片描述"></p>
-<h1 id="1、定义"><a href="#1、定义" class="headerlink" title="1、定义"></a>1、定义</h1><p>分布式的基于发布订阅模式的消息队列</p>
-<p>主要应用场景包括：<strong>缓存消峰</strong>、<strong>解耦</strong>和<strong>异步通信。</strong></p>
-<p>消息队列有两种模式：</p>
-<ul>
-<li>点对点模式：一个消费者消费一个主题，数据被消费后会删除</li>
-<li>发布订阅模式：多个消费者消费多个主题，数据被消费不会删除</li>
-</ul>
-<p><strong>基础架构</strong>：</p>
-<p><img src="/../images/Kafka/708e86e70504f41234b05cb3cc30dea7.png" alt="image-20220902125656203"></p>
-<p>（1）Producer：消息生产者，就是向 Kafka broker 发消息的客户端。</p>
-<p>（2）Consumer：消息消费者，向 Kafka broker 取消息的客户端。</p>
-<p>（3）Consumer Group（CG）：消费者组，由多个 consumer 组成。消费者组内每个消费者负责消费不同分区的数据，一个分区只能由一个组内消费者消费；消费者组之间互不影响。所有的消费者都属于某个消费者组，即消费者组是逻辑上的一个订阅者。</p>
-<p>（4）Broker：一台 Kafka 服务器就是一个 broker。一个集群由多个 broker 组成。一个broker 可以容纳多个 topic。</p>
-<p>（5）Topic：可以理解为一个队列，生产者和消费者面向的都是一个 topic。</p>
-<p>（6）Partition：为了实现扩展性，一个非常大的 topic 可以分布到多个 broker（即服务器）上，一个 topic 可以分为多个 partition，每个 partition 是一个有序的队列。</p>
-<p>（7）Replica：副本。一个 topic 的每个分区都有若干个副本，一个 Leader 和若干个Follower。</p>
-<p>（8）Leader：每个分区多个副本的“主”，生产者发送数据的对象，以及消费者消费数据的对象都是 Leader。</p>
-<p>（9）Follower：每个分区多个副本中的“从”，实时从 Leader 中同步数据，保持和Leader 数据的同步。Leader 发生故障时，某个 Follower 会成为新的 Leader。</p>
-<p>其实总的流程就是生产者发送数据到kafka，然后消费者从kafka拉取数据。所以架构中最主要的就是生产者、kafka集群和消费者这三个，其他的很多知识都是为了这三个服务的。</p>
-<h1 id="2、生产者"><a href="#2、生产者" class="headerlink" title="2、生产者"></a>2、生产者</h1><p> 在消息发送的过程中，涉及到两个线程，<font color='red'><u><em><strong>main线程和sender线程。</strong></em></u></font></p>
-<p>main线程的流程就是<strong>producer</strong>（就是生产者）、然后拦截器（相当于留了一个供我们修改的接口）、<strong>序列化器</strong>（消息发送总要有一种形式，什么json啊）、分区器（我们事先其实是分好了区，但是发送消息的时候发送到那一个区？<strong>分区器</strong>，他有一个默认的分区器DefaultPartitioner，支持三种分区策略 1) 指定分区； 2）指定key，计算hash得分区； 3）指定随机粘性分区；（4）还可以自定义分区器（见代码）（下图））<img src="/../images/Kafka/18a0b6ba56db8e5b16b3d6fac9ba7fb7.png" alt="image-20220902163808502"></p>
-<p>但是，并不是来一条消息就发一次，他是把消息加入到一个叫消息累加器里面，然后进行批量发送，一次是16k，32M大小的内存。 我看了下代码，就是 累加器的存储形式为ConcurrentMap&lt;TopicPartition, Deque<ProducerBatch>&gt;，一个分区对应一个双端队列</p>
-<p>真正的发送要靠sender线程。发送的时机是：当双端队列中的DQueue满足 batch.size 或者 linger.ms 条件时触发sender线程。 同时Sender线程默认每个分区容纳5个未确认的消息，消息发送失败后会进行重试。</p>
-<p><img src="/../images/Kafka/cd41370a872e70b75435f35692925370.png" alt="image-20220902155220662"></p>
-<h1 id="3、Broker"><a href="#3、Broker" class="headerlink" title="3、Broker"></a>3、Broker</h1><h2 id="Broker架构"><a href="#Broker架构" class="headerlink" title="Broker架构"></a>Broker架构</h2><p>一台机器一个broker</p>
-<p><img src="/../images/Kafka/image-20231024150746020.png" alt="image-20231024150746020"></p>
-<p><strong>Zookeeper</strong>的作用</p>
-<p>Zookeeper在Kafka中扮演了重要的角色，kafka使用zookeeper进行<font color='red'><u><em><strong>元数据管理，保存broker注册信息，包括主题（Topic）、分区（Partition）信息等，选择分区leader。</strong></em></u></font></p>
-<p><img src="/../images/Kafka/b1f0ebc535b00384be6bf81540c5f416.png" alt="image-20220902200249692"></p>
-<h2 id="Broker选举Leader"><a href="#Broker选举Leader" class="headerlink" title="Broker选举Leader"></a>Broker选举Leader</h2><p>Kafka由三个方面会涉及到选举：</p>
-<ul>
-<li>broker（控制器）选leader</li>
-</ul>
-<blockquote>
-<p>集群中由很多的broker选出一个leader，其他事follower。负责主题创建删除，管理broker，分区重分配，分区leader选举等等</p>
-<p>方法简单粗暴：</p>
-<p>每个broker都有唯一的brokerId，启动后会去竞争注册zookeeper上的Controller结点，谁先抢到，谁就是broker leader。一般第一个broker都是controller。而其他broker会监听该结点事件，以便后续leader下线后触发重新选举。</p>
-<p><img src="/../images/Kafka/12b4f076e8f82c66b00ec8782433649f.png" alt="image-20220902200901222"></p>
-</blockquote>
-<ul>
-<li>分区多副本选leader<ul>
-<li>有controller节点控制，决策是：ISR中存活，并且排在AR列表前面的优先，同时必须在isr里面。</li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p><img src="/../images/Kafka/e5c14b9c17123faf3eefa58a22ab0668-20230928225949575.png" alt="image-20220902201352868"></p>
-</blockquote>
-<ul>
-<li>消费者选Leader</li>
-</ul>
-<p>先用groupid%50 得到一个分区，这个分区所属的节点的消费者协调器就作为这个消费者组的老大，每个消费者向这个协调器发送joinGroup请求，协调器会选出一个leader，然后这个leader会指定消费策略并发送给协调器，协调器会把策略发送给其他消费者。最后就通过</p>
-<h2 id="kafka分区策略"><a href="#kafka分区策略" class="headerlink" title="kafka分区策略"></a>kafka分区策略</h2><p>如果 kafka 服务器只有 4 个节点，那么设置 kafka 的分区数大于服务器台数，在 kafka底层如何分配存储副本呢？</p>
-<ul>
-<li>这里如果用默认的就是如下</li>
-</ul>
-<p><img src="/../images/Kafka/15514da0f22aca9e3017fa2305733ba4.png" alt="image-20220902211334365"></p>
-<ul>
-<li>也可以手动指定</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ vim increase-replication-factor.json</span><br><span class="line">输入如下内容：</span><br><span class="line">&#123;</span><br><span class="line">&quot;version&quot;:1,</span><br><span class="line">&quot;partitions&quot;:[</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[0,1]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[0,1]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:2,&quot;replicas&quot;:[1,0]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:3,&quot;replicas&quot;:[1,0]&#125;]</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="1、分区自动调整"><a href="#1、分区自动调整" class="headerlink" title="1、分区自动调整"></a><strong>1、分区自动调整</strong></h3><p>这个是指broker故障，leader集中在某台broker上的情况，造成集群负载不均衡，这时候就需要分区平衡。那他一般有个比例，就是不平衡比例超过10%，就需要再平衡。</p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16.png" alt="在这里插入图片描述"></p>
-<h1 id="4、kafka消费者"><a href="#4、kafka消费者" class="headerlink" title="4、kafka消费者"></a>4、kafka消费者</h1><h2 id="1、Kafka-消费方式（拉）"><a href="#1、Kafka-消费方式（拉）" class="headerlink" title="1、Kafka 消费方式（拉）"></a>1、Kafka 消费方式（拉）</h2><p>​	<img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928234825729.png" alt="在这里插入图片描述"></p>
-<h2 id="2、消费者工作流程"><a href="#2、消费者工作流程" class="headerlink" title="2、消费者工作流程"></a>2、消费者工作流程</h2><p><strong>消费者组初始化流程</strong></p>
-<p><a target="_blank" rel="noopener" href="https://baijiahao.baidu.com/s?id=1767477534734641183&amp;wfr=spider&amp;for=pc">https://baijiahao.baidu.com/s?id=1767477534734641183&amp;wfr=spider&amp;for=pc</a></p>
-<p>多个消费者协调器发送JoinGroup请求，协调器选一个消费者leader，消费者leader指定消费方案，并发送给协调器，协调器把这个方案通知到每一个消费者。</p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235058845.png" alt="在这里插入图片描述"></p>
-<p><strong>消费者组详细消费流程</strong></p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235306060.png" alt="在这里插入图片描述"></p>
-<h2 id="4、消费者分区的分配"><a href="#4、消费者分区的分配" class="headerlink" title="4、消费者分区的分配"></a>4、消费者分区的分配</h2><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235523539.png" alt="在这里插入图片描述"></p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235554746.png" alt="在这里插入图片描述"></p>
-<p><strong>Range 分区分配策略案例</strong></p>
-<p> <img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235731478.png" alt="在这里插入图片描述"></p>
-<p><img src="/../images/Kafka/29f6564651824fe69bba934f8e5e83b6.png" alt="在这里插入图片描述"></p>
-<h5 id="Range-分区分配再平衡案例"><a href="#Range-分区分配再平衡案例" class="headerlink" title="Range 分区分配再平衡案例"></a><strong>Range 分区分配再平衡案例</strong></h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235744058.png" alt="在这里插入图片描述"></p>
-<h5 id="RoundRobin-以及再平衡原理"><a href="#RoundRobin-以及再平衡原理" class="headerlink" title="RoundRobin 以及再平衡原理"></a>RoundRobin 以及再平衡原理</h5><h5 id=""><a href="#" class="headerlink" title=""></a></h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000334551.png" alt="在这里插入图片描述"></p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000415710.png" alt="在这里插入图片描述"></p>
-<h5 id="Sticky-以及再平衡"><a href="#Sticky-以及再平衡" class="headerlink" title="Sticky 以及再平衡"></a>Sticky 以及再平衡</h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000640458.png" alt="在这里插入图片描述"></p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000653360.png" alt="在这里插入图片描述"></p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000715131.png" alt="在这里插入图片描述"></p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000728390.png" alt="在这里插入图片描述"></p>
-<h2 id="5、offset-位移"><a href="#5、offset-位移" class="headerlink" title="5、offset 位移"></a>5、offset 位移</h2><h5 id="1、offset-的默认维护"><a href="#1、offset-的默认维护" class="headerlink" title="1、offset 的默认维护"></a>1、offset 的默认维护</h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000851750.png" alt="在这里插入图片描述"></p>
-<p>__consumer_offsets 主题里面采用 key 和 value 的方式存储数据。</p>
-<p>key 是group.id+topic+分区号，value 就是当前 offset 的值。</p>
-<p>offset是消费者提交的，分为自动提交和手动提交。</p>
-<p>自动提交会出现重复消费的问题。默认5s提交一次</p>
-<p>手动提交会出现漏消费的问题，因为消费完数据后，如果来不及调用哪个sync函数，消费者宕机，就会丢失数据。</p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929001509066.png" alt="在这里插入图片描述"></p>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/07/08/Kafka/#post-footer"
+                                href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C1/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
@@ -1090,7 +910,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="1、Java内存区域"><a href="#1、Java内存区域" class="headerlink" title="1、Java内存区域"></a>1、Java内存区域</h1><p>主要有五大部分：程序计数器（私有）、虚拟机栈（私有）、本地方法栈（私有）、堆（公有）、方法区（公有），不过在8之后，永久代就已经被元空间代替了，而元空间在本地内存。</p>
+                    <h1 id="1、JVM内存结构"><a href="#1、JVM内存结构" class="headerlink" title="1、JVM内存结构"></a>1、JVM内存结构</h1><p>主要有五大部分：程序计数器（私有）、虚拟机栈（私有）、本地方法栈（私有）、堆（公有）、方法区（公有），不过在8之后，永久代就已经被元空间代替了，而元空间在本地内存。</p>
 <p><img src="/../images/JVM/java-runtime-data-areas-jdk1.8.png" alt="Java 运行时数据区域（JDK1.8 ）"></p>
 <p>1、程序计数器</p>
 <blockquote>
@@ -1184,7 +1004,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 <h2 id="4、解析"><a href="#4、解析" class="headerlink" title="4、解析"></a>4、解析</h2><p>把常量池中的符号引用转化为直接引用的阶段。有类和接口解析，字段解析，方法解析等。实际上就是先把类加载到方法区里面，然后返回相应直接引用。</p>
 <p>我们拿字段解析举个例子，先解析这个字段表所在的类或接口，假设成功解析为C。我们就在C的字段表里面找有没有匹配的简单名称和字段描述符，如果有就直接返回。没有就找C的接口和父接口，看看有没有匹配的简单名称和字段描述符。如果又返回，没有就按继承关系找父类有没有匹配的，否则就失败。</p>
 <p>但是方法解析有一点不一样，他有一部分是不能解析的，如果 Human h &#x3D; new Man。这种可能方法调用不能确定，这里就解析不了。能解析的叫非虚方法，不能解析的叫虚方法。虚方法需要使用另外一种调用形式就是分派，分派分为静态动态，虚方法静态分派实现重载（静态类型），动态分派实现重写（invokevirtual，先找到这个动态类型，如果有这个方法那就直接用，如果没有，我们再去找他的父类）。</p>
-<h2 id="5、初始化"><a href="#5、初始化" class="headerlink" title="5、初始化"></a>5、初始化</h2><p>初始化就是执行类构造器的过程，而这个类构造器做的事情就是对类中所有类变量的赋值操作和所有静态语句块的操作。</p>
+<h2 id="5、初始化"><a href="#5、初始化" class="headerlink" title="5、初始化"></a>5、初始化</h2><p>初始化就是执行类构造器的过程，而这个类构造器做的事情就是对类中所有类变量的赋值操作和所有<font color='green'><u><em><strong>静态</strong></em></u></font>语句块的操作。</p>
 <p>顺序就是语句在源文件的顺序</p>
 <h1 id="5、类加载器"><a href="#5、类加载器" class="headerlink" title="5、类加载器"></a>5、类加载器</h1><p>类加载器的作用就是实现类加载过程中的加载这一步，通过双亲委派机制去维护一个三层的组织架构。</p>
 <p>三层：</p>
@@ -1204,7 +1024,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 </blockquote>
 <p>2、高层的类加载器（<code>SharedClassLoader</code>）借助子类加载器（ <code>WebAppClassLoader</code>）来加载业务类</p>
 <blockquote>
-<p>解决方案：线程上下文类加载器。	线程上下文类加载器的原理是将一个类加载器保存在线程私有数据里，跟线程绑定，然后在需要的时候取出来使用。这个类加载器通常是由应用程序或者容器（如 Tomcat）设置的。</p>
+<p>解决方案：线程上下文类加载器。	线程上下文类加载器的原理是将一个类加载器保存在线程私有数据里，跟线程绑定，然后在需要的时候取出来使用。这个类加载器通常是由应用程序或者容器（如 Tomcat）设置的。类加载冲突问题</p>
 </blockquote>
 <p>3、OSGI实现模块化热部署，把类加载从双亲委派变成更加复杂的网状结构。</p>
 <h2 id="模块化"><a href="#模块化" class="headerlink" title="模块化"></a>模块化</h2><p><strong>什么是JDK9模块化系统</strong></p>
@@ -1324,9 +1144,10 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 <p>3）重新标记，因为和用户线程一起进行，对于漏标问题的解决方案是（写后屏障+增量更新（<font color='green'><u><em><strong>就是把新增加的引用进行记录</strong></em></u></font>））。（STW）</p>
 <p>4）并发清除，清除对象，因为策略是标记-清除，不需要移动所以同样选择了并发的方式。</p>
 <p>缺点：</p>
-<p>1）对处理资源敏感，而且大于1&#x2F;4。CMS的默认收集线程数量是（处理器数量+3）&#x2F;4</p>
+<p>1）对处理资源敏感，而且大于1&#x2F;4。CMS的默认收集线程数量是（处理器数量+3）&#x2F;4。</p>
 <p>2）无法处理浮动垃圾（用户线程使得原来某些对象不是垃圾，但是当 CMS 进行清理的时候变成了垃圾，从可达到不可达，但是没扫出来），有可能触发full gc</p>
 <p>3）用的是标记清除，会有内存碎片</p>
+<p>​	</p>
 <h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><blockquote>
 <p>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。</p>
 <p>为了加快搜索，G1是使用card table和RSet。</p>
@@ -1392,7 +1213,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 </ul>
 <h2 id="JVM调优参数"><a href="#JVM调优参数" class="headerlink" title="JVM调优参数"></a>JVM调优参数</h2><p>jar包启动的时候java和 -jar直接可以去配置jvm的参数</p>
 <h2 id="JVM调优的参数有哪些？"><a href="#JVM调优的参数有哪些？" class="headerlink" title="JVM调优的参数有哪些？"></a>JVM调优的参数有哪些？</h2><blockquote>
-<p>设计垃圾回收器 </p>
+<p>换垃圾回收器 </p>
 <p>堆空间大小</p>
 <p>虚拟机栈大小</p>
 <p>eden区和幸存者区的大小比例</p>
@@ -1400,7 +1221,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 </blockquote>
 <h2 id="JVM调优工具"><a href="#JVM调优工具" class="headerlink" title="JVM调优工具"></a>JVM调优工具</h2><blockquote>
 <p><font color='red'><u><em><strong>命令：</strong></em></u></font></p>
-<p>jsp + jstack 查看进程内线程的堆栈信息</p>
+<p>jps + jstack 查看进程内线程的堆栈信息</p>
 <p>jmap -dump 生成一个内存快照的信息</p>
 <p>jstat ：JVM性能监测工具。 显示伊甸区 幸存者区、老年区的比例</p>
 <p><font color='red'><u><em><strong>可视化工具：</strong></em></u></font></p>
@@ -1642,6 +1463,336 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                     
                         <a
                             class="link-unstyled"
+                            href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94%E2%80%94nacos2.1.0/"
+                            aria-label=": docker整合springboot/cloud——nacos2.1.0"
+                        >
+                            docker整合springboot/cloud——nacos2.1.0
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2022-10-04T21:25:08+08:00">
+	
+		    04 Oct 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>前言：<br>博主从win换成mac后，想试着自己配一下docker环境，花了足足3到4天的时间。<br>由于中土存在各种中间件的兼容问题，mac版和win版的不一致，中间件版本过新等问题，且大多数博客对于版本的描述不够清晰，很难帮到忙，故博主斗胆记录一下，希望对大家有帮助。</p>
+<p>环境：</p>
+<ul>
+<li>springboot: 2.7.0</li>
+<li>nacos: 2.1.0</li>
+<li>elasticsearch: 8.2.0</li>
+<li>kibana: 8.2.0</li>
+<li>springcloud: 2021.0.3</li>
+<li>springcloudalibaba: 2021.0.1</li>
+<li>mysql: 8.0.26</li>
+<li>redis: 7</li>
+<li>rabbitmq: 3.9.11</li>
+<li>jdk: 8</li>
+<li>kafka: 3.5.11</li>
+</ul>
+<h2 id="nacos"><a href="#nacos" class="headerlink" title="nacos"></a>nacos</h2><p>这个只说一点就可以了，当然这也是所有中间件的选择方案。版本选对，由于mac有芯片有两代，i5i7和m1m2，这两代的架构是不一样的，所以去hub里面找相应的版本大下载就可以了，举个例子：</p>
+<p>我们要下载2.1.0版本的nacos，我们打开hub.docker.com然后搜索nacos，去tag里面输入2.1.0，你会发现，有好多版本，这时候我们要看【os&#x2F;arch】这一栏，你去看看他到底是哪种架构的，有的是linux&#x2F;amd64，有的是linux&#x2F;arm64，有的是两者皆有。如果是i5i7的就去下带amd64的，如果是m1m2的就去下载带arm64的。</p>
+<p>不过这里提一嘴，m1m2芯片他自带了转译的功能，也就是说即使是amd64的他也有能力转成适合自己的，但是可能存在两代电脑环境配置的问题，大家还是下载各自适合的最好。</p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94%E2%80%94nacos2.1.0/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Kommentieren und teilen
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94%E2%80%94kibana8.2.0/"
+                            aria-label=": docker整合springboot/cloud——kibana8.2.0"
+                        >
+                            docker整合springboot/cloud——kibana8.2.0
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2022-10-04T21:25:08+08:00">
+	
+		    04 Oct 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>前言：<br>博主从win换成mac后，想试着自己配一下docker环境，花了足足3到4天的时间。<br>由于中土存在各种中间件的兼容问题，mac版和win版的不一致，中间件版本过新等问题，且大多数博客对于版本的描述不够清晰，很难帮到忙，故博主斗胆记录一下，希望对大家有帮助。</p>
+<p>环境：</p>
+<ul>
+<li>springboot: 2.7.0</li>
+<li>nacos: 2.1.0</li>
+<li>elasticsearch: 8.2.0</li>
+<li>kibana: 8.2.0</li>
+<li>springcloud: 2021.0.3</li>
+<li>springcloudalibaba: 2021.0.1</li>
+<li>mysql: 8.0.26</li>
+<li>redis: 7</li>
+<li>rabbitmq: 3.9.11</li>
+<li>jdk: 8</li>
+<li>kafka: 3.5.11</li>
+</ul>
+<h2 id="2、kibana8-2-0"><a href="#2、kibana8-2-0" class="headerlink" title="2、kibana8.2.0"></a>2、kibana8.2.0</h2><p>kibana安装完成后打开5601端口，他会在页面左上角显示一段英文串，意思就是没准备好，但实际是因为权限问题，人家进不去。</p>
+<p>这个问题大多数博主都没讲到。</p>
+<p>解决办法是：你告诉kibana，es的账号密码，我们会发现，在es设置密码的时候有6个用户，那我们到底用哪一个呢？这里有点歧义，我的选择是直接用kibana_system这个用户。因为我们就是kibana所以没什么问题，但是有一个博主用的elastic用户，而我使用这个用户会提示错误，所以大家可以先试试kibana_system然后elastic，具体操作如下：</p>
+<p>首先挂载config，把原本自带的挤掉，因为我们在docker修改起来也不方便，所以直接挂载是最简单的。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">volumes:</span><br><span class="line">     - /Users/csen/dockerProject/mydata/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml </span><br><span class="line">     - </span><br></pre></td></tr></table></figure>
+<p>挂载成功后，在我们的kibana.yml文件中修改内容</p>
+<p>1、要对应你们自己修改的密码。如果是elastic那就完全复制，如果不是，就自己改一下密码。<br>2、elasticseatch.hosts那一栏我写的是es：9200，因为我的elasticsearch容器跑通之后，在springboot项目中的别名叫做es，大家根据自己的改哦，别死抄。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#</span><br><span class="line"># ** THIS IS AN AUTO-GENERATED FILE **</span><br><span class="line">#</span><br><span class="line"></span><br><span class="line"># Default Kibana configuration for docker target</span><br><span class="line">server.host: &quot;0.0.0.0&quot;</span><br><span class="line">server.shutdownTimeout: &quot;5s&quot;</span><br><span class="line">elasticsearch.hosts: [ &quot;http://es:9200&quot; ]</span><br><span class="line">monitoring.ui.container.elasticsearch.enabled: true</span><br><span class="line"># 这里配置中文显示，默认为英文 【English - en (default)、Chinese - zh-CN、Japanese - ja-JP】</span><br><span class="line">i18n.locale: &quot;zh-CN&quot;</span><br><span class="line"># 此处设置elastic的用户名和密码</span><br><span class="line">elasticsearch.username: kibana_system</span><br><span class="line">elasticsearch.password: elastic</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94%E2%80%94kibana8.2.0/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Kommentieren und teilen
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2022/10/04/springboot%E6%95%B4%E5%90%88kafka3.1%EF%BC%8C%E5%AE%9E%E7%8E%B0%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
+                            aria-label=": springboot整合kafka3.1，实现基本配置和操作"
+                        >
+                            springboot整合kafka3.1，实现基本配置和操作
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2022-10-04T21:25:08+08:00">
+	
+		    04 Oct 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h1 id="springboot整合kafka3-1，实现基本配置和操作"><a href="#springboot整合kafka3-1，实现基本配置和操作" class="headerlink" title="springboot整合kafka3.1，实现基本配置和操作"></a>springboot整合kafka3.1，实现基本配置和操作</h1><p>这篇是单机的zookeeper形式，适用于入门。等有时间会更新kraft搭建。</p>
+<p>博主自己装了双系统，虚拟机刚刚删了，所以没去做集群，不过当大家的kafka版本来到3.1，建议大家去学习KRaft集群搭建而不是去整合zookeeper。下面介绍一下怎么整合，正所谓举一反三，这个会了，到时候换个环境就ok，讲的不好的地方还请见谅。</p>
+<p>@[toc]</p>
+<h2 id="前提准备"><a href="#前提准备" class="headerlink" title="前提准备"></a>前提准备</h2><h3 id="1、springboot"><a href="#1、springboot" class="headerlink" title="1、springboot"></a>1、springboot</h3><p>博主自己用的是2.7版本的</p>
+<p>一般关于springboot我会引入一下依赖</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line"></span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line"></span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line"></span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-aop&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;</span><br><span class="line">          &lt;scope&gt;test&lt;/scope&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2、kafka"><a href="#2、kafka" class="headerlink" title="2、kafka"></a>2、kafka</h3><h4 id="1、kafka下载"><a href="#1、kafka下载" class="headerlink" title="1、kafka下载"></a>1、kafka下载</h4><p><a target="_blank" rel="noopener" href="https://kafka.apache.org/downloads">https://kafka.apache.org/downloads</a>  这里下载，这里再提一句，建议直接放到d盘e盘一级子目录里面，否则有可能出现启动的时候名字太长的问题</p>
+<p>下载之后修改配置文件server.properties</p>
+<p>log.dirs&#x3D;E:\kafka_2.13-3.2.3\kafka-logs</p>
+<h4 id="2、项目引入依赖"><a href="#2、项目引入依赖" class="headerlink" title="2、项目引入依赖"></a>2、项目引入依赖</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.springframework.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;spring-kafka&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;根据自己的版本选择&lt;/version&gt;  </span><br><span class="line">        &lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里提一句：不一样的springboot对应的kafka依赖版本也不一样，所以先去官网查看依赖版本。</p>
+<p><a target="_blank" rel="noopener" href="https://spring.io/projects/spring-kafka">https://spring.io/projects/spring-kafka</a>   点这个链接去找对应的，别自己乱下最新的。</p>
+<h5 id="新版本的kafka命令和老版本的不一样。"><a href="#新版本的kafka命令和老版本的不一样。" class="headerlink" title="新版本的kafka命令和老版本的不一样。"></a>新版本的kafka命令和老版本的不一样。</h5><p>试着启动，命令看你在哪个文件夹，如果是kafka，用下面的，如果是linux，把bat换成sh</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">bin\windows\kafka-server-start.bat config\server.properties</span><br></pre></td></tr></table></figure>
+
+<p>简单使用</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bin\windows\kafka-topics.bat --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic test（自己取）</span><br></pre></td></tr></table></figure>
+
+<p>查看</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bin\windows\kafka-topics.bat --list --bootstrap-server localhost:9092</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3、zookeeper"><a href="#3、zookeeper" class="headerlink" title="3、zookeeper"></a>3、zookeeper</h3><p>新版本的kafka其实自己集成了zookeeper，博主这里同样介绍两种方式，一种自己重新去下个zookeeper，一种用kafka自带的。</p>
+<h4 id="1、自带的"><a href="#1、自带的" class="headerlink" title="1、自带的"></a>1、自带的</h4><p>修改配置zookeeper.properties</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">dataDir=/opt/kafka/zookeeper/data/dataDir</span><br><span class="line">dataLogDir=/opt/kafka/zookeeper/data/dataLogDir</span><br><span class="line"># the port at which the clients will connect</span><br><span class="line">clientPort=<span class="number">2181</span></span><br><span class="line"># disable the per-ip limit on the number of connections since <span class="built_in">this</span> is a non-production config</span><br><span class="line">maxClientCnxns=<span class="number">100</span></span><br><span class="line">tickTime=<span class="number">2000</span></span><br><span class="line">initLimit=<span class="number">10</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bin\windows\zookeeper-server-start.bat config\zookeeper.properties</span><br></pre></td></tr></table></figure>
+
+<h4 id="2、自己下载zookeeper"><a href="#2、自己下载zookeeper" class="headerlink" title="2、自己下载zookeeper"></a>2、自己下载zookeeper</h4><p>由于是自己下载所以也不用去配置kafka文件中的zookeeper.properties</p>
+<p><a target="_blank" rel="noopener" href="https://zookeeper.apache.org/releases.html#download">https://zookeeper.apache.org/releases.html#download</a>  这是下载地址</p>
+<p>进去之后很简单，一样改配置，进入conf目录下，将<code>zoo_example.cfg</code>重命名为<code>zoo.cfg</code></p>
+<p>同样修改dataDir和log， 我的是：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">example sakes.</span><br><span class="line"></span><br><span class="line">dataDir=E:\\java-configuration\\apache-zookeeper-<span class="number">3.7</span><span class="number">.1</span>-bin\\data</span><br><span class="line"></span><br><span class="line">存放事务日志目录</span><br><span class="line"></span><br><span class="line">dataLogDir=E:\\java-configuration\\apache-zookeeper-<span class="number">3.7</span><span class="number">.1</span>-bin\\logs</span><br></pre></td></tr></table></figure>
+
+<p>然后运行zkserver.cmd和zkcli.cmd, 一个是启动我们的zookeeper服务器，一个是客户端。</p>
+<h2 id="springboot整合操作kafka"><a href="#springboot整合操作kafka" class="headerlink" title="springboot整合操作kafka"></a>springboot整合操作kafka</h2><p>[外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-KCJ0jkN3-1664006842070)(C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220924153503966.png)]</p>
+<p>这里用一张图作为流程讲解如何整合。</p>
+<h3 id="1、config"><a href="#1、config" class="headerlink" title="1、config"></a>1、config</h3><p>其实可以把下面的conponent exception filter什么的都丢进来，可以配一些生产者消费者的信息，想配什么都可以，这个就不展示了。</p>
+<h3 id="2、回调（conponent）"><a href="#2、回调（conponent）" class="headerlink" title="2、回调（conponent）"></a>2、回调（conponent）</h3><p>回调有多种写法，这里介绍三种</p>
+<h4 id="1、较为泛用的"><a href="#1、较为泛用的" class="headerlink" title="1、较为泛用的"></a>1、较为泛用的</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class KafkaSendResultHandler implements ProducerListener &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onSuccess(ProducerRecord producerRecord, RecordMetadata recordMetadata) &#123;</span><br><span class="line">        System.out.println(&quot;Message send success : &quot; + producerRecord.toString());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onError(ProducerRecord producerRecord, RecordMetadata recordMetadata, Exception exception) &#123;</span><br><span class="line">        System.out.println(&quot;Message send error : &quot; + producerRecord.toString());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后在生产者里面使用</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">private KafkaSendResultHandler kafkaSendResultHandler;</span><br><span class="line"></span><br><span class="line">。。。。。省略</span><br><span class="line"></span><br><span class="line">kafkaTemplate.setProducerListener(kafkaSendResultHandler);    </span><br></pre></td></tr></table></figure>
+
+<h4 id="2、一个方法对应一个特定的回调"><a href="#2、一个方法对应一个特定的回调" class="headerlink" title="2、一个方法对应一个特定的回调"></a>2、一个方法对应一个特定的回调</h4><h5 id="1、第一种写法"><a href="#1、第一种写法" class="headerlink" title="1、第一种写法"></a>1、第一种写法</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(<span class="string">&quot;topic1&quot;</span>, callbackMessage).addCallback(success -&gt;&#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">topic</span> <span class="operator">=</span> success.getRecordMetadata().topic();</span><br><span class="line">    <span class="type">int</span> <span class="variable">partition</span> <span class="operator">=</span> success.getRecordMetadata().partition();</span><br><span class="line">    <span class="type">long</span> <span class="variable">offset</span> <span class="operator">=</span> success.getRecordMetadata().offset();</span><br><span class="line">    System.out.println(<span class="string">&quot;发送消息成功:&quot;</span> + topic + <span class="string">&quot;-&quot;</span> + partition + <span class="string">&quot;-&quot;</span> + offset);</span><br><span class="line"></span><br><span class="line">&#125;, failure -&gt; &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;发送消息失败:&quot;</span> + failure.getMessage());</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h5 id="2、第二种写法"><a href="#2、第二种写法" class="headerlink" title="2、第二种写法"></a>2、第二种写法</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(<span class="string">&quot;topic1&quot;</span>, callbackMessage).addCallback(<span class="keyword">new</span> <span class="title class_">ListenableFutureCallback</span>&lt;SendResult&lt;String, Object&gt;&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onFailure</span><span class="params">(Throwable ex)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;发送消息失败：&quot;</span>+ex.getMessage());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onSuccess</span><span class="params">(SendResult&lt;String, Object&gt; result)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;发送消息成功：&quot;</span> + result.getRecordMetadata().topic() + <span class="string">&quot;-&quot;</span></span><br><span class="line">                + result.getRecordMetadata().partition() + <span class="string">&quot;-&quot;</span> + result.getRecordMetadata().offset());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="3、consumer-消费者"><a href="#3、consumer-消费者" class="headerlink" title="3、consumer(消费者)"></a>3、consumer(消费者)</h3><p>使用KafkaListener，指定消息类型（必选）和groupid，partitions offset（可选）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">@KafkaListener(topics = &#123;&quot;topic1&quot;&#125;, groupId = &quot;felix-group0&quot; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage1(ConsumerRecord&lt;?,?&gt; record)&#123;</span><br><span class="line">    System.out.println(&quot;简单消费：&quot; + record.topic() + &quot;--&quot; + record.partition() + &quot;--&quot; + record.value());</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@KafkaListener(id = &quot;comsumer1&quot;, groupId = &quot;felix-group1&quot;, topicPartitions = &#123;</span><br><span class="line">        @TopicPartition(topic = &quot;topic1&quot;, partitions = &#123;&quot;0&quot;&#125;),</span><br><span class="line">        @TopicPartition(topic = &quot;topic2&quot;, partitionOffsets = @PartitionOffset(partition = &quot;0&quot;, initialOffset = &quot;8&quot;))</span><br><span class="line">&#125; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage2(ConsumerRecord&lt;?, ?&gt; record)&#123;</span><br><span class="line">    System.out.println(&quot;topic:&quot;+record.topic()+&quot;|partition:&quot;+record.partition()+&quot;|offset:&quot;+record.offset()+&quot;|value:&quot;+record.value());</span><br><span class="line">&#125;</span><br><span class="line">@KafkaListener(id = &quot;consumer2&quot;,groupId = &quot;felix-group2&quot;, topics = &quot;topic1&quot; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage3(List&lt;ConsumerRecord&lt;?, ?&gt;&gt; records) &#123;</span><br><span class="line">    System.out.println(&quot;&gt;&gt;&gt;批量消费一次，records.size()=&quot;+records.size());</span><br><span class="line">    for (ConsumerRecord&lt;?, ?&gt; record : records) &#123;</span><br><span class="line">        System.out.println(record.value());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4、controller生产者（produces）"><a href="#4、controller生产者（produces）" class="headerlink" title="4、controller生产者（produces）"></a>4、controller生产者（produces）</h3><h4 id="1、同步发送"><a href="#1、同步发送" class="headerlink" title="1、同步发送"></a>1、同步发送</h4><p>如果需要使用同步发送，可以在每次发送之后使用get方法，因为producer.send方法返回一个Future类型的结果，Future的get方法会一直阻塞直到该线程的任务得到返回值，也就是broker返回发送成功。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(&quot;test&quot;, message).get();</span><br></pre></td></tr></table></figure>
+
+<h4 id="2、异步发送"><a href="#2、异步发送" class="headerlink" title="2、异步发送"></a>2、异步发送</h4><p>可以从返回的future对象中稍后获取发送的结果，ProducerRecord、RecordMetadata包含了返回的结果信息</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(&quot;test&quot;, message);</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-使用ack机制实现可靠"><a href="#3-使用ack机制实现可靠" class="headerlink" title="3. 使用ack机制实现可靠"></a>3. 使用ack机制实现可靠</h4><p>producers可以一步的并行向kafka发送消息，但是通常producer在发送完消息之后会得到一个响应，返回的是offset值或者发送过程中遇到的错误。这其中有个非常重要的参数“request.required.acks”，这个参数决定了producer要求leader partition收到确认的副本个数：</p>
+<ul>
+<li>如果acks设置为0，表示producer不会等待broker的相应，所以，producer无法知道消息是否发生成功，这样有可能导致数据丢失，但同时，acks值为0会得到最大的系统吞吐量。</li>
+<li>若acks设置为1，表示producer会在leader partition收到消息时得到broker的一个确认，这样会有更好的可靠性，因为客户端会等待知道broker确认收到消息。</li>
+<li>若设置为-1，producer会在所有备份的partition收到消息时得到broker的确认，这个设置可以得到最高的可靠性保证。</li>
+</ul>
+<h3 id="5、exception"><a href="#5、exception" class="headerlink" title="5、exception"></a>5、exception</h3><p>bean注入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Bean</span><br><span class="line">public ConsumerAwareListenerErrorHandler consumerAwareErrorHandler() &#123;</span><br><span class="line">    return (message, exception, consumer) -&gt; &#123;</span><br><span class="line">        System.out.println(&quot;消费异常：&quot;+message.getPayload());</span><br><span class="line">        return null;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>消费异常配置注解实现</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@KafkaListener(topics = &#123;&quot;topic1&quot;&#125;, groupId = &quot;felix-group0&quot; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage1(ConsumerRecord&lt;?,?&gt; record)&#123;</span><br><span class="line">    System.out.println(&quot;简单消费：&quot; + record.topic() + &quot;--&quot; + record.partition() + &quot;--&quot; + record.value());</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="6、filter"><a href="#6、filter" class="headerlink" title="6、filter"></a>6、filter</h3><p>bean注入factory的时候配置好消息过滤策略</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//配置消息过滤策略</span><br><span class="line">    @Bean(value = &quot;filterContainerFactory&quot;)</span><br><span class="line">    public ConcurrentKafkaListenerContainerFactory concurrentKafkaListenerContainerFactory() &#123;</span><br><span class="line">        ConcurrentKafkaListenerContainerFactory factory = new ConcurrentKafkaListenerContainerFactory();</span><br><span class="line">        factory.setConsumerFactory(consumerFactory);</span><br><span class="line">        // 被过滤的消息将被丢弃</span><br><span class="line">        factory.setAckDiscarded(true);</span><br><span class="line">        // 消息过滤策略</span><br><span class="line">        factory.setRecordFilterStrategy(consumerRecord -&gt; &#123;</span><br><span class="line">            if (Integer.parseInt(consumerRecord.value().toString()) % 2 == 0) &#123;</span><br><span class="line">                return false;</span><br><span class="line">            &#125;</span><br><span class="line">            else &#123;</span><br><span class="line">                return true;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        return factory;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>消费异常配置注解实现</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 消息过滤监听</span><br><span class="line">    @KafkaListener(topics = &#123;&quot;topic1&quot;&#125;, containerFactory = &quot;filterContainerFactory&quot;)</span><br><span class="line">    public void onMessage6(ConsumerRecord&lt;?, ?&gt; record) &#123;</span><br><span class="line">        System.out.println(record.value());</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>e {<br>                return true;<br>            }<br>        });</p>
+<pre><code>    return factory;
+
+&#125;
+</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">消费异常配置注解实现</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>&#x2F;&#x2F; 消息过滤监听<br>    @KafkaListener(topics &#x3D; {“topic1”}, containerFactory &#x3D; “filterContainerFactory”)<br>    public void onMessage6(ConsumerRecord<?, ?> record) {<br>        System.out.println(record.value());<br>    }</p>
+<h3 id="7、序列化编码解码"><a href="#7、序列化编码解码" class="headerlink" title="7、序列化编码解码"></a>7、序列化编码解码</h3><p>序列化器都实现了接口（<code>org.apache.kafka.common.serialization.Serializer</code>）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public interface Serializer&lt;T&gt; extends Closeable &#123;</span><br><span class="line">	default void configure(Map&lt;String, ?&gt; configs, Boolean isKey) &#123;</span><br><span class="line">	&#125;</span><br><span class="line">	byte[] serialize(String var1, T var2);</span><br><span class="line">	default byte[] serialize(String topic, Headers headers, T data) &#123;</span><br><span class="line">		return this.serialize(topic, data);</span><br><span class="line">	&#125;</span><br><span class="line">	default void close() &#123;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>所以我们只用去实现serialize即可</p>
+<h4 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h4><pre><code>public class MySerializer implements Serializer &#123;
+    @Override
+    public byte[] serialize(String s, Object o) &#123;
+        String json = JSON.toJSONString(o);
+        return json.getBytes();
+&#125;
+&#125;
+</code></pre>
+<h4 id="解码"><a href="#解码" class="headerlink" title="解码"></a>解码</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class MyDeserializer implements Deserializer &#123;</span><br><span class="line">    private final static Logger logger = LoggerFactory.getLogger(MyDeserializer.class);</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Object deserialize(String s, byte[] bytes) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            String json = new String(bytes,&quot;utf-8&quot;);</span><br><span class="line">            return JSON.parse(json);</span><br><span class="line">        &#125; catch (UnsupportedEncodingException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>最后在application中配置key-serializer 和 value-serializer</p>
+<h3 id="8、分区策略"><a href="#8、分区策略" class="headerlink" title="8、分区策略"></a>8、分区策略</h3><p>分区策略一般分为四种情况：</p>
+<ul>
+<li>有分区号，直接将数据发送到指定的分区里面去</li>
+<li>没有分区号，但是给了数据的key值，根据key取hashCode进行分区</li>
+<li>分区号和key值都没有，直接使用默认的轮循分区</li>
+<li>自定义分区</li>
+</ul>
+<h4 id="常规"><a href="#常规" class="headerlink" title="常规"></a>常规</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">测试</span><br><span class="line">        kafkaTemplate.send(&quot;test&quot;, 0, key, &quot;key=&quot; + key + &quot;，msg=指定0号分区&quot;);</span><br><span class="line">        kafkaTemplate.send(&quot;test&quot;, key, &quot;key=&quot; + key + &quot;，msg=不指定分区&quot;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="自定义"><a href="#自定义" class="headerlink" title="自定义"></a>自定义</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyPartitioner</span> <span class="keyword">implements</span> <span class="title class_">Partitioner</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">partition</span><span class="params">(String topic, Object key, <span class="type">byte</span>[] keyBytes, Object value, <span class="type">byte</span>[] valueBytes, Cluster cluster)</span> &#123;</span><br><span class="line"><span class="comment">//        定义自己的分区策略</span></span><br><span class="line"><span class="comment">//                如果key以0开头，发到0号分区</span></span><br><span class="line"><span class="comment">//                其他都扔到1号分区</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">keyStr</span> <span class="operator">=</span> key+<span class="string">&quot;&quot;</span>;</span><br><span class="line">        <span class="keyword">if</span> (keyStr.startsWith(<span class="string">&quot;0&quot;</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">close</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configure</span><span class="params">(Map&lt;String, ?&gt; map)</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyPartitionTemplate</span> &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Logger</span> <span class="variable">logger</span> <span class="operator">=</span> LoggerFactory.getLogger(<span class="built_in">this</span>.getClass());</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;spring.kafka.bootstrap-servers&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String bootstrapServers;</span><br><span class="line"></span><br><span class="line">    KafkaTemplate kafkaTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostConstruct</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setKafkaTemplate</span><span class="params">()</span> &#123;</span><br><span class="line">        Map&lt;String, Object&gt; props = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);</span><br><span class="line">        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);</span><br><span class="line">        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);</span><br><span class="line">        <span class="comment">//注意分区器在这里！！！</span></span><br><span class="line">        props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, MyPartitioner.class);</span><br><span class="line">        <span class="built_in">this</span>.kafkaTemplate = <span class="keyword">new</span> <span class="title class_">KafkaTemplate</span>&lt;String, String&gt;(<span class="keyword">new</span> <span class="title class_">DefaultKafkaProducerFactory</span>&lt;&gt;(props));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> KafkaTemplate <span class="title function_">getKafkaTemplate</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> kafkaTemplate;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//测试自定义分区发送</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyPartitionProducer</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    MyPartitionTemplate template;</span><br><span class="line"></span><br><span class="line"><span class="comment">//    使用0开头和其他任意字母开头的key发送消息</span></span><br><span class="line"><span class="comment">//    看控制台的输出，在哪个分区里？</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/kafka/myPartitionSend/&#123;key&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setPartition</span><span class="params">(<span class="meta">@PathVariable(&quot;key&quot;)</span> String key)</span> &#123;</span><br><span class="line">        template.getKafkaTemplate().send(<span class="string">&quot;test&quot;</span>, key,<span class="string">&quot;key=&quot;</span>+key+<span class="string">&quot;，msg=自定义分区策略&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2022/10/04/springboot%E6%95%B4%E5%90%88kafka3.1%EF%BC%8C%E5%AE%9E%E7%8E%B0%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Kommentieren und teilen
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
                             href="/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
                             aria-label=": 整合docker和中间件记录"
                         >
@@ -1828,175 +1979,6 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
         
     </article>
     
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2022/10/04/%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
-                            aria-label=": springboot整合kafka3.1-基本配置和操作"
-                        >
-                            springboot整合kafka3.1-基本配置和操作
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2022-10-04T13:38:01+08:00">
-	
-		    04 Oct 2022
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <p>这篇是单机的zookeeper形式，适用于入门。等有时间会更新kraft搭建。</p>
-<p>博主自己装了双系统，虚拟机刚刚删了，所以没去做集群，不过当大家的kafka版本来到3.1，建议大家去学习KRaft集群搭建而不是去整合zookeeper。下面介绍一下怎么整合，正所谓举一反三，这个会了，到时候换个环境就ok，讲的不好的地方还请见谅。</p>
-<p>[toc]</p>
-<h2 id="前提准备"><a href="#前提准备" class="headerlink" title="前提准备"></a>前提准备</h2><h3 id="1、springboot"><a href="#1、springboot" class="headerlink" title="1、springboot"></a>1、springboot</h3><p>博主自己用的是2.7版本的</p>
-<p>一般关于springboot我会引入一下依赖</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line"></span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line"></span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line"></span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-aop&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;</span><br><span class="line">          &lt;scope&gt;test&lt;/scope&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="2、kafka"><a href="#2、kafka" class="headerlink" title="2、kafka"></a>2、kafka</h3><h4 id="1、kafka下载"><a href="#1、kafka下载" class="headerlink" title="1、kafka下载"></a>1、kafka下载</h4><p><a target="_blank" rel="noopener" href="https://kafka.apache.org/downloads">https://kafka.apache.org/downloads</a>  这里下载，这里再提一句，建议直接放到d盘e盘一级子目录里面，否则有可能出现启动的时候名字太长的问题</p>
-<p>下载之后修改配置文件server.properties</p>
-<p>log.dirs&#x3D;E:\kafka_2.13-3.2.3\kafka-logs</p>
-<h4 id="2、项目引入依赖"><a href="#2、项目引入依赖" class="headerlink" title="2、项目引入依赖"></a>2、项目引入依赖</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.springframework.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;spring-kafka&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;根据自己的版本选择&lt;/version&gt;  </span><br><span class="line">        &lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
-
-<p>这里提一句：不一样的springboot对应的kafka依赖版本也不一样，所以先去官网查看依赖版本。</p>
-<p><a target="_blank" rel="noopener" href="https://spring.io/projects/spring-kafka">https://spring.io/projects/spring-kafka</a>   点这个链接去找对应的，别自己乱下最新的。</p>
-<h5 id="新版本的kafka命令和老版本的不一样。"><a href="#新版本的kafka命令和老版本的不一样。" class="headerlink" title="新版本的kafka命令和老版本的不一样。"></a>新版本的kafka命令和老版本的不一样。</h5><p>试着启动，命令看你在哪个文件夹，如果是kafka，用下面的，如果是linux，把bat换成sh</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">bin\windows\kafka-server-start.bat config\server.properties</span><br></pre></td></tr></table></figure>
-
-<p>简单使用</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bin\windows\kafka-topics.bat --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic test（自己取）</span><br></pre></td></tr></table></figure>
-
-<p>查看</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bin\windows\kafka-topics.bat --list --bootstrap-server localhost:9092</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="3、zookeeper"><a href="#3、zookeeper" class="headerlink" title="3、zookeeper"></a>3、zookeeper</h3><p>新版本的kafka其实自己集成了zookeeper，博主这里同样介绍两种方式，一种自己重新去下个zookeeper，一种用kafka自带的。</p>
-<h4 id="1、自带的"><a href="#1、自带的" class="headerlink" title="1、自带的"></a>1、自带的</h4><p>修改配置zookeeper.properties</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">dataDir=/opt/kafka/zookeeper/data/dataDir</span><br><span class="line">dataLogDir=/opt/kafka/zookeeper/data/dataLogDir</span><br><span class="line"># the port at which the clients will connect</span><br><span class="line">clientPort=<span class="number">2181</span></span><br><span class="line"># disable the per-ip limit on the number of connections since <span class="built_in">this</span> is a non-production config</span><br><span class="line">maxClientCnxns=<span class="number">100</span></span><br><span class="line">tickTime=<span class="number">2000</span></span><br><span class="line">initLimit=<span class="number">10</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bin\windows\zookeeper-server-start.bat config\zookeeper.properties</span><br></pre></td></tr></table></figure>
-
-<h4 id="2、自己下载zookeeper"><a href="#2、自己下载zookeeper" class="headerlink" title="2、自己下载zookeeper"></a>2、自己下载zookeeper</h4><p>由于是自己下载所以也不用去配置kafka文件中的zookeeper.properties</p>
-<p><a target="_blank" rel="noopener" href="https://zookeeper.apache.org/releases.html#download">https://zookeeper.apache.org/releases.html#download</a>  这是下载地址</p>
-<p>进去之后很简单，一样改配置，进入conf目录下，将<code>zoo_example.cfg</code>重命名为<code>zoo.cfg</code></p>
-<p>同样修改dataDir和log， 我的是：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">example sakes.</span><br><span class="line"></span><br><span class="line">dataDir=E:\\java-configuration\\apache-zookeeper-<span class="number">3.7</span><span class="number">.1</span>-bin\\data</span><br><span class="line"></span><br><span class="line">存放事务日志目录</span><br><span class="line"></span><br><span class="line">dataLogDir=E:\\java-configuration\\apache-zookeeper-<span class="number">3.7</span><span class="number">.1</span>-bin\\logs</span><br></pre></td></tr></table></figure>
-
-<p>然后运行zkserver.cmd和zkcli.cmd, 一个是启动我们的zookeeper服务器，一个是客户端。</p>
-<h2 id="springboot整合操作kafka"><a href="#springboot整合操作kafka" class="headerlink" title="springboot整合操作kafka"></a>springboot整合操作kafka</h2><p><img src="C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220924153503966.png" alt="image-20220924153503966"></p>
-<p>这里用一张图作为流程讲解如何整合。</p>
-<h3 id="1、config"><a href="#1、config" class="headerlink" title="1、config"></a>1、config</h3><p>其实可以把下面的conponent exception filter什么的都丢进来，可以配一些生产者消费者的信息，想配什么都可以，这个就不展示了。</p>
-<h3 id="2、回调（conponent）"><a href="#2、回调（conponent）" class="headerlink" title="2、回调（conponent）"></a>2、回调（conponent）</h3><p>回调有多种写法，这里介绍三种</p>
-<h4 id="1、较为泛用的"><a href="#1、较为泛用的" class="headerlink" title="1、较为泛用的"></a>1、较为泛用的</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class KafkaSendResultHandler implements ProducerListener &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onSuccess(ProducerRecord producerRecord, RecordMetadata recordMetadata) &#123;</span><br><span class="line">        System.out.println(&quot;Message send success : &quot; + producerRecord.toString());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onError(ProducerRecord producerRecord, RecordMetadata recordMetadata, Exception exception) &#123;</span><br><span class="line">        System.out.println(&quot;Message send error : &quot; + producerRecord.toString());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后在生产者里面使用</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">private KafkaSendResultHandler kafkaSendResultHandler;</span><br><span class="line"></span><br><span class="line">。。。。。省略</span><br><span class="line"></span><br><span class="line">kafkaTemplate.setProducerListener(kafkaSendResultHandler);    </span><br></pre></td></tr></table></figure>
-
-<h4 id="2、一个方法对应一个特定的回调"><a href="#2、一个方法对应一个特定的回调" class="headerlink" title="2、一个方法对应一个特定的回调"></a>2、一个方法对应一个特定的回调</h4><h5 id="1、第一种写法"><a href="#1、第一种写法" class="headerlink" title="1、第一种写法"></a>1、第一种写法</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(<span class="string">&quot;topic1&quot;</span>, callbackMessage).addCallback(success -&gt;&#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">topic</span> <span class="operator">=</span> success.getRecordMetadata().topic();</span><br><span class="line">    <span class="type">int</span> <span class="variable">partition</span> <span class="operator">=</span> success.getRecordMetadata().partition();</span><br><span class="line">    <span class="type">long</span> <span class="variable">offset</span> <span class="operator">=</span> success.getRecordMetadata().offset();</span><br><span class="line">    System.out.println(<span class="string">&quot;发送消息成功:&quot;</span> + topic + <span class="string">&quot;-&quot;</span> + partition + <span class="string">&quot;-&quot;</span> + offset);</span><br><span class="line"></span><br><span class="line">&#125;, failure -&gt; &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;发送消息失败:&quot;</span> + failure.getMessage());</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h5 id="2、第二种写法"><a href="#2、第二种写法" class="headerlink" title="2、第二种写法"></a>2、第二种写法</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(<span class="string">&quot;topic1&quot;</span>, callbackMessage).addCallback(<span class="keyword">new</span> <span class="title class_">ListenableFutureCallback</span>&lt;SendResult&lt;String, Object&gt;&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onFailure</span><span class="params">(Throwable ex)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;发送消息失败：&quot;</span>+ex.getMessage());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onSuccess</span><span class="params">(SendResult&lt;String, Object&gt; result)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;发送消息成功：&quot;</span> + result.getRecordMetadata().topic() + <span class="string">&quot;-&quot;</span></span><br><span class="line">                + result.getRecordMetadata().partition() + <span class="string">&quot;-&quot;</span> + result.getRecordMetadata().offset());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h3 id="3、consumer-消费者"><a href="#3、consumer-消费者" class="headerlink" title="3、consumer(消费者)"></a>3、consumer(消费者)</h3><p>使用KafkaListener，指定消息类型（必选）和groupid，partitions offset（可选）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">@KafkaListener(topics = &#123;&quot;topic1&quot;&#125;, groupId = &quot;felix-group0&quot; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage1(ConsumerRecord&lt;?,?&gt; record)&#123;</span><br><span class="line">    System.out.println(&quot;简单消费：&quot; + record.topic() + &quot;--&quot; + record.partition() + &quot;--&quot; + record.value());</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@KafkaListener(id = &quot;comsumer1&quot;, groupId = &quot;felix-group1&quot;, topicPartitions = &#123;</span><br><span class="line">        @TopicPartition(topic = &quot;topic1&quot;, partitions = &#123;&quot;0&quot;&#125;),</span><br><span class="line">        @TopicPartition(topic = &quot;topic2&quot;, partitionOffsets = @PartitionOffset(partition = &quot;0&quot;, initialOffset = &quot;8&quot;))</span><br><span class="line">&#125; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage2(ConsumerRecord&lt;?, ?&gt; record)&#123;</span><br><span class="line">    System.out.println(&quot;topic:&quot;+record.topic()+&quot;|partition:&quot;+record.partition()+&quot;|offset:&quot;+record.offset()+&quot;|value:&quot;+record.value());</span><br><span class="line">&#125;</span><br><span class="line">@KafkaListener(id = &quot;consumer2&quot;,groupId = &quot;felix-group2&quot;, topics = &quot;topic1&quot; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage3(List&lt;ConsumerRecord&lt;?, ?&gt;&gt; records) &#123;</span><br><span class="line">    System.out.println(&quot;&gt;&gt;&gt;批量消费一次，records.size()=&quot;+records.size());</span><br><span class="line">    for (ConsumerRecord&lt;?, ?&gt; record : records) &#123;</span><br><span class="line">        System.out.println(record.value());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="4、controller生产者（produces）"><a href="#4、controller生产者（produces）" class="headerlink" title="4、controller生产者（produces）"></a>4、controller生产者（produces）</h3><h4 id="1、同步发送"><a href="#1、同步发送" class="headerlink" title="1、同步发送"></a>1、同步发送</h4><p>如果需要使用同步发送，可以在每次发送之后使用get方法，因为producer.send方法返回一个Future类型的结果，Future的get方法会一直阻塞直到该线程的任务得到返回值，也就是broker返回发送成功。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(&quot;test&quot;, message).get();</span><br></pre></td></tr></table></figure>
-
-<h4 id="2、异步发送"><a href="#2、异步发送" class="headerlink" title="2、异步发送"></a>2、异步发送</h4><p>可以从返回的future对象中稍后获取发送的结果，ProducerRecord、RecordMetadata包含了返回的结果信息</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(&quot;test&quot;, message);</span><br></pre></td></tr></table></figure>
-
-<h4 id="3-使用ack机制实现可靠"><a href="#3-使用ack机制实现可靠" class="headerlink" title="3. 使用ack机制实现可靠"></a>3. 使用ack机制实现可靠</h4><p>producers可以一步的并行向kafka发送消息，但是通常producer在发送完消息之后会得到一个响应，返回的是offset值或者发送过程中遇到的错误。这其中有个非常重要的参数“request.required.acks”，这个参数决定了producer要求leader partition收到确认的副本个数：</p>
-<ul>
-<li>如果acks设置为0，表示producer不会等待broker的相应，所以，producer无法知道消息是否发生成功，这样有可能导致数据丢失，但同时，acks值为0会得到最大的系统吞吐量。</li>
-<li>若acks设置为1，表示producer会在leader partition收到消息时得到broker的一个确认，这样会有更好的可靠性，因为客户端会等待知道broker确认收到消息。</li>
-<li>若设置为-1，producer会在所有备份的partition收到消息时得到broker的确认，这个设置可以得到最高的可靠性保证。</li>
-</ul>
-<h3 id="5、exception"><a href="#5、exception" class="headerlink" title="5、exception"></a>5、exception</h3><p>bean注入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Bean</span><br><span class="line">public ConsumerAwareListenerErrorHandler consumerAwareErrorHandler() &#123;</span><br><span class="line">    return (message, exception, consumer) -&gt; &#123;</span><br><span class="line">        System.out.println(&quot;消费异常：&quot;+message.getPayload());</span><br><span class="line">        return null;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>消费异常配置注解实现</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@KafkaListener(topics = &#123;&quot;topic1&quot;&#125;, groupId = &quot;felix-group0&quot; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage1(ConsumerRecord&lt;?,?&gt; record)&#123;</span><br><span class="line">    System.out.println(&quot;简单消费：&quot; + record.topic() + &quot;--&quot; + record.partition() + &quot;--&quot; + record.value());</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="6、filter"><a href="#6、filter" class="headerlink" title="6、filter"></a>6、filter</h3><p>bean注入factory的时候配置好消息过滤策略</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//配置消息过滤策略</span><br><span class="line">    @Bean(value = &quot;filterContainerFactory&quot;)</span><br><span class="line">    public ConcurrentKafkaListenerContainerFactory concurrentKafkaListenerContainerFactory() &#123;</span><br><span class="line">        ConcurrentKafkaListenerContainerFactory factory = new ConcurrentKafkaListenerContainerFactory();</span><br><span class="line">        factory.setConsumerFactory(consumerFactory);</span><br><span class="line">        // 被过滤的消息将被丢弃</span><br><span class="line">        factory.setAckDiscarded(true);</span><br><span class="line">        // 消息过滤策略</span><br><span class="line">        factory.setRecordFilterStrategy(consumerRecord -&gt; &#123;</span><br><span class="line">            if (Integer.parseInt(consumerRecord.value().toString()) % 2 == 0) &#123;</span><br><span class="line">                return false;</span><br><span class="line">            &#125;</span><br><span class="line">            else &#123;</span><br><span class="line">                return true;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        return factory;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<p>消费异常配置注解实现</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 消息过滤监听</span><br><span class="line">    @KafkaListener(topics = &#123;&quot;topic1&quot;&#125;, containerFactory = &quot;filterContainerFactory&quot;)</span><br><span class="line">    public void onMessage6(ConsumerRecord&lt;?, ?&gt; record) &#123;</span><br><span class="line">        System.out.println(record.value());</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="7、序列化编码解码"><a href="#7、序列化编码解码" class="headerlink" title="7、序列化编码解码"></a>7、序列化编码解码</h3><p>序列化器都实现了接口（<code>org.apache.kafka.common.serialization.Serializer</code>）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public interface Serializer&lt;T&gt; extends Closeable &#123;</span><br><span class="line">	default void configure(Map&lt;String, ?&gt; configs, Boolean isKey) &#123;</span><br><span class="line">	&#125;</span><br><span class="line">	byte[] serialize(String var1, T var2);</span><br><span class="line">	default byte[] serialize(String topic, Headers headers, T data) &#123;</span><br><span class="line">		return this.serialize(topic, data);</span><br><span class="line">	&#125;</span><br><span class="line">	default void close() &#123;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>所以我们只用去实现serialize即可</p>
-<h4 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h4><pre><code>public class MySerializer implements Serializer &#123;
-    @Override
-    public byte[] serialize(String s, Object o) &#123;
-        String json = JSON.toJSONString(o);
-        return json.getBytes();
-&#125;
-&#125;
-</code></pre>
-<h4 id="解码"><a href="#解码" class="headerlink" title="解码"></a>解码</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class MyDeserializer implements Deserializer &#123;</span><br><span class="line">    private final static Logger logger = LoggerFactory.getLogger(MyDeserializer.class);</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Object deserialize(String s, byte[] bytes) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            String json = new String(bytes,&quot;utf-8&quot;);</span><br><span class="line">            return JSON.parse(json);</span><br><span class="line">        &#125; catch (UnsupportedEncodingException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>最后在application中配置key-serializer 和 value-serializer</p>
-<h3 id="8、分区策略"><a href="#8、分区策略" class="headerlink" title="8、分区策略"></a>8、分区策略</h3><p>分区策略一般分为四种情况：</p>
-<ul>
-<li>有分区号，直接将数据发送到指定的分区里面去</li>
-<li>没有分区号，但是给了数据的key值，根据key取hashCode进行分区</li>
-<li>分区号和key值都没有，直接使用默认的轮循分区</li>
-<li>自定义分区</li>
-</ul>
-<h4 id="常规"><a href="#常规" class="headerlink" title="常规"></a>常规</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">测试</span><br><span class="line">        kafkaTemplate.send(&quot;test&quot;, 0, key, &quot;key=&quot; + key + &quot;，msg=指定0号分区&quot;);</span><br><span class="line">        kafkaTemplate.send(&quot;test&quot;, key, &quot;key=&quot; + key + &quot;，msg=不指定分区&quot;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h4 id="自定义"><a href="#自定义" class="headerlink" title="自定义"></a>自定义</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyPartitioner</span> <span class="keyword">implements</span> <span class="title class_">Partitioner</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">partition</span><span class="params">(String topic, Object key, <span class="type">byte</span>[] keyBytes, Object value, <span class="type">byte</span>[] valueBytes, Cluster cluster)</span> &#123;</span><br><span class="line"><span class="comment">//        定义自己的分区策略</span></span><br><span class="line"><span class="comment">//                如果key以0开头，发到0号分区</span></span><br><span class="line"><span class="comment">//                其他都扔到1号分区</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">keyStr</span> <span class="operator">=</span> key+<span class="string">&quot;&quot;</span>;</span><br><span class="line">        <span class="keyword">if</span> (keyStr.startsWith(<span class="string">&quot;0&quot;</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">close</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configure</span><span class="params">(Map&lt;String, ?&gt; map)</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyPartitionTemplate</span> &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Logger</span> <span class="variable">logger</span> <span class="operator">=</span> LoggerFactory.getLogger(<span class="built_in">this</span>.getClass());</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;spring.kafka.bootstrap-servers&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String bootstrapServers;</span><br><span class="line"></span><br><span class="line">    KafkaTemplate kafkaTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostConstruct</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setKafkaTemplate</span><span class="params">()</span> &#123;</span><br><span class="line">        Map&lt;String, Object&gt; props = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);</span><br><span class="line">        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);</span><br><span class="line">        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);</span><br><span class="line">        <span class="comment">//注意分区器在这里！！！</span></span><br><span class="line">        props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, MyPartitioner.class);</span><br><span class="line">        <span class="built_in">this</span>.kafkaTemplate = <span class="keyword">new</span> <span class="title class_">KafkaTemplate</span>&lt;String, String&gt;(<span class="keyword">new</span> <span class="title class_">DefaultKafkaProducerFactory</span>&lt;&gt;(props));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> KafkaTemplate <span class="title function_">getKafkaTemplate</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> kafkaTemplate;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//测试自定义分区发送</span><br><span class="line">@RestController</span><br><span class="line">public class MyPartitionProducer &#123;</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    MyPartitionTemplate template;</span><br><span class="line"></span><br><span class="line">//    使用0开头和其他任意字母开头的key发送消息</span><br><span class="line">//    看控制台的输出，在哪个分区里？</span><br><span class="line">    @GetMapping(&quot;/kafka/myPartitionSend/&#123;key&#125;&quot;)</span><br><span class="line">    public void setPartition(@PathVariable(&quot;key&quot;) String key) &#123;</span><br><span class="line">        template.getKafkaTemplate().send(&quot;test&quot;, key,&quot;key=&quot;+key+&quot;，msg=自定义分区策略&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2022/10/04/%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Kommentieren und teilen
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
     <div class="pagination-bar">
     <ul class="pagination">
         
@@ -2023,7 +2005,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             </a>
           </li>
         
-        <li class="pagination-number">Seite 2 von 3</li>
+        <li class="pagination-number">Seite 2 von 4</li>
     </ul>
 </div>
 
