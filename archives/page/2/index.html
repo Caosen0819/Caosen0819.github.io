@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv - 森</title>
+    <title>Archives - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -233,6 +233,196 @@
                     
                         <a
                             class="link-unstyled"
+                            href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+                            aria-label=": 计算机网络复习2"
+                        >
+                            计算机网络复习2
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-07-08T00:00:00+08:00">
+	
+		    Jul 08, 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h2 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h2><h3 id="1、TCP和UDP"><a href="#1、TCP和UDP" class="headerlink" title="1、TCP和UDP"></a>1、<strong>TCP和UDP</strong></h3><p><strong>UDP和TCP可以共用一个端口，因为是完全独立的两个软件模块</strong></p>
+<h3 id="2、为什么不能两次握手或者四次握手？"><a href="#2、为什么不能两次握手或者四次握手？" class="headerlink" title="2、为什么不能两次握手或者四次握手？"></a>2、为什么不能两次握手或者四次握手？</h3><blockquote>
+<p>两次握手：在两次握手的时候，服务端没有中间状态给客户端来阻止历史连接，也就是服务端会多建立一个历史连接浪费资源，因为收到syn就变成established。这里靠序列号同步就知道了</p>
+<p>四次握手：四次握手无非就是，你给我发我返回同意，我给你发你返回同意，但是第二和第三部完全可以合并，所以三次就ok了。</p>
+</blockquote>
+<h3 id="3、为什么，每次建立连接序列号都要求不一样？"><a href="#3、为什么，每次建立连接序列号都要求不一样？" class="headerlink" title="3、为什么，每次建立连接序列号都要求不一样？"></a>3、为什么，每次建立连接序列号都要求不一样？</h3><p>1、防止历史报文被下一个连接接受，如果每次都从特定的值开始，那历史报文就可能被下一个连接接受。</p>
+<p>2、防止黑客伪造的相同序列号被接受</p>
+<h3 id="4、那这个序列号是怎么随机产生的？"><a href="#4、那这个序列号是怎么随机产生的？" class="headerlink" title="4、那这个序列号是怎么随机产生的？"></a>4、那这个序列号是怎么随机产生的？</h3><p>rfc提高了序列号ISN随机生成算法：ISN &#x3D; M + F</p>
+<p>m是计时器，四微秒+1</p>
+<p>F是哈希算法根据四元组推出来的</p>
+<h3 id="5、为什么ip层会分片，TCP还分片，"><a href="#5、为什么ip层会分片，TCP还分片，" class="headerlink" title="5、为什么ip层会分片，TCP还分片，"></a>5、为什么ip层会分片，TCP还分片，</h3><p>因为ip不能超时重传，所以只能靠tcp，而万一ip层丢了一部分，那么ip层就不能组装成一个完整的tcp报文，也就不可能发给接收方tcp层，所以发送方的tcp层就会重发整个tcp报文，所以我们最好就是自己分片，然后缺什么发什么，直接以MSS为单位就可以了</p>
+<h3 id="6、TCP三次握手过程丢失问题"><a href="#6、TCP三次握手过程丢失问题" class="headerlink" title="6、TCP三次握手过程丢失问题"></a>6、TCP三次握手过程丢失问题</h3><blockquote>
+<p>第一次握手丢失，会发生什么？</p>
+<p>触发超时重传，每次重传次数是上一次两倍，报文最大重传次数由 <code>tcp_syn_retries</code></p>
+<p>第二次握手丢失，会发生什么？</p>
+<p>客户端和服务端都会重传，重传次数分别有tcp_syn_retries和tcp_synack_retries决定</p>
+<p>第三次握手丢失了，会发生什么？</p>
+<p>这里有一点很关键，就是ack报文是不会重传的，所以服务端会认为自己的syn+ack没发到，触发重传机制，服务端重传，次数由tcp_synack_retries决定</p>
+</blockquote>
+<h3 id="7、半连接状态和全连接状态"><a href="#7、半连接状态和全连接状态" class="headerlink" title="7、半连接状态和全连接状态"></a>7、半连接状态和全连接状态</h3><ul>
+<li>半连接队列，也称 SYN 队列；</li>
+<li>全连接队列，也称 accept 队列；</li>
+</ul>
+<p>正常流程：</p>
+<ul>
+<li>当服务端接收到客户端的 SYN 报文时，会创建一个半连接的对象，然后将其加入到内核的「 SYN 队列」；</li>
+<li>接着发送 SYN + ACK 给客户端，等待客户端回应 ACK 报文；</li>
+<li>服务端接收到 ACK 报文后，从「 SYN 队列」取出一个半连接对象，然后创建一个新的连接对象放入到「 Accept 队列」；</li>
+<li>应用通过调用 <code>accpet()</code> socket 接口，从「 Accept 队列」取出连接对象。</li>
+</ul>
+<p>所以这样子就出会先一些问题</p>
+<p>受到SYN攻击怎么办？就是说半连接状态很多怎么办？</p>
+<ul>
+<li>调大 netdev_max_backlog；缓冲队列</li>
+<li>增大 TCP 半连接队列；</li>
+<li>开启 tcp_syncookies；不用建立半连接</li>
+<li>减少 SYN+ACK 重传次数</li>
+</ul>
+<h3 id="8、TCP四次挥手"><a href="#8、TCP四次挥手" class="headerlink" title="8、TCP四次挥手"></a>8、TCP四次挥手</h3><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803130523828.png" alt="image-20230803130523828"></p>
+<blockquote>
+<p>msl是报文最大生存时间，ip头有一个ttl字段，这个字段代表可以经历的最大路由数</p>
+<p>msl大于等于ttl消耗为0的时间，默认60</p>
+</blockquote>
+<blockquote>
+<p><strong>为什么需要这个timewait状态</strong></p>
+<p>1<font color='red'><u><em><strong>、也是为了防止接收历史连接中的第三次挥手</strong></em></u></font>。这个时间<strong>足以让两个方向上的数据包都被丢弃，使得原来连接的数据包在网络中都自然消失。</strong></p>
+<p>2、也就是说，TIME-WAIT 作用是<strong>等待足够的时间以确保最后的 ACK 能让被动关闭方接收，从而帮助其正常关闭。</strong></p>
+</blockquote>
+<blockquote>
+<p><font color='red'><u><em><strong>为什么4次？</strong></em></u></font></p>
+<p>服务端可能还有数据要发给客户端，所以需要先处理自己的最后流程，然后给客户端发送一个fin报文，也就是说，第二次握手和第三次握手大概率是不同步的。</p>
+<p><font color='red'><u><em><strong>特定情况下，可以变成三次，刚刚好没有数据。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>第一次挥手丢失，会发生什么？</strong></em></u></font></p>
+<p>客户端收不到来自服务端的ack报文，那么就会触发超时重传，这个次数是由tcp_orphan_retries决定的</p>
+<p><font color='red'><u><em><strong>第二次挥手丢失，会发生什么？</strong></em></u></font></p>
+<p>ACK 报文是不会重传的,所以首先客户端还是会触发超时重传，这个次数是由tcp_orphan_retries决定的</p>
+<p><font color='red'><u><em><strong>第三次丢失，会发生什么？</strong></em></u></font></p>
+<p>相当于服务端一直收不到来自客户端的ack，那么服务端会触发超时重传,次数达到后还没收到，断开连接。</p>
+<p>而客户端已经进入了fin_wait2状态，一直等，如果超过设定的时间tcp_fin_timeout ，断开连接。</p>
+<p><font color='red'><u><em><strong>第四次丢失，会发生什么？</strong></em></u></font></p>
+<p>服务端一直收不到，那么触发超时重传，这时候因为客户端已经是timewait状态，所以每一次重传都会重置2msl定时器，超过时间就close，而服务端同样的重传几次之后close</p>
+</blockquote>
+<blockquote>
+<p><strong>如果建立了连接，结果客户端故障了，不发送消息，但是服务端一直establish</strong></p>
+<p>tcp搞了个保活机制，隔一段时间发送探测报文，没有得到相应则认为tcp死亡，</p>
+<p>但是，这个保活机制时间太长了，我们自己在应用层实现一个心跳机制，一般web服务软件都会提供keepalive-timeout状态</p>
+<p><strong>如果服务器的进程崩溃了，那发生什么</strong></p>
+<p>其实连接信息是由内核维护的，所以服务端的内核还是会发送fin报文进行四次挥手</p>
+</blockquote>
+<h3 id="9、可靠性保证方法"><a href="#9、可靠性保证方法" class="headerlink" title="9、可靠性保证方法"></a>9、可靠性保证方法</h3><blockquote>
+<h3 id="重传机制"><a href="#重传机制" class="headerlink" title="重传机制"></a>重传机制</h3><p><font color='red'><u><em><strong>重传分为超时重传和快速重传两种。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>超时重传：超过时间进行重传，时间RTO</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>快速重传：收到三个相同的 ACK 报文时，重传丢失的报文段。这里的问题在于传一个还是传所有，这里引入了SACK和DSACK机制</strong></em></u></font></p>
+<p>SACK：服务端把已经收到的数据信息驾到tcp头部的选项里面，告诉发送发我收到了哪些</p>
+<p>后面又出现了D-SACK：这是用来告诉发送方哪些被重复接受了了</p>
+<h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h3><p>操作系统开辟的一个缓存空间，发送方在收到ACK应答之前，在缓冲区中保留已发送的数据。如果按期收到确认应答，此时数据就可以从缓存区清除</p>
+<p>TCP头部里面既有一个字段叫窗口大小，就是用来告诉发送端自己还有多少缓冲区可以使用，所以窗口大小一般由接收方决定</p>
+<h3 id="拥塞控制"><a href="#拥塞控制" class="headerlink" title="拥塞控制"></a>拥塞控制</h3><p>网络发生拥塞，那么tcp就会降低自己的发送量，防止网络负担加重</p>
+<p>慢启动 一开始是1，就是可以传1个mss，然后收到应答变成2，4，8，16…..</p>
+<p>拥塞避免 触碰到<font color='green'><u><em><strong>慢启动门限</strong></em></u></font>就是用拥塞避免，变成线性的，收到一个ack cwnd增加1&#x2F;cwnd（拥塞窗口）</p>
+<p>如果网络发生了拥塞，也就是重传。重传分两种，如果是超时重传，就慢启动门限变成cwnd&#x2F;2，cwnd&#x3D;1重新开始慢启动</p>
+<p>如果是快速重传，拥塞窗口和慢启动门限都设置为拥塞窗口的一半，然后拥塞窗口+3，继续发送重复的，如果收到新数据的ACK，快速恢复结束，进入拥塞避免。</p>
+<p>握手优化就是调整重传次数、半连接队列，全连接队列</p>
+<p>挥手就是调整：重传次数、FINwait2状态时间、</p>
+<p>传输速度的话就是调整：接收方缓冲区大小、发送方缓冲区大小、窗口大小，打开缓冲区动态调节。</p>
+<h3 id="流量控制"><a href="#流量控制" class="headerlink" title="流量控制"></a>流量控制</h3><p>避免发送方的数据填满接收方</p>
+</blockquote>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803161404210.png" alt="image-20230803161404210"></p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803163142196.png" alt="image-20230803163142196"></p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803163236556.png" alt="image-20230803163236556"></p>
+<blockquote>
+<h4 id="如何理解字节流"><a href="#如何理解字节流" class="headerlink" title="如何理解字节流"></a>如何理解字节流</h4><p>udp操作系统不会对齐拆分，所以每一个udp就是一个消息的边界.然而tcp是会分片的，这时候，接收方如果不知道消息的长度或者边界，是无法读取消息的，<strong>不能认为一个用户消息对应一个TCP报文，正因为这样，TCP是面向字节流的协议。</strong></p>
+<p><strong>没有accept，能建立tcp连接吗</strong></p>
+<p>可以</p>
+<p><strong>已经建立的tcp，收到syn会发生什么</strong></p>
+<p>新的syn首先看看端口是不是一样，如果不一样的话，就建立新的连接，老的那个如果一直不发消息就会触发tcp保活机制</p>
+<p>如果相同（可能就是宕机重传），其实会返回一个challenge ack，携带正确的序列号的确认号的ack报文，这时候客户端确认号收到这个，发现不是自己期望收到的，就会返回rst，这样，服务器就释放了连接</p>
+<h4 id="如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗"><a href="#如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗" class="headerlink" title="如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗"></a>如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗</h4><p>先到的fin包其实是乱序的，所以会进入乱序队列，等数据真正的到了，才会回头检查这个fin，然后给服务端发这个。</p>
+<h4 id="如果timewait状态收到syn？会怎么样？"><a href="#如果timewait状态收到syn？会怎么样？" class="headerlink" title="如果timewait状态收到syn？会怎么样？"></a>如果timewait状态收到syn？会怎么样？</h4><p>还是先看序列号时间戳吧，如果确实合法，那应该会重新进入三次握手阶段，</p>
+<p>如果不合法，就会返回一个和第四次挥手一样的ack，这时候服务端收到发现不是自己的，就回复一个rst报文</p>
+<h4 id="服务端没有-listen，客户端发起连接建立，会发生什么？"><a href="#服务端没有-listen，客户端发起连接建立，会发生什么？" class="headerlink" title="服务端没有 listen，客户端发起连接建立，会发生什么？"></a>服务端没有 listen，客户端发起连接建立，会发生什么？</h4><p><strong>服务端如果只 bind 了 IP 地址和端口，而没有调用 listen 的话，然后客户端对服务端发起了连接建立，服务端会回 RST 报文</strong></p>
+<h4 id="Tcp连接，断电和进程崩溃有什么区别？没有保活机制"><a href="#Tcp连接，断电和进程崩溃有什么区别？没有保活机制" class="headerlink" title="Tcp连接，断电和进程崩溃有什么区别？没有保活机制"></a>Tcp连接，断电和进程崩溃有什么区别？没有保活机制</h4><p>客户端主机崩溃，没有保活机制，那就无法感知到，一直处于establish</p>
+<p>进程崩溃，内核还是会发送fin完成4次挥手</p>
+<h4 id="客户端主机宕机，又迅速重启"><a href="#客户端主机宕机，又迅速重启" class="headerlink" title="客户端主机宕机，又迅速重启"></a>客户端主机宕机，又迅速重启</h4><p><strong>只要有一方重启完成后，收到之前 TCP 连接的报文，都会回复 RST 报文，以断开连接</strong></p>
+<h4 id="拔掉网线tcp连接还在吗"><a href="#拔掉网线tcp连接还在吗" class="headerlink" title="拔掉网线tcp连接还在吗"></a>拔掉网线tcp连接还在吗</h4><p>在的，tcp连接信息是存储于内核的一个结构体，网线断了，但是结构体不会改变</p>
+<ul>
+<li>拔掉网线后，有数据传输；</li>
+<li>如果在重传前网线插回去了，那我觉得应该什么事情都没发生</li>
+<li>如果没插回去，那么就超时重传几次之后，认为此连接死亡，就断开连接，即使后面插回来了，客户端向服务端发送请求，也不是连接的状态，那么服务端就会返回rst</li>
+<li>拔掉网线后，没有数据传输</li>
+<li>如果开启了保活机制，那就探测几次，如果有工作就重制保活时间，如果客户端没有正常工作，就断开连接</li>
+<li>如果没有开启保活机制，就一直连着</li>
+</ul>
+</blockquote>
+<h4 id="HTTPS-中-TLS-和-TCP-能同时握手吗？"><a href="#HTTPS-中-TLS-和-TCP-能同时握手吗？" class="headerlink" title="HTTPS 中 TLS 和 TCP 能同时握手吗？"></a>HTTPS 中 TLS 和 TCP 能同时握手吗？</h4><p>可能，但是有条件</p>
+<ul>
+<li><strong>客户端和服务端都开启了 TCP Fast Open 功能，且 TLS 版本是 1.3；</strong></li>
+<li><strong>客户端和服务端已经完成过一次通信。</strong></li>
+</ul>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803205908513.png" alt="image-20230803205908513"></p>
+<p>TCP Fast Open定义<br>TCP Fast Open（TFO）是用来加速连续TCP连接的数据交互的TCP协议扩展，原理如下：在TCP三次握手的过程中，当用户首次访问Server时，发送SYN包，Server根据用户IP生成Cookie（已加密），并与SYN-ACK一同发回Client；当Client随后重连时，在SYN包携带TCP Cookie；如果Server校验合法，则在用户回复ACK前就可以直接发送数据；否则按照正常三次握手进行<br><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803210533146.png" alt="image-20230803210533146"></p>
+<p>所以就是在第二次以后的通信过程中，tcp open fast在ack发回来之前直接进行tls1.3</p>
+<h4 id="quic怎么实现可靠传输"><a href="#quic怎么实现可靠传输" class="headerlink" title="quic怎么实现可靠传输"></a>quic怎么实现可靠传输</h4><p>总的来说，<strong>QUIC 通过单向递增的 Packet Number，配合 Stream ID 与 Offset 字段信息，可以支持乱序确认而不影响数据包的正确组装</strong>，</p>
+<p>Packet Number 是严格递增，即使重传报文的 Packet Number 也是递增的，既然重传数据包的 Packet N+M 与丢失数据包的 Packet N 编号并不一致，我们怎么确定这两个数据包的内容一样呢？</p>
+<p>所以引入 Frame Header 这一层，<strong>通过 Stream ID + Offset 字段信息实现数据的有序性</strong>，通过比较两个数据包的 Stream ID 与 Stream Offset ，如果都是一致，就说明这两个数据包的内容一致。</p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803212833705.png"></p>
+<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803213009597.png" alt="image-20230803213009597"></p>
+<h3 id="QUIC怎么解决对头阻塞"><a href="#QUIC怎么解决对头阻塞" class="headerlink" title="QUIC怎么解决对头阻塞"></a>QUIC怎么解决对头阻塞</h3><p><strong>QUIC 给每一个 Stream 都分配了一个独立的滑动窗口，都是相互独立的，各自控制的滑动窗口</strong>。</p>
+<h3 id="QUIC-是如何做流量控制的？"><a href="#QUIC-是如何做流量控制的？" class="headerlink" title="QUIC 是如何做流量控制的？"></a>QUIC 是如何做流量控制的？</h3><p>QUIC 实现流量控制的方式：</p>
+<ul>
+<li>通过 window_update 帧告诉对端自己可以接收的字节数，这样发送方就不会发送超过这个数量的数据。 如果消耗数据的长度大于了最大接收窗口的一半发送</li>
+<li>通过 BlockFrame 告诉对端由于流量控制被阻塞了，无法发送数据。</li>
+</ul>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
                             href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C1/"
                             aria-label=": 计算机网络复习1"
                         >
@@ -243,7 +433,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -588,7 +778,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -617,7 +807,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-27T00:00:00+08:00">
 	
-		    27 Apr 2023
+		    Apr 27, 2023
     	
     </time>
     
@@ -672,7 +862,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -701,7 +891,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-27T00:00:00+08:00">
 	
-		    27 Apr 2023
+		    Apr 27, 2023
     	
     </time>
     
@@ -734,7 +924,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -763,7 +953,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-26T00:00:00+08:00">
 	
-		    26 Apr 2023
+		    Apr 26, 2023
     	
     </time>
     
@@ -819,7 +1009,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -848,7 +1038,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-22T00:00:00+08:00">
 	
-		    22 Apr 2023
+		    Apr 22, 2023
     	
     </time>
     
@@ -898,7 +1088,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -927,7 +1117,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-11T00:00:00+08:00">
 	
-		    11 Apr 2023
+		    Apr 11, 2023
     	
     </time>
     
@@ -1004,7 +1194,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1033,7 +1223,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-11T00:00:00+08:00">
 	
-		    11 Apr 2023
+		    Apr 11, 2023
     	
     </time>
     
@@ -1064,7 +1254,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1093,7 +1283,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-11T00:00:00+08:00">
 	
-		    11 Apr 2023
+		    Apr 11, 2023
     	
     </time>
     
@@ -1342,7 +1532,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1371,7 +1561,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    04 Apr 2023
+		    Apr 04, 2023
     	
     </time>
     
@@ -1415,85 +1605,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
-                            aria-label=": 章节：7-10，同时回顾一下4-6的内容"
-                        >
-                            章节：7-10，同时回顾一下4-6的内容
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-04-04T00:00:00+08:00">
-	
-		    04 Apr 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/">项目实践</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <p>7-10，同时回顾一下4-6的内容</p>
-<p>第六节的重点是模版模式。</p>
-<p>模版模式是定义一个算法的骨架，并允许子类为一个或多个步骤提供实现。在第六节中这个算法骨架（抽象模版类）是AbstractDrawBase，这个类中有通用的比如对于抽奖结果的包装，也有抽象方法比如执行抽奖算法（这个在子类中实现）。小傅哥在这个基础上又把一些一些通用的数据服务抽象出新的一层DrawStrategySupport，这个算是一种优化，但是他本质也属于抽象模版类的一部分。</p>
-<p>而我们抽奖则需要抽奖策略（怎么个抽法），这就是第五节的东西—策略模式：</p>
-<p>对象的某个行为，在不同场景中有不同的实现方式，这样就可以将这些实现方式定义成一组策略，每个实现类对应一个策略，在不同的场景就使用不同的实现类，并且可以自由切换策略。</p>
-<p>其实看完第六节会发现第五节和第六节很像，也是抽象出了一个接口和一个抽象模版类，其他的子类继承抽象模版类实现randomDraw（）方法，不同的实现对应不同的算法，具体算法我们自己可以修改逻辑、补充内容等操作。</p>
-<p>在这时候我们发现策略模式和模版模式很像，但是是有一些区别的：</p>
-<p>模板模式：问题处理的流程已经被定义好，父类实现通用的逻辑（当然你也可以再抽象出一层），子类实现个性化逻辑。</p>
-<p>策略模式：父类定义一组抽象算法，子类自己实现自己的。每个策略完成的功能是重复的，同一时间，只能选择其中的一种，即互斥的</p>
-<p>策略模式核心在使用者的策略，按照自己的策略去替换。模板方法模式核心在子类的怎么实现。</p>
-<p>举个例子：</p>
-<p>模版模式： 父类：早上6点吃饭，晚上6点吃面。子类1：早上6点吃稀饭，晚上6点吃泡面。子类2：早上6点吃干饭，晚上6点吃挂面。</p>
-<p>策略模式：父类：早晚进食。子类1:早上5点吃面，晚上5点吃面。子类2:早上7点吃饭，晚上7点吃饭。子类3:早上不吃，晚上不吃…</p>
-<p>第八节：状态模式</p>
-<p>当一个对象的内在状态改变时，允许改变其行为，把不同状态当做一个类，解决对象在多种状态转换时，需要对外输出不同的行为的问题。</p>
-<p>同样的有抽象模版类（AbstractState，当然你要自己提炼一个接口大概也没什么问题），多个具体实现的子类。要有一个Context类，这个类持有State，负责保持并切换当前的状态，当状态变化时，修改这个State。在项目中应该是活动创建的时候初始化状态，后续收到一些通知（比如：快递公司揽件，发送目的地，菜鸟驿站收到快递）修改活动中的状态变量就可以，非常方面。</p>
-<p>第九节：ID生成策略</p>
-<p>也是策略模型，因为目前就一个id生成的要求，也无需什么流程啊，也不涉及什么状态改变，不同情境下使用不同类型的id，所以策略模式最佳。</p>
-<p>第十节：分库分表</p>
-<p>内容多，也是这几天最花时间的，bug奇多，自己不小心把application.yml文件里面的配置写错了，然后报空指针，找不到bean，我还以为自己打包有问题呢；因为自己的版本和傅哥的不太一样，总报一些依赖错误，还有什么commons-lang、commons-beanutils依赖缺失。自己的的项目工程包名是自定义的，和傅哥的cn.itedus.lottery和那个cn.bugstack不一样，中途修改的时候感觉对理解还是有益处的。</p>
-<p>之后再对第十节做一次总结，加深感悟。</p>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1510,10 +1622,10 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             <a
                 class="btn btn--default btn--small"
                 href="/archives/"
-                aria-label="NEUERE BEITRÄGE"
+                aria-label="NEWER POSTS"
             >
               <i class="fa fa-angle-left text-base icon-mr"></i>
-              <span>NEUERE BEITRÄGE</span>
+              <span>NEWER POSTS</span>
             </a>
           </li>
         
@@ -1522,14 +1634,14 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             <a
                 class="btn btn--default btn--small"
                 href="/archives/page/3/"
-                aria-label="ÄLTERE BEITRÄGE"
+                aria-label="OLDER POSTS"
             >
-              <span>ÄLTERE BEITRÄGE</span>
+              <span>OLDER POSTS</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">Seite 2 von 5</li>
+        <li class="pagination-number">page 2 of 5</li>
     </ul>
 </div>
 
@@ -1559,7 +1671,7 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

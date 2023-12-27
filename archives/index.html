@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv - 森</title>
+    <title>Archives - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    08 Nov 2023
+		    Nov 08, 2023
     	
     </time>
     
@@ -766,7 +766,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -785,664 +785,7 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/10/28/MySQL45%E8%AE%B2/"
-                            aria-label=": MYSQL45讲"
-                        >
-                            MYSQL45讲
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-10-28T00:00:00+08:00">
-	
-		    28 Oct 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <h4 id="执行一个MYSQL查询语句会发生什么？"><a href="#执行一个MYSQL查询语句会发生什么？" class="headerlink" title="执行一个MYSQL查询语句会发生什么？"></a>执行一个MYSQL查询语句会发生什么？</h4><blockquote>
-<p><strong>连接器</strong></p>
-<p>**查询缓存:**对于更新比较频繁的表，查询缓存的命中率很低的，在MYSQL8被移除。</p>
-<p><strong>分析器：</strong>包括<font color='red'><u><em><strong>词法分析和语法分析</strong></em></u></font>，语法分析就是分析符不符合语法要求，如果没有问题会构造出SQL 语法树</p>
-<p><strong>优化器</strong>：优化器就是确定一个执行效率高的<font color='red'><u><em><strong>执行方案</strong></em></u></font>，比如选择索引、连接表的顺序等等</p>
-<p><strong>执行器</strong>：</p>
-</blockquote>
-<h4 id="执行一个MYSQL更新操作有什么不同？"><a href="#执行一个MYSQL更新操作有什么不同？" class="headerlink" title="执行一个MYSQL更新操作有什么不同？"></a>执行一个MYSQL更新操作有什么不同？</h4><blockquote>
-<p>更新操作还会涉及两个表的操作，<font color='red'><u><em><strong>一个是redo log（解决崩溃恢复） 一个是binlog（备份）</strong></em></u></font></p>
-<p>这两种日志有以下三点不同。</p>
-<ol>
-<li>redo log 是 InnoDB 引擎特有的；binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。</li>
-<li>redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如“给 ID&#x3D;2 这一行的 c 字段加 1 ”。</li>
-<li>redo log 是循环写的，空间固定会用完；binlog 是可以追加写入的。“追加写”是指 binlog 文件写到一定大小后会切换到下一个，并不会覆盖以前的日志。</li>
-</ol>
-<p><img src="/../images/MYSQL%E5%A4%8D%E4%B9%A01/image-20231028134812838.png" alt="image-20231028134812838"></p>
-<p>write pos 是当前记录的位置,checkpoint 是当前要擦除的位置</p>
-<p>我们举一个例子来演示一下（<font color='red'><u><em><strong>两阶段提交</strong></em></u></font>）：</p>
-<ol>
-<li>执行器先找引擎取 ID&#x3D;2 这一行。ID 是主键，引擎直接用树搜索找到这一行。如果 ID&#x3D;2 这一行所在的数据页本来就在内存中，就直接返回给执行器；否则，需要先从磁盘读入内存，然后再返回。</li>
-<li>执行器拿到引擎给的行数据，把这个值加上 1，比如原来是 N，现在就是 N+1，得到新的一行数据，再调用引擎接口写入这行新数据。</li>
-<li>引擎将这行新数据更新到内存中，同时将这个更新操作记录到 redo log 里面，<font color='red'><u><em><strong>此时 redo log 处于 prepare 状态</strong></em></u></font>。然后告知执行器执行完成了，随时可以提交事务。</li>
-<li>执行器生成这个操作的 binlog，并把 binlog 写入磁盘。</li>
-<li>执行器调用引擎的<font color='red'><u><em><strong>提交事务接口，引擎把刚刚写入的 redo log 改成提交（commit）状态</strong></em></u></font>，更新完成。</li>
-</ol>
-</blockquote>
-<p>这两个日志的配合是使用两阶段提交</p>
-<p><img src="/Users/csen/Documents/Amusement/Sen-Blog/source/images/MYSQL1/image-20230805142953314.png"></p>
-<blockquote>
-<p>可以发现将redo log的写入分成了两个阶段，一个是prepare 一个commit</p>
-<p>在两阶段提交的情况下，是怎么实现崩溃恢复的呢？<br>首先比较重要的一点是，在写入redo log时，会顺便记录XID，即当前事务id。在写入binlog时，也会写入XID。</p>
-<p>如果在写入redo log之前崩溃，那么此时redo log与binlog中都没有，是一致的情况，崩溃也无所谓。</p>
-<p>如果在写入redo log prepare阶段后立马崩溃，之后会在崩恢复时，由于redo log没有被标记为commit。于是拿着redo log中的XID去binlog中查找，此时肯定是找不到的，那么执行回滚操作。</p>
-<p>如果在写入binlog后立马崩溃，在恢复时，由redo log中的XID可以找到对应的binlog，这个时候直接提交即可。</p>
-<p>总的来说，在崩溃恢复后，只要redo log不是处于commit阶段，那么就拿着redo log中的XID去binlog中寻找，找得到就提交，否则就回滚。</p>
-<p>在这样的机制下，两阶段提交能在崩溃恢复时，能够对提交中断的事务进行补偿，来确保redo log与binlog的数据一致性。</p>
-</blockquote>
-<p><strong>索引</strong></p>
-<p>所以，从性能和存储空间方面考量，<font color='red'><u><em><strong>自增主键</strong></em></u></font>往往是更合理的选择。<strong>主键长度越小，普通索引的叶子节点就越小，普通索引占用的空间也就越小。</strong></p>
-<p>有没有什么场景适合用业务字段直接做主键的呢？还是有的。比如，有些业务的场景需求是这样的：</p>
-<ol>
-<li>只有一个索引；</li>
-<li>该索引必须是唯一索引。</li>
-</ol>
-<p>索引建立的准则：</p>
-<p>1、尽量少维护索引，</p>
-<p>2、空间</p>
-<h2 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h2><h3 id="全局锁"><a href="#全局锁" class="headerlink" title="全局锁"></a>全局锁</h3><p>典型的使用场景就是做全库的逻辑备份，对所有的表进行 行锁定，从而获取一致性视图，保证数据的完整性。加了全局锁就是只能读</p>
-<ul>
-<li><p>一旦加了全局锁之后，其他的DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句，也就是处于只读状态，而数据备份就是查询操作。 那么数据在进行逻辑备份的过程中，数据库中的数据就是不会发生变化的，这样就保证了数据的一致性 和完整性 .</p>
-</li>
-<li><p>语法</p>
-<p>1、加全局锁</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">flush tables <span class="keyword">with</span> read lock;</span><br></pre></td></tr></table></figure>
-
-<p>2、数据备份</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>pxxx db_name <span class="operator">-</span><span class="operator">&gt;</span> xxx.sql;</span><br></pre></td></tr></table></figure>
-
-<p>3、释放锁</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">unlock tables;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h4 id="数据库中加全局锁，是一个比较重的操作，存在的问题有："><a href="#数据库中加全局锁，是一个比较重的操作，存在的问题有：" class="headerlink" title="数据库中加全局锁，是一个比较重的操作，存在的问题有："></a>数据库中加全局锁，是一个比较重的操作，存在的问题有：</h4><ul>
-<li>如果在主库上备份，那么在备份期间都不能执行更新，业务基本上就得停摆。</li>
-<li>如果在从库上备份，那么在备份期间从库不能执行主库同步过来的二进制日志（binlog），会导致主从延迟。</li>
-</ul>
-<p>在InnoDB引擎中，我们可以在备份时加上参数 –single-transaction 参数来完成不加锁的一致 性数据备份。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysqldump --single-transaction -uroot -pxxx db_name -&gt; xxx.sql;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="表级锁"><a href="#表级锁" class="headerlink" title="表级锁"></a>表级锁</h2><p>表级锁，主要分为3类：</p>
-<ul>
-<li>表锁</li>
-<li>元数据锁（meta data lock，MDL）</li>
-<li>意向锁</li>
-</ul>
-<p>表锁</p>
-<p>对于表锁，又可以分为2类：</p>
-<ul>
-<li>表共享读锁（read lock）</li>
-<li>表独占写锁（write lock）</li>
-</ul>
-<p>结论: 读锁不会阻塞其他客户端的读，但是会阻塞写。写锁既会阻塞其他客户端的读，又会阻塞 其他客户端的写。</p>
-<h3 id="元数据锁"><a href="#元数据锁" class="headerlink" title="元数据锁"></a>元数据锁</h3><p>再来说说<strong>元数据锁</strong>（MDL）。</p>
-<p>我们不需要显示的使用 MDL，因为当我们对数据库表进行操作时，会自动给这个表加上 MDL：</p>
-<ul>
-<li>对一张表进行 CRUD 操作时，加的是 <strong>MDL 读锁</strong>；</li>
-<li>对一张表做结构变更操作的时候，加的是 <strong>MDL 写锁</strong>；</li>
-</ul>
-<p>MDL 是为了保证当用户对表执行 CRUD 操作时，防止其他线程对这个表结构做了变更。</p>
-<p>当有线程在执行 select 语句（ 加 MDL 读锁）的期间，如果有其他线程要更改该表的结构（ 申请 MDL 写锁），那么将会被阻塞，直到执行完 select 语句（ 释放 MDL 读锁）。</p>
-<p>反之，当有线程对表结构进行变更（ 加 MDL 写锁）的期间，如果有其他线程执行了 CRUD 操作（ 申请 MDL 读锁），那么就会被阻塞，直到表结构变更完成（ 释放 MDL 写锁）。</p>
-<blockquote>
-<p>MDL 不需要显示调用，那它是在什么时候释放的?</p>
-</blockquote>
-<p>MDL 是在事务提交后才会释放，这意味着<strong>事务执行期间，MDL 是一直持有的</strong>。</p>
-<p>MDL 加锁过程是系统自动控制，无需显式使用，在访问一张表的时候会自动加上。MDL 锁主要作用是维 护表元数据的数据一致性，在表上有活动事务的时候，不可以对元数据进行写入操作。为了避免DML与 DDL冲突，保证读写的正确性。</p>
-<h3 id="意向锁"><a href="#意向锁" class="headerlink" title="意向锁"></a>意向锁</h3><p>我觉得意向锁主要还是解决行锁和表锁之间的冲突问题。</p>
-<ul>
-<li>在使用 InnoDB 引擎的表里对某些记录加上「共享锁」之前，需要先在表级别加上一个「意向共享锁」；</li>
-<li>在使用 InnoDB 引擎的表里对某些纪录加上「独占锁」之前，需要先在表级别加上一个「意向独占锁」；</li>
-</ul>
-<p>也就是，当执行插入、更新、删除操作，需要先对表加上「意向独占锁」，然后对该记录加行级独占锁。</p>
-<p><img src="/../images/MYSQL%E5%A4%8D%E4%B9%A01/20e0f35589584352bd15e817668a0886.png" alt="img"></p>
-<p><img src="/../images/MYSQL%E5%A4%8D%E4%B9%A01/6e6b275c2d6d4dfcbbb338be4f61bee9.png" alt="img"></p>
-<p>所以，<strong>意向锁的目的是为了快速判断表里是否有记录被加锁</strong>。</p>
-<h2 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h2><p>InnoDB实现了以下两种类型的行锁：</p>
-<ul>
-<li>共享锁（S）：允许一个事务去读一行，阻止其他事务获得相同数据集的排它锁。</li>
-<li>排他锁（X）：允许获取排他锁的事务更新数据，阻止其他事务获得相同数据集的共享锁和排他 锁</li>
-</ul>
-<p><img src="/Users/csen/Documents/Amusement/Sen-Blog/source/images/MYSQL1/image-20230805221422216.png" alt="image-20230805221422216"></p>
-<h1 id="隔离性与隔离级别"><a href="#隔离性与隔离级别" class="headerlink" title="隔离性与隔离级别"></a>隔离性与隔离级别</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_35794878/article/details/125741468">https://blog.csdn.net/weixin_35794878/article/details/125741468</a></p>
-<p>事务就是要保证一组数据库操作，要么全部成功，要么全部失败。在 MySQL 中，事务支持是在引擎层实现的。你现在知道，MySQL 是一个支持多引擎的系统，但并不是所有的引擎都支持事务。比如 MySQL 原生的 MyISAM 引擎就不支持事务，这也是 MyISAM 被 InnoDB 取代的重要原因之一</p>
-<p>在谈隔离级别之前，你首先要知道，你隔离得越严实，效率就会越低。因此很多时候，我们都要在二者之间寻找一个平衡点。SQL 标准的事务隔离级别包括：读未提交（read uncommitted）、读提交（read committed）、可重复读（repeatable read）和串行化（serializable ）。下面我逐一为你解释：</p>
-<ul>
-<li>读未提交是指，一个事务还没提交时，它做的变更就能被别的事务看到。</li>
-<li>读提交是指，一个事务提交之后，它做的变更才会被其他事务看到。</li>
-<li>可重复读是指，一个事务执行过程中看到的数据，总是跟这个事务在启动时看到的数据是一致的。当然在可重复读隔离级别下，未提交变更对其他事务也是不可见的。</li>
-<li>串行化，顾名思义是对于同一行记录，“写”会加“写锁”，“读”会加“读锁”。当出现读写锁冲突的时候，后访问的事务必须等前一个事务执行完成，才能继续执行。</li>
-</ul>
-<h1 id="事务隔离的实现"><a href="#事务隔离的实现" class="headerlink" title="事务隔离的实现"></a>事务隔离的实现</h1><h2 id="实现隔离级别的方式："><a href="#实现隔离级别的方式：" class="headerlink" title="实现隔离级别的方式："></a>实现隔离级别的方式：</h2><p>事务有四个隔离级别</p>
-<p><strong>一级封锁协议 (对应 read uncommited)</strong> 　<br>一级封锁协议是：事务在对需要修改的数据上面（就是在发生修改的瞬间）对其加共享锁（其他事务不能更改，但是可以读取-导致“脏读”），直到事务结束才释放。事务结束包括正常结束（COMMIT）和非正常结束（ROLLBACK）。</p>
-<p><strong>二级封锁协议 （对应read commited)</strong>　<br>二级封锁协议是：1）事务在对需要更新的数据上（就是发生更新的瞬间）加排他锁（直到事务结束），防止其他事务读取未提交的数据，这样，也就避免了“脏读”的情况。2）事务对当前被读取的数据上面加共享锁（当读到时加上共享锁），一旦读完该行，立即释放该该行的共享锁-从数据库的底层实现更深入的来理解，既是，数据库会对游标当前的数据上加共享锁，但是当游标离开当前行的时候，立即释放该行的共享锁。</p>
-<p><strong>三级封锁协议 （对应reapetable read ）</strong>（默认）<br>三级封锁协议是：二级封锁协议加上事务在读取数据的瞬间必须先对其加共享锁，但是直到事务结束才释放，这样保证了可重复读（既是其他的事务职能读取该数据，但是不能更新该数据）。</p>
-<p><strong>最强封锁协议（对应Serialization)</strong><br>四级封锁协议是对三级封锁协议的增强，其实现机制也最为简单，直接对事务中所读取或者更改的数据所在的表加表锁，也就是说，其他事务不能读写该表中的任何数据。这样所有的脏读，不可重复读，幻读，都得以避免</p>
-<h3 id="MVCC。"><a href="#MVCC。" class="headerlink" title="MVCC。"></a>MVCC。</h3><p><strong>MVCC</strong> 在 <strong>MySQL InnoDB</strong> 中的实现主要是为了提高数据库并发性能，用更好的方式去处理读-写冲突，做到即使有读写冲突时，也能做到不加锁，非阻塞并发读。可认为MVCC是行级锁的一个变种，但是它在很多情况下避免了加锁操作，因此额外开销更低。</p>
-<p>什么是当前读和快照读？<br>在学习 MVCC 多版本并发控制之前，我们必须先了解一下，什么是 MySQL InnoDB 下的当前读和快照读?</p>
-<p>当前读<br>像 select lock in share mode (共享锁), select for update; update; insert; delete (排他锁)这些操作都是一种当前读，为什么叫当前读？就是它读取的是记录的最新版本，读取时还要保证其他并发事务不能修改当前记录，会对读取的记录进行加锁</p>
-<p>快照读<br>像不加锁的 select 操作就是快照读，即不加锁的非阻塞读；快照读的前提是隔离级别不是串行级别，串行级别下的快照读会退化成当前读；之所以出现快照读的情况，是基于提高并发性能的考虑，快照读的实现是基于多版本并发控制，即 MVCC ,可以认为 MVCC 是行锁的一个变种，但它在很多情况下，避免了加锁操作，降低了开销；既然是基于多版本，即快照读可能读到的并不一定是数据的最新版本，而有可能是之前的历史版本</p>
-<p>说白了 MVCC 就是为了实现读-写冲突不加锁，而这个读指的就是快照读, 而非当前读，当前读实际上是一种加锁的操作，是悲观锁的实现<br>当前读，快照读和MVCC的关系</p>
-<p>MVCC 多版本并发控制是 「维持一个数据的多个版本，使得读写操作没有冲突」 的概念，只是一个抽象概念，并非实现</p>
-<p>因为 MVCC 只是一个抽象概念，要实现这么一个概念，MySQL 就需要提供具体的功能去实现它，「快照读就是 MySQL 实现 MVCC 理想模型的其中一个非阻塞读功能」。而相对而言，当前读就是悲观锁的具体功能实现</p>
-<p>要说的再细致一些，快照读本身也是一个抽象概念，再深入研究。MVCC 模型在 MySQL 中的具体实现则是由 3 个隐式字段，undo 日志 ， Read View 等去完成的，具体可以看下面的 MVCC 实现原理</p>
-<p>MVCC 能解决什么问题，好处是？<br>数据库并发场景有三种，分别为：</p>
-<p>读-读：不存在任何问题，也不需要并发控制<br>读-写：有线程安全问题，可能会造成事务隔离性问题，可能遇到脏读，幻读，不可重复读<br>写-写：有线程安全问题，可能会存在更新丢失问题，比如第一类更新丢失，第二类更新丢失<br>MVCC 带来的好处是？<br>多版本并发控制（MVCC）是一种用来解决读-写冲突的无锁并发控制，也就是为事务分配单向增长的时间戳，为每个修改保存一个版本，版本与事务时间戳关联，读操作只读该事务开始前的数据库的快照。 所以 MVCC 可以为数据库解决以下问题</p>
-<p>在并发读写数据库时，可以做到在读操作时不用阻塞写操作，写操作也不用阻塞读操作，提高了数据库并发读写的性能<br>同时还可以解决脏读，幻读，不可重复读等事务隔离问题，但不能解决更新丢失问题<br>小结一下咯<br>简而言之，MVCC 就是因为大佬们，不满意只让数据库采用悲观锁这样性能不佳的形式去解决读-写冲突问题，而提出的解决方案，所以在数据库中，因为有了 MVCC，所以我们可以形成两个组合：</p>
-<ul>
-<li><code>MVCC + 悲观锁</code><br>MVCC解决读写冲突，悲观锁解决写写冲突</li>
-<li><code>MVCC + 乐观锁</code><br>MVCC 解决读写冲突，乐观锁解决写写冲突</li>
-</ul>
-<p>这种组合的方式就可以最大程度的提高数据库并发性能，并解决读写冲突，和写写冲突导致的问题</p>
-<p>MVCC只在repeatable read和read committed两个隔离级别下工作。其他两个隔离级别都和MVCC不兼容，因为read uncommitted总是读取最新的数据行，而不是符合当前事务版本的数据行。而serializable则会对所有读取的行都加锁。</p>
-<p><strong>READ COMMITTED —— 每次读取数据前都生成一个ReadView</strong></p>
-<p><strong>REPEATABLE READ —— 在第一次读取数据时生成一个ReadView</strong></p>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/10/28/MySQL45%E8%AE%B2/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Kommentieren und teilen
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
-                            aria-label=": 设计模式"
-                        >
-                            设计模式
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-10-10T00:00:00+08:00">
-	
-		    10 Oct 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <h1 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h1><h2 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h2><p><strong>是一种 if else 的优化方法</strong>，一个策略接口由不同的实现策略，传进来不同的参数返回不同的策略。</p>
-<p>但是原始的策略模式，他如果遇到参数是可变的，那他依旧会尽力if else的阶段，那就意义不大。所以我们的</p>
-<p>优化方法就是枚举类+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的，</p>
-<p>抽奖的时候根据抽奖算法的id是1还是2，直接去map里面get就可以；生成订单id的时候用雪花还是美团哪一种方法，直接去map里面找</p>
-<h2 id="模版模式"><a href="#模版模式" class="headerlink" title="模版模式"></a>模版模式</h2><p>模版模式的主要思路就是把自己要实现的功能抽象成一组<strong>步骤</strong>，也就是在抽象类中定义算法的骨架，具体实现留给子类。但是这里有一点非常重要，就是模版类的流程是定义好的，或者说定死了，子类就是在每一个步骤中实现自己的个性化。</p>
-<h2 id="工厂模式"><a href="#工厂模式" class="headerlink" title="工厂模式"></a>工厂模式</h2><blockquote>
-<p>工厂模式有三种，简单工厂、工厂模式、抽象工厂模式。</p>
-<p><font color='red'><u>**简单工厂（工厂不是抽象的）只适合单一产品的生产，他的思路很简单，就是根据不同信息new出来不同的对象。比如车 **</u></font></p>
-<p><font color='red'><u><em><strong>工厂模式是把原来的工厂作为抽象模型创建不同的子类工厂生产不同的商品。</strong></em></u></font></p>
-<p><font color='red'><u><em>*<em><strong>抽象工厂模式</strong>就考虑了产品族的问题，一个工厂可以生产多等级的产品，说得简单点就是在抽象工厂里面增加生产其他产品的接口，子类去实现它。</em>*</em></u></font></p>
-</blockquote>
-<h2 id="组合模式"><a href="#组合模式" class="headerlink" title="组合模式"></a>组合模式</h2><p>组合模式用树形结构描述整体与部分的关系中 。最顶层的节点称为根节点 ，根节点下面可以包含树枝节点和叶子节点 ，树枝节点下面又可以包含树枝节点和叶子节点。宗旨是通过将单个对象（叶子节点）和组合对象（树枝节点）用相同的接口进行表示 ，使得客户对单个对象和组合对象的使用具有一致性</p>
-<h2 id="代理模式"><a href="#代理模式" class="headerlink" title="代理模式"></a>代理模式</h2><blockquote>
-<p>代理分成<font color='blue'><u><em><strong>静态代理和动态代理</strong></em></u></font>，静态代理需要自己实现对每一个方法对代理，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。</p>
-<p><strong>动态代理</strong>是代理类在程序运行时创建的代理方式被成为动态代理。</p>
-<p>动态代理有两种方式一种是jdk方法，一种是cglib方法</p>
-<p>jdk代理依赖于一个Proxy类和一个InvocationHandler接口<strong>，</strong>通过这个类和这个接口可以生成JDK动态代理类和动态代理对象。</p>
-<p><font color='red'><u><em><strong>InvocationHandler接口，他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组.被代理方法和参数组是可以变化的，所以在这里我们说实现了动态的意义。</strong></em></u></font> 代理方法和参数组其实我们可以依赖于最基础反射得到</p>
-<p><font color='red'><u><em><strong>那我们怎么去调用这个方法呢？先要靠Proxy类和他的方法newproxyInstance，getProxyClass0(loader, intfs)这个类的产生就是整个动态代理的关键，产生的类反编译之后知道，调用被代理对象的方法其实会直接调用我们InvocationHandler接口的invoke方法，在invoke方法中调用了被代理对象的相应方法。</strong></em></u></font></p>
-<p><strong>下面来讲CGLIB代理</strong></p>
-<p><strong>在 CGLIB 动态代理机制中 <code>MethodInterceptor</code> 接口和 <code>Enhancer</code> 类是核心。你可以通过 <code>Enhancer</code>类来动态获取被代理类，</strong></p>
-<p>  <font color='blue'><u><em><strong>CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E6%8B%A6%E6%88%AA%E5%99%A8&spm=1001.2101.3001.7020">拦截器</a>拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 <code>MethodInterceptor</code> 中的 <code>intercept</code> 方法。</strong></em></u></font></p>
-<p>为什么JDK动态代理只能代理接口实现类，原因是JDK动态代理是基于接口实现的。</p>
-<p>有两个原因，一个是继承Proxy。第二个是当你使用Proxy类创建代理对象时，你需要指定一个接口列表来表示理对象的类型。代理对象的类型是由接口列表决定的，因此只有实现了接口的类才能被代理。如果你想代理一个类而不是一个接口，你需要使用其他的代理技术，比如CGLIB。</p>
-<p><strong>二者区别</strong><br>总结一下两者的区别吧：</p>
-<p>JDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承 java.lang.reflect.Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰<br>JDK 和 CGLIB 动态代理都是在运行期生成字节码。而 JDK 是直接写 Class 字节码；而 CGLIB 使用 ASM 框架写 Class 字节码（不鼓励直接使用ASM，因为它要求你必须对 JVM 内部结构包括 class 文件的格式和指令集都很熟悉）<br>JDK 通过反射调用方法，CGLIB 通过 FastClass 机制直接调用方法。所以，CGLIB 执行的效率较高<br>JDK 核心是实现 InvocationHandler接口，使用 invoke()方法进行面向切面的处理，调用相应的通知；CGLIB 动态代理是利用 asm 开源包，对代理对象类的 class 文件加载进来，通过修改其字节码生成子类来处理。核心是实现 MethodInterceptor 接口，使用 intercept() 方法进行面向切面的处理，调用相应的通知。</p>
-</blockquote>
-<h2 id="工厂模式-1"><a href="#工厂模式-1" class="headerlink" title="工厂模式"></a>工厂模式</h2><ul>
-<li><h2 id="讲一讲简单工厂模式以及在项目中的应用？"><a href="#讲一讲简单工厂模式以及在项目中的应用？" class="headerlink" title="讲一讲简单工厂模式以及在项目中的应用？"></a><strong>讲一讲简单工厂模式以及在项目中的应用？</strong></h2></li>
-</ul>
-<p>简单工厂模式包含三块，工厂：负责实现创建实例的内部逻辑；抽象产品：负责描述所有实例共有的接口；具体产品：被创建的对象，简单工厂只适合单一产品的生产。其实思路很简单，就是把根据不同信息new出不同对象的这一个过程抽象出来了，不然每次都要走一遍这种代码就比较繁琐。</p>
-<p>我的项目里面就是对于发放奖品的时候选用哪一个奖品用到了简单工厂。</p>
-<h2 id="组合模式-1"><a href="#组合模式-1" class="headerlink" title="组合模式"></a>组合模式</h2><ul>
-<li><h2 id="讲一讲组合模式以及在项目中的应用"><a href="#讲一讲组合模式以及在项目中的应用" class="headerlink" title="讲一讲组合模式以及在项目中的应用"></a><strong>讲一讲组合模式以及在项目中的应用</strong></h2></li>
-</ul>
-<p>这里我们是用组合模式搭建规则引擎树，规则树有两种对象。一种是树节点，一种是树枝，树节点包括连接的树枝集合，树枝里面包含了连接的前后两个树节点和判断依据，这样子就能构建出一个有判断规则的规则树了。具体的流程就是假设我们现在在根节点，然后看了下根节点的规则是性别，那我就拿到年龄规则过滤器，遍历根节点的树枝集合，假如这里有两个树枝，一个树枝的规则是&#x3D;男，就走这个树枝；另一个树枝的规则是&#x3D;女，就走这个树枝。这时候我们拿出用户的信息一对比，发现应该走男生那个树枝。这样就进入下一个节点，然后这个节点的判断规则是年龄，可能大于某个枝走某个树枝，小于就走另外的树枝。直到我们找到叶子结点就结束。</p>
-<h2 id="装饰器模式"><a href="#装饰器模式" class="headerlink" title="装饰器模式"></a>装饰器模式</h2><blockquote>
-<p><font color='red'><u><em><strong>装饰器模式其实就是在原本类的基础上包装一个装饰器类，这个类在执行源类的行为的前后再加入一些新的逻辑。</strong></em></u></font></p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">抽象组件</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Component</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line">具体组件（需要被装饰的组件）</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConcreteComponent</span> <span class="keyword">extends</span> <span class="title class_">Component</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;具体组件处理业务逻辑&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">抽象装饰器（继承、实现抽象组件，并持有抽象组件）</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Decorator</span> <span class="keyword">extends</span> <span class="title class_">Component</span> &#123;</span><br><span class="line"></span><br><span class="line">     * 抽象组件</span><br><span class="line">    <span class="keyword">public</span> Component component;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Decorator</span><span class="params">(Component component)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.component = component;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        component.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">具体装饰器A继承抽象装饰器</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConcreteDecorator</span> <span class="keyword">extends</span> <span class="title class_">Decorator</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ConcreteDecorator</span><span class="params">(Component component)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(component);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">before</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;ConcreteDecorator前置操作....&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">after</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;ConcreteDecorator后置操作....&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">组件本身执行的动作</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        before();</span><br><span class="line">        component.execute();</span><br><span class="line">        after();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">decorator 通用写法测试</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">//创建需要被装饰的组件</span></span><br><span class="line">        <span class="type">Component</span> <span class="variable">component</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConcreteComponent</span>();</span><br><span class="line">        <span class="comment">//给对象透明的增加功能并调用</span></span><br><span class="line">        <span class="type">Decorator</span> <span class="variable">decorator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConcreteDecorator</span>(component);</span><br><span class="line">        decorator.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="适配器模式"><a href="#适配器模式" class="headerlink" title="适配器模式"></a>适配器模式</h2><ul>
-<li>目标角色（Target）：该角色定义把其他类转换为何种接口。</li>
-<li>源角色（Adaptee）：被适配的对象</li>
-<li>适配器角色（Adapter）：该对象将源对象转换成目标接口</li>
-</ul>
-<p>总结一下就是：<font color='green'><u><em><strong>我们在适配器里面实现目标角色的接口，然后在这个接口里面去调用源角色的方法</strong></em></u></font>。</p>
-<p>如果这个源角色类需继承，那我们就叫类适配器。如果直接作为适配器的一个变量，那么就叫做对象适配器。</p>
-<p>分为两类：类适配器和 对象适配器</p>
-<h2 id="桥接模式"><a href="#桥接模式" class="headerlink" title="桥接模式"></a>桥接模式</h2><p><strong>桥接模式通过将继承改为组合的方式来解决这个问题</strong>。具体来说，就是抽取其中一个维度并使之成为独立的类层次，这样就可以在初始类中引用这个新层次的对象，从而使得一个类不必拥有所有的状态和行为。	</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BridgeD</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Color</span> <span class="variable">color</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">yellow</span>();</span><br><span class="line">        <span class="type">bag1</span> <span class="variable">bag1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">bag1</span>(color);</span><br><span class="line">        bag1.get();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Color</span>&#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">get</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">yellow</span> <span class="keyword">implements</span> <span class="title class_">Color</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;yellow&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">bag</span> &#123;</span><br><span class="line">    Color color;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">bag</span><span class="params">(Color color)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.color = color;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">        color.get();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">bag1</span> <span class="keyword">extends</span> <span class="title class_">bag</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">bag1</span><span class="params">(Color color)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(color);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;bag1&quot;</span>);</span><br><span class="line">        <span class="built_in">super</span>.get();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="外观模式"><a href="#外观模式" class="headerlink" title="外观模式"></a>外观模式</h2><p>外观模式可以理解为转换一群接口，客户只要调用这一个接口而不用调用多个接口才能达到目的，也不需关心这个子系统的内部细节。就是解决多个复杂接口带来的使用困难，起到简化用户操作的作用。</p>
-<h2 id="享元模式"><a href="#享元模式" class="headerlink" title="享元模式"></a>享元模式</h2><blockquote>
-<p><strong>其本质就是缓存共享对象，降低内存消耗</strong>。</p>
-</blockquote>
-<p>**享元模式其实就是工厂模式的一个改进机制，享元模式同样要求创建一个或一组对象，并且就是通过**工厂方法**生成对象的，不同的地方在于享元模式增加了*<em>缓存*<em>的功能</em></em></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 1.抽象享元类（FlyWeight）：单车</span></span><br><span class="line"><span class="comment"> * 单车有很多共同的信息比如：价格、颜色</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Bike</span> &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> String color;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> <span class="type">int</span> price;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Bike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">this</span>.color=color;</span><br><span class="line">        <span class="built_in">this</span>.price=price;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">//展示单车信息</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span>;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 2.具体享元类（ConcreteFlyWeight）：摩拜单车</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Mobike</span> <span class="keyword">extends</span> <span class="title class_">Bike</span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Mobike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">super</span>(color,price);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;生产成功：摩拜单车——&quot;</span>+color+<span class="string">&quot;,&quot;</span>+<span class="string">&quot;起步价&quot;</span>+price+<span class="string">&quot;元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 2.具体享元类（ConcreteFlyWeight）：美团单车</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MTBike</span> <span class="keyword">extends</span> <span class="title class_">Bike</span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MTBike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">super</span>(color,price);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;生产成功：小黄车——&quot;</span>+color+<span class="string">&quot;,&quot;</span>+<span class="string">&quot;起步价&quot;</span>+price+<span class="string">&quot;元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 3.享元工厂类（FlyWeightFactory）：单车工厂</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BikeFactory</span> &#123;</span><br><span class="line">    <span class="comment">//map缓存</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Map&lt;String,Bike&gt; bikeMap=<span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Bike <span class="title function_">getBike</span><span class="params">(String color,String type)</span>&#123;</span><br><span class="line">        String key=color+<span class="string">&quot;_&quot;</span>+type;</span><br><span class="line">        <span class="keyword">if</span>(bikeMap.containsKey(key))&#123;</span><br><span class="line">            <span class="comment">//如果已经有该颜色和类型的单车，直接返回</span></span><br><span class="line">            <span class="keyword">return</span> bikeMap.get(key);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            Bike bike=<span class="literal">null</span>;</span><br><span class="line">            <span class="comment">//没有，创建并放入缓存</span></span><br><span class="line">            <span class="keyword">if</span>(<span class="string">&quot;mobike&quot;</span>.equals(type))&#123;</span><br><span class="line">                bike=<span class="keyword">new</span> <span class="title class_">Mobike</span>(color,<span class="number">1</span>);</span><br><span class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">&quot;MT&quot;</span>.equals(type))&#123;</span><br><span class="line">                bike=<span class="keyword">new</span> <span class="title class_">MTBike</span>(color,<span class="number">2</span>);</span><br><span class="line">            &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;抛异常！没有该类型的单车&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//放入缓存</span></span><br><span class="line">            bikeMap.put(key,bike);</span><br><span class="line">            <span class="keyword">return</span> bike;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Kommentieren und teilen
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2023/10/09/Redis/"
-                            aria-label=": Redis复习"
-                        >
-                            Redis复习
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-10-09T00:00:00+08:00">
-	
-		    09 Oct 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <h1 id="1、Redis数据结构"><a href="#1、Redis数据结构" class="headerlink" title="1、Redis数据结构"></a>1、Redis数据结构</h1><p>我在项目中用到的数据结构有String、Hash。</p>
-<p>String我主要用于三类。 1）库存和订单数量，2）还有一些策略对象、活动对象，这种读多写少，没有频繁变化的对象。3）分布式锁。</p>
-<p>Hashmap 我主要用于活动剩余的奖品数量和还有用户剩余次数。本身奖品是一个对象，可以用String+JSON的格式，但是奖品数量这个属性频繁变化，我就把他抽出来放到HashMap里面了。</p>
-<blockquote>
-<p>Redis的对象都是RedisObject，RedisObject里面有type encoding ptr。如果是String类型，且这个字符串保存的是整数型，那就会把encoding设置成int，然后ptr用来存储整数。如果是一个字符串且小于32字节，就是embstr的SDS，如果是大于32字节就是RAW格式的SDS。embstr分配一次连续的内存空间，RAW格式要分配两次分别保存RedisObeject和SDS。(SDS包括字符串长度、分配的空间、sds类型、字节数组。)</p>
-</blockquote>
-<blockquote>
-<p>List是<strong>quicklist</strong>（其实就是双向链表 + 压缩列表），链表的每个节点就是一个压缩列表，压缩列表是一个连续的内存块组成的顺序性数据结。链表的形式减少用于解决连锁更新的问题。</p>
-</blockquote>
-<blockquote>
-<p>HashMap是压缩列表和哈希表。哈希冲突用链式哈希解决。</p>
-</blockquote>
-<blockquote>
-<p>SET 是整数集合（元素个数少于512）、哈希表。整数集合就是一块连续的数组</p>
-</blockquote>
-<blockquote>
-<p>ZSET是<strong>压缩列表或跳表</strong>。<strong>跳表是在链表基础，对部分节点分层，如果next的值大于我们要找的就从下一层找结果</strong>。<strong>跳表的相邻两层的节点数量最理想的比例是 2:1</strong>。</p>
-<p><strong>跳表在创建节点时候，会生成范围为[0-1]的一个随机数，如果这个随机数小于 0.25（相当于概率 25%），那么层数就增加 1 层，然后继续生成下一个随机数，直到随机数的结果大于 0.25 结束，最终确定该节点的层数</strong>。</p>
-</blockquote>
-<h1 id="2、Redis线程模型"><a href="#2、Redis线程模型" class="headerlink" title="2、Redis线程模型"></a>2、Redis线程模型</h1><h2 id="2、线程模型是怎么样的？是不是单线程"><a href="#2、线程模型是怎么样的？是不是单线程" class="headerlink" title="2、线程模型是怎么样的？是不是单线程"></a>2、线程模型是怎么样的？是不是单线程</h2><p><font color='red'><u><em><strong>1）以前严格意义上来说也不是单线程，还有后台线程，比如aof刷盘</strong></em></u></font><br><font color='red'><u><em><strong>2）6.0.x后，由于网络的瓶颈出现，Redis采用了多线程来解决这个问题，具体的步骤是</strong></em></u></font></p>
-<p>流程简述如下：</p>
-<ul>
-<li>主线程获取 socket 放入等待列表</li>
-<li>将 socket 分配给各个 IO 线程（并不会等列表满）</li>
-<li>主线程<code>阻塞等待 IO 线程(多线程)</code>读取 socket 完毕</li>
-<li>主线程执行命令 - <code>单线程</code>（如果命令没有接收完毕，会等 IO 下次继续）</li>
-<li>主线程<code>阻塞等待 IO 线程(多线程)</code>将数据回写 socket 完毕（一次没写完，会等下次再写）</li>
-</ul>
-<p>所以多线程就是把最耗时的socket读、请求解析、socket写，这个外包给io线程组，实现socet读写并行化，主线程只去执行命令。所以redis为什么快，一个多线程、多路复用、内存、执行命令的单线程</p>
-<p><img src="/../images/Redis/image-20231031151613941.png" alt="image-20231031151613941"></p>
-<p>其实redis的单线程是先初始化后一直走一个循环处理。初始化的时候就做了三件事情：</p>
-<p><img src="/../images/Redis/image-20231023173508951.png" alt="image-20231023173508951"></p>
-<ul>
-<li>创建一个 epoll 对象，就是我们的io多路复用的实现</li>
-<li>对配置的监听端口进行 listen</li>
-<li>把 listen socket 让 epoll 给管理起来，注册accept处理函数。</li>
-</ul>
-<p>做完这些之前之后就要真正处理用户请求，他会调用 epoll_wait 函数等待事件的到来，交给事件分发器。</p>
-<ul>
-<li>若发现 listen socket 上有新连接到达，就调用我们刚刚注册的那个accept函数，并追加这个client socket到epoll中进行管理</li>
-<li>若发现其它 socket 上的读写请求，那就调用相应的读事件处理，和写事件处理。</li>
-</ul>
-<p>当然这里6.0以后引入了多线程，那接收数据、解析数据、写回数据都交给了io线程组，和主线程无关了。</p>
-<h2 id="3、为什么这么快？高性能"><a href="#3、为什么这么快？高性能" class="headerlink" title="3、为什么这么快？高性能"></a>3、为什么这么快？高性能</h2><p>基于内存</p>
-<p>单线程执行命令</p>
-<p>io多路复用</p>
-<p>多线程读写socket</p>
-<h2 id="6、讲一下io多路复用"><a href="#6、讲一下io多路复用" class="headerlink" title="6、讲一下io多路复用"></a>6、讲一下io多路复用</h2><p>首先我们知道用户缓冲区去内核缓冲区读数据的时候，有两个耗时的过程，一个是等待从网卡来的数据，一个是内核拷贝到用户缓冲区。</p>
-<p>阻塞io和非阻塞io都是先调用revfrom，阻塞io两个都要等、非阻塞需要等待拷贝这个过程。但是io多路复用，先监听一个socket集合，然后某个socket数据就绪了，发了个可读的通知，这时候才调用revfrom去读。</p>
-<p>io多路复用有多种实现，select、poll、epoll。select和poll收到可读通知，需要自己去遍历，是哪个发了可读通知。epoll是直接告诉你是哪个socket就绪。	</p>
-<h2 id="4、采用单线程原因"><a href="#4、采用单线程原因" class="headerlink" title="4、采用单线程原因"></a>4、采用单线程原因</h2><ul>
-<li>使用单线程模型是 Redis 的开发和维护更简单</li>
-<li>即使使用单线程模型也并发的处理多客户端的请求，主要使用的是多路复用IO</li>
-<li>对于 Redis 系统来说， 主要的<code>性能瓶颈是内存或者网络带宽而并非 CPU</code>。</li>
-</ul>
-<h2 id="5、引入多线程原因"><a href="#5、引入多线程原因" class="headerlink" title="5、引入多线程原因"></a>5、引入多线程原因</h2><p>内存问题比较好解决，因此Redis的瓶颈原因为网络IO</p>
-<h1 id="3、Redis持久化"><a href="#3、Redis持久化" class="headerlink" title="3、Redis持久化"></a>3、Redis持久化</h1><p>Redis 共有三种数据持久化的方式：</p>
-<ul>
-<li><strong>AOF 日志</strong>：每执行一条写操作命令，就把该命令以追加的方式写入到一个文件里；</li>
-<li><strong>RDB 快照</strong>：将某一时刻的内存数据，以二进制的方式写入磁盘；</li>
-<li><strong>混合持久化方式</strong>：Redis 4.0 新增的方式，集成了 AOF 和 RBD 的优点；</li>
-</ul>
-<h2 id="1、AOF"><a href="#1、AOF" class="headerlink" title="1、AOF"></a>1、AOF</h2><p>执行一条写命令，就把这个命令往aof文件里面写</p>
-<h3 id="1、为什么先执行命令，再把数据写入日志呢？"><a href="#1、为什么先执行命令，再把数据写入日志呢？" class="headerlink" title="1、为什么先执行命令，再把数据写入日志呢？"></a>1、为什么先执行命令，再把数据写入日志呢？</h3><blockquote>
-<p>1、避免额外的开销</p>
-<p>2、不会阻塞当前的写命令</p>
-<p>缺点：</p>
-<p>1、可能数据丢失，因为如果在执行完还没写入aof文件之间宕机，那就丢失</p>
-<p>2、可能阻塞下一个命令</p>
-</blockquote>
-<h3 id="2、写回策略几种？"><a href="#2、写回策略几种？" class="headerlink" title="2、写回策略几种？"></a>2、写回策略几种？</h3><p>三种：Always everySec no，其实和mysql的binlog非常相似</p>
-<p>第一种就是每次都同步</p>
-<p>第二种就是每一秒都讲缓冲区里面的写会磁盘</p>
-<p>第三种就是写到缓冲区里面，但是什么时候写到磁盘依赖于操作系统</p>
-<h3 id="3、AOF-日志过大，会触发什么机制？"><a href="#3、AOF-日志过大，会触发什么机制？" class="headerlink" title="3、AOF 日志过大，会触发什么机制？"></a>3、AOF 日志过大，会触发什么机制？</h3><p>aof重写机制：读取当前数据库中的所有键值对，对每一键值对用一条命令记录到「新的 AOF 文件」，等到全部记录完后，就将新的 AOF 文件替换掉现有的 AOF 文件。</p>
-<p>aof是由后台子进程完成的，这里有一个问题，就是如果aof重写过程中，主进程对内存进行了修改，怎么办？会触发写时复制。</p>
-<p>当aof重写过程中父进程修改内存，那我们执行一个写命令后，会写到aof缓冲区和aof重写缓冲区里面。当子进程完成重写，再去吧重写缓冲区里面的内容追加到aof文件</p>
-<h2 id="2、RDB快照"><a href="#2、RDB快照" class="headerlink" title="2、RDB快照"></a>2、RDB快照</h2><p>快照就是记录一瞬间的意思。记录的是当前的实际数据。</p>
-<p>有两种启动的方式，一个save阻塞住线程，一种bgsave，后台线程，fork一个子进程，也复制了页表。他的做法是</p>
-<p>所以rdb快照不会想aof那样开辟一个缓冲区用于记录新操作。这里rdb用的是全量快照数据。</p>
-<p>如果在rdb快照的时候，主线程修改了内容，那么这时候会出发写保护中断，写时复制，原本的物理内存A，复制一份A‘，然后主线程修改A’就好了</p>
-<h2 id="3、混合持久化"><a href="#3、混合持久化" class="headerlink" title="3、混合持久化"></a>3、混合持久化</h2><p>混合持久化就是合并了aof和rdb的两个优点，rdb恢复数据块，aof丢失数据少</p>
-<p>混合持久化，fork出来的子进程先去把共享内存以rdb的格式写入到aof文件里面，然后写入过程中主进程执行的命令会被记录到重写缓冲区里面，然后这些增量命令最后会以aof的格式增加到aof文件里面，所以aof文件里面前一部分时rdb，后一部分是aof。</p>
-<h1 id="4、Redis主从复制"><a href="#4、Redis主从复制" class="headerlink" title="4、Redis主从复制"></a>4、Redis主从复制</h1><p>主服务器可以进行读写操作，当发生写操作时自动将写操作同步给从服务器，而从服务器一般是只读，并接受主服务器同步过来写操作命令，然后执行这条命令。</p>
-<blockquote>
-<p><font color='red'><u><em><strong>全量同步</strong></em></u></font></p>
-<ul>
-<li><font color='red'><u><em><strong>第一阶段是建立链接、协商同步；</strong></em></u></font></li>
-</ul>
-<p>建立链接的时候会给主服务器发送psync，然后带上主服务器的runID（其实第一次不知道）和复制进度</p>
-<p>主服务器收到后会返回一个FULLRESYNC响应，主服务器的runID和目前的复制进度</p>
-<ul>
-<li><font color='red'><u><em><strong>第二阶段是主服务器同步数据给从服务器；</strong></em></u></font></li>
-</ul>
-<p>接着主服务器就执行bgsave生产rdb文件，发给从服务器，从服务器收到rdb文件，会清空当前自己的数据，然后载入rdb文件。并且把新增的写操作写入到replication buffer缓冲区</p>
-<ul>
-<li><font color='red'><u><em><strong>第三阶段是主服务器发送新写操作命令给从服务器</strong></em></u></font></li>
-</ul>
-<p>把repliacation buffer缓冲区里面的写操作发给从服务器</p>
-</blockquote>
-<p>第一次同步完成后，双方会维护一个TCP链接。</p>
-<blockquote>
-<p><font color='red'><u><strong>增量复制</strong></u></font></p>
-<p>网络断开又恢复后，从主从服务器会采用<strong>增量复制</strong>的方式继续同步，也就是只会把网络断开期间主服务器接收到的写操作命令，同步给从服务器。</p>
-<p>主要有三个步骤：</p>
-<ul>
-<li>从服务器在恢复网络后，会发送 psync 命令给主服务器，此时的 psync 命令里的 offset 参数不是 -1（slave_repl_offset）</li>
-<li>主服务器收到该命令后，然后用 CONTINUE 响应命令告诉从服务器接下来采用增量复制的方式同步数据；</li>
-<li>主服务将主从服务器断线期间，所执行的写命令发送给从服务器，然后从服务器执行这些命令。</li>
-</ul>
-<p><strong>主服务器怎么知道要将哪些增量数据发送给从服务器呢？</strong></p>
-<ul>
-<li><strong>repl_backlog_buffer</strong>，是一个「<strong>环形</strong>」缓冲区，用于主从服务器断连后，从中找到差异的数据。（主服务器进行命令传播时，不仅会将写命令发送给从服务器，还会将写命令写入到 repl_backlog_buffer 缓冲区里。）</li>
-<li><strong>replication offset</strong>，标记上面那个缓冲区的同步进度，主从服务器都有各自的偏移量，主服务器使用 master_repl_offset 来记录自己「<em>写</em>」到的位置，从服务器使用 slave_repl_offset 来记录自己「<em>读</em>」到的位置。</li>
-</ul>
-<p>如果判断出从服务器要读取的数据还在 repl_backlog_buffer 缓冲区里，那么主服务器将采用<strong>增量同步</strong>的方式；</p>
-<p>相反，如果判断出从服务器要读取的数据已经不存在 repl_backlog_buffer 缓冲区里，那么主服务器将采用<strong>全量同步</strong>的方式。</p>
-</blockquote>
-<h2 id="哨兵模式（怎么保证redis的高可用？）"><a href="#哨兵模式（怎么保证redis的高可用？）" class="headerlink" title="哨兵模式（怎么保证redis的高可用？）"></a>哨兵模式（怎么保证redis的高可用？）</h2><p>他有三大作用：监控、恢复、通知。</p>
-<p><strong>怎么监控？怎么主从切换</strong></p>
-<blockquote>
-<p>监控是基于心跳机制去监控节点。每隔1s会向实例发送ping命令，然后实例响应pong，假如规定时间内，没回复，那就认为主观下线。如果主节点超过一半的哨兵都认为下线了，那就是客观下线，这个时候就要选取新的master。判断主节点客观下线的那个哨兵成为候选者，候选节点向其他哨兵发送成为leader的请求，如果成功就负责进行主从切换。</p>
-<p>1、选出主节点、先看优先值，再看offset，再看id</p>
-<p>2、将从节点指向新主节点</p>
-<p>3、通知客户的主节点已更换</p>
-<p>4、如果旧的主节点重新上线，将旧主节点变为从节点</p>
-</blockquote>
-<p><strong>主从切换如何减少数据丢失</strong>？</p>
-<blockquote>
-<p>主从切换有两种情况会数据丢失</p>
-<ul>
-<li><font color='red'><u><em><strong>异步复制同步丢失。master来不及同步给从节点就挂了</strong></em></u></font></li>
-<li><font color='red'><u><em><strong>集群产生脑裂数据丢失。</strong></em></u></font>就是因为网络问题，哨兵监听不到主节点，那么哨兵就去从节点里面选了一个主节点，这个时候就有多个主节点，那原先的主节点就会被迫降为从节点，然后去新的主节点同步数据，他一同步，那么原先的数据就丢了。所以他的解决方案就是，必须有从节点和设置主从同步之间的延迟时间，如果从节点不够或者网络延迟太大，那我就禁止写操作</li>
-</ul>
-<p>解决方法：</p>
-<p>Redis 配置里有一个参数 min-slaves-max-lag，表示一旦所有的从节点数据复制和同步的延迟都超过了 min-slaves-max-lag 定义的值，那么主节点就会拒绝接收任何请求。</p>
-<ul>
-<li>min-slaves-to-write x，<font color='red'><u><strong>主节点必须要有至少 x 个从节点连接</strong></u></font>，如果小于这个数，主节点会禁止写数据。</li>
-<li>min-slaves-max-lag x，<font color='red'><u><em><strong>主从数据复制和同步的延迟</strong>不能超过 x 秒</em><em>，如果主从同步的延迟超过 x 秒，主节点会禁止写数据</em>**</u></font></li>
-</ul>
-</blockquote>
-<p><strong>如何应对主从数据不一致？</strong></p>
-<blockquote>
-<p>第一种方法，尽量<font color='red'><u><em><strong>保证主从节点间的网络连接状况良好</strong></em></u></font>，避免主从节点在不同的机房。</p>
-<p>第二种方法，可以开发一个外部程序来<font color='red'><u><em><strong>监控主从节点间的复制进度</strong></em></u></font>。具体做法：得到主从的复制差距，如果过大，就不再和这个从节点进行数据同步</p>
-</blockquote>
-<p><strong>怎么判断 Redis 某个节点是否正常工作？</strong></p>
-<blockquote>
-<p>基本都是通过互相的 ping-pong 心态检测机制,</p>
-<p>哨兵每隔1s会向主节点和从节点发送ping，</p>
-<p>每隔10s会向主节点发送info命令获取从节点的信息。</p>
-</blockquote>
-<h1 id="5、Redis-过期删除与内存淘汰"><a href="#5、Redis-过期删除与内存淘汰" class="headerlink" title="5、Redis 过期删除与内存淘汰"></a>5、Redis 过期删除与内存淘汰</h1><h2 id="1、Redis过期策略"><a href="#1、Redis过期策略" class="headerlink" title="1、Redis过期策略"></a>1、Redis过期策略</h2><p>Redis 使用的过期删除策略是「<strong>惰性删除+定期删除</strong>」这两种策略配和使用。</p>
-<blockquote>
-<p>什么是惰性删除？</p>
-<p>我不主动的删除，每当访问key的时候，我去判断一下是否过期，如果过期那么就删除该key</p>
-<p>优点：占用比较少的资源，对cpu时间最友好</p>
-<p>缺点：会导致缓存污染，浪费内存空间，对内存不友好</p>
-</blockquote>
-<blockquote>
-<p>什么是定期删除策略？</p>
-<p>就是定期的数据库里面随机抽取一定数量的key，并删除其中的过期的key</p>
-<p>抽取策略？</p>
-<p>1、从过期字典里面随机找20个</p>
-<p>2、然后判断是否过期，并删除已经过期的key</p>
-<p>3、如果过期的key超过了25%，那么就重复这个过程，如果没有，那就等待下一轮的抽查</p>
-<p>优点：通过调整删除操作的时长的频率可以减少一些无用的占用</p>
-<p>缺点：很难确定删除的时长和频率，太频繁对cpu不好，太少又和惰性删除一样。</p>
-</blockquote>
-<h3 id="1、Redis-持久化时，对过期键会如何处理的？"><a href="#1、Redis-持久化时，对过期键会如何处理的？" class="headerlink" title="1、Redis 持久化时，对过期键会如何处理的？"></a>1、Redis 持久化时，对过期键会如何处理的？</h3><p>持久化有两种 aof和rdb</p>
-<p>对于rdb，考虑生成和加载阶段</p>
-<blockquote>
-<p>生成阶段：对于过期的key不写入rdb文件里面</p>
-<p>加载阶段：这里分两种情况，一种是主服务器，另一种是从服务器。</p>
-<p>​	主服务器：加载阶段回去判断key是不是过期了，如果过期了那我就不加载这个</p>
-<p>​	从服务器：不管key是不是过期，全部加载。</p>
-</blockquote>
-<p>aof：考虑aof写入阶段和重写阶段</p>
-<blockquote>
-<p>写入阶段：如果这个key过期了，但是没有被删除，那么aof文件就会保留这个key，如果这个key被过期策略删除了，那么就会往aof文件里面追加一条del语句</p>
-<p>重写阶段：重写阶段如果过期了，那么就直接删除，不会保留在新的aof文件里面</p>
-</blockquote>
-<h3 id="2、Redis-主从模式中，对过期键会如何处理？"><a href="#2、Redis-主从模式中，对过期键会如何处理？" class="headerlink" title="2、Redis 主从模式中，对过期键会如何处理？"></a>2、Redis 主从模式中，对过期键会如何处理？</h3><p>主从模式中，从数据库完全依赖于主数据库，所以即使从库的key过期了，但是你查询，依旧能查到。只有主数据库在key到期的时候往aof文件里面增加del语句，同步到所有的从库，从库才会删除这个key。</p>
-<h2 id="2、Redis-内存淘汰"><a href="#2、Redis-内存淘汰" class="headerlink" title="2、Redis 内存淘汰"></a>2、Redis 内存淘汰</h2><p><font color='red'><u><em><strong>在 Redis 的运行内存达到了某个阀值，就会触发</strong>内存淘汰机制</em>****</u></font></p>
-<p>这个阀值就是我们设置的最大运行内存，此值在 Redis 的配置文件中可以找到，配置项为 maxmemory。</p>
-<p>默认是不淘汰，内存满了我拒绝添加。</p>
-<p>除开默认的，内存淘汰机制分为两类：一类是对有过期时间的内存淘汰机制；一类是对所有数据的淘汰机制。</p>
-<p>对过期时间的内存淘汰机制可以分成四种：</p>
-<p>1、volatile random</p>
-<p>2、volatile lru 最近最少使用</p>
-<p>3、volatile lfu <strong>最近最不常用的</strong></p>
-<p>4、volatile ttl  最早时间</p>
-<p>对所有数据的淘汰机制：</p>
-<p>1、volatile random</p>
-<p>2、volatile lru 最近最少使用</p>
-<p>3、volatile lfu <strong>最近最不常用的</strong></p>
-<h3 id="LRU-算法和-LFU-算法有什么区别？"><a href="#LRU-算法和-LFU-算法有什么区别？" class="headerlink" title="LRU 算法和 LFU 算法有什么区别？"></a>LRU 算法和 LFU 算法有什么区别？</h3><p>传统的lru算法依赖于一个链表，数据被访问时候，链表中的节点会出现很多的移动操作，降低性能</p>
-<p>LRU</p>
-<blockquote>
-<p>Redis实现lru是在RedisObject里面新增一个字段，记录最后一次访问时间</p>
-<p>进行淘汰的时候，随机选取五个，然后淘汰访问时间最早的</p>
-<p>优点：节省空间，提高性能</p>
-<p>缺点：无法解决缓存污染</p>
-</blockquote>
-<p>LFU</p>
-<blockquote>
-<p>lfu在RedisObject的基础上新增了一个字段，用于记录数据的访问频次。24位</p>
-<p>高16位记录时间戳，后8位记录访问频次，默认5，会随着时间衰减</p>
-<p>数据每次被访问的时候：</p>
-<p>先对访问频次做一个衰减操作，根据时间和上一次访问时间的差</p>
-<p>然后做一次增加的操作，这个是基于一定的概率</p>
-</blockquote>
-<p><img src="/../images/Redis/%E8%BF%87%E6%9C%9F%E5%88%A0%E9%99%A4%E7%AD%96%E7%95%A5.jpg" alt="img"></p>
-<p><img src="/../images/Redis/%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5.jpg" alt="img"></p>
-<h1 id="6、Redis缓存设计"><a href="#6、Redis缓存设计" class="headerlink" title="6、Redis缓存设计"></a>6、Redis缓存设计</h1><h2 id="1、如何避免缓存雪崩？"><a href="#1、如何避免缓存雪崩？" class="headerlink" title="1、如何避免缓存雪崩？"></a>1、如何避免缓存雪崩？</h2><p>缓存雪崩是指在同一时间大量的key同时过期了</p>
-<p>解决方法：</p>
-<p>这里关键就是同时和过期，所以解决方法如下：</p>
-<p>1、打乱过期的时间</p>
-<p>2、设置缓存不过期</p>
-<h2 id="2、缓存击穿"><a href="#2、缓存击穿" class="headerlink" title="2、缓存击穿"></a>2、缓存击穿</h2><p>对于一个热点数据过期了，导致请求全部打到数据库</p>
-<p>1、设置缓存不过期，后台异步的去更新</p>
-<p>2、互斥锁，分布式锁的方法。让同一时间只有一个线程去访问</p>
-<h2 id="3、缓存穿透"><a href="#3、缓存穿透" class="headerlink" title="3、缓存穿透"></a>3、缓存穿透</h2><p>访问的值既不在redis 也不在mysql，所以很可能是那种黑客攻击之类的，解决方法的话</p>
-<p>1、非法请求的限制</p>
-<p>2、空值或者默认值</p>
-<p>3、布隆过滤器</p>
-<p>布隆过滤器的主要原理是使用一组哈希函数，将元素映射成一位数组里。当要检查一个元素是否在集合中时，将该元素进行哈希处理，然后查看哈希值对应的位数组的值是否为1。如果哈希值对应的位数组的值都为1，那么这个元素可能在集合中，否则这个元素肯定不在集合中。</p>
-<h2 id="4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性"><a href="#4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性" class="headerlink" title="4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性"></a>4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性</h2><blockquote>
-<p>redis和mysql的数据一致性其实有两类方式：<font color='red'><u><em><strong>一种是双写，一种是缓存删除。</strong></em></u></font></p>
-<blockquote>
-<p>对于双写策略，两个请求并发更新同一条数据的时候，会出现数据不一致的情况，另外更新缓存的代价有时候是很高的，可能你1分钟内更新了100次，然后只访问了一次，那代价着实太大了。所以我们一般选择缓存删除的策略。</p>
-</blockquote>
-<p>对于双写策略：如果对一致性要求高，就需要加分布式锁，但是我们业务对同步的实时性要求没那么高，我们想要的是最终一致性，所以我们用的是异步消息+canal监听。redis修改后发送异步消息给mysql，mysql如果有一些热点数据的修改，就监听这些数据去更新redis。</p>
-<p>缓存删除也有延迟双删。</p>
-<p>然后我们一般来说是<font color='red'><u><em><strong>先更新数据库，再去删除缓存</strong></em></u></font>。虽然在理论上存在着 一个读请求读到旧值然后准备更新到redis里面的时候，有一个写请求更新数据库并且删除了缓存，这时候读请求才把旧值缓存到redis里面，这样出现redis和mysql的不一致。但是其实由于我们的缓存写入是远远快于数据库的写入，所以很难出现我一个请求更新完数据库删除完缓存了这时候，原先的读请求才写入缓存。为了保证第二个操作能成功，可以订阅binlog或者消息队列做删除。</p>
-<p>对于并发引起的不一致性，那就用延迟双删</p>
-<blockquote>
-<p>常见的缓存更新策略共有3种：</p>
-</blockquote>
-<ul>
-<li><p>Cache Aside（旁路缓存）策略；</p>
-</li>
-<li><p>Read&#x2F;Write Through（读穿 &#x2F; 写穿）策略；</p>
-</li>
-<li><p>Write Back（写回）策略</p>
-</li>
-</ul>
-<blockquote>
-<p>旁路缓存策略</p>
-<p><strong>写策略的步骤：</strong></p>
-<ul>
-<li>先更新数据库中的数据，再删除缓存中的数据。</li>
-</ul>
-<p><strong>读策略的步骤：</strong></p>
-<ul>
-<li>如果读取的数据命中了缓存，则直接返回数据；</li>
-<li>如果读取的数据没有命中缓存，则从数据库中读取数据，然后将数据写入到缓存，并且返回给用户</li>
-</ul>
-</blockquote>
-<blockquote>
-<p>读穿 &#x2F; 写穿）策略</p>
-<p>策略原则是应用程序只和缓存交互，不再和数据库交互，而是由缓存和数据库交互，相当于更新数据库的操作由缓存自己代理了。</p>
-<p><strong>1、Read Through 策略</strong></p>
-<ul>
-<li>先查询缓存中数据是否存在，如果存在则直接返回，如果不存在，则由缓存组件负责从数据库查询数据，并将结果写入到缓存组件，最后缓存组件将数据返回给应用。</li>
-</ul>
-<p><strong>2、Write Through 策略</strong></p>
-<ul>
-<li><p>当有数据更新的时候，先查询要写入的数据在缓存中是否已经存在：</p>
-<ul>
-<li>如果缓存中数据已经存在，则更新缓存中的数据，并且由缓存组件同步更新到数据库中，然后缓存组件告知应用程序更新完成。</li>
-<li>如果缓存中数据不存在，直接更新数据库，然后返回；</li>
-</ul>
-</li>
-</ul>
-</blockquote>
-<blockquote>
-<p>Write Back（写回）策略</p>
-<p>写回在更新数据的时候，只更新缓存，同时将缓存数据设置为脏的，然后立马返回，并不会更新数据库。对于数据库的更新，会通过批量异步更新的方式进行。</p>
-<p>实际上，Write Back（写回）策略也不能应用到我们常用的数据库和缓存的场景中，因为 Redis 并没有异步更新数据库的功能。</p>
-<p>Write Back 是计算机体系结构中的设计，比如 CPU 的缓存、操作系统中文件系统的缓存都采用了 Write Back（写回）策略。</p>
-</blockquote>
-</blockquote>
-<h1 id="7、分布式锁怎么实现"><a href="#7、分布式锁怎么实现" class="headerlink" title="7、分布式锁怎么实现"></a>7、分布式锁怎么实现</h1><p><img src="/../images/Redis/image-20231115124152900.png" alt="image-20231115124152900"></p>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/10/09/Redis/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Kommentieren und teilen
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2023/09/08/JUC/"
+                            href="/2023/11/08/JUC/"
                             aria-label=": JUC"
                         >
                             JUC
@@ -1450,9 +793,9 @@
                     
                 </h1>
                 <div class="postShorten-meta">
-    <time datetime="2023-09-08T00:00:00+08:00">
+    <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    08 Sep 2023
+		    Nov 08, 2023
     	
     </time>
     
@@ -1787,11 +1130,1050 @@
                     
                         <p>
                             <a
-                                href="/2023/09/08/JUC/#post-footer"
+                                href="/2023/11/08/JUC/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/11/04/JVM/"
+                            aria-label=": JVM"
+                        >
+                            JVM
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-11-04T00:00:00+08:00">
+	
+		    Nov 04, 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h1 id="1、JVM内存结构"><a href="#1、JVM内存结构" class="headerlink" title="1、JVM内存结构"></a>1、JVM内存结构</h1><p>主要有五大部分：程序计数器（私有）、虚拟机栈（私有）、本地方法栈（私有）、堆（公有）、方法区（公有），不过在8之后，永久代就已经被元空间代替了，而元空间在本地内存。</p>
+<p><img src="/../images/JVM/java-runtime-data-areas-jdk1.8.png" alt="Java 运行时数据区域（JDK1.8 ）"></p>
+<p>1、程序计数器</p>
+<blockquote>
+<p><font color='red'><u><em><strong>存储当前指令执行的地址</strong></em></u></font>线程恢复都靠这个。</p>
+</blockquote>
+<p>2、虚拟机栈</p>
+<blockquote>
+<p>每个方法调用的时候都会生成一个栈帧，栈帧里面存储了<font color='red'><u><em><strong>局部变量表，操作数栈、动态连接、方法出口</strong></em></u></font>等。</p>
+<p>局部变量表里面放了<font color='red'><u><em><strong>方法参数、方法内部定义的局部变量</strong></em></u></font>。包括各类基本数据类型、对象引用(reference) ，以及returnAddress类型。</p>
+<p>对象引用要完成两件事情：找到在JVM堆里面的对象，还有一个是找到元空间存储的类型信息。</p>
+<p><font color='red'><u><strong>操作数栈：同时作为计算过程中变量临时的存储空间</strong></u></font></p>
+<p><font color='red'><u><em><strong>动态连接：</strong>指向运行时常量池中该栈帧所属方法的引用</em><em>，为了支持方法调用过程中的动态链接（Dynamic Linking）</em>**</u></font></p>
+<p>方法出口：<font color='green'><u><em><strong>方法执行完去哪里</strong></em></u></font></p>
+</blockquote>
+<p>3、本地方法栈</p>
+<blockquote>
+<p>和虚拟机栈很像，区别是为了虚拟机使用本地native方法服务的。</p>
+</blockquote>
+<p>4、堆</p>
+<blockquote>
+<p>线程共享的，存放对象实例都在这里。这里有一块是字符串常量池，存的是String实例的引用。</p>
+<p>他被分成年轻代和老年代，年轻代有分成伊甸区和幸存者区。垃圾回收的时候先扫伊甸区和一个幸存者区，存活的对象放到另一个幸存者区。</p>
+<p>然后还有一点需要提的是：1.7中的堆有方法区，或者说永久代。但是到了1.8，方法区转移到了直接内存里面变成了元空间。</p>
+</blockquote>
+<p>5、方法区</p>
+<blockquote>
+<p>存储被虚拟机加载的类信息、静态常量。</p>
+<p><font color='red'><u><em><strong>运行时常量池：</strong></em></u></font></p>
+<p>Class文件除了类的版本字段方法接口描述外，还有一个常量池，用于存放编译期间生成的字面量和符号引用，而当类加载到内存中后，jvm把符号引用换成直接引用，将class常量池中的内容存放到运行时常量池中。</p>
+</blockquote>
+<p><img src="/../images/JVM/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjg0MDA1,size_16,color_FFFFFF,t_70.png" alt="img"></p>
+<p><strong>对象的创建</strong></p>
+<blockquote>
+<p>1、当遇到new，先去检查在常量池找到类的符号引用，检查是不是已经类加载、解析、初始化。</p>
+<p>2、如果没有，就先执行类加载。</p>
+<p>3、然后分配内存，内存的大小在类加载的时候就确认了。具体分配用“指针碰撞”还是“空闲列表”就看用那种垃圾收集器。为了保证不出现并发问题：有两种方案。<font color='red'><u><em><strong>1）CAS+失败重试。2）给线程自己预先分配本地线程分配缓冲。（TLAB）</strong></em></u></font></p>
+</blockquote>
+<p><strong>对象的内存布局</strong></p>
+<blockquote>
+<p>每一个对象在堆里面分为三块：<font color='red'><u><em><strong>对象头、实例数据、对其填充。</strong></em></u></font></p>
+<p>对象头是<font color='red'><u><em><strong>markword+类型指针+数组长度（如果是数组的话），</strong></em></u></font></p>
+<ul>
+<li>markword就是记录哈希码、gc分代、锁标志、锁id，偏向锁。</li>
+<li>类型指针就是指向类型元数据的指针</li>
+</ul>
+<p>实例数据：</p>
+<p>对象真正存储的有效信息。无论是父类继承的还是子类</p>
+<p>对其填充：</p>
+<p>HotSpot要求对象的起始地址是8字节的整数倍。</p>
+</blockquote>
+<p><strong>对象的访问定位</strong></p>
+<p>1、句柄方法。reference放的是存储的是句柄地址，句柄包含对象实例数据和类型数据，各自的具体位置。句柄最大的优势就是即使在垃圾收集的时候对象被移动了，只用修改句柄中的指针就好，不用修改reference。</p>
+<p>2、直接指针。存储的就是对象地址。他的优势是少一次间接访问的消耗。</p>
+<h1 id="2、内存溢出异常"><a href="#2、内存溢出异常" class="headerlink" title="2、内存溢出异常"></a>2、内存溢出异常</h1><h1 id="3、字节码文件"><a href="#3、字节码文件" class="headerlink" title="3、字节码文件"></a>3、字节码文件</h1><ul>
+<li><p>魔数：唯一的作用就是确定这个文件是否为一个虚拟机可以接受的Class文件</p>
+</li>
+<li><p>次版本号</p>
+</li>
+<li><p>主版本号</p>
+</li>
+<li><p>常量池：第一个表类型的数据</p>
+<ul>
+<li>主要存放两大类常量：字面量和符号引用。比如包名、类名、接口名、方法名、变量名等等，但是Class常量池中他就是一个符号，需要在类加载的时候翻译成具体的内存地址。</li>
+</ul>
+</li>
+<li><p>访问标志：有16个标志位，是类还是接口、是否public 是否abstract 是否final</p>
+</li>
+<li><p>类索引、父类索引、接口索引：用着三项去确认继承关系</p>
+</li>
+<li><p>字段表集合：描述类中声明的变量。最主要有三个部分：access_flag，是否public、是否provate、是否static。name_index：常量池的第几个，比如0005，代表常量池的第五个值（m）是discriptor_index 是int类型（0006：第六个值I，代表是int类型）</p>
+</li>
+<li><p>方法表：方法表的结构和字段表基本一样，不过是针对方法的</p>
+</li>
+<li><p>属性表：太复杂了</p>
+</li>
+</ul>
+<h1 id="4、类加载机制"><a href="#4、类加载机制" class="headerlink" title="4、类加载机制"></a>4、类加载机制</h1><p>类加载分成三个阶段，加载、连接、初始化。连接可以分成，验证、准备、解析</p>
+<h2 id="1、加载"><a href="#1、加载" class="headerlink" title="1、加载"></a>1、加载</h2><p>加载是类加载过程的第一步，主要完成下面 3 件事情：</p>
+<ol>
+<li>通过全类名获取定义此类的二进制字节流</li>
+<li>将字节流所代表的静态存储结构转换为方法区的运行时数据结构（JDK 1.8之前：永久代；JDK 1.8之后：元空间）</li>
+<li>在内存中生成一个代表该类的 <code>Class</code> 对象，作为方法区各种数据的访问入口（堆）</li>
+</ol>
+<p><img src="/../images/JVM/image-20231016140218073.png" alt="image-20231016140218073"></p>
+<h2 id="2、验证"><a href="#2、验证" class="headerlink" title="2、验证"></a>2、验证</h2><p>确保Class文件的信息复合虚拟机的约束</p>
+<p>1、文件格式验证。就是去检查类文件格式是否规范。什么魔数主次版本常量池字段池方法池</p>
+<p>2、元数据验证。对描述信息进行语义分析，有没有父类，有没有继承不能继承的父类。</p>
+<p>3、字节码校验。最复杂的阶段。通过数据流分析和控制流分析程序语义是否合法，主要就是检查方法体的</p>
+<p>4、符号引用验证。<font color='red'><u><em><strong>符号引用验证发生在解析阶段，就是把符号引用转化为直接引用的时候去验证的。</strong></em></u></font></p>
+<h2 id="3、准备阶段"><a href="#3、准备阶段" class="headerlink" title="3、准备阶段"></a>3、准备阶段</h2><p>为静态变量分配内存，并设置初始值的阶段。如果没有final修饰，那就是默认值，比如0这类，真正赋你定义的值那就在初始化阶段。如果用final修饰了，那就是你自己定义的了。</p>
+<h2 id="4、解析"><a href="#4、解析" class="headerlink" title="4、解析"></a>4、解析</h2><p>把常量池中的符号引用转化为直接引用的阶段。有类和接口解析，字段解析，方法解析等。实际上就是先把类加载到方法区里面，然后返回相应直接引用。</p>
+<p>我们拿字段解析举个例子，先解析这个字段表所在的类或接口，假设成功解析为C。我们就在C的字段表里面找有没有匹配的简单名称和字段描述符，如果有就直接返回。没有就找C的接口和父接口，看看有没有匹配的简单名称和字段描述符。如果又返回，没有就按继承关系找父类有没有匹配的，否则就失败。</p>
+<p>但是方法解析有一点不一样，他有一部分是不能解析的，如果 Human h &#x3D; new Man。这种可能方法调用不能确定，这里就解析不了。能解析的叫非虚方法，不能解析的叫虚方法。虚方法需要使用另外一种调用形式就是分派，分派分为静态动态，虚方法静态分派实现重载（静态类型），动态分派实现重写（invokevirtual，先找到这个动态类型，如果有这个方法那就直接用，如果没有，我们再去找他的父类）。</p>
+<h2 id="5、初始化"><a href="#5、初始化" class="headerlink" title="5、初始化"></a>5、初始化</h2><p>初始化就是执行类构造器的过程，而这个类构造器做的事情就是对类中所有类变量的赋值操作和所有<font color='green'><u><em><strong>静态</strong></em></u></font>语句块的操作。</p>
+<p>顺序就是语句在源文件的顺序</p>
+<h1 id="5、类加载器"><a href="#5、类加载器" class="headerlink" title="5、类加载器"></a>5、类加载器</h1><p>类加载器的作用就是实现类加载过程中的加载这一步，通过双亲委派机制去维护一个三层的组织架构。</p>
+<p>三层：</p>
+<p>启动类加载器：负责加载JAVA_HOME&#x2F;LIB目录的或者被-xbootclasspath指定。</p>
+<p>扩展类加载器：负责加载JAVA_HOME&#x2F;LIB&#x2F;EXT的类或者被JAVA.EXT.DIRS系统变量制定的所有的类库。由于是由Java代码实现，所以开发者可以在程序中直接使用这个加载器去加载Class文件</p>
+<p>应用程序类加载器：负责加载用户类路径CLasspath上所有的类库。开发者也可以直接使用这个</p>
+<h2 id="双亲委派："><a href="#双亲委派：" class="headerlink" title="双亲委派："></a>双亲委派：</h2><p>双亲委派是类加载器的组织模型。</p>
+<p>在类加载的时候，系统会首先判断当前类是否被加载过。已经被加载的类会直接返回，否则才会尝试加载</p>
+<p>类加载器在进行类加载的时候，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器去完成（调用父加载器 <code>loadClass()</code>方法来加载类）。这样的话，所有的请求最终都会传送到顶层的启动类加载器 <code>BootstrapClassLoader</code> 中。</p>
+<p>只有当父加载器反馈自己无法完成这个加载请求（它的搜索范围中没有找到所需的类）时，子加载器才会尝试自己去加载（调用自己的 <code>findClass()</code> 方法来加载类）。</p>
+<p>如果子类加载器也无法加载这个类，那么它会抛出一个 <code>ClassNotFoundException</code> 异常。</p>
+<p><strong>好处</strong></p>
+<p>可以避免类的重复加载（JVM 区分不同类的方式不仅仅根据类名，相同的类文件被不同的类加载器加载产生的是两个不同的类），也保证了 Java 的核心 API 不被篡改。</p>
+<h2 id="打破双亲委派"><a href="#打破双亲委派" class="headerlink" title="打破双亲委派"></a>打破双亲委派</h2><p>1、自定义类加载器，重写 <code>loadClass()</code>方法之后，我们就可以改变传统双亲委派模型的执行流程。例如，子类加载器可以在委派给父类加载器之前，先自己尝试加载这个类，或者在父类加载器返回之后，再尝试从其他地方加载这个类。具体的规则由我们自己实现，根据项目需求定制化。</p>
+<blockquote>
+<p>解决方案：新添加一个findClass</p>
+</blockquote>
+<p>2、高层的类加载器（<code>SharedClassLoader</code>）借助子类加载器（ <code>WebAppClassLoader</code>）来加载业务类</p>
+<blockquote>
+<p>解决方案：线程上下文类加载器。	线程上下文类加载器的原理是将一个类加载器保存在线程私有数据里，跟线程绑定，然后在需要的时候取出来使用。这个类加载器通常是由应用程序或者容器（如 Tomcat）设置的。类加载冲突问题</p>
+</blockquote>
+<p>3、OSGI实现模块化热部署，把类加载从双亲委派变成更加复杂的网状结构。</p>
+<h2 id="模块化"><a href="#模块化" class="headerlink" title="模块化"></a>模块化</h2><p><strong>什么是JDK9模块化系统</strong></p>
+<ul>
+<li>是一种新的组织方式，将Java SE分成多个模块，每个模块都有自己的API和实现</li>
+<li>每个模块都有一个唯一的标识符和版本号，可以独立地进行开发</li>
+</ul>
+<p>为了模块化系统的顺利实施。</p>
+<p>扩展类加载器被平台类加载器取代。<strong>加载器用于加载 JDK 中的模块</strong></p>
+<p>双亲委派机制也发生了变动。</p>
+<p>平台或应用程序类加载器收到类加载请求后，在委派给父加载器前，先判断该类是否能够归属到某一个模块中，如果可以，就先找到负责这个模块的加载器进行加载。每个模块都有一个类加载器</p>
+<h1 id="6、线程安全"><a href="#6、线程安全" class="headerlink" title="6、线程安全"></a>6、线程安全</h1><p>线程安全：不可变，绝对安全、相对安全、线程兼容、线程对立。</p>
+<p>线程安全的实现方式：</p>
+<p>1、互斥同步</p>
+<p>synchronized，重入锁都是</p>
+<p>2、非阻塞同步</p>
+<p>CAS</p>
+<h1 id="7、垃圾回收"><a href="#7、垃圾回收" class="headerlink" title="7、垃圾回收"></a>7、垃圾回收</h1><h2 id="1、如何判断对象死亡？"><a href="#1、如何判断对象死亡？" class="headerlink" title="1、如何判断对象死亡？"></a><strong>1、如何判断对象死亡？</strong></h2><p>1、<font color='red'><u><em><strong>传统有个引用计数法，在对象里面加一个引用计数器</strong></em></u></font>，有一个地方引用他就加1，但是小问题很多，比如很难解决互相引用的问题，所以主流的虚拟机都不用这个。</p>
+<p>2、可达性分析法。基本思路就是从GC Roots这个根对象作为初始节点集，然后根据引用关系向下搜索，走过的路叫引用链。没有引用链可以尝试回收。但是具体要不要回收还是要经历两次标记过程。第一次发现没有引用链就会被第一次标记，然后进行一次筛选，看看有没有必要执行finalize方法，如果没有覆盖finalize或者执行过了，那就直接记为死亡。如果执行finalize的过程中建立了与引用链上的任何一个对象建立了联系，那么在第二次标记时，会被移出“即将回收”集合</p>
+<blockquote>
+<p>在 堆内存 中 , 存在一个 根对象 GC Root , GC Root 对象一般是如下几种情况 :</p>
+<p><font color='blue'><u><em><strong>线程栈 中的 栈帧 中的 局部变量表 中的 引用对象 ;</strong></em></u></font><br><font color='blue'><u><em><strong>方法区 中的 静态引用对象 ;</strong></em></u></font><br><font color='blue'><u><em><strong>方法区 中的 常量引用对象 ;</strong></em></u></font><br>本地方法栈 中的 JNI 中的 引用的对象 ;</p>
+</blockquote>
+<p>当然除了堆区，方法区也会回收。</p>
+<p><strong>方法区回收</strong></p>
+<blockquote>
+<p>主要收集两个部分，废弃的常量和不再使用的类型。</p>
+<p>废弃的意思：该类的所有实例被回收，类加载器被回收，Class对象没有在任何地方被引用。</p>
+</blockquote>
+<h2 id="2、垃圾回收算法"><a href="#2、垃圾回收算法" class="headerlink" title="2、垃圾回收算法"></a>2、垃圾回收算法</h2><p>首先垃圾收集算法基本遵循分代收集。分代收集建立于两个假说：1）弱分代假说：大多数对象都是朝生夕灭的。2）强分代假说：熬过越多次垃圾收集的对象越难消亡。3）跨代引用相对于同代引用占比极少。</p>
+<p>先理清一些小概念：</p>
+<ul>
+<li><p>部分收集：</p>
+<ul>
+<li><p>新生代收集：Minor GC&#x2F;Young GC : 只收集新生代</p>
+</li>
+<li><p>老生代收集：Major GC&#x2F;Old GC : 只收集老生代：目前只有CMS收集器会有。</p>
+</li>
+<li><p>混合收集：Mixed GC：整个新生代和部分老生代，目前只有G1有</p>
+</li>
+</ul>
+</li>
+<li><p>整堆收集：</p>
+<ul>
+<li>Full GC</li>
+</ul>
+</li>
+</ul>
+<h3 id="1、标记-清除"><a href="#1、标记-清除" class="headerlink" title="1、标记-清除"></a>1、标记-清除</h3><p>很简单，就是标记可回收或者不可回收，然后清除。</p>
+<p>有两个缺陷：执行效率不稳定和会有很多内存碎片（导致分配较大的对象困难）</p>
+<h3 id="2、标记-复制"><a href="#2、标记-复制" class="headerlink" title="2、标记-复制"></a>2、标记-复制</h3><p>先把内存分成两半，然后每次使用其中一块，当一块用完了，就把这块内存中存活的复制到另外一块，清楚原来那一块。现在很多Java虚拟机都采用这种方法去回收新生代。</p>
+<p>把新生代分为一块较大的eden区和两个较小的survivor区，每次分配只用eden和survivor的一块。发生垃圾回收，将eden和Survivor仍然存活的复制到Survivor，然后清除eden和那一块Survivor。</p>
+<p>缺点就是如果对象存活率比较高那就不适合。</p>
+<h3 id="3、标记-整理"><a href="#3、标记-整理" class="headerlink" title="3、标记-整理"></a>3、标记-整理</h3><p>标记后，让存活的对象都往内存空间的一端移动。</p>
+<p>缺点：对于老年代这种存活率很高的也不适合。必须暂停用户应用程序</p>
+<h3 id="4、细节"><a href="#4、细节" class="headerlink" title="4、细节"></a>4、细节</h3><p><strong>枚举根节点</strong></p>
+<p>后台有个GC守护线程，当需要GC的时候，GC线程需要在标记阶段枚举根节点，这是需要stop the world。就是为了防止工作中的线程修改了引用关系，导致结果准确性不能保证。为了加快检索，hotspot用了一种oopMap的数据类型。</p>
+<p>从GC<strong>往下遍历对象图</strong></p>
+<p>这个是和堆的大小成正比的，怎么去减少暂停时间呢？<strong>三色标记法</strong></p>
+<p>白色：对象没有被垃圾收集器访问过</p>
+<p>黑色：已经被访问过了，且这个对象的所有引用都已经扫描过。</p>
+<p>灰色：已经被访问过了，但是至少有一个引用没有被扫描。</p>
+<h4 id="记忆集和卡表。"><a href="#记忆集和卡表。" class="headerlink" title="记忆集和卡表。"></a>记忆集和卡表。</h4><p>为了解决对象跨代，需要在新生代建立名为记忆集的数据结构。记忆集是一种用于记录从非收集区指向收集区域的指针集合的数据结构。为了节省记忆集的存储和维护成本，我们选用了一种叫卡表的精度。就是每个记录精确到一块内存区域，这个区域里面有对象含有跨代指针。</p>
+<p>为了维护这个记忆集，如果有其他代的的对象引用了本区域的对象，为了保证在引用的一瞬间记录下来，我们是在机器码层面做了操作，就是加一个写屏障，在写屏障中去更新卡表。</p>
+<h4 id="说一下JVM的分代回收"><a href="#说一下JVM的分代回收" class="headerlink" title="说一下JVM的分代回收"></a>说一下JVM的分代回收</h4><p><img src="/../images/JVM/image-20231117194042634.png" alt="image-20231117194042634"></p>
+<h2 id="3、垃圾回收器"><a href="#3、垃圾回收器" class="headerlink" title="3、垃圾回收器"></a>3、垃圾回收器</h2><p><font color='red'><u><em><strong>四种引用</strong></em></u></font></p>
+<blockquote>
+<p>强引用：只有GCroot都不通过强引用引用该对象，才可以回收</p>
+<p>软引用：内存不足的时候回收</p>
+<p>弱引用：无论内存够不够，都会回收</p>
+<p>虚引用：它就和没有任何引用一样，在任何时候都可能被垃圾回收器回收。</p>
+</blockquote>
+<h3 id="新生代"><a href="#新生代" class="headerlink" title="新生代"></a><strong>新生代</strong></h3><blockquote>
+<h4 id="1、Serial收集器"><a href="#1、Serial收集器" class="headerlink" title="1、Serial收集器"></a>1、Serial收集器</h4><blockquote>
+<p>串行，单线程，暂停其他线程。现在用的人比较少，但是优点是简单高效，对内存消耗最少。（整体STW）</p>
+</blockquote>
+<blockquote>
+<p>策略：标记-复制</p>
+</blockquote>
+<h4 id="2、Parrallel-New收集器"><a href="#2、Parrallel-New收集器" class="headerlink" title="2、Parrallel New收集器"></a>2、Parrallel New收集器</h4><blockquote>
+<p>本质是Serial的多线程并行版本。（整体STW）</p>
+</blockquote>
+<blockquote>
+<p>策略：标记-复制</p>
+</blockquote>
+<h4 id="3、Parrallel-Scanvenge"><a href="#3、Parrallel-Scanvenge" class="headerlink" title="3、Parrallel Scanvenge"></a>3、Parrallel Scanvenge</h4><blockquote>
+<p>吞吐量优先收集器</p>
+</blockquote>
+<blockquote>
+<p>Parrallel很多特性和ParNew一样，但是Parallel Scanvenge 的关键点在于它关注的是吞吐量，吞吐量 &#x3D; 代码运行时间 &#x2F; （代码运行时间 + 垃圾收集时间）</p>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>策略：标记-复制</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>-XX:MaxGcPauserMillis：最大停顿时间</p>
+<p>-XX:GCTimeRatio：吞吐量的倒数，比如 如果是 19 那么允许的最大GC时间比例为 1&#x2F;（1 + 19） &#x3D;5 %</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p>-XX:+UseAdaptiveSizePolicy：不需要手动指定新生代大小，虚拟机会自动调整参数（GC自适应）</p>
+</blockquote>
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3></blockquote>
+<h3 id="老生代"><a href="#老生代" class="headerlink" title="老生代"></a>老生代</h3><blockquote>
+<h4 id="1、Serial-Old"><a href="#1、Serial-Old" class="headerlink" title="1、Serial Old"></a>1、Serial Old</h4><p>Serial的老年代版本，</p>
+<p>收集策略：标记-整理</p>
+<h4 id="2、Parallel-Old-收集器"><a href="#2、Parallel-Old-收集器" class="headerlink" title="2、Parallel Old 收集器"></a>2、Parallel Old 收集器</h4><p>策略：标记-整理</p>
+</blockquote>
+<h4 id="3、CMS收集器"><a href="#3、CMS收集器" class="headerlink" title="3、CMS收集器"></a>3、CMS收集器</h4><p>它是一种获取最短回收停顿时间的收集器，就是希望stw的时间越短越好。</p>
+<p>策略：标记-清除</p>
+<p>因为回收过程和用户线程一起进行，所以有四个步骤。</p>
+<p>1）初始标记，只是标记一下GC Roots，（<font color='red'><u><em><strong>是广义上的gcroots，包含了年轻代所有对象。所以初始标记除了和狭义直接关联，还有年轻代到老年代的引用）</strong></em></u></font>（STW）</p>
+<p>2）并发标记，从GC Roots遍历对象的过程，这个是和用户线程一起进行的。（这里会出现很多引用的变化，比如年轻代到老年代，直接在老年代分配、漏标）</p>
+<p>3）重新标记，因为和用户线程一起进行，对于漏标问题的解决方案是（写后屏障+增量更新（<font color='green'><u><em><strong>就是把新增加的引用进行记录</strong></em></u></font>））。（STW）</p>
+<p>4）并发清除，清除对象，因为策略是标记-清除，不需要移动所以同样选择了并发的方式。</p>
+<p>缺点：</p>
+<p>1）对处理资源敏感，而且大于1&#x2F;4。CMS的默认收集线程数量是（处理器数量+3）&#x2F;4。</p>
+<p>2）无法处理浮动垃圾（用户线程使得原来某些对象不是垃圾，但是当 CMS 进行清理的时候变成了垃圾，从可达到不可达，但是没扫出来），有可能触发full gc</p>
+<p>3）用的是标记清除，会有内存碎片</p>
+<p>​	</p>
+<h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><blockquote>
+<p>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。</p>
+<p>为了加快搜索，G1是使用card table和RSet。</p>
+<p>card table是CMS的解决方案，他可以避免对老年代进行整个扫描。他的做法是把region分成一个个512字节的card，然后用一个位0或者1去标记他的状态，如果有指向年轻代的对象，就置为1，否则0。所以你扫描的时候直接找card状态是1的区域就可以找到gcroot，不用对老年代扫描。</p>
+<p>Rset是G1提出来的，每个region都有rset，它记录了哪些region引用了当前的region。他是一个键值对的形式，键就是这个region编号，值就是card编号的集合，这样就把card table和rset配合起来了。</p>
+<p>维护这两个是依赖写屏障</p>
+</blockquote>
+<p>下面我们讲讲G1的垃圾收集过程，分为四个步骤</p>
+<p>然后他把region作为单次回收的最小单元，那每次回收都是region的整数倍。</p>
+<p>1、初始标记，只是标记一下和能直达的对象，这个和young gc密切相关，这个之前讲过（STW）</p>
+<p>2、并发标记，扫描对象图</p>
+<p>3、最终标记，处理并发标记中变化的哪些引用，这里对于漏标情况G1用的SATB（原始快照）（STW）</p>
+<p>4、筛选回收，后台维护一个优先级列表，跟踪每一个region的回收价值（空间大小和回收所需时间），在指定的停顿时间内回收回收价值最大的region。（STW）</p>
+<p>优点：可以指定最大停顿时间，不会产生内存碎片，按收益回收，分region的内存布局。</p>
+<p>缺点：内存占用和负载都比较高。</p>
+<p>为什么年轻代比以前的快？</p>
+<p>他是筛选回收，是通过region个数进行minor gc 不用对整个eden区minorgc ，而且有个容忍时间。</p>
+<p>G1的SATB算法为什么比CMS的增量标记算法快（原因之一）：</p>
+<p>① CMS的重新标记需要重新扫描所有root</p>
+<p>② G1：在开始标记的时候生成一个快照图，标记存活对象。所有被改变引用关系的对象都标记，至于它是不是真的存活。留给下一次gc扫描</p>
+<h3 id="三色标记"><a href="#三色标记" class="headerlink" title="三色标记"></a>三色标记</h3><p>三色标记在并发会出现问题。</p>
+<p>CMS解决对象消失问题，用的是写屏障+增量更新（黑色对象一旦新插入了指向白色对象的引用之后，它就变回灰色对象了，后续对这个对象再进行扫描）</p>
+<p>G1用的是，写屏障+STAB。（灰色对象要删除指向白色对象的引用关系的时候，就把这个删除的引用记录下来，涂成灰色，等并发扫描结束，再重新扫一次）</p>
+<p>ZGC用的是，读屏障+STAB</p>
+<h4 id="2、ZGC"><a href="#2、ZGC" class="headerlink" title="2、ZGC"></a>2、ZGC</h4><p>也是使用分区的内存分布，但是它有三种不同的区。小型、中型、大型。</p>
+<p>然后传统垃圾回收器是在markwork里面有个字段去标记的，但是ZGC标记是使用一种叫着色指针的机制。现在的计算机大多数64位，但是64肯定用不满，所以就把高位那一块拿出3位来实现着色机制的标记。</p>
+<p><img src="/../images/JVM/image-20231018155448410.png" alt="image-20231018155448410"></p>
+<p><strong>标记过程</strong></p>
+<ul>
+<li><p><strong>初始标记（STW，时间很短，小于1mm）</strong></p>
+<ul>
+<li>初始标记就是去扫GC Roots直接关联的对象，标记就是把蓝色变成绿色（44位置0,42位置1）</li>
+</ul>
+</li>
+<li><p><strong>并发标记（并发）</strong></p>
+<ul>
+<li>继续遍历对象图，把蓝色变成绿色（44位置0,42位置1）</li>
+<li>这里要用到<strong>三色标记</strong></li>
+</ul>
+</li>
+<li><p><strong>再标记</strong>（<strong>STW，时间很短，小于1mm，小于初始标记</strong>）</p>
+<ul>
+<li>三色标记会存在漏标的问题，重新标记<strong>并发标记阶段</strong>发生变化的对象，使用读屏障+SATB算法解决</li>
+</ul>
+</li>
+</ul>
+<p><strong>转移过程</strong></p>
+<ul>
+<li><strong>并发转移准备（并发）</strong><ul>
+<li>统计处本次收集过程要清理哪些region</li>
+</ul>
+</li>
+<li><strong>初始转移（STW，和初始标记差不多）</strong><ul>
+<li>把GC Roots直接关联的进行转移，颜色从绿色回到蓝色，（44位置为1,42位置为0）</li>
+</ul>
+</li>
+<li><strong>并发转移</strong><ul>
+<li>这里要维护转发表，记录老对象和新对象的转向关系。</li>
+<li>如果在这个阶段访问，那就依赖读屏障，去完成新老指针的修正。</li>
+<li><strong>其他指针的修正就依赖于并发标记这个阶段</strong></li>
+</ul>
+</li>
+</ul>
+<h2 id="JVM调优参数"><a href="#JVM调优参数" class="headerlink" title="JVM调优参数"></a>JVM调优参数</h2><p>jar包启动的时候java和 -jar直接可以去配置jvm的参数</p>
+<h2 id="JVM调优的参数有哪些？"><a href="#JVM调优的参数有哪些？" class="headerlink" title="JVM调优的参数有哪些？"></a>JVM调优的参数有哪些？</h2><blockquote>
+<p>换垃圾回收器 </p>
+<p>堆空间大小</p>
+<p>虚拟机栈大小</p>
+<p>eden区和幸存者区的大小比例</p>
+<p>新生代晋级老年代的阈值</p>
+</blockquote>
+<h2 id="JVM调优工具"><a href="#JVM调优工具" class="headerlink" title="JVM调优工具"></a>JVM调优工具</h2><blockquote>
+<p><font color='red'><u><em><strong>命令：</strong></em></u></font></p>
+<p>jps + jstack 查看进程内线程的堆栈信息</p>
+<p>jmap -dump 生成一个内存快照的信息</p>
+<p>jstat ：JVM性能监测工具。 显示伊甸区 幸存者区、老年区的比例</p>
+<p><font color='red'><u><em><strong>可视化工具：</strong></em></u></font></p>
+<p>jconsole</p>
+<p>visualVM</p>
+</blockquote>
+<h2 id="Java内存泄漏排查"><a href="#Java内存泄漏排查" class="headerlink" title="Java内存泄漏排查"></a>Java内存泄漏排查</h2><blockquote>
+<p>内存泄漏会逐渐累加导致内存溢出，内存溢出会发生在：虚拟机栈（stackoverflow）、方法区（OOM：metaspace）、堆空间（OOM：heap space）</p>
+<p>1、可以获得内存的快照dump（jmap -dump或者启动的时候就加上参数-XX：heapdumpOnOutOfMemery）</p>
+<p>2、visualVM去加载</p>
+</blockquote>
+<h2 id="CPU标高的排查"><a href="#CPU标高的排查" class="headerlink" title="CPU标高的排查"></a>CPU标高的排查</h2><p>top或者pidstat命令找到cpu明显过高的进程id，然后用进程id去找到线程id（ps H -eo pid,tid,%cpu | grep进程id），最后jstack 一下定位到该线程就可以</p>
+<p>标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、</p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/11/04/JVM/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/10/28/MySQL45%E8%AE%B2/"
+                            aria-label=": MYSQL45讲"
+                        >
+                            MYSQL45讲
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-10-28T00:00:00+08:00">
+	
+		    Oct 28, 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h4 id="执行一个MYSQL查询语句会发生什么？"><a href="#执行一个MYSQL查询语句会发生什么？" class="headerlink" title="执行一个MYSQL查询语句会发生什么？"></a>执行一个MYSQL查询语句会发生什么？</h4><blockquote>
+<p><strong>连接器</strong></p>
+<p>**查询缓存:**对于更新比较频繁的表，查询缓存的命中率很低的，在MYSQL8被移除。</p>
+<p><strong>分析器：</strong>包括<font color='red'><u><em><strong>词法分析和语法分析</strong></em></u></font>，语法分析就是分析符不符合语法要求，如果没有问题会构造出SQL 语法树</p>
+<p><strong>优化器</strong>：优化器就是确定一个执行效率高的<font color='red'><u><em><strong>执行方案</strong></em></u></font>，比如选择索引、连接表的顺序等等</p>
+<p><strong>执行器</strong>：</p>
+</blockquote>
+<h4 id="执行一个MYSQL更新操作有什么不同？"><a href="#执行一个MYSQL更新操作有什么不同？" class="headerlink" title="执行一个MYSQL更新操作有什么不同？"></a>执行一个MYSQL更新操作有什么不同？</h4><blockquote>
+<p>更新操作还会涉及两个表的操作，<font color='red'><u><em><strong>一个是redo log（解决崩溃恢复） 一个是binlog（备份）</strong></em></u></font></p>
+<p>这两种日志有以下三点不同。</p>
+<ol>
+<li>redo log 是 InnoDB 引擎特有的；binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。</li>
+<li>redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如“给 ID&#x3D;2 这一行的 c 字段加 1 ”。</li>
+<li>redo log 是循环写的，空间固定会用完；binlog 是可以追加写入的。“追加写”是指 binlog 文件写到一定大小后会切换到下一个，并不会覆盖以前的日志。</li>
+</ol>
+<p><img src="/../images/MYSQL%E5%A4%8D%E4%B9%A01/image-20231028134812838.png" alt="image-20231028134812838"></p>
+<p>write pos 是当前记录的位置,checkpoint 是当前要擦除的位置</p>
+<p>我们举一个例子来演示一下（<font color='red'><u><em><strong>两阶段提交</strong></em></u></font>）：</p>
+<ol>
+<li>执行器先找引擎取 ID&#x3D;2 这一行。ID 是主键，引擎直接用树搜索找到这一行。如果 ID&#x3D;2 这一行所在的数据页本来就在内存中，就直接返回给执行器；否则，需要先从磁盘读入内存，然后再返回。</li>
+<li>执行器拿到引擎给的行数据，把这个值加上 1，比如原来是 N，现在就是 N+1，得到新的一行数据，再调用引擎接口写入这行新数据。</li>
+<li>引擎将这行新数据更新到内存中，同时将这个更新操作记录到 redo log 里面，<font color='red'><u><em><strong>此时 redo log 处于 prepare 状态</strong></em></u></font>。然后告知执行器执行完成了，随时可以提交事务。</li>
+<li>执行器生成这个操作的 binlog，并把 binlog 写入磁盘。</li>
+<li>执行器调用引擎的<font color='red'><u><em><strong>提交事务接口，引擎把刚刚写入的 redo log 改成提交（commit）状态</strong></em></u></font>，更新完成。</li>
+</ol>
+</blockquote>
+<p>这两个日志的配合是使用两阶段提交</p>
+<p><img src="/Users/csen/Documents/Amusement/Sen-Blog/source/images/MYSQL1/image-20230805142953314.png"></p>
+<blockquote>
+<p>可以发现将redo log的写入分成了两个阶段，一个是prepare 一个commit</p>
+<p>在两阶段提交的情况下，是怎么实现崩溃恢复的呢？<br>首先比较重要的一点是，在写入redo log时，会顺便记录XID，即当前事务id。在写入binlog时，也会写入XID。</p>
+<p>如果在写入redo log之前崩溃，那么此时redo log与binlog中都没有，是一致的情况，崩溃也无所谓。</p>
+<p>如果在写入redo log prepare阶段后立马崩溃，之后会在崩恢复时，由于redo log没有被标记为commit。于是拿着redo log中的XID去binlog中查找，此时肯定是找不到的，那么执行回滚操作。</p>
+<p>如果在写入binlog后立马崩溃，在恢复时，由redo log中的XID可以找到对应的binlog，这个时候直接提交即可。</p>
+<p>总的来说，在崩溃恢复后，只要redo log不是处于commit阶段，那么就拿着redo log中的XID去binlog中寻找，找得到就提交，否则就回滚。</p>
+<p>在这样的机制下，两阶段提交能在崩溃恢复时，能够对提交中断的事务进行补偿，来确保redo log与binlog的数据一致性。</p>
+</blockquote>
+<p><strong>索引</strong></p>
+<p>所以，从性能和存储空间方面考量，<font color='red'><u><em><strong>自增主键</strong></em></u></font>往往是更合理的选择。<strong>主键长度越小，普通索引的叶子节点就越小，普通索引占用的空间也就越小。</strong></p>
+<p>有没有什么场景适合用业务字段直接做主键的呢？还是有的。比如，有些业务的场景需求是这样的：</p>
+<ol>
+<li>只有一个索引；</li>
+<li>该索引必须是唯一索引。</li>
+</ol>
+<p>索引建立的准则：</p>
+<p>1、尽量少维护索引，</p>
+<p>2、空间</p>
+<h2 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h2><h3 id="全局锁"><a href="#全局锁" class="headerlink" title="全局锁"></a>全局锁</h3><p>典型的使用场景就是做全库的逻辑备份，对所有的表进行 行锁定，从而获取一致性视图，保证数据的完整性。加了全局锁就是只能读</p>
+<ul>
+<li><p>一旦加了全局锁之后，其他的DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句，也就是处于只读状态，而数据备份就是查询操作。 那么数据在进行逻辑备份的过程中，数据库中的数据就是不会发生变化的，这样就保证了数据的一致性 和完整性 .</p>
+</li>
+<li><p>语法</p>
+<p>1、加全局锁</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">flush tables <span class="keyword">with</span> read lock;</span><br></pre></td></tr></table></figure>
+
+<p>2、数据备份</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>pxxx db_name <span class="operator">-</span><span class="operator">&gt;</span> xxx.sql;</span><br></pre></td></tr></table></figure>
+
+<p>3、释放锁</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">unlock tables;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="数据库中加全局锁，是一个比较重的操作，存在的问题有："><a href="#数据库中加全局锁，是一个比较重的操作，存在的问题有：" class="headerlink" title="数据库中加全局锁，是一个比较重的操作，存在的问题有："></a>数据库中加全局锁，是一个比较重的操作，存在的问题有：</h4><ul>
+<li>如果在主库上备份，那么在备份期间都不能执行更新，业务基本上就得停摆。</li>
+<li>如果在从库上备份，那么在备份期间从库不能执行主库同步过来的二进制日志（binlog），会导致主从延迟。</li>
+</ul>
+<p>在InnoDB引擎中，我们可以在备份时加上参数 –single-transaction 参数来完成不加锁的一致 性数据备份。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysqldump --single-transaction -uroot -pxxx db_name -&gt; xxx.sql;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="表级锁"><a href="#表级锁" class="headerlink" title="表级锁"></a>表级锁</h2><p>表级锁，主要分为3类：</p>
+<ul>
+<li>表锁</li>
+<li>元数据锁（meta data lock，MDL）</li>
+<li>意向锁</li>
+</ul>
+<p>表锁</p>
+<p>对于表锁，又可以分为2类：</p>
+<ul>
+<li>表共享读锁（read lock）</li>
+<li>表独占写锁（write lock）</li>
+</ul>
+<p>结论: 读锁不会阻塞其他客户端的读，但是会阻塞写。写锁既会阻塞其他客户端的读，又会阻塞 其他客户端的写。</p>
+<h3 id="元数据锁"><a href="#元数据锁" class="headerlink" title="元数据锁"></a>元数据锁</h3><p>再来说说<strong>元数据锁</strong>（MDL）。</p>
+<p>我们不需要显示的使用 MDL，因为当我们对数据库表进行操作时，会自动给这个表加上 MDL：</p>
+<ul>
+<li>对一张表进行 CRUD 操作时，加的是 <strong>MDL 读锁</strong>；</li>
+<li>对一张表做结构变更操作的时候，加的是 <strong>MDL 写锁</strong>；</li>
+</ul>
+<p>MDL 是为了保证当用户对表执行 CRUD 操作时，防止其他线程对这个表结构做了变更。</p>
+<p>当有线程在执行 select 语句（ 加 MDL 读锁）的期间，如果有其他线程要更改该表的结构（ 申请 MDL 写锁），那么将会被阻塞，直到执行完 select 语句（ 释放 MDL 读锁）。</p>
+<p>反之，当有线程对表结构进行变更（ 加 MDL 写锁）的期间，如果有其他线程执行了 CRUD 操作（ 申请 MDL 读锁），那么就会被阻塞，直到表结构变更完成（ 释放 MDL 写锁）。</p>
+<blockquote>
+<p>MDL 不需要显示调用，那它是在什么时候释放的?</p>
+</blockquote>
+<p>MDL 是在事务提交后才会释放，这意味着<strong>事务执行期间，MDL 是一直持有的</strong>。</p>
+<p>MDL 加锁过程是系统自动控制，无需显式使用，在访问一张表的时候会自动加上。MDL 锁主要作用是维 护表元数据的数据一致性，在表上有活动事务的时候，不可以对元数据进行写入操作。为了避免DML与 DDL冲突，保证读写的正确性。</p>
+<h3 id="意向锁"><a href="#意向锁" class="headerlink" title="意向锁"></a>意向锁</h3><p>我觉得意向锁主要还是解决行锁和表锁之间的冲突问题。</p>
+<ul>
+<li>在使用 InnoDB 引擎的表里对某些记录加上「共享锁」之前，需要先在表级别加上一个「意向共享锁」；</li>
+<li>在使用 InnoDB 引擎的表里对某些纪录加上「独占锁」之前，需要先在表级别加上一个「意向独占锁」；</li>
+</ul>
+<p>也就是，当执行插入、更新、删除操作，需要先对表加上「意向独占锁」，然后对该记录加行级独占锁。</p>
+<p><img src="/../images/MYSQL%E5%A4%8D%E4%B9%A01/20e0f35589584352bd15e817668a0886.png" alt="img"></p>
+<p><img src="/../images/MYSQL%E5%A4%8D%E4%B9%A01/6e6b275c2d6d4dfcbbb338be4f61bee9.png" alt="img"></p>
+<p>所以，<strong>意向锁的目的是为了快速判断表里是否有记录被加锁</strong>。</p>
+<h2 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h2><p>InnoDB实现了以下两种类型的行锁：</p>
+<ul>
+<li>共享锁（S）：允许一个事务去读一行，阻止其他事务获得相同数据集的排它锁。</li>
+<li>排他锁（X）：允许获取排他锁的事务更新数据，阻止其他事务获得相同数据集的共享锁和排他 锁</li>
+</ul>
+<p><img src="/Users/csen/Documents/Amusement/Sen-Blog/source/images/MYSQL1/image-20230805221422216.png" alt="image-20230805221422216"></p>
+<h1 id="隔离性与隔离级别"><a href="#隔离性与隔离级别" class="headerlink" title="隔离性与隔离级别"></a>隔离性与隔离级别</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_35794878/article/details/125741468">https://blog.csdn.net/weixin_35794878/article/details/125741468</a></p>
+<p>事务就是要保证一组数据库操作，要么全部成功，要么全部失败。在 MySQL 中，事务支持是在引擎层实现的。你现在知道，MySQL 是一个支持多引擎的系统，但并不是所有的引擎都支持事务。比如 MySQL 原生的 MyISAM 引擎就不支持事务，这也是 MyISAM 被 InnoDB 取代的重要原因之一</p>
+<p>在谈隔离级别之前，你首先要知道，你隔离得越严实，效率就会越低。因此很多时候，我们都要在二者之间寻找一个平衡点。SQL 标准的事务隔离级别包括：读未提交（read uncommitted）、读提交（read committed）、可重复读（repeatable read）和串行化（serializable ）。下面我逐一为你解释：</p>
+<ul>
+<li>读未提交是指，一个事务还没提交时，它做的变更就能被别的事务看到。</li>
+<li>读提交是指，一个事务提交之后，它做的变更才会被其他事务看到。</li>
+<li>可重复读是指，一个事务执行过程中看到的数据，总是跟这个事务在启动时看到的数据是一致的。当然在可重复读隔离级别下，未提交变更对其他事务也是不可见的。</li>
+<li>串行化，顾名思义是对于同一行记录，“写”会加“写锁”，“读”会加“读锁”。当出现读写锁冲突的时候，后访问的事务必须等前一个事务执行完成，才能继续执行。</li>
+</ul>
+<h1 id="事务隔离的实现"><a href="#事务隔离的实现" class="headerlink" title="事务隔离的实现"></a>事务隔离的实现</h1><h2 id="实现隔离级别的方式："><a href="#实现隔离级别的方式：" class="headerlink" title="实现隔离级别的方式："></a>实现隔离级别的方式：</h2><p>事务有四个隔离级别</p>
+<p><strong>一级封锁协议 (对应 read uncommited)</strong> 　<br>一级封锁协议是：事务在对需要修改的数据上面（就是在发生修改的瞬间）对其加共享锁（其他事务不能更改，但是可以读取-导致“脏读”），直到事务结束才释放。事务结束包括正常结束（COMMIT）和非正常结束（ROLLBACK）。</p>
+<p><strong>二级封锁协议 （对应read commited)</strong>　<br>二级封锁协议是：1）事务在对需要更新的数据上（就是发生更新的瞬间）加排他锁（直到事务结束），防止其他事务读取未提交的数据，这样，也就避免了“脏读”的情况。2）事务对当前被读取的数据上面加共享锁（当读到时加上共享锁），一旦读完该行，立即释放该该行的共享锁-从数据库的底层实现更深入的来理解，既是，数据库会对游标当前的数据上加共享锁，但是当游标离开当前行的时候，立即释放该行的共享锁。</p>
+<p><strong>三级封锁协议 （对应reapetable read ）</strong>（默认）<br>三级封锁协议是：二级封锁协议加上事务在读取数据的瞬间必须先对其加共享锁，但是直到事务结束才释放，这样保证了可重复读（既是其他的事务职能读取该数据，但是不能更新该数据）。</p>
+<p><strong>最强封锁协议（对应Serialization)</strong><br>四级封锁协议是对三级封锁协议的增强，其实现机制也最为简单，直接对事务中所读取或者更改的数据所在的表加表锁，也就是说，其他事务不能读写该表中的任何数据。这样所有的脏读，不可重复读，幻读，都得以避免</p>
+<h3 id="MVCC。"><a href="#MVCC。" class="headerlink" title="MVCC。"></a>MVCC。</h3><p><strong>MVCC</strong> 在 <strong>MySQL InnoDB</strong> 中的实现主要是为了提高数据库并发性能，用更好的方式去处理读-写冲突，做到即使有读写冲突时，也能做到不加锁，非阻塞并发读。可认为MVCC是行级锁的一个变种，但是它在很多情况下避免了加锁操作，因此额外开销更低。</p>
+<p>什么是当前读和快照读？<br>在学习 MVCC 多版本并发控制之前，我们必须先了解一下，什么是 MySQL InnoDB 下的当前读和快照读?</p>
+<p>当前读<br>像 select lock in share mode (共享锁), select for update; update; insert; delete (排他锁)这些操作都是一种当前读，为什么叫当前读？就是它读取的是记录的最新版本，读取时还要保证其他并发事务不能修改当前记录，会对读取的记录进行加锁</p>
+<p>快照读<br>像不加锁的 select 操作就是快照读，即不加锁的非阻塞读；快照读的前提是隔离级别不是串行级别，串行级别下的快照读会退化成当前读；之所以出现快照读的情况，是基于提高并发性能的考虑，快照读的实现是基于多版本并发控制，即 MVCC ,可以认为 MVCC 是行锁的一个变种，但它在很多情况下，避免了加锁操作，降低了开销；既然是基于多版本，即快照读可能读到的并不一定是数据的最新版本，而有可能是之前的历史版本</p>
+<p>说白了 MVCC 就是为了实现读-写冲突不加锁，而这个读指的就是快照读, 而非当前读，当前读实际上是一种加锁的操作，是悲观锁的实现<br>当前读，快照读和MVCC的关系</p>
+<p>MVCC 多版本并发控制是 「维持一个数据的多个版本，使得读写操作没有冲突」 的概念，只是一个抽象概念，并非实现</p>
+<p>因为 MVCC 只是一个抽象概念，要实现这么一个概念，MySQL 就需要提供具体的功能去实现它，「快照读就是 MySQL 实现 MVCC 理想模型的其中一个非阻塞读功能」。而相对而言，当前读就是悲观锁的具体功能实现</p>
+<p>要说的再细致一些，快照读本身也是一个抽象概念，再深入研究。MVCC 模型在 MySQL 中的具体实现则是由 3 个隐式字段，undo 日志 ， Read View 等去完成的，具体可以看下面的 MVCC 实现原理</p>
+<p>MVCC 能解决什么问题，好处是？<br>数据库并发场景有三种，分别为：</p>
+<p>读-读：不存在任何问题，也不需要并发控制<br>读-写：有线程安全问题，可能会造成事务隔离性问题，可能遇到脏读，幻读，不可重复读<br>写-写：有线程安全问题，可能会存在更新丢失问题，比如第一类更新丢失，第二类更新丢失<br>MVCC 带来的好处是？<br>多版本并发控制（MVCC）是一种用来解决读-写冲突的无锁并发控制，也就是为事务分配单向增长的时间戳，为每个修改保存一个版本，版本与事务时间戳关联，读操作只读该事务开始前的数据库的快照。 所以 MVCC 可以为数据库解决以下问题</p>
+<p>在并发读写数据库时，可以做到在读操作时不用阻塞写操作，写操作也不用阻塞读操作，提高了数据库并发读写的性能<br>同时还可以解决脏读，幻读，不可重复读等事务隔离问题，但不能解决更新丢失问题<br>小结一下咯<br>简而言之，MVCC 就是因为大佬们，不满意只让数据库采用悲观锁这样性能不佳的形式去解决读-写冲突问题，而提出的解决方案，所以在数据库中，因为有了 MVCC，所以我们可以形成两个组合：</p>
+<ul>
+<li><code>MVCC + 悲观锁</code><br>MVCC解决读写冲突，悲观锁解决写写冲突</li>
+<li><code>MVCC + 乐观锁</code><br>MVCC 解决读写冲突，乐观锁解决写写冲突</li>
+</ul>
+<p>这种组合的方式就可以最大程度的提高数据库并发性能，并解决读写冲突，和写写冲突导致的问题</p>
+<p>MVCC只在repeatable read和read committed两个隔离级别下工作。其他两个隔离级别都和MVCC不兼容，因为read uncommitted总是读取最新的数据行，而不是符合当前事务版本的数据行。而serializable则会对所有读取的行都加锁。</p>
+<p><strong>READ COMMITTED —— 每次读取数据前都生成一个ReadView</strong></p>
+<p><strong>REPEATABLE READ —— 在第一次读取数据时生成一个ReadView</strong></p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/10/28/MySQL45%E8%AE%B2/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
+                            aria-label=": 设计模式"
+                        >
+                            设计模式
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-10-10T00:00:00+08:00">
+	
+		    Oct 10, 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h1 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h1><h2 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h2><p><strong>是一种 if else 的优化方法</strong>，一个策略接口由不同的实现策略，传进来不同的参数返回不同的策略。</p>
+<p>但是原始的策略模式，他如果遇到参数是可变的，那他依旧会尽力if else的阶段，那就意义不大。所以我们的</p>
+<p>优化方法就是枚举类+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的，</p>
+<p>抽奖的时候根据抽奖算法的id是1还是2，直接去map里面get就可以；生成订单id的时候用雪花还是美团哪一种方法，直接去map里面找</p>
+<h2 id="模版模式"><a href="#模版模式" class="headerlink" title="模版模式"></a>模版模式</h2><p>模版模式的主要思路就是把自己要实现的功能抽象成一组<strong>步骤</strong>，也就是在抽象类中定义算法的骨架，具体实现留给子类。但是这里有一点非常重要，就是模版类的流程是定义好的，或者说定死了，子类就是在每一个步骤中实现自己的个性化。</p>
+<h2 id="工厂模式"><a href="#工厂模式" class="headerlink" title="工厂模式"></a>工厂模式</h2><blockquote>
+<p>工厂模式有三种，简单工厂、工厂模式、抽象工厂模式。</p>
+<p><font color='red'><u>**简单工厂（工厂不是抽象的）只适合单一产品的生产，他的思路很简单，就是根据不同信息new出来不同的对象。比如车 **</u></font></p>
+<p><font color='red'><u><em><strong>工厂模式是把原来的工厂作为抽象模型创建不同的子类工厂生产不同的商品。</strong></em></u></font></p>
+<p><font color='red'><u><em>*<em><strong>抽象工厂模式</strong>就考虑了产品族的问题，一个工厂可以生产多等级的产品，说得简单点就是在抽象工厂里面增加生产其他产品的接口，子类去实现它。</em>*</em></u></font></p>
+</blockquote>
+<h2 id="组合模式"><a href="#组合模式" class="headerlink" title="组合模式"></a>组合模式</h2><p>组合模式用树形结构描述整体与部分的关系中 。最顶层的节点称为根节点 ，根节点下面可以包含树枝节点和叶子节点 ，树枝节点下面又可以包含树枝节点和叶子节点。宗旨是通过将单个对象（叶子节点）和组合对象（树枝节点）用相同的接口进行表示 ，使得客户对单个对象和组合对象的使用具有一致性</p>
+<h2 id="代理模式"><a href="#代理模式" class="headerlink" title="代理模式"></a>代理模式</h2><blockquote>
+<p>代理分成<font color='blue'><u><em><strong>静态代理和动态代理</strong></em></u></font>，静态代理需要自己实现对每一个方法对代理，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。</p>
+<p><strong>动态代理</strong>是代理类在程序运行时创建的代理方式被成为动态代理。</p>
+<p>动态代理有两种方式一种是jdk方法，一种是cglib方法</p>
+<p>jdk代理依赖于一个Proxy类和一个InvocationHandler接口<strong>，</strong>通过这个类和这个接口可以生成JDK动态代理类和动态代理对象。</p>
+<p><font color='red'><u><em><strong>InvocationHandler接口，他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组.被代理方法和参数组是可以变化的，所以在这里我们说实现了动态的意义。</strong></em></u></font> 代理方法和参数组其实我们可以依赖于最基础反射得到</p>
+<p><font color='red'><u><em><strong>那我们怎么去调用这个方法呢？先要靠Proxy类和他的方法newproxyInstance，getProxyClass0(loader, intfs)这个类的产生就是整个动态代理的关键，产生的类反编译之后知道，调用被代理对象的方法其实会直接调用我们InvocationHandler接口的invoke方法，在invoke方法中调用了被代理对象的相应方法。</strong></em></u></font></p>
+<p><strong>下面来讲CGLIB代理</strong></p>
+<p><strong>在 CGLIB 动态代理机制中 <code>MethodInterceptor</code> 接口和 <code>Enhancer</code> 类是核心。你可以通过 <code>Enhancer</code>类来动态获取被代理类，</strong></p>
+<p>  <font color='blue'><u><em><strong>CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E6%8B%A6%E6%88%AA%E5%99%A8&spm=1001.2101.3001.7020">拦截器</a>拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 <code>MethodInterceptor</code> 中的 <code>intercept</code> 方法。</strong></em></u></font></p>
+<p>为什么JDK动态代理只能代理接口实现类，原因是JDK动态代理是基于接口实现的。</p>
+<p>有两个原因，一个是继承Proxy。第二个是当你使用Proxy类创建代理对象时，你需要指定一个接口列表来表示理对象的类型。代理对象的类型是由接口列表决定的，因此只有实现了接口的类才能被代理。如果你想代理一个类而不是一个接口，你需要使用其他的代理技术，比如CGLIB。</p>
+<p><strong>二者区别</strong><br>总结一下两者的区别吧：</p>
+<p>JDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承 java.lang.reflect.Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰<br>JDK 和 CGLIB 动态代理都是在运行期生成字节码。而 JDK 是直接写 Class 字节码；而 CGLIB 使用 ASM 框架写 Class 字节码（不鼓励直接使用ASM，因为它要求你必须对 JVM 内部结构包括 class 文件的格式和指令集都很熟悉）<br>JDK 通过反射调用方法，CGLIB 通过 FastClass 机制直接调用方法。所以，CGLIB 执行的效率较高<br>JDK 核心是实现 InvocationHandler接口，使用 invoke()方法进行面向切面的处理，调用相应的通知；CGLIB 动态代理是利用 asm 开源包，对代理对象类的 class 文件加载进来，通过修改其字节码生成子类来处理。核心是实现 MethodInterceptor 接口，使用 intercept() 方法进行面向切面的处理，调用相应的通知。</p>
+</blockquote>
+<h2 id="工厂模式-1"><a href="#工厂模式-1" class="headerlink" title="工厂模式"></a>工厂模式</h2><ul>
+<li><h2 id="讲一讲简单工厂模式以及在项目中的应用？"><a href="#讲一讲简单工厂模式以及在项目中的应用？" class="headerlink" title="讲一讲简单工厂模式以及在项目中的应用？"></a><strong>讲一讲简单工厂模式以及在项目中的应用？</strong></h2></li>
+</ul>
+<p>简单工厂模式包含三块，工厂：负责实现创建实例的内部逻辑；抽象产品：负责描述所有实例共有的接口；具体产品：被创建的对象，简单工厂只适合单一产品的生产。其实思路很简单，就是把根据不同信息new出不同对象的这一个过程抽象出来了，不然每次都要走一遍这种代码就比较繁琐。</p>
+<p>我的项目里面就是对于发放奖品的时候选用哪一个奖品用到了简单工厂。</p>
+<h2 id="组合模式-1"><a href="#组合模式-1" class="headerlink" title="组合模式"></a>组合模式</h2><ul>
+<li><h2 id="讲一讲组合模式以及在项目中的应用"><a href="#讲一讲组合模式以及在项目中的应用" class="headerlink" title="讲一讲组合模式以及在项目中的应用"></a><strong>讲一讲组合模式以及在项目中的应用</strong></h2></li>
+</ul>
+<p>这里我们是用组合模式搭建规则引擎树，规则树有两种对象。一种是树节点，一种是树枝，树节点包括连接的树枝集合，树枝里面包含了连接的前后两个树节点和判断依据，这样子就能构建出一个有判断规则的规则树了。具体的流程就是假设我们现在在根节点，然后看了下根节点的规则是性别，那我就拿到年龄规则过滤器，遍历根节点的树枝集合，假如这里有两个树枝，一个树枝的规则是&#x3D;男，就走这个树枝；另一个树枝的规则是&#x3D;女，就走这个树枝。这时候我们拿出用户的信息一对比，发现应该走男生那个树枝。这样就进入下一个节点，然后这个节点的判断规则是年龄，可能大于某个枝走某个树枝，小于就走另外的树枝。直到我们找到叶子结点就结束。</p>
+<h2 id="装饰器模式"><a href="#装饰器模式" class="headerlink" title="装饰器模式"></a>装饰器模式</h2><blockquote>
+<p><font color='red'><u><em><strong>装饰器模式其实就是在原本类的基础上包装一个装饰器类，这个类在执行源类的行为的前后再加入一些新的逻辑。</strong></em></u></font></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">抽象组件</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Component</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line">具体组件（需要被装饰的组件）</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConcreteComponent</span> <span class="keyword">extends</span> <span class="title class_">Component</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;具体组件处理业务逻辑&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">抽象装饰器（继承、实现抽象组件，并持有抽象组件）</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Decorator</span> <span class="keyword">extends</span> <span class="title class_">Component</span> &#123;</span><br><span class="line"></span><br><span class="line">     * 抽象组件</span><br><span class="line">    <span class="keyword">public</span> Component component;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Decorator</span><span class="params">(Component component)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.component = component;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        component.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">具体装饰器A继承抽象装饰器</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConcreteDecorator</span> <span class="keyword">extends</span> <span class="title class_">Decorator</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ConcreteDecorator</span><span class="params">(Component component)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(component);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">before</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;ConcreteDecorator前置操作....&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">after</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;ConcreteDecorator后置操作....&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">组件本身执行的动作</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        before();</span><br><span class="line">        component.execute();</span><br><span class="line">        after();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">decorator 通用写法测试</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">//创建需要被装饰的组件</span></span><br><span class="line">        <span class="type">Component</span> <span class="variable">component</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConcreteComponent</span>();</span><br><span class="line">        <span class="comment">//给对象透明的增加功能并调用</span></span><br><span class="line">        <span class="type">Decorator</span> <span class="variable">decorator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConcreteDecorator</span>(component);</span><br><span class="line">        decorator.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="适配器模式"><a href="#适配器模式" class="headerlink" title="适配器模式"></a>适配器模式</h2><ul>
+<li>目标角色（Target）：该角色定义把其他类转换为何种接口。</li>
+<li>源角色（Adaptee）：被适配的对象</li>
+<li>适配器角色（Adapter）：该对象将源对象转换成目标接口</li>
+</ul>
+<p>总结一下就是：<font color='green'><u><em><strong>我们在适配器里面实现目标角色的接口，然后在这个接口里面去调用源角色的方法</strong></em></u></font>。</p>
+<p>如果这个源角色类需继承，那我们就叫类适配器。如果直接作为适配器的一个变量，那么就叫做对象适配器。</p>
+<p>分为两类：类适配器和 对象适配器</p>
+<h2 id="桥接模式"><a href="#桥接模式" class="headerlink" title="桥接模式"></a>桥接模式</h2><p><strong>桥接模式通过将继承改为组合的方式来解决这个问题</strong>。具体来说，就是抽取其中一个维度并使之成为独立的类层次，这样就可以在初始类中引用这个新层次的对象，从而使得一个类不必拥有所有的状态和行为。	</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BridgeD</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Color</span> <span class="variable">color</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">yellow</span>();</span><br><span class="line">        <span class="type">bag1</span> <span class="variable">bag1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">bag1</span>(color);</span><br><span class="line">        bag1.get();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">Color</span>&#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">get</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">yellow</span> <span class="keyword">implements</span> <span class="title class_">Color</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;yellow&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">bag</span> &#123;</span><br><span class="line">    Color color;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">bag</span><span class="params">(Color color)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.color = color;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">        color.get();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">bag1</span> <span class="keyword">extends</span> <span class="title class_">bag</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">bag1</span><span class="params">(Color color)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(color);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">get</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;bag1&quot;</span>);</span><br><span class="line">        <span class="built_in">super</span>.get();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="外观模式"><a href="#外观模式" class="headerlink" title="外观模式"></a>外观模式</h2><p>外观模式可以理解为转换一群接口，客户只要调用这一个接口而不用调用多个接口才能达到目的，也不需关心这个子系统的内部细节。就是解决多个复杂接口带来的使用困难，起到简化用户操作的作用。</p>
+<h2 id="享元模式"><a href="#享元模式" class="headerlink" title="享元模式"></a>享元模式</h2><blockquote>
+<p><strong>其本质就是缓存共享对象，降低内存消耗</strong>。</p>
+</blockquote>
+<p>**享元模式其实就是工厂模式的一个改进机制，享元模式同样要求创建一个或一组对象，并且就是通过**工厂方法**生成对象的，不同的地方在于享元模式增加了*<em>缓存*<em>的功能</em></em></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 1.抽象享元类（FlyWeight）：单车</span></span><br><span class="line"><span class="comment"> * 单车有很多共同的信息比如：价格、颜色</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Bike</span> &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> String color;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">protected</span> <span class="type">int</span> price;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Bike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">this</span>.color=color;</span><br><span class="line">        <span class="built_in">this</span>.price=price;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">//展示单车信息</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span>;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 2.具体享元类（ConcreteFlyWeight）：摩拜单车</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Mobike</span> <span class="keyword">extends</span> <span class="title class_">Bike</span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Mobike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">super</span>(color,price);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;生产成功：摩拜单车——&quot;</span>+color+<span class="string">&quot;,&quot;</span>+<span class="string">&quot;起步价&quot;</span>+price+<span class="string">&quot;元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 2.具体享元类（ConcreteFlyWeight）：美团单车</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MTBike</span> <span class="keyword">extends</span> <span class="title class_">Bike</span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MTBike</span><span class="params">(String color,<span class="type">int</span> price)</span>&#123;</span><br><span class="line">        <span class="built_in">super</span>(color,price);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">show</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;生产成功：小黄车——&quot;</span>+color+<span class="string">&quot;,&quot;</span>+<span class="string">&quot;起步价&quot;</span>+price+<span class="string">&quot;元&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Created by njy on 2023/6/21</span></span><br><span class="line"><span class="comment"> * 3.享元工厂类（FlyWeightFactory）：单车工厂</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BikeFactory</span> &#123;</span><br><span class="line">    <span class="comment">//map缓存</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Map&lt;String,Bike&gt; bikeMap=<span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Bike <span class="title function_">getBike</span><span class="params">(String color,String type)</span>&#123;</span><br><span class="line">        String key=color+<span class="string">&quot;_&quot;</span>+type;</span><br><span class="line">        <span class="keyword">if</span>(bikeMap.containsKey(key))&#123;</span><br><span class="line">            <span class="comment">//如果已经有该颜色和类型的单车，直接返回</span></span><br><span class="line">            <span class="keyword">return</span> bikeMap.get(key);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            Bike bike=<span class="literal">null</span>;</span><br><span class="line">            <span class="comment">//没有，创建并放入缓存</span></span><br><span class="line">            <span class="keyword">if</span>(<span class="string">&quot;mobike&quot;</span>.equals(type))&#123;</span><br><span class="line">                bike=<span class="keyword">new</span> <span class="title class_">Mobike</span>(color,<span class="number">1</span>);</span><br><span class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">&quot;MT&quot;</span>.equals(type))&#123;</span><br><span class="line">                bike=<span class="keyword">new</span> <span class="title class_">MTBike</span>(color,<span class="number">2</span>);</span><br><span class="line">            &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;抛异常！没有该类型的单车&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//放入缓存</span></span><br><span class="line">            bikeMap.put(key,bike);</span><br><span class="line">            <span class="keyword">return</span> bike;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/10/09/Redis/"
+                            aria-label=": Redis"
+                        >
+                            Redis
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-10-09T00:00:00+08:00">
+	
+		    Oct 09, 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h1 id="1、Redis数据结构"><a href="#1、Redis数据结构" class="headerlink" title="1、Redis数据结构"></a>1、Redis数据结构</h1><p>我在项目中用到的数据结构有String、Hash。</p>
+<p>String我主要用于三类。 1）库存和订单数量，2）还有一些策略对象、活动对象，这种读多写少，没有频繁变化的对象。3）分布式锁。</p>
+<p>Hashmap 我主要用于活动剩余的奖品数量和还有用户剩余次数。本身奖品是一个对象，可以用String+JSON的格式，但是奖品数量这个属性频繁变化，我就把他抽出来放到HashMap里面了。</p>
+<blockquote>
+<p>Redis的对象都是RedisObject，RedisObject里面有type encoding ptr。如果是String类型，且这个字符串保存的是整数型，那就会把encoding设置成int，然后ptr用来存储整数。如果是一个字符串且小于32字节，就是embstr的SDS，如果是大于32字节就是RAW格式的SDS。embstr分配一次连续的内存空间，RAW格式要分配两次分别保存RedisObeject和SDS。(SDS包括字符串长度、分配的空间、sds类型、字节数组。)</p>
+</blockquote>
+<blockquote>
+<p>List是<strong>quicklist</strong>（其实就是双向链表 + 压缩列表），链表的每个节点就是一个压缩列表，压缩列表是一个连续的内存块组成的顺序性数据结。链表的形式减少用于解决连锁更新的问题。</p>
+</blockquote>
+<blockquote>
+<p>HashMap是压缩列表和哈希表。哈希冲突用链式哈希解决。</p>
+</blockquote>
+<blockquote>
+<p>SET 是整数集合（元素个数少于512）、哈希表。整数集合就是一块连续的数组</p>
+</blockquote>
+<blockquote>
+<p>ZSET是<strong>压缩列表或跳表</strong>。<strong>跳表是在链表基础，对部分节点分层，如果next的值大于我们要找的就从下一层找结果</strong>。<strong>跳表的相邻两层的节点数量最理想的比例是 2:1</strong>。</p>
+<p><strong>跳表在创建节点时候，会生成范围为[0-1]的一个随机数，如果这个随机数小于 0.25（相当于概率 25%），那么层数就增加 1 层，然后继续生成下一个随机数，直到随机数的结果大于 0.25 结束，最终确定该节点的层数</strong>。</p>
+</blockquote>
+<h1 id="2、Redis线程模型"><a href="#2、Redis线程模型" class="headerlink" title="2、Redis线程模型"></a>2、Redis线程模型</h1><h2 id="2、线程模型是怎么样的？是不是单线程"><a href="#2、线程模型是怎么样的？是不是单线程" class="headerlink" title="2、线程模型是怎么样的？是不是单线程"></a>2、线程模型是怎么样的？是不是单线程</h2><p><font color='red'><u><em><strong>1）以前严格意义上来说也不是单线程，还有后台线程，比如aof刷盘</strong></em></u></font><br><font color='red'><u><em><strong>2）6.0.x后，由于网络的瓶颈出现，Redis采用了多线程来解决这个问题，具体的步骤是</strong></em></u></font></p>
+<p>流程简述如下：</p>
+<ul>
+<li>主线程获取 socket 放入等待列表</li>
+<li>将 socket 分配给各个 IO 线程（并不会等列表满）</li>
+<li>主线程<code>阻塞等待 IO 线程(多线程)</code>读取 socket 完毕</li>
+<li>主线程执行命令 - <code>单线程</code>（如果命令没有接收完毕，会等 IO 下次继续）</li>
+<li>主线程<code>阻塞等待 IO 线程(多线程)</code>将数据回写 socket 完毕（一次没写完，会等下次再写）</li>
+</ul>
+<p>所以多线程就是把最耗时的socket读、请求解析、socket写，这个外包给io线程组，实现socet读写并行化，主线程只去执行命令。所以redis为什么快，一个多线程、多路复用、内存、执行命令的单线程</p>
+<p><img src="/../images/Redis/image-20231031151613941.png" alt="image-20231031151613941"></p>
+<p>其实redis的单线程是先初始化后一直走一个循环处理。初始化的时候就做了三件事情：</p>
+<p><img src="/../images/Redis/image-20231023173508951.png" alt="image-20231023173508951"></p>
+<ul>
+<li>创建一个 epoll 对象，就是我们的io多路复用的实现</li>
+<li>对配置的监听端口进行 listen</li>
+<li>把 listen socket 让 epoll 给管理起来，注册accept处理函数。</li>
+</ul>
+<p>做完这些之前之后就要真正处理用户请求，他会调用 epoll_wait 函数等待事件的到来，交给事件分发器。</p>
+<ul>
+<li>若发现 listen socket 上有新连接到达，就调用我们刚刚注册的那个accept函数，并追加这个client socket到epoll中进行管理</li>
+<li>若发现其它 socket 上的读写请求，那就调用相应的读事件处理，和写事件处理。</li>
+</ul>
+<p>当然这里6.0以后引入了多线程，那接收数据、解析数据、写回数据都交给了io线程组，和主线程无关了。</p>
+<h2 id="3、为什么这么快？高性能"><a href="#3、为什么这么快？高性能" class="headerlink" title="3、为什么这么快？高性能"></a>3、为什么这么快？高性能</h2><p>基于内存</p>
+<p>单线程执行命令</p>
+<p>io多路复用</p>
+<p>多线程读写socket</p>
+<h2 id="6、讲一下io多路复用"><a href="#6、讲一下io多路复用" class="headerlink" title="6、讲一下io多路复用"></a>6、讲一下io多路复用</h2><p>首先我们知道用户缓冲区去内核缓冲区读数据的时候，有两个耗时的过程，一个是等待从网卡来的数据，一个是内核拷贝到用户缓冲区。</p>
+<p>阻塞io和非阻塞io都是先调用revfrom，阻塞io两个都要等、非阻塞需要等待拷贝这个过程。但是io多路复用，先监听一个socket集合，然后某个socket数据就绪了，发了个可读的通知，这时候才调用revfrom去读。</p>
+<p>io多路复用有多种实现，select、poll、epoll。select和poll收到可读通知，需要自己去遍历，是哪个发了可读通知。epoll是直接告诉你是哪个socket就绪。	</p>
+<h2 id="4、采用单线程原因"><a href="#4、采用单线程原因" class="headerlink" title="4、采用单线程原因"></a>4、采用单线程原因</h2><ul>
+<li>使用单线程模型是 Redis 的开发和维护更简单</li>
+<li>即使使用单线程模型也并发的处理多客户端的请求，主要使用的是多路复用IO</li>
+<li>对于 Redis 系统来说， 主要的<code>性能瓶颈是内存或者网络带宽而并非 CPU</code>。</li>
+</ul>
+<h2 id="5、引入多线程原因"><a href="#5、引入多线程原因" class="headerlink" title="5、引入多线程原因"></a>5、引入多线程原因</h2><p>内存问题比较好解决，因此Redis的瓶颈原因为网络IO</p>
+<h1 id="3、Redis持久化"><a href="#3、Redis持久化" class="headerlink" title="3、Redis持久化"></a>3、Redis持久化</h1><p>Redis 共有三种数据持久化的方式：</p>
+<ul>
+<li><strong>AOF 日志</strong>：每执行一条写操作命令，就把该命令以追加的方式写入到一个文件里；</li>
+<li><strong>RDB 快照</strong>：将某一时刻的内存数据，以二进制的方式写入磁盘；</li>
+<li><strong>混合持久化方式</strong>：Redis 4.0 新增的方式，集成了 AOF 和 RBD 的优点；</li>
+</ul>
+<h2 id="1、AOF"><a href="#1、AOF" class="headerlink" title="1、AOF"></a>1、AOF</h2><p>执行一条写命令，就把这个命令往aof文件里面写</p>
+<h3 id="1、为什么先执行命令，再把数据写入日志呢？"><a href="#1、为什么先执行命令，再把数据写入日志呢？" class="headerlink" title="1、为什么先执行命令，再把数据写入日志呢？"></a>1、为什么先执行命令，再把数据写入日志呢？</h3><blockquote>
+<p>1、避免额外的开销</p>
+<p>2、不会阻塞当前的写命令</p>
+<p>缺点：</p>
+<p>1、可能数据丢失，因为如果在执行完还没写入aof文件之间宕机，那就丢失</p>
+<p>2、可能阻塞下一个命令</p>
+</blockquote>
+<h3 id="2、写回策略几种？"><a href="#2、写回策略几种？" class="headerlink" title="2、写回策略几种？"></a>2、写回策略几种？</h3><p>三种：Always everySec no，其实和mysql的binlog非常相似</p>
+<p>第一种就是每次都同步</p>
+<p>第二种就是每一秒都讲缓冲区里面的写会磁盘</p>
+<p>第三种就是写到缓冲区里面，但是什么时候写到磁盘依赖于操作系统</p>
+<h3 id="3、AOF-日志过大，会触发什么机制？"><a href="#3、AOF-日志过大，会触发什么机制？" class="headerlink" title="3、AOF 日志过大，会触发什么机制？"></a>3、AOF 日志过大，会触发什么机制？</h3><p>aof重写机制：读取当前数据库中的所有键值对，对每一键值对用一条命令记录到「新的 AOF 文件」，等到全部记录完后，就将新的 AOF 文件替换掉现有的 AOF 文件。</p>
+<p>aof是由后台子进程完成的，这里有一个问题，就是如果aof重写过程中，主进程对内存进行了修改，怎么办？会触发写时复制。</p>
+<p>当aof重写过程中父进程修改内存，那我们执行一个写命令后，会写到aof缓冲区和aof重写缓冲区里面。当子进程完成重写，再去吧重写缓冲区里面的内容追加到aof文件</p>
+<h2 id="2、RDB快照"><a href="#2、RDB快照" class="headerlink" title="2、RDB快照"></a>2、RDB快照</h2><p>快照就是记录一瞬间的意思。记录的是当前的实际数据。</p>
+<p>有两种启动的方式，一个save阻塞住线程，一种bgsave，后台线程，fork一个子进程，也复制了页表。他的做法是</p>
+<p>所以rdb快照不会想aof那样开辟一个缓冲区用于记录新操作。这里rdb用的是全量快照数据。</p>
+<p>如果在rdb快照的时候，主线程修改了内容，那么这时候会出发写保护中断，写时复制，原本的物理内存A，复制一份A‘，然后主线程修改A’就好了</p>
+<h2 id="3、混合持久化"><a href="#3、混合持久化" class="headerlink" title="3、混合持久化"></a>3、混合持久化</h2><p>混合持久化就是合并了aof和rdb的两个优点，rdb恢复数据块，aof丢失数据少</p>
+<p>混合持久化，fork出来的子进程先去把共享内存以rdb的格式写入到aof文件里面，然后写入过程中主进程执行的命令会被记录到重写缓冲区里面，然后这些增量命令最后会以aof的格式增加到aof文件里面，所以aof文件里面前一部分时rdb，后一部分是aof。</p>
+<h1 id="4、Redis主从复制"><a href="#4、Redis主从复制" class="headerlink" title="4、Redis主从复制"></a>4、Redis主从复制</h1><p>主服务器可以进行读写操作，当发生写操作时自动将写操作同步给从服务器，而从服务器一般是只读，并接受主服务器同步过来写操作命令，然后执行这条命令。</p>
+<blockquote>
+<p><font color='red'><u><em><strong>全量同步</strong></em></u></font></p>
+<ul>
+<li><font color='red'><u><em><strong>第一阶段是建立链接、协商同步；</strong></em></u></font></li>
+</ul>
+<p>建立链接的时候会给主服务器发送psync，然后带上主服务器的runID（其实第一次不知道）和复制进度</p>
+<p>主服务器收到后会返回一个FULLRESYNC响应，主服务器的runID和目前的复制进度</p>
+<ul>
+<li><font color='red'><u><em><strong>第二阶段是主服务器同步数据给从服务器；</strong></em></u></font></li>
+</ul>
+<p>接着主服务器就执行bgsave生产rdb文件，发给从服务器，从服务器收到rdb文件，会清空当前自己的数据，然后载入rdb文件。并且把新增的写操作写入到replication buffer缓冲区</p>
+<ul>
+<li><font color='red'><u><em><strong>第三阶段是主服务器发送新写操作命令给从服务器</strong></em></u></font></li>
+</ul>
+<p>把repliacation buffer缓冲区里面的写操作发给从服务器</p>
+</blockquote>
+<p>第一次同步完成后，双方会维护一个TCP链接。</p>
+<blockquote>
+<p><font color='red'><u><strong>增量复制</strong></u></font></p>
+<p>网络断开又恢复后，从主从服务器会采用<strong>增量复制</strong>的方式继续同步，也就是只会把网络断开期间主服务器接收到的写操作命令，同步给从服务器。</p>
+<p>主要有三个步骤：</p>
+<ul>
+<li>从服务器在恢复网络后，会发送 psync 命令给主服务器，此时的 psync 命令里的 offset 参数不是 -1（slave_repl_offset）</li>
+<li>主服务器收到该命令后，然后用 CONTINUE 响应命令告诉从服务器接下来采用增量复制的方式同步数据；</li>
+<li>主服务将主从服务器断线期间，所执行的写命令发送给从服务器，然后从服务器执行这些命令。</li>
+</ul>
+<p><strong>主服务器怎么知道要将哪些增量数据发送给从服务器呢？</strong></p>
+<ul>
+<li><strong>repl_backlog_buffer</strong>，是一个「<strong>环形</strong>」缓冲区，用于主从服务器断连后，从中找到差异的数据。（主服务器进行命令传播时，不仅会将写命令发送给从服务器，还会将写命令写入到 repl_backlog_buffer 缓冲区里。）</li>
+<li><strong>replication offset</strong>，标记上面那个缓冲区的同步进度，主从服务器都有各自的偏移量，主服务器使用 master_repl_offset 来记录自己「<em>写</em>」到的位置，从服务器使用 slave_repl_offset 来记录自己「<em>读</em>」到的位置。</li>
+</ul>
+<p>如果判断出从服务器要读取的数据还在 repl_backlog_buffer 缓冲区里，那么主服务器将采用<strong>增量同步</strong>的方式；</p>
+<p>相反，如果判断出从服务器要读取的数据已经不存在 repl_backlog_buffer 缓冲区里，那么主服务器将采用<strong>全量同步</strong>的方式。</p>
+</blockquote>
+<h2 id="哨兵模式（怎么保证redis的高可用？）"><a href="#哨兵模式（怎么保证redis的高可用？）" class="headerlink" title="哨兵模式（怎么保证redis的高可用？）"></a>哨兵模式（怎么保证redis的高可用？）</h2><p>他有三大作用：监控、恢复、通知。</p>
+<p><strong>怎么监控？怎么主从切换</strong></p>
+<blockquote>
+<p>监控是基于心跳机制去监控节点。每隔1s会向实例发送ping命令，然后实例响应pong，假如规定时间内，没回复，那就认为主观下线。如果主节点超过一半的哨兵都认为下线了，那就是客观下线，这个时候就要选取新的master。判断主节点客观下线的那个哨兵成为候选者，候选节点向其他哨兵发送成为leader的请求，如果成功就负责进行主从切换。</p>
+<p>1、选出主节点、先看优先值，再看offset，再看id</p>
+<p>2、将从节点指向新主节点</p>
+<p>3、通知客户的主节点已更换</p>
+<p>4、如果旧的主节点重新上线，将旧主节点变为从节点</p>
+</blockquote>
+<p><strong>主从切换如何减少数据丢失</strong>？</p>
+<blockquote>
+<p>主从切换有两种情况会数据丢失</p>
+<ul>
+<li><font color='red'><u><em><strong>异步复制同步丢失。master来不及同步给从节点就挂了</strong></em></u></font></li>
+<li><font color='red'><u><em><strong>集群产生脑裂数据丢失。</strong></em></u></font>就是因为网络问题，哨兵监听不到主节点，那么哨兵就去从节点里面选了一个主节点，这个时候就有多个主节点，那原先的主节点就会被迫降为从节点，然后去新的主节点同步数据，他一同步，那么原先的数据就丢了。所以他的解决方案就是，必须有从节点和设置主从同步之间的延迟时间，如果从节点不够或者网络延迟太大，那我就禁止写操作</li>
+</ul>
+<p>解决方法：</p>
+<p>Redis 配置里有一个参数 min-slaves-max-lag，表示一旦所有的从节点数据复制和同步的延迟都超过了 min-slaves-max-lag 定义的值，那么主节点就会拒绝接收任何请求。</p>
+<ul>
+<li>min-slaves-to-write x，<font color='red'><u><strong>主节点必须要有至少 x 个从节点连接</strong></u></font>，如果小于这个数，主节点会禁止写数据。</li>
+<li>min-slaves-max-lag x，<font color='red'><u><em><strong>主从数据复制和同步的延迟</strong>不能超过 x 秒</em><em>，如果主从同步的延迟超过 x 秒，主节点会禁止写数据</em>**</u></font></li>
+</ul>
+</blockquote>
+<p><strong>如何应对主从数据不一致？</strong></p>
+<blockquote>
+<p>第一种方法，尽量<font color='red'><u><em><strong>保证主从节点间的网络连接状况良好</strong></em></u></font>，避免主从节点在不同的机房。</p>
+<p>第二种方法，可以开发一个外部程序来<font color='red'><u><em><strong>监控主从节点间的复制进度</strong></em></u></font>。具体做法：得到主从的复制差距，如果过大，就不再和这个从节点进行数据同步</p>
+</blockquote>
+<p><strong>怎么判断 Redis 某个节点是否正常工作？</strong></p>
+<blockquote>
+<p>基本都是通过互相的 ping-pong 心态检测机制,</p>
+<p>哨兵每隔1s会向主节点和从节点发送ping，</p>
+<p>每隔10s会向主节点发送info命令获取从节点的信息。</p>
+</blockquote>
+<h1 id="5、Redis-过期删除与内存淘汰"><a href="#5、Redis-过期删除与内存淘汰" class="headerlink" title="5、Redis 过期删除与内存淘汰"></a>5、Redis 过期删除与内存淘汰</h1><h2 id="1、Redis过期策略"><a href="#1、Redis过期策略" class="headerlink" title="1、Redis过期策略"></a>1、Redis过期策略</h2><p>Redis 使用的过期删除策略是「<strong>惰性删除+定期删除</strong>」这两种策略配和使用。</p>
+<blockquote>
+<p>什么是惰性删除？</p>
+<p>我不主动的删除，每当访问key的时候，我去判断一下是否过期，如果过期那么就删除该key</p>
+<p>优点：占用比较少的资源，对cpu时间最友好</p>
+<p>缺点：会导致缓存污染，浪费内存空间，对内存不友好</p>
+</blockquote>
+<blockquote>
+<p>什么是定期删除策略？</p>
+<p>就是定期的数据库里面随机抽取一定数量的key，并删除其中的过期的key</p>
+<p>抽取策略？</p>
+<p>1、从过期字典里面随机找20个</p>
+<p>2、然后判断是否过期，并删除已经过期的key</p>
+<p>3、如果过期的key超过了25%，那么就重复这个过程，如果没有，那就等待下一轮的抽查</p>
+<p>优点：通过调整删除操作的时长的频率可以减少一些无用的占用</p>
+<p>缺点：很难确定删除的时长和频率，太频繁对cpu不好，太少又和惰性删除一样。</p>
+</blockquote>
+<h3 id="1、Redis-持久化时，对过期键会如何处理的？"><a href="#1、Redis-持久化时，对过期键会如何处理的？" class="headerlink" title="1、Redis 持久化时，对过期键会如何处理的？"></a>1、Redis 持久化时，对过期键会如何处理的？</h3><p>持久化有两种 aof和rdb</p>
+<p>对于rdb，考虑生成和加载阶段</p>
+<blockquote>
+<p>生成阶段：对于过期的key不写入rdb文件里面</p>
+<p>加载阶段：这里分两种情况，一种是主服务器，另一种是从服务器。</p>
+<p>​	主服务器：加载阶段回去判断key是不是过期了，如果过期了那我就不加载这个</p>
+<p>​	从服务器：不管key是不是过期，全部加载。</p>
+</blockquote>
+<p>aof：考虑aof写入阶段和重写阶段</p>
+<blockquote>
+<p>写入阶段：如果这个key过期了，但是没有被删除，那么aof文件就会保留这个key，如果这个key被过期策略删除了，那么就会往aof文件里面追加一条del语句</p>
+<p>重写阶段：重写阶段如果过期了，那么就直接删除，不会保留在新的aof文件里面</p>
+</blockquote>
+<h3 id="2、Redis-主从模式中，对过期键会如何处理？"><a href="#2、Redis-主从模式中，对过期键会如何处理？" class="headerlink" title="2、Redis 主从模式中，对过期键会如何处理？"></a>2、Redis 主从模式中，对过期键会如何处理？</h3><p>主从模式中，从数据库完全依赖于主数据库，所以即使从库的key过期了，但是你查询，依旧能查到。只有主数据库在key到期的时候往aof文件里面增加del语句，同步到所有的从库，从库才会删除这个key。</p>
+<h2 id="2、Redis-内存淘汰"><a href="#2、Redis-内存淘汰" class="headerlink" title="2、Redis 内存淘汰"></a>2、Redis 内存淘汰</h2><p><font color='red'><u><em><strong>在 Redis 的运行内存达到了某个阀值，就会触发</strong>内存淘汰机制</em>****</u></font></p>
+<p>这个阀值就是我们设置的最大运行内存，此值在 Redis 的配置文件中可以找到，配置项为 maxmemory。</p>
+<p>默认是不淘汰，内存满了我拒绝添加。</p>
+<p>除开默认的，内存淘汰机制分为两类：一类是对有过期时间的内存淘汰机制；一类是对所有数据的淘汰机制。</p>
+<p>对过期时间的内存淘汰机制可以分成四种：</p>
+<p>1、volatile random</p>
+<p>2、volatile lru 最近最少使用</p>
+<p>3、volatile lfu <strong>最近最不常用的</strong></p>
+<p>4、volatile ttl  最早时间</p>
+<p>对所有数据的淘汰机制：</p>
+<p>1、volatile random</p>
+<p>2、volatile lru 最近最少使用</p>
+<p>3、volatile lfu <strong>最近最不常用的</strong></p>
+<h3 id="LRU-算法和-LFU-算法有什么区别？"><a href="#LRU-算法和-LFU-算法有什么区别？" class="headerlink" title="LRU 算法和 LFU 算法有什么区别？"></a>LRU 算法和 LFU 算法有什么区别？</h3><p>传统的lru算法依赖于一个链表，数据被访问时候，链表中的节点会出现很多的移动操作，降低性能</p>
+<p>LRU</p>
+<blockquote>
+<p>Redis实现lru是在RedisObject里面新增一个字段，记录最后一次访问时间</p>
+<p>进行淘汰的时候，随机选取五个，然后淘汰访问时间最早的</p>
+<p>优点：节省空间，提高性能</p>
+<p>缺点：无法解决缓存污染</p>
+</blockquote>
+<p>LFU</p>
+<blockquote>
+<p>lfu在RedisObject的基础上新增了一个字段，用于记录数据的访问频次。24位</p>
+<p>高16位记录时间戳，后8位记录访问频次，默认5，会随着时间衰减</p>
+<p>数据每次被访问的时候：</p>
+<p>先对访问频次做一个衰减操作，根据时间和上一次访问时间的差</p>
+<p>然后做一次增加的操作，这个是基于一定的概率</p>
+</blockquote>
+<p><img src="/../images/Redis/%E8%BF%87%E6%9C%9F%E5%88%A0%E9%99%A4%E7%AD%96%E7%95%A5.jpg" alt="img"></p>
+<p><img src="/../images/Redis/%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5.jpg" alt="img"></p>
+<h1 id="6、Redis缓存设计"><a href="#6、Redis缓存设计" class="headerlink" title="6、Redis缓存设计"></a>6、Redis缓存设计</h1><h2 id="1、如何避免缓存雪崩？"><a href="#1、如何避免缓存雪崩？" class="headerlink" title="1、如何避免缓存雪崩？"></a>1、如何避免缓存雪崩？</h2><p>缓存雪崩是指在同一时间大量的key同时过期了</p>
+<p>解决方法：</p>
+<p>这里关键就是同时和过期，所以解决方法如下：</p>
+<p>1、打乱过期的时间</p>
+<p>2、设置缓存不过期</p>
+<h2 id="2、缓存击穿"><a href="#2、缓存击穿" class="headerlink" title="2、缓存击穿"></a>2、缓存击穿</h2><p>对于一个热点数据过期了，导致请求全部打到数据库</p>
+<p>1、设置缓存不过期，后台异步的去更新</p>
+<p>2、互斥锁，分布式锁的方法。让同一时间只有一个线程去访问</p>
+<h2 id="3、缓存穿透"><a href="#3、缓存穿透" class="headerlink" title="3、缓存穿透"></a>3、缓存穿透</h2><p>访问的值既不在redis 也不在mysql，所以很可能是那种黑客攻击之类的，解决方法的话</p>
+<p>1、非法请求的限制</p>
+<p>2、空值或者默认值</p>
+<p>3、布隆过滤器</p>
+<p>布隆过滤器的主要原理是使用一组哈希函数，将元素映射成一位数组里。当要检查一个元素是否在集合中时，将该元素进行哈希处理，然后查看哈希值对应的位数组的值是否为1。如果哈希值对应的位数组的值都为1，那么这个元素可能在集合中，否则这个元素肯定不在集合中。</p>
+<h2 id="4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性"><a href="#4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性" class="headerlink" title="4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性"></a>4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性</h2><blockquote>
+<p>redis和mysql的数据一致性其实有两类方式：<font color='red'><u><em><strong>一种是双写，一种是缓存删除。</strong></em></u></font></p>
+<blockquote>
+<p>对于双写策略，两个请求并发更新同一条数据的时候，会出现数据不一致的情况，另外更新缓存的代价有时候是很高的，可能你1分钟内更新了100次，然后只访问了一次，那代价着实太大了。所以我们一般选择缓存删除的策略。</p>
+</blockquote>
+<p>对于双写策略：如果对一致性要求高，就需要加分布式锁，但是我们业务对同步的实时性要求没那么高，我们想要的是最终一致性，所以我们用的是异步消息+canal监听。redis修改后发送异步消息给mysql，mysql如果有一些热点数据的修改，就监听这些数据去更新redis。</p>
+<p>缓存删除也有延迟双删。</p>
+<p>然后我们一般来说是<font color='red'><u><em><strong>先更新数据库，再去删除缓存</strong></em></u></font>。虽然在理论上存在着 一个读请求读到旧值然后准备更新到redis里面的时候，有一个写请求更新数据库并且删除了缓存，这时候读请求才把旧值缓存到redis里面，这样出现redis和mysql的不一致。但是其实由于我们的缓存写入是远远快于数据库的写入，所以很难出现我一个请求更新完数据库删除完缓存了这时候，原先的读请求才写入缓存。为了保证第二个操作能成功，可以订阅binlog或者消息队列做删除。</p>
+<p>对于并发引起的不一致性，那就用延迟双删</p>
+<blockquote>
+<p>常见的缓存更新策略共有3种：</p>
+</blockquote>
+<ul>
+<li><p>Cache Aside（旁路缓存）策略；</p>
+</li>
+<li><p>Read&#x2F;Write Through（读穿 &#x2F; 写穿）策略；</p>
+</li>
+<li><p>Write Back（写回）策略</p>
+</li>
+</ul>
+<blockquote>
+<p>旁路缓存策略</p>
+<p><strong>写策略的步骤：</strong></p>
+<ul>
+<li>先更新数据库中的数据，再删除缓存中的数据。</li>
+</ul>
+<p><strong>读策略的步骤：</strong></p>
+<ul>
+<li>如果读取的数据命中了缓存，则直接返回数据；</li>
+<li>如果读取的数据没有命中缓存，则从数据库中读取数据，然后将数据写入到缓存，并且返回给用户</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>读穿 &#x2F; 写穿）策略</p>
+<p>策略原则是应用程序只和缓存交互，不再和数据库交互，而是由缓存和数据库交互，相当于更新数据库的操作由缓存自己代理了。</p>
+<p><strong>1、Read Through 策略</strong></p>
+<ul>
+<li>先查询缓存中数据是否存在，如果存在则直接返回，如果不存在，则由缓存组件负责从数据库查询数据，并将结果写入到缓存组件，最后缓存组件将数据返回给应用。</li>
+</ul>
+<p><strong>2、Write Through 策略</strong></p>
+<ul>
+<li><p>当有数据更新的时候，先查询要写入的数据在缓存中是否已经存在：</p>
+<ul>
+<li>如果缓存中数据已经存在，则更新缓存中的数据，并且由缓存组件同步更新到数据库中，然后缓存组件告知应用程序更新完成。</li>
+<li>如果缓存中数据不存在，直接更新数据库，然后返回；</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>Write Back（写回）策略</p>
+<p>写回在更新数据的时候，只更新缓存，同时将缓存数据设置为脏的，然后立马返回，并不会更新数据库。对于数据库的更新，会通过批量异步更新的方式进行。</p>
+<p>实际上，Write Back（写回）策略也不能应用到我们常用的数据库和缓存的场景中，因为 Redis 并没有异步更新数据库的功能。</p>
+<p>Write Back 是计算机体系结构中的设计，比如 CPU 的缓存、操作系统中文件系统的缓存都采用了 Write Back（写回）策略。</p>
+</blockquote>
+</blockquote>
+<h1 id="7、分布式锁怎么实现"><a href="#7、分布式锁怎么实现" class="headerlink" title="7、分布式锁怎么实现"></a>7、分布式锁怎么实现</h1><p><img src="/../images/Redis/image-20231115124152900.png" alt="image-20231115124152900"></p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/10/09/Redis/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1820,7 +2202,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    07 Aug 2023
+		    Aug 07, 2023
     	
     </time>
     
@@ -2121,7 +2503,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -2150,7 +2532,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -2257,7 +2639,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -2286,7 +2668,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -2509,7 +2891,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -2538,7 +2920,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -2593,197 +2975,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
-                            aria-label=": 计算机网络复习2"
-                        >
-                            计算机网络复习2
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-07-08T00:00:00+08:00">
-	
-		    08 Jul 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <h2 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h2><h3 id="1、TCP和UDP"><a href="#1、TCP和UDP" class="headerlink" title="1、TCP和UDP"></a>1、<strong>TCP和UDP</strong></h3><p><strong>UDP和TCP可以共用一个端口，因为是完全独立的两个软件模块</strong></p>
-<h3 id="2、为什么不能两次握手或者四次握手？"><a href="#2、为什么不能两次握手或者四次握手？" class="headerlink" title="2、为什么不能两次握手或者四次握手？"></a>2、为什么不能两次握手或者四次握手？</h3><blockquote>
-<p>两次握手：在两次握手的时候，服务端没有中间状态给客户端来阻止历史连接，也就是服务端会多建立一个历史连接浪费资源，因为收到syn就变成established。这里靠序列号同步就知道了</p>
-<p>四次握手：四次握手无非就是，你给我发我返回同意，我给你发你返回同意，但是第二和第三部完全可以合并，所以三次就ok了。</p>
-</blockquote>
-<h3 id="3、为什么，每次建立连接序列号都要求不一样？"><a href="#3、为什么，每次建立连接序列号都要求不一样？" class="headerlink" title="3、为什么，每次建立连接序列号都要求不一样？"></a>3、为什么，每次建立连接序列号都要求不一样？</h3><p>1、防止历史报文被下一个连接接受，如果每次都从特定的值开始，那历史报文就可能被下一个连接接受。</p>
-<p>2、防止黑客伪造的相同序列号被接受</p>
-<h3 id="4、那这个序列号是怎么随机产生的？"><a href="#4、那这个序列号是怎么随机产生的？" class="headerlink" title="4、那这个序列号是怎么随机产生的？"></a>4、那这个序列号是怎么随机产生的？</h3><p>rfc提高了序列号ISN随机生成算法：ISN &#x3D; M + F</p>
-<p>m是计时器，四微秒+1</p>
-<p>F是哈希算法根据四元组推出来的</p>
-<h3 id="5、为什么ip层会分片，TCP还分片，"><a href="#5、为什么ip层会分片，TCP还分片，" class="headerlink" title="5、为什么ip层会分片，TCP还分片，"></a>5、为什么ip层会分片，TCP还分片，</h3><p>因为ip不能超时重传，所以只能靠tcp，而万一ip层丢了一部分，那么ip层就不能组装成一个完整的tcp报文，也就不可能发给接收方tcp层，所以发送方的tcp层就会重发整个tcp报文，所以我们最好就是自己分片，然后缺什么发什么，直接以MSS为单位就可以了</p>
-<h3 id="6、TCP三次握手过程丢失问题"><a href="#6、TCP三次握手过程丢失问题" class="headerlink" title="6、TCP三次握手过程丢失问题"></a>6、TCP三次握手过程丢失问题</h3><blockquote>
-<p>第一次握手丢失，会发生什么？</p>
-<p>触发超时重传，每次重传次数是上一次两倍，报文最大重传次数由 <code>tcp_syn_retries</code></p>
-<p>第二次握手丢失，会发生什么？</p>
-<p>客户端和服务端都会重传，重传次数分别有tcp_syn_retries和tcp_synack_retries决定</p>
-<p>第三次握手丢失了，会发生什么？</p>
-<p>这里有一点很关键，就是ack报文是不会重传的，所以服务端会认为自己的syn+ack没发到，触发重传机制，服务端重传，次数由tcp_synack_retries决定</p>
-</blockquote>
-<h3 id="7、半连接状态和全连接状态"><a href="#7、半连接状态和全连接状态" class="headerlink" title="7、半连接状态和全连接状态"></a>7、半连接状态和全连接状态</h3><ul>
-<li>半连接队列，也称 SYN 队列；</li>
-<li>全连接队列，也称 accept 队列；</li>
-</ul>
-<p>正常流程：</p>
-<ul>
-<li>当服务端接收到客户端的 SYN 报文时，会创建一个半连接的对象，然后将其加入到内核的「 SYN 队列」；</li>
-<li>接着发送 SYN + ACK 给客户端，等待客户端回应 ACK 报文；</li>
-<li>服务端接收到 ACK 报文后，从「 SYN 队列」取出一个半连接对象，然后创建一个新的连接对象放入到「 Accept 队列」；</li>
-<li>应用通过调用 <code>accpet()</code> socket 接口，从「 Accept 队列」取出连接对象。</li>
-</ul>
-<p>所以这样子就出会先一些问题</p>
-<p>受到SYN攻击怎么办？就是说半连接状态很多怎么办？</p>
-<ul>
-<li>调大 netdev_max_backlog；缓冲队列</li>
-<li>增大 TCP 半连接队列；</li>
-<li>开启 tcp_syncookies；不用建立半连接</li>
-<li>减少 SYN+ACK 重传次数</li>
-</ul>
-<h3 id="8、TCP四次挥手"><a href="#8、TCP四次挥手" class="headerlink" title="8、TCP四次挥手"></a>8、TCP四次挥手</h3><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803130523828.png" alt="image-20230803130523828"></p>
-<blockquote>
-<p>msl是报文最大生存时间，ip头有一个ttl字段，这个字段代表可以经历的最大路由数</p>
-<p>msl大于等于ttl消耗为0的时间，默认60</p>
-</blockquote>
-<blockquote>
-<p><strong>为什么需要这个timewait状态</strong></p>
-<p>1<font color='red'><u><em><strong>、也是为了防止接收历史连接中的第三次挥手</strong></em></u></font>。这个时间<strong>足以让两个方向上的数据包都被丢弃，使得原来连接的数据包在网络中都自然消失。</strong></p>
-<p>2、也就是说，TIME-WAIT 作用是<strong>等待足够的时间以确保最后的 ACK 能让被动关闭方接收，从而帮助其正常关闭。</strong></p>
-</blockquote>
-<blockquote>
-<p><font color='red'><u><em><strong>为什么4次？</strong></em></u></font></p>
-<p>服务端可能还有数据要发给客户端，所以需要先处理自己的最后流程，然后给客户端发送一个fin报文，也就是说，第二次握手和第三次握手大概率是不同步的。</p>
-<p><font color='red'><u><em><strong>特定情况下，可以变成三次，刚刚好没有数据。</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>第一次挥手丢失，会发生什么？</strong></em></u></font></p>
-<p>客户端收不到来自服务端的ack报文，那么就会触发超时重传，这个次数是由tcp_orphan_retries决定的</p>
-<p><font color='red'><u><em><strong>第二次挥手丢失，会发生什么？</strong></em></u></font></p>
-<p>ACK 报文是不会重传的,所以首先客户端还是会触发超时重传，这个次数是由tcp_orphan_retries决定的</p>
-<p><font color='red'><u><em><strong>第三次丢失，会发生什么？</strong></em></u></font></p>
-<p>相当于服务端一直收不到来自客户端的ack，那么服务端会触发超时重传,次数达到后还没收到，断开连接。</p>
-<p>而客户端已经进入了fin_wait2状态，一直等，如果超过设定的时间tcp_fin_timeout ，断开连接。</p>
-<p><font color='red'><u><em><strong>第四次丢失，会发生什么？</strong></em></u></font></p>
-<p>服务端一直收不到，那么触发超时重传，这时候因为客户端已经是timewait状态，所以每一次重传都会重置2msl定时器，超过时间就close，而服务端同样的重传几次之后close</p>
-</blockquote>
-<blockquote>
-<p><strong>如果建立了连接，结果客户端故障了，不发送消息，但是服务端一直establish</strong></p>
-<p>tcp搞了个保活机制，隔一段时间发送探测报文，没有得到相应则认为tcp死亡，</p>
-<p>但是，这个保活机制时间太长了，我们自己在应用层实现一个心跳机制，一般web服务软件都会提供keepalive-timeout状态</p>
-<p><strong>如果服务器的进程崩溃了，那发生什么</strong></p>
-<p>其实连接信息是由内核维护的，所以服务端的内核还是会发送fin报文进行四次挥手</p>
-</blockquote>
-<h3 id="9、可靠性保证方法"><a href="#9、可靠性保证方法" class="headerlink" title="9、可靠性保证方法"></a>9、可靠性保证方法</h3><blockquote>
-<h3 id="重传机制"><a href="#重传机制" class="headerlink" title="重传机制"></a>重传机制</h3><p><font color='red'><u><em><strong>重传分为超时重传和快速重传两种。</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>超时重传：超过时间进行重传，时间RTO</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>快速重传：收到三个相同的 ACK 报文时，重传丢失的报文段。这里的问题在于传一个还是传所有，这里引入了SACK和DSACK机制</strong></em></u></font></p>
-<p>SACK：服务端把已经收到的数据信息驾到tcp头部的选项里面，告诉发送发我收到了哪些</p>
-<p>后面又出现了D-SACK：这是用来告诉发送方哪些被重复接受了了</p>
-<h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h3><p>操作系统开辟的一个缓存空间，发送方在收到ACK应答之前，在缓冲区中保留已发送的数据。如果按期收到确认应答，此时数据就可以从缓存区清除</p>
-<p>TCP头部里面既有一个字段叫窗口大小，就是用来告诉发送端自己还有多少缓冲区可以使用，所以窗口大小一般由接收方决定</p>
-<h3 id="拥塞控制"><a href="#拥塞控制" class="headerlink" title="拥塞控制"></a>拥塞控制</h3><p>网络发生拥塞，那么tcp就会降低自己的发送量，防止网络负担加重</p>
-<p>慢启动 一开始是1，就是可以传1个mss，然后收到应答变成2，4，8，16…..</p>
-<p>拥塞避免 触碰到<font color='green'><u><em><strong>慢启动门限</strong></em></u></font>就是用拥塞避免，变成线性的，收到一个ack cwnd增加1&#x2F;cwnd（拥塞窗口）</p>
-<p>如果网络发生了拥塞，也就是重传。重传分两种，如果是超时重传，就慢启动门限变成cwnd&#x2F;2，cwnd&#x3D;1重新开始慢启动</p>
-<p>如果是快速重传，拥塞窗口和慢启动门限都设置为拥塞窗口的一半，然后拥塞窗口+3，继续发送重复的，如果收到新数据的ACK，快速恢复结束，进入拥塞避免。</p>
-<p>握手优化就是调整重传次数、半连接队列，全连接队列</p>
-<p>挥手就是调整：重传次数、FINwait2状态时间、</p>
-<p>传输速度的话就是调整：接收方缓冲区大小、发送方缓冲区大小、窗口大小，打开缓冲区动态调节。</p>
-<h3 id="流量控制"><a href="#流量控制" class="headerlink" title="流量控制"></a>流量控制</h3><p>避免发送方的数据填满接收方</p>
-</blockquote>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803161404210.png" alt="image-20230803161404210"></p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803163142196.png" alt="image-20230803163142196"></p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803163236556.png" alt="image-20230803163236556"></p>
-<blockquote>
-<h4 id="如何理解字节流"><a href="#如何理解字节流" class="headerlink" title="如何理解字节流"></a>如何理解字节流</h4><p>udp操作系统不会对齐拆分，所以每一个udp就是一个消息的边界.然而tcp是会分片的，这时候，接收方如果不知道消息的长度或者边界，是无法读取消息的，<strong>不能认为一个用户消息对应一个TCP报文，正因为这样，TCP是面向字节流的协议。</strong></p>
-<p><strong>没有accept，能建立tcp连接吗</strong></p>
-<p>可以</p>
-<p><strong>已经建立的tcp，收到syn会发生什么</strong></p>
-<p>新的syn首先看看端口是不是一样，如果不一样的话，就建立新的连接，老的那个如果一直不发消息就会触发tcp保活机制</p>
-<p>如果相同（可能就是宕机重传），其实会返回一个challenge ack，携带正确的序列号的确认号的ack报文，这时候客户端确认号收到这个，发现不是自己期望收到的，就会返回rst，这样，服务器就释放了连接</p>
-<h4 id="如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗"><a href="#如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗" class="headerlink" title="如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗"></a>如果四次挥手过程中，fin包先比数据包到了主动关闭方，那这个数据还会接受吗</h4><p>先到的fin包其实是乱序的，所以会进入乱序队列，等数据真正的到了，才会回头检查这个fin，然后给服务端发这个。</p>
-<h4 id="如果timewait状态收到syn？会怎么样？"><a href="#如果timewait状态收到syn？会怎么样？" class="headerlink" title="如果timewait状态收到syn？会怎么样？"></a>如果timewait状态收到syn？会怎么样？</h4><p>还是先看序列号时间戳吧，如果确实合法，那应该会重新进入三次握手阶段，</p>
-<p>如果不合法，就会返回一个和第四次挥手一样的ack，这时候服务端收到发现不是自己的，就回复一个rst报文</p>
-<h4 id="服务端没有-listen，客户端发起连接建立，会发生什么？"><a href="#服务端没有-listen，客户端发起连接建立，会发生什么？" class="headerlink" title="服务端没有 listen，客户端发起连接建立，会发生什么？"></a>服务端没有 listen，客户端发起连接建立，会发生什么？</h4><p><strong>服务端如果只 bind 了 IP 地址和端口，而没有调用 listen 的话，然后客户端对服务端发起了连接建立，服务端会回 RST 报文</strong></p>
-<h4 id="Tcp连接，断电和进程崩溃有什么区别？没有保活机制"><a href="#Tcp连接，断电和进程崩溃有什么区别？没有保活机制" class="headerlink" title="Tcp连接，断电和进程崩溃有什么区别？没有保活机制"></a>Tcp连接，断电和进程崩溃有什么区别？没有保活机制</h4><p>客户端主机崩溃，没有保活机制，那就无法感知到，一直处于establish</p>
-<p>进程崩溃，内核还是会发送fin完成4次挥手</p>
-<h4 id="客户端主机宕机，又迅速重启"><a href="#客户端主机宕机，又迅速重启" class="headerlink" title="客户端主机宕机，又迅速重启"></a>客户端主机宕机，又迅速重启</h4><p><strong>只要有一方重启完成后，收到之前 TCP 连接的报文，都会回复 RST 报文，以断开连接</strong></p>
-<h4 id="拔掉网线tcp连接还在吗"><a href="#拔掉网线tcp连接还在吗" class="headerlink" title="拔掉网线tcp连接还在吗"></a>拔掉网线tcp连接还在吗</h4><p>在的，tcp连接信息是存储于内核的一个结构体，网线断了，但是结构体不会改变</p>
-<ul>
-<li>拔掉网线后，有数据传输；</li>
-<li>如果在重传前网线插回去了，那我觉得应该什么事情都没发生</li>
-<li>如果没插回去，那么就超时重传几次之后，认为此连接死亡，就断开连接，即使后面插回来了，客户端向服务端发送请求，也不是连接的状态，那么服务端就会返回rst</li>
-<li>拔掉网线后，没有数据传输</li>
-<li>如果开启了保活机制，那就探测几次，如果有工作就重制保活时间，如果客户端没有正常工作，就断开连接</li>
-<li>如果没有开启保活机制，就一直连着</li>
-</ul>
-</blockquote>
-<h4 id="HTTPS-中-TLS-和-TCP-能同时握手吗？"><a href="#HTTPS-中-TLS-和-TCP-能同时握手吗？" class="headerlink" title="HTTPS 中 TLS 和 TCP 能同时握手吗？"></a>HTTPS 中 TLS 和 TCP 能同时握手吗？</h4><p>可能，但是有条件</p>
-<ul>
-<li><strong>客户端和服务端都开启了 TCP Fast Open 功能，且 TLS 版本是 1.3；</strong></li>
-<li><strong>客户端和服务端已经完成过一次通信。</strong></li>
-</ul>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803205908513.png" alt="image-20230803205908513"></p>
-<p>TCP Fast Open定义<br>TCP Fast Open（TFO）是用来加速连续TCP连接的数据交互的TCP协议扩展，原理如下：在TCP三次握手的过程中，当用户首次访问Server时，发送SYN包，Server根据用户IP生成Cookie（已加密），并与SYN-ACK一同发回Client；当Client随后重连时，在SYN包携带TCP Cookie；如果Server校验合法，则在用户回复ACK前就可以直接发送数据；否则按照正常三次握手进行<br><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803210533146.png" alt="image-20230803210533146"></p>
-<p>所以就是在第二次以后的通信过程中，tcp open fast在ack发回来之前直接进行tls1.3</p>
-<h4 id="quic怎么实现可靠传输"><a href="#quic怎么实现可靠传输" class="headerlink" title="quic怎么实现可靠传输"></a>quic怎么实现可靠传输</h4><p>总的来说，<strong>QUIC 通过单向递增的 Packet Number，配合 Stream ID 与 Offset 字段信息，可以支持乱序确认而不影响数据包的正确组装</strong>，</p>
-<p>Packet Number 是严格递增，即使重传报文的 Packet Number 也是递增的，既然重传数据包的 Packet N+M 与丢失数据包的 Packet N 编号并不一致，我们怎么确定这两个数据包的内容一样呢？</p>
-<p>所以引入 Frame Header 这一层，<strong>通过 Stream ID + Offset 字段信息实现数据的有序性</strong>，通过比较两个数据包的 Stream ID 与 Stream Offset ，如果都是一致，就说明这两个数据包的内容一致。</p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803212833705.png"></p>
-<p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803213009597.png" alt="image-20230803213009597"></p>
-<h3 id="QUIC怎么解决对头阻塞"><a href="#QUIC怎么解决对头阻塞" class="headerlink" title="QUIC怎么解决对头阻塞"></a>QUIC怎么解决对头阻塞</h3><p><strong>QUIC 给每一个 Stream 都分配了一个独立的滑动窗口，都是相互独立的，各自控制的滑动窗口</strong>。</p>
-<h3 id="QUIC-是如何做流量控制的？"><a href="#QUIC-是如何做流量控制的？" class="headerlink" title="QUIC 是如何做流量控制的？"></a>QUIC 是如何做流量控制的？</h3><p>QUIC 实现流量控制的方式：</p>
-<ul>
-<li>通过 window_update 帧告诉对端自己可以接收的字节数，这样发送方就不会发送超过这个数量的数据。 如果消耗数据的长度大于了最大接收窗口的一半发送</li>
-<li>通过 BlockFrame 告诉对端由于流量控制被阻塞了，无法发送数据。</li>
-</ul>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -2801,14 +2993,14 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
             <a
                 class="btn btn--default btn--small"
                 href="/archives/page/2/"
-                aria-label="ÄLTERE BEITRÄGE"
+                aria-label="OLDER POSTS"
             >
-              <span>ÄLTERE BEITRÄGE</span>
+              <span>OLDER POSTS</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">Seite 1 von 5</li>
+        <li class="pagination-number">page 1 of 5</li>
     </ul>
 </div>
 
@@ -2838,7 +3030,7 @@ springboot的main方法会有一个springbootapplication的注解，这个注解
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
