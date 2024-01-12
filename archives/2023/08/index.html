@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archives: 2023/8 - 森</title>
+    <title>Archiv: 2023/8 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    Aug 07, 2023
+		    07 Aug 2023
     	
     </time>
     
@@ -270,6 +270,8 @@
 <p><strong>二者区别</strong><br>总结一下两者的区别吧：</p>
 <p>JDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰<br>JDK 是自带的、CGLIB需要加载包</p>
 <p>JDK是反射机制，CGLIB是使用ASM框架。</p>
+<p><strong>为什么Java不能多继承？</strong></p>
+<p>会出现方法冲突和变量冲突</p>
 <h1 id="集合"><a href="#集合" class="headerlink" title="集合"></a>集合</h1><p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231116121230926.png" alt="image-20231116121230926"></p>
 <h2 id="Arraylist底层原理"><a href="#Arraylist底层原理" class="headerlink" title="Arraylist底层原理"></a>Arraylist底层原理</h2><p>可以从底层数据结构，构造函数和关键方法理解。</p>
 <blockquote>
@@ -364,6 +366,7 @@
 <li><p><strong>底层数据结构：</strong> <strong>hashmap 数组+链表+红黑树，hashtable 数组+链表</strong></p>
 </li>
 </ul>
+<h2 id="hashmap的key规范"><a href="#hashmap的key规范" class="headerlink" title="hashmap的key规范"></a>hashmap的key规范</h2><p>用自定义类作为key，必须<font color='red'><u><em><strong>重写equals()和hashCode()方法。</strong></em></u></font></p>
 </blockquote>
 <h2 id="ConcurrentHashMap"><a href="#ConcurrentHashMap" class="headerlink" title="ConcurrentHashMap"></a><strong>ConcurrentHashMap</strong></h2><blockquote>
 <p><code>ConcurrentHashMap</code>是线程安全的，而是通过原子操作和局部加锁的方法保证了多线程的线程安全。</p>
@@ -374,21 +377,32 @@
 <h2 id="元素排序-Comparable-和-Comparator-有什么区别？"><a href="#元素排序-Comparable-和-Comparator-有什么区别？" class="headerlink" title="元素排序 Comparable 和 Comparator 有什么区别？"></a>元素排序 Comparable 和 Comparator 有什么区别？</h2><p>Comparable：实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。</p>
 <p>Comparator 除了可以通过创建自定义比较器外，还可以通过<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%8C%BF%E5%90%8D%E7%B1%BB&spm=1001.2101.3001.7020">匿名类</a>的方式，更快速、便捷的完成自定义比较器的功能，具体的代码实现如下：</p>
 <p><font color='red'><u><em><strong>Comparable 必须由自定义类内部实现排序方法，而 Comparator 是外部定义并实现排序的</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>Linux常用命令</strong></em></u></font>：cat, pwd, ls、TOP，mpstat，chattr，lsattr</p>
+<p><font color='green'><u><em><strong>怎么排查项目故障</strong></em></u></font>：</p>
+<blockquote>
+<p>可以用top先看看是cpu还是内存的问题，cpu的话，可以拿到进程id，然后ps H -eo pid,tid,%cpu | grep进程id查看线程，最好jstack查看堆栈信息。内存泄漏的话就jmap -dump一个内存快照，然后加载到visualVM里面。</p>
+<p>标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、</p>
+</blockquote>
+<p><strong>查看机器的负载情况linux</strong></p>
+<blockquote>
+<p>Top htop mpstat vmstat</p>
+</blockquote>
 <h1 id="Spirng"><a href="#Spirng" class="headerlink" title="Spirng"></a>Spirng</h1><p><strong>Bean是线程安全的吗？</strong></p>
 <blockquote>
-<p>他是单例，但是不是线程安全。因为Bean内部的成员变量是共享可修改的。</p>
+<p>默认单例（可以多例），但是不是线程安全。因为Bean内部的成员变量是共享可修改的。</p>
 </blockquote>
-<p><strong>AOP是什么？</strong></p>
+<p><font color='red'><u><em><strong>AOP是什么？</strong></em></u></font></p>
 <blockquote>
-<p><font color='red'><u><em><strong>aop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。</strong>然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop</em>** 底层是动态代理JDK和CGLIB**</u></font></p>
+<p><font color='red'><u>*<strong>aop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop 底层是动态代理JDK和CGLIB</strong></u></font></p>
+<p><font color='green'><u><em><strong>有没有用过AOP</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>有的，我之前在一个分库分表的组件项目里面用到过，就是分库分表要切换数据源，我就是用aop切面去计算出落到哪个库哪个表里面，切入点是一个注解。</strong></em></u></font></p>
 </blockquote>
-<p>IOC</p>
-<p>控制反转的意思，以前我们创建的时候new，但是这种方法很麻烦，且很难处理对象直接的依赖关系。他是把对象创建和对象之间的调用过程，交给spring进行管理。</p>
-<p><strong>有没有使用过AOP</strong></p>
+<p><strong>IOC</strong></p>
 <blockquote>
-<p>全局异常处理、aop做一些权限校验等等</p>
+<p><font color='red'><u><em><strong>控制反转的意思，以前我们创建的时候new，但是这种方法很麻烦，且很难处理对象直接的依赖关系。他是把对象创建和对象之间的调用过程，交给spring进行管理。</strong></em></u></font></p>
 </blockquote>
 <p><strong>Spring事务失效的场景?</strong></p>
+<blockquote>
 <ul>
 <li><p>自己捕获异常。如果没有抛出会失效，解决方法：手动抛出异常</p>
 </li>
@@ -397,6 +411,7 @@
 <li><p>没有用public修饰，</p>
 </li>
 </ul>
+</blockquote>
 <p><strong>Bean的生命周期？</strong></p>
 <blockquote>
 <p>1 通过<strong>XML</strong>、注解和配置类等方式加载<strong>Spring Bean</strong></p>
@@ -408,10 +423,16 @@
 <p>8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）</p>
 <p>9、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em> aop核心底层动态代理</p>
 </blockquote>
-<p><strong>Bean的循环依赖？</strong></p>
-<p>Spring解决这个是用三级缓存或者懒加载（构造函数的循环依赖问题），三次缓存中：一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。</p>
-<p><strong>为什么三层？</strong></p>
+<p><strong>BeanBeanFactory和FactoryBean的区别！</strong></p>
+<blockquote>
+<p>BeanFactory是管理Bean的容器，FactoryBean是一个生产Bean的工厂。</p>
+</blockquote>
+<p><font color='green'><u><em><strong>Bean的循环依赖？</strong></em></u></font></p>
+<blockquote>
+<p>Spring解决这个是用三级缓存或者懒加载（构造函数的循环依赖问题），三次缓存中：<font color='green'><u><em><strong>一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>为什么三层？</strong></em></u></font></p>
 <p><strong>所以如果没有AOP的话确实可以两级缓存就可以解决循环依赖的问题，如果加上AOP，两级缓存是无法解决的。如果对象被AOP代理了，我每次从三级缓存中拿到singleFactory对象，执行getObject()方法会产生新的代理对象，所以还要借助另外一个缓存来保存产生的代理对象</strong></p>
+</blockquote>
 <p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231222001434059.png" alt="image-20231222001434059"></p>
 <p><strong>Spring用到的设计模式</strong></p>
 <p>单例模式：这个在创建Bean的时候用到，创建单例Bean的时候会先去缓存里面找，如果找不到，在触发createBean方法。</p>
@@ -425,6 +446,7 @@
 <p>9、onRefresh()：留给子容器、子类重写这个方法，在容器刷新的时候可以自定义逻辑</p>
 <p>10、registerListeners()：注册监听器：将容器中所有的ApplicationListener注册到事件派发器中，并派发之前步骤产生的事件：<br>11、finishBeanFactoryInitialization(beanFactory)：初始化所有剩下的单实例bean，核心方法是preInstantiateSingletons()，会调用getBean()方法创建对象；<br>12、finishRefresh()：发布BeanFactory容器刷新完成事件：</p>
 <p>综上所述：</p>
+<blockquote>
 <p>其实我觉得Spring的IOC容器，主要做三步：</p>
 <p>1、初始化Spring容器，创建一个DefaultListableBeanFactory</p>
 <p>2、将配置类的BeanDefinition注册到容器。</p>
@@ -433,12 +455,34 @@
 <p>第二块：后置处理器，执行BeanFactory的后置处理器，然后在容器里面注册一个Bean的后置处理器。</p>
 <p>第三块：就是一些国际化，事件分派器的东西。</p>
 <p>第四块：非常重要了，finishBeanFactoryInitailization，<strong>初始化所有剩下的单实例bean</strong>，bean的生命周期也从这里开始。</p>
-<p><strong>Springboot自动配置？</strong></p>
+</blockquote>
+<p><font color='red'><u><em><strong>Springboot启动流程</strong></em></u></font></p>
+<blockquote>
+<p>主要分为4步：服务构建、环境准备、容器创建、填充容器。</p>
+<p>1、服务构建就是构造springapplication，包括主方法类、确认web服务器、加载spring.factories下的所有初始化类。</p>
+<p>2、然后调用run方法进入环境准备，通过配置类、和配置文件构造出一个environment，用于后面的容器创建。</p>
+<p>3、容器创建的话，其实就是创建一个BeanFactory，然后加载bean信息，通过beanDefinitionReader把bean信息读成BeanDefinition并且把他放到beanDefinitionMap里面</p>
+<p>4、填充容器。就是我们的refresh（）方法，一个12步，但是可以分成四块，预处理，后置处理器，国际化分派器，实例化剩下的所有bean。</p>
+</blockquote>
+<p><font color='red'><u><em><strong>Springboot自动配置？</strong></em></u></font></p>
 <p>springboot的main方法会有一个springbootapplication的注解，这个注解有三个注解组成、ComponentScan（扫描包和子包，加载符合条件的组件或bean定义）、SpringbootConfiguration（声明当前是配置类，然后去找被configuration修饰的类，读取信息）、还有一个最重要的EnableAutoConfiguraion，这个就是来启动自动化配置的。这个注解里面有一个Import注解，这个注解会加入一个配置选择类，他会去这个项目和项目引用的jar包的meta-inf的spring.factories找全类名，然后在这些配置类里面根据注解@comditionnalXXX 定义的条件进行选择加载</p>
 <p><strong>MVC的执行流程</strong></p>
+<p>请求发到前端控制器上，然后用处理器映射器找到具体的处理器，使用处理器适配器调用真正的处理器，然后结果转化成JSON响应。</p>
 <blockquote>
 <p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231118193113289.png" alt="image-20231118193113289"></p>
 </blockquote>
+<p><strong>Mybatis怎么传多个参数：</strong></p>
+<blockquote>
+<p>顺序传参</p>
+<p>map传参</p>
+<p>用mybatis的注解</p>
+</blockquote>
+<p><strong>MyBatis中${} 和 #{} 有什么区别</strong></p>
+<p>1、功能不同： #{} 是占位符，${} 是直接替换，；2、使用场景不同：普通参数使用 #{}，如果传递的是 SQL 命令或 SQL 关键字，需要使用 ${}，但在使用前一定要做好安全验证；3、安全性不同：使用 ${} 存在安全问题，而 #{} 则不存在安全问题。</p>
+<p><strong>setNX有什么缺陷？</strong></p>
+<p>有单点风险</p>
+<p>可能会导致同一把锁被多人使用</p>
+<p>redlock</p>
 
                     
                         
@@ -452,7 +496,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -466,7 +510,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -476,7 +520,7 @@
 
                 <footer id="footer" class="main-content-wrap">
     <span class="copyrights">
-        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+        Copyrights &copy; 2024 CSEN. All Rights Reserved.
     </span>
 </footer>
 
@@ -496,7 +540,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

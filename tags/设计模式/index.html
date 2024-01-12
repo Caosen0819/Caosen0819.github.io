@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-10T00:00:00+08:00">
 	
-		    Oct 10, 2023
+		    10 Oct 2023
     	
     </time>
     
@@ -294,6 +294,11 @@
 <li><h2 id="讲一讲组合模式以及在项目中的应用"><a href="#讲一讲组合模式以及在项目中的应用" class="headerlink" title="讲一讲组合模式以及在项目中的应用"></a><strong>讲一讲组合模式以及在项目中的应用</strong></h2></li>
 </ul>
 <p>这里我们是用组合模式搭建规则引擎树，规则树有两种对象。一种是树节点，一种是树枝，树节点包括连接的树枝集合，树枝里面包含了连接的前后两个树节点和判断依据，这样子就能构建出一个有判断规则的规则树了。具体的流程就是假设我们现在在根节点，然后看了下根节点的规则是性别，那我就拿到年龄规则过滤器，遍历根节点的树枝集合，假如这里有两个树枝，一个树枝的规则是&#x3D;男，就走这个树枝；另一个树枝的规则是&#x3D;女，就走这个树枝。这时候我们拿出用户的信息一对比，发现应该走男生那个树枝。这样就进入下一个节点，然后这个节点的判断规则是年龄，可能大于某个枝走某个树枝，小于就走另外的树枝。直到我们找到叶子结点就结束。</p>
+<h2 id="单例模式"><a href="#单例模式" class="headerlink" title="单例模式"></a>单例模式</h2><p>该类负责创建自己的对象，保证只有单个对象被创建。</p>
+<p>单例模式分两类，饿汉式和饱汉式。饿汉式就是类加载的时候就会创建，其实类加载有个准备和初始化过程，静态变量和静态代码块，里就可以创建，懒汉式是用到了才创建。Bean是饿汉式。</p>
+<p><strong>volatile懒汉式单例使用的场景？</strong></p>
+<p>线程安全的单例场景吧，线程池，数据库连接池</p>
+<p><strong>Bean默认是单例还是多例，怎么设置多例？</strong>（单例，scope设置成prototype）</p>
 <h2 id="装饰器模式"><a href="#装饰器模式" class="headerlink" title="装饰器模式"></a>装饰器模式</h2><blockquote>
 <p><font color='red'><u><em><strong>装饰器模式其实就是在原本类的基础上包装一个装饰器类，这个类在执行源类的行为的前后再加入一些新的逻辑。</strong></em></u></font></p>
 </blockquote>
@@ -330,7 +335,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -344,7 +349,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -353,7 +358,7 @@
 
                 <footer id="footer" class="main-content-wrap">
     <span class="copyrights">
-        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+        Copyrights &copy; 2024 CSEN. All Rights Reserved.
     </span>
 </footer>
 
@@ -373,7 +378,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

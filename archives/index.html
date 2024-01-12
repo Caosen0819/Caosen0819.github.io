@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archives - 森</title>
+    <title>Archiv - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    Nov 08, 2023
+		    08 Nov 2023
     	
     </time>
     
@@ -260,10 +260,10 @@
                 <div class="postShorten-content">
                     <p>首先来了解一下InnoDB的体系架构：</p>
 <h1 id="体系架构"><a href="#体系架构" class="headerlink" title="体系架构"></a>体系架构</h1><p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231004235405057.png" alt="image-20231004235405057"></p>
-<p>我觉的用一句话概括，就是由很多内存块组成的内存池维护一系列后台线程，然后这些后台线程去负责最重要的工作。主要是内存和后台线程。</p>
+<p><font color='red'><u><em><strong>我觉的用一句话概括，就是由很多内存块组成的内存池维护一系列后台线程，然后这些后台线程去负责最重要的工作。主要是内存和后台线程。</strong></em></u></font></p>
 <h2 id="1、后台线程"><a href="#1、后台线程" class="headerlink" title="1、后台线程"></a>1、后台线程</h2><blockquote>
 <p>主要有：</p>
-<p><font color='red'><u><em><strong>master thread</strong></em></u></font>：最重要的，脏页刷新、合并insert buffer，undo 页的回收，redolog。不过后来脏页回收放到了单独的线程，也就是page thread</p>
+<p><font color='red'><u><em><strong>master thread</strong></em></u></font>：最重要的，脏页刷新、合并insert buffer，undo 页的回收，redolog buffer。不过后来脏页回收放到了单独的线程，也就是page thread</p>
 <p>IO thread: 负责异步io的回调</p>
 <p>purge thread: 负责undolog清理</p>
 <p>page clean thread：负责脏页刷新</p>
@@ -302,6 +302,8 @@
 <blockquote>
 <p>sharp checkpoint</p>
 <p>fuzzy checkpoint</p>
+</blockquote>
+<blockquote>
 <p>sharp checkpoint就是在<font color='red'><u><em><strong>数据库关闭的时候全部刷新到磁盘</strong></em></u></font></p>
 <p>fuzzy checkpoint是刷新部分脏页？刷新到时机如下：</p>
 <p>master thread checkpoint（空闲）</p>
@@ -342,8 +344,8 @@
 <p>具体实现的话，是依赖于两个部分，一个是<font color='red'><u><em><strong>内存中的doublewrite buffer</strong></em></u></font>，2m。另一部分是磁盘里的<font color='red'><u><em><strong>共享表空间里面有一个连续的128页</strong></em></u></font>，也是2m。</p>
 <p>流程分三步。</p>
 <p><font color='red'><u><em><strong>1、我先不直接写磁盘，我先复制到这个内存的doublewrite buffer里面</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>2、然后分两次写入，每次1m写入共享表空间的物理磁盘，</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>3、然后马上调用fsync函数，同步磁盘。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>2、然后分两次写入，每次1m写入共享表空间的物理磁盘，（顺序写）</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>3、然后马上调用fsync函数，同步磁盘。（离散写）</strong></em></u></font></p>
 <p>所以，如果写的时候崩溃了，那就把这个共享表空间里面的副本拿出来配合redo log进行恢复。</p>
 </blockquote>
 <p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231021153343267.png" alt="image-20231021153343267"></p>
@@ -367,8 +369,7 @@
 <h3 id="1、二进制日志"><a href="#1、二进制日志" class="headerlink" title="1、二进制日志"></a>1、二进制日志</h3><blockquote>
 <p><font color='red'><u><em><strong>它是server层 的日志，记录了对mysql数据库更改的所有操作。</strong></em></u></font><font color='red'><u><em><strong>主要用于备份恢复和主从同步：</strong></em></u></font>不包括selectshow这类操作</p>
 <p>过程主要是：</p>
-<p>1）事务执行过程中，先把日志写到 binlog cache（Server 层的 cache，MySQL 给每个线程分配了一片内存用于缓冲 binlog）。</p>
-<p>2）事务提交的时候，再把 binlog cache 写到 binlog 文件中。</p>
+<p><font color='red'><u><em><strong>他的写入逻辑是：事务执行过程中，先把日志写到 binlog cache、事务提交的时候，再把 binlog cache 写到 binlog 文件中。</strong></em></u></font></p>
 <p>这个刷盘的机制就依赖于sync_binlog这个参数</p>
 <ul>
 <li>sync_binlog &#x3D; 0 的时候，表示每次提交事务都只 write，不 fsync，后续交由操作系统决定何时将数据持久化到磁盘；</li>
@@ -377,9 +378,11 @@
 </ul>
 <p><font color='red'><u><em><strong>还有个需要关注的点就是它落盘的形式，就是怎么记录的？</strong></em></u></font></p>
 <p>这个是依赖于binlog——format这个参数，他就是记录二进制的格式，有三种、statement、row、mixed。</p>
-<p>statement就是最简单的sql语句，但是他有个很大的问题就是如果用到了uuid rand udf这些函数或触发器，或者索引选择的问题，那么会导致主从不一致，那我们可以用row的格式，row的话就是记录表的行修改情况。同样的他也有一个很大问题就是要求的容量比较大。那还有一种mixed格式就是混用，正常情况下我按照statement记录sql语句，但是在uuid rand udf这些特殊情况我用row的格式进行纪记录。</p>
+<p>statement就是最简单的sql语句，但是他有个很大的问题就是如果用到了uuid rand udf这些函数或触发器，或者索引选择的问题，那么会导致主从不一致，那我们可以用row的格式，row的话就是记录表的行修改情况。同样的他也有一个很大问题就是要求的容量比较大。那还有一种mixed格式就是混用，正常情况下我按照statement记录sql语句，但是在uuid rand udf这些特殊情况我用row的格式进行记录。</p>
 <blockquote>
 <p>了解：</p>
+</blockquote>
+<blockquote>
 <p>恢复：某些数据需要二进制日志。比如数据库全备文件恢复之后，通过二进制进行point-in-time的恢复</p>
 <p>复制；主从同步，那canal也是通过这种方式去监听binlog</p>
 <p>审计：用户通过二进制的信息判断是否有对数据库进行注入的攻击</p>
@@ -445,7 +448,14 @@
 <p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/3b87e950352ac65c1fead4dc4c8ba11892138a30.jpeg" alt="img"></p>
 <p>如图，最小虚记录和最大虚记录之间形成一个链表，这时候Slot区就派上用场了，每个Slot槽指向链表中的某一个位置，每个槽的大小一样，可以理解为一个指针，<strong>这样我们只需要用一个算法把每个子链表的长度拆成差不多大小就行了</strong>。</p>
 <p>在查找的时候，先基于Sn、S0找到指向的最大最小虚记录，在Slot区进行二分：<strong>先找到Sn和S0的中间位置，中间找到某个Slot，然后再一步步进行比较，通过几次二分后找到具体的子链表，最后，在子链表内进行遍历找到最终的记录</strong>。这样我们借助Slot区实现了一个近似二分查找的方法。这特别像Java里面的跳表结构，一次查找跳一次，再一次查找再跳一次，效率就特别高了</p>
-<h1 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h1><p><strong>in会导致索引失效吗</strong></p>
+<h1 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h1><p><font color='red'><u><em><strong>where a&#x3D;1 and b &gt;1 and c&#x3D;1;</strong></em></u></font></p>
+<blockquote>
+<p>假如创建一个（a,b,c)的联合索引，那么它的索引树是这样的：</p>
+<p>![img](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;867078-20200703134853993-1354025866.png)</p>
+<p><font color='red'><u><em><strong>(a,b,c)联合索引 where a &#x3D; ‘xxx’ b is null c &#x3D; ‘xxx’怎么走索引</strong></em></u></font></p>
+<p>is null是一个比例</p>
+</blockquote>
+<p><strong>in会导致索引失效吗</strong></p>
 <p>当in的条件命中的数量很少时，是走索引的；但是当in的条件命中的数量超过30%时，索引失效，走全表扫描；</p>
 <p><strong>普通索引和唯一索引，应该怎么选择？</strong>查询和对已经在内存的更新差距不大。但是对于不在内存的数据，唯一索引有唯一性要求，要先加到内存（相当于用不了changebuffer），但是普通索引不需要，只需要存到change buffer里面就可以。</p>
 <p><strong>添加索引的原则</strong></p>
@@ -457,10 +467,11 @@
 </blockquote>
 <p><strong>索引失效情况</strong>；</p>
 <blockquote>
-<p>![image-20231115170555843](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115170555843.png)</p>
+<p>1、违反最左前缀原则：</p>
+<p>2、范围查找右边的会失效</p>
+<p>3、在索引列有函数操作，包括显示的函数和隐式的类型转换</p>
+<p>4、优化器觉得全局更快，索引也会失效</p>
 </blockquote>
-<p><strong>谈谈SQL优化的理解？</strong></p>
-<p>![image-20231115192556247](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115192556247.png)</p>
 <p>![image-20231115170958089](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115170958089.png)</p>
 <p><strong>MySQL为什么有时候会选错索引？</strong></p>
 <blockquote>
@@ -507,7 +518,6 @@
 <h3 id="3、B-树索引的管理"><a href="#3、B-树索引的管理" class="headerlink" title="3、B+树索引的管理"></a>3、B+树索引的管理</h3><blockquote>
 <h4 id="1、索引管理"><a href="#1、索引管理" class="headerlink" title="1、索引管理"></a>1、索引管理</h4><p>创建和删除可以通过两种方法。一种是alter table。另一种是create&#x2F;drop index。</p>
 <p>查看：show index from XX</p>
-<h4 id="2、fast-index-create"><a href="#2、fast-index-create" class="headerlink" title="2、fast index create"></a><font color='red'><u><em><strong>2、fast index create</strong></em></u></font></h4><p>在创建索引的表加上一个S锁不需要重建表，删除索引只需要更新内部视图。<font color='red'><u><em><strong>但是不能做一些更新操作。</strong></em></u></font></p>
 <h4 id="4、Online-DDL"><a href="#4、Online-DDL" class="headerlink" title="4、Online DDL"></a><font color='red'><u><em><strong>4、Online DDL</strong></em></u></font></h4><p>允许在辅助索引创建的同时，还允许insert update等DML操作</p>
 <p>有三种算法：</p>
 <p>copy：执行insert update delete这些操作的时候，<font color='red'><u><em><strong>先把操作日志写入一个缓存里面，然后，索引建立后重做表上面</strong></em></u></font></p>
@@ -626,7 +636,7 @@
 <p>所以后面InnoDB 存储引擎提供了一种<strong>轻量级的锁</strong>，并且提供了一个参数，叫innodb autoinc lock mode</p>
 <ul>
 <li>当 innodb_autoinc_lock_mode &#x3D; 0，就采用 AUTO-INC 锁，语句执行结束后才释放锁；</li>
-<li>当 innodb_autoinc_lock_mode &#x3D; 2，就采用轻量级锁，申请自增主键后就释放锁，并不需要等语句执行后才释放。</li>
+<li>当 innodb_autoinc_lock_mode &#x3D; 2，就采用轻量级锁，<font color='green'><u><em><strong>申请自增主键后就释放锁</strong></em></u></font>，并不需要等语句执行后才释放。</li>
 <li>当 innodb_autoinc_lock_mode &#x3D; 1：</li>
 <li>普通 insert 语句，自增锁在申请之后就马上释放；</li>
 <li>类似 insert … select 这样的批量插入数据的语句，自增锁还是要等语句结束后才被释放<font color='red'><u><em><strong>（因为“不知道要预先申请多少个 id）</strong></em></u></font></li>
@@ -684,10 +694,11 @@
 <p>比如一条记录旧版本里面有三条记录：10，20，30。然后我们的事务id是15，m_ids里面有20，30。这里的min_trx_id就是20，我们的15比她小，说明还没有提交。因为隔离性所以肯定是看不到的，然后再去找更前面版本，我们就找到了10，发现10可以，所以我们这次读到的数据就是事务id为10的那一个版本。</p>
 <h2 id="3、一致性锁定读（当前读）"><a href="#3、一致性锁定读（当前读）" class="headerlink" title="3、一致性锁定读（当前读）"></a>3、一致性锁定读（当前读）</h2><p>有时候用户需要些显式的对读操作进行加锁保证一致性。 <font color='red'><u><em><strong>select for share mode， for update还有update也是当前读</strong></em></u></font></p>
 <p>![image-20231115193544143](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115193544143.png)</p>
-<h2 id="5、锁问题（并发事务带来的问题）"><a href="#5、锁问题（并发事务带来的问题）" class="headerlink" title="5、锁问题（并发事务带来的问题）"></a>5、锁问题（并发事务带来的问题）</h2><h3 id="1、脏读"><a href="#1、脏读" class="headerlink" title="1、脏读"></a>1、脏读</h3><p><font color='blue'><u><em><strong>读到了其他事务没有提交的数据</strong></em></u></font>，违反了隔离性。但是脏读发生的隔离级别最少也得是read uncommitted，而我们的数据库默认是可重复读，所以一般在生产环境中，发生的并不多。</p>
-<h3 id="2、不可重复读-or-幻读"><a href="#2、不可重复读-or-幻读" class="headerlink" title="2、不可重复读 or 幻读"></a>2、不可重复读 or 幻读</h3><p>不可重复读：两次读，读的不一样。</p>
-<p>幻读：一个事务在前后两次查询同一个范围的时候，后一次查询看到了前一次查询没有看到的行。说白了就是另一个事物插入了新的数据，但是没办法拒绝。</p>
-<p>不可重复读：就是一个事务读两次，另一个事务在两次读之间作出修改，因为读是mvcc，不加锁，所以会出现不可重复读。innoDB的解决方法：</p>
+<h2 id="5、锁问题（并发事务带来的问题）"><a href="#5、锁问题（并发事务带来的问题）" class="headerlink" title="5、锁问题（并发事务带来的问题）"></a>5、锁问题（并发事务带来的问题）</h2><h3 id="1、脏读-or-不可重复读-or-幻读"><a href="#1、脏读-or-不可重复读-or-幻读" class="headerlink" title="1、脏读 or 不可重复读 or 幻读"></a>1、脏读 or 不可重复读 or 幻读</h3><p>脏读：<font color='blue'><u><em><strong>读到了其他事务没有提交的数据</strong></em></u></font></p>
+<p>不可重复读：<font color='blue'><u><em><strong>两次读，读的不一样。</strong></em></u></font></p>
+<p>幻读：<font color='blue'><u><em><strong>一个事务在前后两次查询同一个范围的时候，后一次查询看到了前一次查询没有看到的行。</strong></em></u></font></p>
+<p>不可重复读的原因：<font color='blue'><u><em><strong>readview是每一次读生成一次的。</strong></em></u></font></p>
+<p>幻读innoDB的解决方法：</p>
 <ul>
 <li>针对<strong>快照读</strong>（普通 select 语句），是<strong>通过 MVCC 方式解决了幻读</strong>，因为可重复读隔离级别下，事务执行过程中看到的数据，一直跟这个事务启动时看到的数据是一致的，即使中途有其他事务插入了一条数据，是查询不出来这条数据的，所以就很好了避免幻读问题。</li>
 <li>针对<strong>当前读</strong>（select … for update 等语句），是<font color='red'><u><em><strong>通过 next-key lock（记录锁+间隙锁）（前开后闭区间）</strong></em></u></font><strong>方式解决了幻读</strong>，因为当执行 select … for update 语句的时候，会加上 next-key lock，如果有其他事务在 next-key lock 锁范围内插入了一条记录，那么这个插入语句就会被阻塞，无法成功插入，所以就很好了避免幻读问题。</li>
@@ -696,10 +707,16 @@
 <h3 id="3、丢失更新"><a href="#3、丢失更新" class="headerlink" title="3、丢失更新"></a>3、丢失更新</h3><p>是指一个事务的操作被另一个事务的操作覆盖了，但是当前数据库的任何隔离级别都对行或者粗粒度的对象加锁，所以还是比较难发生。</p>
 </blockquote>
 <h2 id="6、死锁"><a href="#6、死锁" class="headerlink" title="6、死锁"></a>6、死锁</h2><p>死锁是指两个或以上的事务争夺资源造成的一种互相等待的现象</p>
+<blockquote>
+<p><font color='blue'><u><em><strong>互斥条件</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>请求和保持条件</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>不可剥夺条件</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>循环等待条件</strong></em></u></font></p>
 <p>解决方法：</p>
 <p>1、设置超时的阈值，回滚一个死锁的事务</p>
 <p>2、wait-for-graph 等待图。检测是否有回路。通常用深度优先。1.2版本开始就变成非递归</p>
 <p>如果有死锁，那就回归undo量最少的</p>
+</blockquote>
 <h2 id="7、锁升级"><a href="#7、锁升级" class="headerlink" title="7、锁升级"></a>7、锁升级</h2><p>InnoDB中不存在锁升级的问题，因为InnoDB不是更具每个记录来产生锁的，相反，其根据每个事务访问的每个页对锁进行管理，采用的是位图的方式。所以不管你锁住的是页中的一个记录或者多个记录，开销一样</p>
 <p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/image-20231006204601132.png" alt="image-20231006204601132"></p>
 <h1 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h1><h2 id="1、认识事务"><a href="#1、认识事务" class="headerlink" title="1、认识事务"></a>1、认识事务</h2><h3 id="1、四个特性：acid。"><a href="#1、四个特性：acid。" class="headerlink" title="1、四个特性：acid。"></a>1、四个特性：acid。</h3><p>原子性：要么成功要么失败</p>
@@ -707,11 +724,6 @@
 <p>隔离性Isolation：一个事务提交之前对其他事物不可见</p>
 <p>Durability：一旦提交，那么结果是永久性的</p>
 <p>可以举个例子：就是转账。</p>
-<h3 id="2、分类-1"><a href="#2、分类-1" class="headerlink" title="2、分类"></a>2、分类</h3><p>扁平事务</p>
-<p>带有保存点的扁平事务</p>
-<p>链事务</p>
-<p>嵌套事务</p>
-<p>分布式事务</p>
 <h2 id="2、事务的实现"><a href="#2、事务的实现" class="headerlink" title="2、事务的实现"></a>2、事务的实现</h2><p>事务的隔离性由锁机制来实现。</p>
 <p>原子性、一致性、持久性通过redo log和undo log完成</p>
 <p>redo log保证持久性</p>
@@ -766,7 +778,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -795,7 +807,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    Nov 08, 2023
+		    08 Nov 2023
     	
     </time>
     
@@ -834,7 +846,7 @@
 <ul>
 <li><strong>1、编译器重排序：</strong> 例如将循环内重复调用的操作提前到循环外执行；</li>
 <li><strong>2、处理器系统重排序：</strong> 例如指令并行技术将多条指令重叠执行，或者使用分支预测技术提前执行分支的指令，并把计算结果放到重排列缓冲区（Reorder Buffer）的硬件缓存中，当程序真的进入分支后直接使用缓存中的结算结果；</li>
-<li><strong>3、存储器系统重排序：</strong> 例如写缓冲区和失效队列机制，即是可见性问题，从内存的角度也是指令重排问题。</li>
+<li><strong>3、存储器系统重排序：</strong> 例如写缓冲区（发消息不等直接写到storebuffer，收消息不看直接返回，然后放到invalid queue）和失效队列机制，即是可见性问题，从内存的角度也是指令重排问题。</li>
 </ul>
 <p>解决办法就是<font color='green'><u>*** Memory Barrier（内存屏障）***</u></font>。借助内存屏障可以很好地保证了顺序一致性。</p>
 <p>JMM就是有4种屏障，（cpu三种，读屏障，写屏障，全屏障）</p>
@@ -892,7 +904,7 @@
 <p>当第二个操作是volatile写时，不管第一个操作是什么，都不能重排序。这个规则确保volatile写之前的操作不会被编译器重排序到volatile写之后。</p>
 <p>当第一个操作是volatile读时，不管第二个操作是什么，都不能重排序。这个规则确保volatile读之后的操作不会被编译器重排序到volatile读之前。</p>
 <p>当第一个操作是volatile写，第二个操作是volatile读时，不能重排序。</p>
-<h3 id="2、Synchronized"><a href="#2、Synchronized" class="headerlink" title="2、Synchronized"></a>2、Synchronized</h3><p><font color='red'><u><em><strong>它是一种互斥锁，他的实现原理是 通过基于进入和退出Monitor对象来控制同步。锁有3种形式：普通方法（锁是当前实例对象）、静态方法（锁是当前类的Class对象）、方法块（括号里的对象）。方法和代码块具体实现是不一样的，一个是monitorenter和monitorexit；一个是ACC_SYNCHRONIZED。</strong></em></u></font></p>
+<h3 id="2、Synchronized"><a href="#2、Synchronized" class="headerlink" title="2、Synchronized"></a>2、Synchronized</h3><p><font color='red'><u><em><strong>它是一种互斥锁，他的实现原理是 通过基于进入和退出Monitor对象来控制同步。有三种使用方法：普通方法（锁是类实例对象）、静态方法（锁是当前类的Class对象）、方法块（括号里的对象）。方法和代码块具体实现是不一样的，一个是monitorenter和monitorexit；一个是ACC_SYNCHRONIZED。</strong></em></u></font></p>
 <blockquote>
 <p>方法级的同步是隐式，JVM可以从方法表里面检查方法的 ACC_SYNCHRONIZED 访问标志是否被设置，如果设置了，执行线程将先持有monitor， 然后再执行方法，方法完成释放monitor。</p>
 <p>代码块的同步是利用monitorenter和monitorexit这两个字节码指令。它们分别位于同步代码块的开始和结束位置。当jvm执行到monitorenter指令时，当前线程试图获取monitor对象的所有权，如果未加锁或者已经被当前线程所持有，就把锁的计数器+1；当执行monitorexit指令时，锁计数器-1；当锁计数器为0时，该锁就被释放了。如果获取monitor对象失败，该线程则会进入阻塞状态，直到其他线程释放锁。</p>
@@ -909,7 +921,7 @@
 </blockquote>
 <p><font color='red'><u><em><strong>锁升级</strong></em></u></font></p>
 <p>而Java1.6为了减少性能消耗，引入了“偏向锁”“轻量级锁”。</p>
-<p><strong>偏向锁</strong></p>
+<p><strong>偏向锁</strong>（101）</p>
 <blockquote>
 <p>偏向锁是用于没有竞争的时候。</p>
 <p>他的加锁过程是：把markword后三位改成101，然后通过CAS的方式把markword的线程id改为自己就好就代表自己获得了锁，后续如果再次获取锁，直接去markword里面线程id是不是自己的就可以了。</p>
@@ -917,7 +929,7 @@
 <p>1、线程没执行完，那就升级轻量级继续执行。</p>
 <p>2、线程执行完了那么我们就尝试重偏向。</p>
 </blockquote>
-<p><strong>轻量级锁</strong></p>
+<p><strong>轻量级锁</strong>（000）</p>
 <blockquote>
 <p>轻量级锁由偏向锁升级而来，适用少量线程交替执行。</p>
 <p>他的加锁过程是：</p>
@@ -925,7 +937,7 @@
 <p>4、如果失败会自旋再次CAS去获取锁。若失败的次数过多，则轻量级锁会膨胀为重量级锁。</p>
 <p>解锁过程：通过CAS操作把Mark Word 和锁记录替换回来，如果失败了，那能是因为其他线程自旋太多次导致升级为重量级锁，那就释放锁并唤醒阻塞的线程竞争锁</p>
 </blockquote>
-<p><strong>重量级锁</strong></p>
+<p><strong>重量级锁</strong>（010）</p>
 <p>重量级锁是轻量级锁受到激烈竞争时，为防止cpu被自旋的线程浪费膨胀而来，因此重量级锁肯定是应付大量线程同时访问同步块的情景。让申请锁失败的线程阻塞后，cpu的负担会减小不少，因此数据的吞吐量也就上来了。</p>
 <h3 id="3、锁（LOCK接口）"><a href="#3、锁（LOCK接口）" class="headerlink" title="3、锁（LOCK接口）"></a><strong>3、锁（LOCK接口）</strong></h3><p><img src="/../images/Java%E5%B9%B6%E5%8F%91/image-20231022145201049.png" alt="image-20231022145201049"></p>
 <p><strong>锁的内存语义</strong></p>
@@ -937,7 +949,7 @@
 <p>性能方面：在竞争激烈时，Lock能提供更好的性能。</p>
 <h4 id="1、AQS"><a href="#1、AQS" class="headerlink" title="1、AQS"></a>1、AQS</h4><blockquote>
 <p>本质是一个抽象类，用来构造锁或其他同步组件的基础框架。</p>
-<p>AQS有两个比较关键的东西，<font color='red'><u><em><strong>一个是volatile的state变量，一个是同步队列。</strong></em></u></font></p>
+<p>AQS有3个比较关键的东西，<font color='red'><u><em><strong>一个是volatile的state变量，一个是同步队列。一个owner</strong></em></u></font></p>
 <p><strong>state</strong>表示同步状态（volatile）</p>
 <p><strong>同步队列</strong>是一个双向列表，获取失败的线程会被构造成一个节点通过CAS的方式加入到这个队列尾部。一个节点保存着线程的引用，状态，前驱节点，后继结点。</p>
 <p><font color='red'><u><strong>AQS</strong> <strong>资源共享方式</strong>：两种</u></font></p>
@@ -954,11 +966,16 @@
 <p><font color='red'><u><em><strong>他是LOCK接口的一个子类，他有一个内部类Sync，这个类继承了AQS，所以我们也说重入锁依赖AQS，AQS使用一个整形的volatile变量（state）来维护同步状态。用CAS对state进行原子操作。state&#x3D;0表示初始状态可以占有锁，state&#x3D;1表示已有线程占有，大于1是重入锁。具体加锁的流程，就是sync调用lock，lock去调用acquire函数，acquire调用tryacquire，这里就开始操作aqs了。sync的实现有公平锁和非公平锁。</strong></em></u></font></p>
 <p><strong>公平锁和非公平锁区别？</strong></p>
 <p><font color='red'><u><em><strong>Sync有公平锁 和非公平锁，公平锁和非公平锁区别: 非公平锁在tryacquire的时候，里面有一个步骤是获取同步状态，如果这个同步状态是0的话，说明现在没人拿，我可以去直接去拿，公平锁这里会多一个判断hasQueuedPredecessors，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>加入的时候怎么加入的？</strong></em></u></font></p>
+<p>新的节点的Pre指向尾结点，然后用cas的方式让尾结点指向新节点，最好尾结点更新。</p>
 </blockquote>
-<h4 id="3、死锁"><a href="#3、死锁" class="headerlink" title="3、死锁"></a>3、死锁</h4><p>两个线程，互相请求对方已经持有的资源。</p>
+<h4 id="3、死锁"><a href="#3、死锁" class="headerlink" title="3、死锁"></a>3、死锁</h4><p>互斥条件：</p>
+<p>请求和保持，并且不可被剥夺。</p>
+<p>循环等待：</p>
+<p>两个线程，互相请求对方已经持有的资源。</p>
 <p>死锁的检测：</p>
 <ul>
-<li>可以依赖jps和jstack。用jps拿到java进程的id，然后jstack分析堆栈信息。</li>
+<li>可以依赖JPS和JSTACK。用jps拿到java进程的id，然后jstack分析堆栈信息。</li>
 <li>也可以用可视化工具jconsole virtualVM</li>
 </ul>
 <hr>
@@ -1018,8 +1035,9 @@
 <p>继承Thread、实现runnbale接口，实现callable接口，还有线程池（也是项目中的创建方法）</p>
 <p><font color='red'><u><em><strong>线程池创建线程</strong></em></u></font>有两种方式：</p>
 <blockquote>
-<p><strong>方式一：通过<code>ThreadPoolExecutor</code>构造函数来创建（推荐）。</strong></p>
-<p><strong>方式二：通过 <code>Executor</code> 框架的工具类 <code>Executors</code> 来创建。</strong></p>
+<p><strong>方式一：通过<code>ThreadPoolExecutor</code>构造方法来创建（推荐）。</strong></p>
+<p><strong>方式二： <code>Executors的工厂方法：比如Executors.newCachedThreadPool()</code>（不推荐）。</strong></p>
+<p>两种方法都在concurrent包下面。</p>
 <p>为什么不推荐？我觉得就是Executors提供的创建的几个线程池都有点局限性，都有不足的地方。</p>
 <p>然后像Fixed和Single用的<font color='red'><u><em><strong>工作队列是无界队列</strong></em></u></font>，可能会堆积大量的请求,导致OOM</p>
 <p>还有<font color='red'><u><em><strong>cached和Schedule最大的线程数量是Integer.MAX_VALUE</strong></em></u></font>，可能堆积大量的线程，导致OOM</p>
@@ -1038,31 +1056,60 @@
 <p>SynchronousQueue</p>
 </blockquote>
 </blockquote>
-<p><strong>runnable和callable有什么区别？</strong></p>
-<p>callable是有返回值的，配合futuretask获得线程执行结果，call方法可以抛出异常</p>
-<p><strong>启动的时候可以run方法吗</strong></p>
-<p>调用run，就是调用普通方法。不会启动线程</p>
-<p><strong>线程有哪些状态</strong></p>
+<p><font color='red'><u><strong>runnable和callable有什么区别？</strong></u></font></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>callable</th>
+<th>runnable</th>
+</tr>
+</thead>
+<tbody><tr>
+<td></td>
+<td>有返回值的配合futuretask获得线程执行结果</td>
+<td>无返回值</td>
+</tr>
+<tr>
+<td></td>
+<td>callable方法抛出异常</td>
+<td>runnable不抛异常</td>
+</tr>
+<tr>
+<td></td>
+<td>call</td>
+<td>Run</td>
+</tr>
+</tbody></table>
+<p><font color='blue'><u><em><strong>怎么退出线程？</strong></em></u></font></p>
+<blockquote>
+<p><font color='red'><u><em><strong>1、Interrupt，一种温和的方式，会把线程的中断状态位设置为true，告诉他他自己应该在合适的时间中断</strong></em></u></font></p>
+<table>
+<thead>
+<tr>
+<th>isInterrupted</th>
+<th>检查线程的中断标记位，</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>interrupted</td>
+<td>返回当前线程的中断标记位，同时清除中断标记，改为false</td>
+<td></td>
+</tr>
+</tbody></table>
+<p><font color='red'><u><em><strong>如果调用interrupt的时候正处于阻塞的状态，那就抛出一个异常，提前终止阻塞。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>如果正常进行，那就是简单的把中断状态改成true，后面如果遇到wait、sleep就抛异常，不进行阻塞</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>2、退出标记</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>3、stop</strong></em></u></font></p>
+</blockquote>
+<p><font color='blue'><u><em><strong>线程有哪些状态，怎么转换</strong></em></u></font></p>
 <p>new runnable blocked waiting timewaiting terminated</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<p><img src="/../images/Java%E5%B9%B6%E5%8F%91/image-20231116193315032.png" alt="image-20231116193315032"></p>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
+<p><img src="/../images/JUC/image-20240102183939276.png" alt="image-20240102183939276"></p>
 <p><strong>wait和sleep有什么不同</strong></p>
+<blockquote>
 <p>首先是锁特性，wait会释放锁，但是sleep不会释放锁。wait没有时间参数的时候要等待notify唤醒，但是sleep就是时间到期就恢复。</p>
-<p><strong>怎么退出线程？</strong></p>
-<p>interrupt，打断阻塞的线程会抛出异常，打断正常的不会抛出异常</p>
-<p>stop</p>
-<p>退出标记</p>
+</blockquote>
 <p><font color='red'><u><em><strong>线程池就是管理线程的资源池。当有任务要处理时，直接从线程池中获取线程来处理，处理完之后线程并不会立即被销毁，而是等待下一个任务。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>处理流程：</strong></em></u></font></p>
 <p>1）先看核心线程池，有没有都在执行任务。如果不是都在执行，就创建一个工作线程执行任务，否则就看工作列表。</p>
@@ -1081,31 +1128,33 @@
 <p><strong><code>DiscardPolicy</code></strong>:不处理新任务，直接丢弃掉。</p>
 <p><strong><code>DiscardOldestPolicy</code>：</strong> 此策略将丢弃阻塞队列最早任务，重新提交</p>
 </blockquote>
-<blockquote>
-</blockquote>
 <p><font color='red'><u><em><strong>怎么确认核心线程数</strong></em></u></font></p>
 <blockquote>
 <p>IO密集型，就设置成2*cpu核数+ 1</p>
 <p>cpu密集型任务，就避免线程上下文切换，可以设置成cpu+1</p>
 </blockquote>
-<p><strong>如何设定线程池的大小？</strong></p>
+<p><font color='red'><u><strong>如何设定线程池的大小？</strong></u></font></p>
 <blockquote>
-<p>最佳线程数 &#x3D; CPU 核心数 ∗（1+WT（线程等待时间）&#x2F;ST（线程计算时间</p>
+<p>最佳线程数 &#x3D; CPU 核心数 ∗（1+WT（线程等待时间）&#x2F;ST（线程计算时间）</p>
 <p>反正和cpu核数和线程等待时间计算时间有关。</p>
 </blockquote>
 <p><font color='red'><u><em><strong>线程池的使用场景</strong></em></u></font></p>
 <blockquote>
 <p>使用线程池就是要用多线程，多线程其实可以说是尽量把一个线程串行的工作变成并行的，所以什么那种数据查询然后汇总就可以用线程池。还有数据分批导入可以用线程池、甚至某些异步调用也可以用线程池。</p>
-<p>数据汇总</p>
-<p>数据导入</p>
+<p><font color='blue'><u><em><strong>数据汇总</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>数据分批导入</strong></em></u></font></p>
 </blockquote>
-<p>怎么限制接口可以访问的线程数？限流？</p>
+<p><font color='red'><u><em><strong>怎么限制接口可以访问的线程数？限流？</strong></em></u></font></p>
 <blockquote>
-<p>这个可以是共享锁的一种扩展吧，那个信号量可以实现这个</p>
+<p><font color='blue'><u><em><strong>令牌桶，那个信号量可以实现这个</strong></em></u></font></p>
 </blockquote>
 <p><strong>MQ和线程池区别？</strong></p>
 <blockquote>
 <p>mq是两个服务间解耦，线程池是一个服务加速</p>
+</blockquote>
+<p><strong>启动的时候可以run方法吗</strong></p>
+<blockquote>
+<p>调用run，就是调用普通方法。不会启动线程</p>
 </blockquote>
 <p><strong>如何设计一个能够根据任务的优先级来执行的线程池？</strong></p>
 <blockquote>
@@ -1120,7 +1169,7 @@
 <p>颜屹钧：钧的话，本来想取一个君子的君，代表那种不轻言放弃、凛然正义的君子，但是君是属于水，就换成了钧，钧的话，本身就有尊贵的意思，然后还可以通“均”，这个均就有均衡的意思，各个方面都不差。</p>
 <p>颜屹琛：琛，属金，本身是宝玉的意思，和小宝、66的瑾和瑜是一类意思，而且取得人少。</p>
 <p>颜屹正。正属于金，反过来还刚好是正义。希望孩子刚正不阿，笔画也少点，寓意肯定是极好的。</p>
-<p>颜屹心：取自“钧是人也,或从其大体,或从其小体,何也”–《孟子》。这句话的意思是：孟子说，同样是人，有的人注重身体重要部分，有的人注重身体次要部分。这是因为眼睛、耳朵等器官不会思考，容易被外物所蒙蔽，而心这个器官则有思考的能力，一思考就会有所得，不思考就得不到。所以，如果首先把心这个身体的重要部分树立起来，其他次要部分就不会被引入迷途，这样便可以成为君子。刚刚好，嫂子说过希望孩子有想法，前面那个屹也能对上树立，也蛮适合。不过这个“心”有一个问题，有人说属于金，有人说属于火。</p>
+<p>颜屹心：取自“钧是人也,或从其大体,或从其小体,何也”–《孟子》。这句话的意思是：孟子说，同样是人，有的人注重身体重要部分，有的人注重身体次要部分。这是因为眼睛、耳朵等器官不会思考，容易被外物所蒙蔽，而心这个器官则有思考的能力，一思考就会有所得，不思考就得不到。所以，如果首先把心这个身体的重要部分树立起来，其他次要部分就不会被引入迷途，这样便可以成为君子。刚刚好，嫂子说过希望孩子有想法，前面那个屹也能对上树立，也蛮适合。不过这个“心”有一个问题，有人说属于金，有人说属于火。	</p>
 
                     
                         
@@ -1134,7 +1183,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1163,7 +1212,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-04T00:00:00+08:00">
 	
-		    Nov 04, 2023
+		    04 Nov 2023
     	
     </time>
     
@@ -1416,6 +1465,7 @@
 <p>2）无法处理浮动垃圾（用户线程使得原来某些对象不是垃圾，但是当 CMS 进行清理的时候变成了垃圾，从可达到不可达，但是没扫出来），有可能触发full gc</p>
 <p>3）用的是标记清除，会有内存碎片</p>
 <p>​	</p>
+<p>CMSFullGCsBeforeCompaction</p>
 <h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><blockquote>
 <p>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。</p>
 <p>为了加快搜索，G1是使用card table和RSet。</p>
@@ -1516,7 +1566,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1545,7 +1595,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-28T00:00:00+08:00">
 	
-		    Oct 28, 2023
+		    28 Oct 2023
     	
     </time>
     
@@ -1597,112 +1647,73 @@
 <p>总的来说，在崩溃恢复后，只要redo log不是处于commit阶段，那么就拿着redo log中的XID去binlog中寻找，找得到就提交，否则就回滚。</p>
 <p>在这样的机制下，两阶段提交能在崩溃恢复时，能够对提交中断的事务进行补偿，来确保redo log与binlog的数据一致性。</p>
 </blockquote>
-<p><strong>索引</strong></p>
-<p>所以，从性能和存储空间方面考量，<font color='red'><u><em><strong>自增主键</strong></em></u></font>往往是更合理的选择。<strong>主键长度越小，普通索引的叶子节点就越小，普通索引占用的空间也就越小。</strong></p>
-<p>有没有什么场景适合用业务字段直接做主键的呢？还是有的。比如，有些业务的场景需求是这样的：</p>
+<h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a><strong>索引</strong></h2><p><img src="/../images/MySQL45%E8%AE%B2/image-20240109120737217.png" alt="image-20240109120737217"></p>
+<p>执行流程：(<font color='red'><u><em><strong>所以回表不是只回表一次，而是多次</strong></em></u></font>)</p>
+<blockquote>
 <ol>
-<li>只有一个索引；</li>
-<li>该索引必须是唯一索引。</li>
+<li>在 k 索引树上找到 k&#x3D;3 的记录，取得 ID &#x3D; 300； </li>
+<li>再到 ID 索引树查到 ID&#x3D;300 对应的 R3； </li>
+<li>在 k 索引树取下一个值 k&#x3D;5，取得 ID&#x3D;500； </li>
+<li>再回到 ID 索引树查到 ID&#x3D;500 对应的 R4；</li>
+<li>在 k 索引树取下一个值 k&#x3D;6，不满足条件，循环结束。</li>
 </ol>
-<p>索引建立的准则：</p>
-<p>1、尽量少维护索引，</p>
-<p>2、空间</p>
-<h2 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h2><h3 id="全局锁"><a href="#全局锁" class="headerlink" title="全局锁"></a>全局锁</h3><p>典型的使用场景就是做全库的逻辑备份，对所有的表进行 行锁定，从而获取一致性视图，保证数据的完整性。加了全局锁就是只能读</p>
+</blockquote>
+<p><font color='red'><u><em><strong>为什么有时候会选错索引？（两个原因）</strong></em></u></font></p>
+<blockquote>
+<p><font color='green'><u><em><strong>MySQL在真正执行之前只能根据统计信息来估算记录数。</strong></em></u></font>这个统计信息就是基数（随机采样得到一个页的平均值，然后乘以页数）</p>
+<p><font color='green'><u><em><strong>第二个原因是优化器，优化器还要估计执行这个语句本身要扫描多少行？</strong></em></u></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>用 delete 命令把整个表的数据删除呢容量不变小？</strong></em></u></font></p>
+<blockquote>
+<p>数据页都会 被标记为可复用。但是磁盘上，文件不会变小</p>
+<p><font color='red'><u><em><strong>所以需要重建，重建现在基本上都是OnlineDDL，algorithm是copy的时候就是需要临时表，还会丢数据，inplace则是在innodb层开一个临时空间去做，这个允许dml操作（DML写锁会退化成DML读锁）</strong></em></u></font></p>
+</blockquote>
+<p><font color='red'><u>**count(字段)&lt;count(主键 id)&lt;count(1)&lt;count( * )**</u></font></p>
+<blockquote>
+<ol>
+<li>server 层要什么就给什么； 2. InnoDB 只给必要的值； 3. 现在的优化器只优化了 count(*) 的语义为“取行数”，其他“显而易见”的优化并没有做。</li>
+</ol>
+</blockquote>
+<p><font color='red'><u><em><strong>Order By怎么工作？</strong></em></u></font></p>
+<blockquote>
+<p><font color='green'><u><em><strong>order by分两种排序，一种是全字段排序，一种是rowid排序。后者要比前者多一次访问主键索引。MySQL 的一个设计思想：如果内存够，就要多利用内存，也就是全字段排序，尽量减少磁盘访 问。</strong></em></u></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>为什么有时候查询一条语句也很慢？</strong></em></u></font></p>
+<blockquote>
+<p>有可能在等锁的释放，</p>
+<p>也有可能全表扫描，然后行数靠后</p>
+</blockquote>
+<h2 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h2><p><strong>全局锁</strong></p>
+<blockquote>
+<p>典型的使用场景就是做全库的逻辑备份，加了全局锁就是只能读（DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句）</p>
+<p>这样就保证了数据的一致性 和完整性 </p>
 <ul>
-<li><p>一旦加了全局锁之后，其他的DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句，也就是处于只读状态，而数据备份就是查询操作。 那么数据在进行逻辑备份的过程中，数据库中的数据就是不会发生变化的，这样就保证了数据的一致性 和完整性 .</p>
-</li>
-<li><p>语法</p>
-<p>1、加全局锁</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">flush tables <span class="keyword">with</span> read lock;</span><br></pre></td></tr></table></figure>
-
-<p>2、数据备份</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>pxxx db_name <span class="operator">-</span><span class="operator">&gt;</span> xxx.sql;</span><br></pre></td></tr></table></figure>
-
-<p>3、释放锁</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">unlock tables;</span><br></pre></td></tr></table></figure></li>
+<li>语法</li>
 </ul>
-<h4 id="数据库中加全局锁，是一个比较重的操作，存在的问题有："><a href="#数据库中加全局锁，是一个比较重的操作，存在的问题有：" class="headerlink" title="数据库中加全局锁，是一个比较重的操作，存在的问题有："></a>数据库中加全局锁，是一个比较重的操作，存在的问题有：</h4><ul>
-<li>如果在主库上备份，那么在备份期间都不能执行更新，业务基本上就得停摆。</li>
-<li>如果在从库上备份，那么在备份期间从库不能执行主库同步过来的二进制日志（binlog），会导致主从延迟。</li>
-</ul>
-<p>在InnoDB引擎中，我们可以在备份时加上参数 –single-transaction 参数来完成不加锁的一致 性数据备份。</p>
+<p> 1、加全局锁</p>
+ <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">flush tables <span class="keyword">with</span> read lock;</span><br></pre></td></tr></table></figure>
+
+<p> 2、数据备份</p>
+ <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>pxxx db_name <span class="operator">-</span><span class="operator">&gt;</span> xxx.sql;</span><br></pre></td></tr></table></figure>
+
+<p> 3、释放锁</p>
+ <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">unlock tables;</span><br></pre></td></tr></table></figure>
+
+<p>如果在主库上备份，那么在备份期间都不能执行更新，业务基本上就得停摆。</p>
+<p>如果在从库上备份，那么在备份期间从库不能执行主库同步过来的二进制日志（binlog）</p>
+<p>我们可以在InnoDB引擎中，我们可以在备份时加上参数 –single-transaction 参数来完成不加锁的一致 性数据备份。</p>
+<p><font color='red'><u><em><strong>一般用于备份，但是备份也可以开启事务做，但是需要引擎支持可重复读这种隔离级别。</strong></em></u></font>。</p>
+</blockquote>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysqldump --single-transaction -uroot -pxxx db_name -&gt; xxx.sql;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<h2 id="表级锁"><a href="#表级锁" class="headerlink" title="表级锁"></a>表级锁</h2><p>表级锁，主要分为3类：</p>
-<ul>
-<li>表锁</li>
-<li>元数据锁（meta data lock，MDL）</li>
-<li>意向锁</li>
-</ul>
-<p>表锁</p>
-<p>对于表锁，又可以分为2类：</p>
-<ul>
-<li>表共享读锁（read lock）</li>
-<li>表独占写锁（write lock）</li>
-</ul>
-<p>结论: 读锁不会阻塞其他客户端的读，但是会阻塞写。写锁既会阻塞其他客户端的读，又会阻塞 其他客户端的写。</p>
-<h3 id="元数据锁"><a href="#元数据锁" class="headerlink" title="元数据锁"></a>元数据锁</h3><p>再来说说<strong>元数据锁</strong>（MDL）。</p>
-<p>我们不需要显示的使用 MDL，因为当我们对数据库表进行操作时，会自动给这个表加上 MDL：</p>
-<ul>
-<li>对一张表进行 CRUD 操作时，加的是 <strong>MDL 读锁</strong>；</li>
-<li>对一张表做结构变更操作的时候，加的是 <strong>MDL 写锁</strong>；</li>
-</ul>
-<p>MDL 是为了保证当用户对表执行 CRUD 操作时，防止其他线程对这个表结构做了变更。</p>
-<p>当有线程在执行 select 语句（ 加 MDL 读锁）的期间，如果有其他线程要更改该表的结构（ 申请 MDL 写锁），那么将会被阻塞，直到执行完 select 语句（ 释放 MDL 读锁）。</p>
-<p>反之，当有线程对表结构进行变更（ 加 MDL 写锁）的期间，如果有其他线程执行了 CRUD 操作（ 申请 MDL 读锁），那么就会被阻塞，直到表结构变更完成（ 释放 MDL 写锁）。</p>
+<p><strong>表级锁</strong></p>
 <blockquote>
-<p>MDL 不需要显示调用，那它是在什么时候释放的?</p>
+<p>可见存储引擎那篇文章。</p>
 </blockquote>
-<p>MDL 是在事务提交后才会释放，这意味着<strong>事务执行期间，MDL 是一直持有的</strong>。</p>
-<p>MDL 加锁过程是系统自动控制，无需显式使用，在访问一张表的时候会自动加上。MDL 锁主要作用是维 护表元数据的数据一致性，在表上有活动事务的时候，不可以对元数据进行写入操作。为了避免DML与 DDL冲突，保证读写的正确性。</p>
-<h3 id="意向锁"><a href="#意向锁" class="headerlink" title="意向锁"></a>意向锁</h3><p>我觉得意向锁主要还是解决行锁和表锁之间的冲突问题。</p>
-<ul>
-<li>在使用 InnoDB 引擎的表里对某些记录加上「共享锁」之前，需要先在表级别加上一个「意向共享锁」；</li>
-<li>在使用 InnoDB 引擎的表里对某些纪录加上「独占锁」之前，需要先在表级别加上一个「意向独占锁」；</li>
-</ul>
-<p>也就是，当执行插入、更新、删除操作，需要先对表加上「意向独占锁」，然后对该记录加行级独占锁。</p>
-<p><img src="/../images/MYSQL%E5%A4%8D%E4%B9%A01/20e0f35589584352bd15e817668a0886.png" alt="img"></p>
-<p><img src="/../images/MYSQL%E5%A4%8D%E4%B9%A01/6e6b275c2d6d4dfcbbb338be4f61bee9.png" alt="img"></p>
-<p>所以，<strong>意向锁的目的是为了快速判断表里是否有记录被加锁</strong>。</p>
-<h2 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h2><p>InnoDB实现了以下两种类型的行锁：</p>
-<ul>
-<li>共享锁（S）：允许一个事务去读一行，阻止其他事务获得相同数据集的排它锁。</li>
-<li>排他锁（X）：允许获取排他锁的事务更新数据，阻止其他事务获得相同数据集的共享锁和排他 锁</li>
-</ul>
-<p><img src="/Users/csen/Documents/Amusement/Sen-Blog/source/images/MYSQL1/image-20230805221422216.png" alt="image-20230805221422216"></p>
-<h1 id="隔离性与隔离级别"><a href="#隔离性与隔离级别" class="headerlink" title="隔离性与隔离级别"></a>隔离性与隔离级别</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_35794878/article/details/125741468">https://blog.csdn.net/weixin_35794878/article/details/125741468</a></p>
-<p>事务就是要保证一组数据库操作，要么全部成功，要么全部失败。在 MySQL 中，事务支持是在引擎层实现的。你现在知道，MySQL 是一个支持多引擎的系统，但并不是所有的引擎都支持事务。比如 MySQL 原生的 MyISAM 引擎就不支持事务，这也是 MyISAM 被 InnoDB 取代的重要原因之一</p>
-<p>在谈隔离级别之前，你首先要知道，你隔离得越严实，效率就会越低。因此很多时候，我们都要在二者之间寻找一个平衡点。SQL 标准的事务隔离级别包括：读未提交（read uncommitted）、读提交（read committed）、可重复读（repeatable read）和串行化（serializable ）。下面我逐一为你解释：</p>
-<ul>
-<li>读未提交是指，一个事务还没提交时，它做的变更就能被别的事务看到。</li>
-<li>读提交是指，一个事务提交之后，它做的变更才会被其他事务看到。</li>
-<li>可重复读是指，一个事务执行过程中看到的数据，总是跟这个事务在启动时看到的数据是一致的。当然在可重复读隔离级别下，未提交变更对其他事务也是不可见的。</li>
-<li>串行化，顾名思义是对于同一行记录，“写”会加“写锁”，“读”会加“读锁”。当出现读写锁冲突的时候，后访问的事务必须等前一个事务执行完成，才能继续执行。</li>
-</ul>
-<h1 id="事务隔离的实现"><a href="#事务隔离的实现" class="headerlink" title="事务隔离的实现"></a>事务隔离的实现</h1><h2 id="实现隔离级别的方式："><a href="#实现隔离级别的方式：" class="headerlink" title="实现隔离级别的方式："></a>实现隔离级别的方式：</h2><p>事务有四个隔离级别</p>
-<p><strong>一级封锁协议 (对应 read uncommited)</strong> 　<br>一级封锁协议是：事务在对需要修改的数据上面（就是在发生修改的瞬间）对其加共享锁（其他事务不能更改，但是可以读取-导致“脏读”），直到事务结束才释放。事务结束包括正常结束（COMMIT）和非正常结束（ROLLBACK）。</p>
-<p><strong>二级封锁协议 （对应read commited)</strong>　<br>二级封锁协议是：1）事务在对需要更新的数据上（就是发生更新的瞬间）加排他锁（直到事务结束），防止其他事务读取未提交的数据，这样，也就避免了“脏读”的情况。2）事务对当前被读取的数据上面加共享锁（当读到时加上共享锁），一旦读完该行，立即释放该该行的共享锁-从数据库的底层实现更深入的来理解，既是，数据库会对游标当前的数据上加共享锁，但是当游标离开当前行的时候，立即释放该行的共享锁。</p>
-<p><strong>三级封锁协议 （对应reapetable read ）</strong>（默认）<br>三级封锁协议是：二级封锁协议加上事务在读取数据的瞬间必须先对其加共享锁，但是直到事务结束才释放，这样保证了可重复读（既是其他的事务职能读取该数据，但是不能更新该数据）。</p>
-<p><strong>最强封锁协议（对应Serialization)</strong><br>四级封锁协议是对三级封锁协议的增强，其实现机制也最为简单，直接对事务中所读取或者更改的数据所在的表加表锁，也就是说，其他事务不能读写该表中的任何数据。这样所有的脏读，不可重复读，幻读，都得以避免</p>
-<h3 id="MVCC。"><a href="#MVCC。" class="headerlink" title="MVCC。"></a>MVCC。</h3><p><strong>MVCC</strong> 在 <strong>MySQL InnoDB</strong> 中的实现主要是为了提高数据库并发性能，用更好的方式去处理读-写冲突，做到即使有读写冲突时，也能做到不加锁，非阻塞并发读。可认为MVCC是行级锁的一个变种，但是它在很多情况下避免了加锁操作，因此额外开销更低。</p>
-<p>什么是当前读和快照读？<br>在学习 MVCC 多版本并发控制之前，我们必须先了解一下，什么是 MySQL InnoDB 下的当前读和快照读?</p>
-<p>当前读<br>像 select lock in share mode (共享锁), select for update; update; insert; delete (排他锁)这些操作都是一种当前读，为什么叫当前读？就是它读取的是记录的最新版本，读取时还要保证其他并发事务不能修改当前记录，会对读取的记录进行加锁</p>
-<p>快照读<br>像不加锁的 select 操作就是快照读，即不加锁的非阻塞读；快照读的前提是隔离级别不是串行级别，串行级别下的快照读会退化成当前读；之所以出现快照读的情况，是基于提高并发性能的考虑，快照读的实现是基于多版本并发控制，即 MVCC ,可以认为 MVCC 是行锁的一个变种，但它在很多情况下，避免了加锁操作，降低了开销；既然是基于多版本，即快照读可能读到的并不一定是数据的最新版本，而有可能是之前的历史版本</p>
-<p>说白了 MVCC 就是为了实现读-写冲突不加锁，而这个读指的就是快照读, 而非当前读，当前读实际上是一种加锁的操作，是悲观锁的实现<br>当前读，快照读和MVCC的关系</p>
-<p>MVCC 多版本并发控制是 「维持一个数据的多个版本，使得读写操作没有冲突」 的概念，只是一个抽象概念，并非实现</p>
-<p>因为 MVCC 只是一个抽象概念，要实现这么一个概念，MySQL 就需要提供具体的功能去实现它，「快照读就是 MySQL 实现 MVCC 理想模型的其中一个非阻塞读功能」。而相对而言，当前读就是悲观锁的具体功能实现</p>
-<p>要说的再细致一些，快照读本身也是一个抽象概念，再深入研究。MVCC 模型在 MySQL 中的具体实现则是由 3 个隐式字段，undo 日志 ， Read View 等去完成的，具体可以看下面的 MVCC 实现原理</p>
-<p>MVCC 能解决什么问题，好处是？<br>数据库并发场景有三种，分别为：</p>
-<p>读-读：不存在任何问题，也不需要并发控制<br>读-写：有线程安全问题，可能会造成事务隔离性问题，可能遇到脏读，幻读，不可重复读<br>写-写：有线程安全问题，可能会存在更新丢失问题，比如第一类更新丢失，第二类更新丢失<br>MVCC 带来的好处是？<br>多版本并发控制（MVCC）是一种用来解决读-写冲突的无锁并发控制，也就是为事务分配单向增长的时间戳，为每个修改保存一个版本，版本与事务时间戳关联，读操作只读该事务开始前的数据库的快照。 所以 MVCC 可以为数据库解决以下问题</p>
-<p>在并发读写数据库时，可以做到在读操作时不用阻塞写操作，写操作也不用阻塞读操作，提高了数据库并发读写的性能<br>同时还可以解决脏读，幻读，不可重复读等事务隔离问题，但不能解决更新丢失问题<br>小结一下咯<br>简而言之，MVCC 就是因为大佬们，不满意只让数据库采用悲观锁这样性能不佳的形式去解决读-写冲突问题，而提出的解决方案，所以在数据库中，因为有了 MVCC，所以我们可以形成两个组合：</p>
-<ul>
-<li><code>MVCC + 悲观锁</code><br>MVCC解决读写冲突，悲观锁解决写写冲突</li>
-<li><code>MVCC + 乐观锁</code><br>MVCC 解决读写冲突，乐观锁解决写写冲突</li>
-</ul>
-<p>这种组合的方式就可以最大程度的提高数据库并发性能，并解决读写冲突，和写写冲突导致的问题</p>
-<p>MVCC只在repeatable read和read committed两个隔离级别下工作。其他两个隔离级别都和MVCC不兼容，因为read uncommitted总是读取最新的数据行，而不是符合当前事务版本的数据行。而serializable则会对所有读取的行都加锁。</p>
-<p><strong>READ COMMITTED —— 每次读取数据前都生成一个ReadView</strong></p>
-<p><strong>REPEATABLE READ —— 在第一次读取数据时生成一个ReadView</strong></p>
+<p><strong>行锁</strong></p>
+<blockquote>
+<p>两阶段锁协议：需要的时候加上，结束的时候释放。</p>
+</blockquote>
 
                     
                         
@@ -1716,7 +1727,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1745,7 +1756,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-10T00:00:00+08:00">
 	
-		    Oct 10, 2023
+		    10 Oct 2023
     	
     </time>
     
@@ -1796,6 +1807,11 @@
 <li><h2 id="讲一讲组合模式以及在项目中的应用"><a href="#讲一讲组合模式以及在项目中的应用" class="headerlink" title="讲一讲组合模式以及在项目中的应用"></a><strong>讲一讲组合模式以及在项目中的应用</strong></h2></li>
 </ul>
 <p>这里我们是用组合模式搭建规则引擎树，规则树有两种对象。一种是树节点，一种是树枝，树节点包括连接的树枝集合，树枝里面包含了连接的前后两个树节点和判断依据，这样子就能构建出一个有判断规则的规则树了。具体的流程就是假设我们现在在根节点，然后看了下根节点的规则是性别，那我就拿到年龄规则过滤器，遍历根节点的树枝集合，假如这里有两个树枝，一个树枝的规则是&#x3D;男，就走这个树枝；另一个树枝的规则是&#x3D;女，就走这个树枝。这时候我们拿出用户的信息一对比，发现应该走男生那个树枝。这样就进入下一个节点，然后这个节点的判断规则是年龄，可能大于某个枝走某个树枝，小于就走另外的树枝。直到我们找到叶子结点就结束。</p>
+<h2 id="单例模式"><a href="#单例模式" class="headerlink" title="单例模式"></a>单例模式</h2><p>该类负责创建自己的对象，保证只有单个对象被创建。</p>
+<p>单例模式分两类，饿汉式和饱汉式。饿汉式就是类加载的时候就会创建，其实类加载有个准备和初始化过程，静态变量和静态代码块，里就可以创建，懒汉式是用到了才创建。Bean是饿汉式。</p>
+<p><strong>volatile懒汉式单例使用的场景？</strong></p>
+<p>线程安全的单例场景吧，线程池，数据库连接池</p>
+<p><strong>Bean默认是单例还是多例，怎么设置多例？</strong>（单例，scope设置成prototype）</p>
 <h2 id="装饰器模式"><a href="#装饰器模式" class="headerlink" title="装饰器模式"></a>装饰器模式</h2><blockquote>
 <p><font color='red'><u><em><strong>装饰器模式其实就是在原本类的基础上包装一个装饰器类，这个类在执行源类的行为的前后再加入一些新的逻辑。</strong></em></u></font></p>
 </blockquote>
@@ -1832,7 +1848,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1861,7 +1877,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-09T00:00:00+08:00">
 	
-		    Oct 09, 2023
+		    09 Oct 2023
     	
     </time>
     
@@ -1880,10 +1896,10 @@
 <p>String我主要用于三类。 1）库存和订单数量，2）还有一些策略对象、活动对象，这种读多写少，没有频繁变化的对象。3）分布式锁。</p>
 <p>Hashmap 我主要用于活动剩余的奖品数量和还有用户剩余次数。本身奖品是一个对象，可以用String+JSON的格式，但是奖品数量这个属性频繁变化，我就把他抽出来放到HashMap里面了。</p>
 <blockquote>
-<p>Redis的对象都是RedisObject，RedisObject里面有type encoding ptr。如果是String类型，且这个字符串保存的是整数型，那就会把encoding设置成int，然后ptr用来存储整数。如果是一个字符串且小于32字节，就是embstr的SDS，如果是大于32字节就是RAW格式的SDS。embstr分配一次连续的内存空间，RAW格式要分配两次分别保存RedisObeject和SDS。(SDS包括字符串长度、分配的空间、sds类型、字节数组。)</p>
+<p>Redis的对象都是RedisObject，RedisObject里面有<font color='blue'><u><em><strong>type encoding ptr</strong></em></u></font>。如果是String类型，且这个字符串保存的是整数型，那就会把encoding设置成int，然后ptr用来存储整数。如果是一个字符串且小于32字节，就是embstr的SDS，如果是大于32字节就是RAW格式的SDS。embstr分配一次<font color='red'><u><em><strong>连续</strong></em></u></font>的内存空间，RAW格式要分配两次分别保存RedisObeject和SDS。(SDS包括字符串长度、分配的空间、sds类型、字节数组。)</p>
 </blockquote>
 <blockquote>
-<p>List是<strong>quicklist</strong>（其实就是双向链表 + 压缩列表），链表的每个节点就是一个压缩列表，压缩列表是一个连续的内存块组成的顺序性数据结。链表的形式减少用于解决连锁更新的问题。</p>
+<p>List是<strong>quicklist</strong><font color='red'><u><em><strong>（其实就是双向链表 + 压缩列表）</strong></em></u></font>，<font color='red'><u><em><strong>链表的每个节点就是一个压缩列表，压缩列表是一个连续的内存块组成的顺序性数据结。链表的形式减少用于解决连锁更新的问题。</strong></em></u></font></p>
 </blockquote>
 <blockquote>
 <p>HashMap是压缩列表和哈希表。哈希冲突用链式哈希解决。</p>
@@ -1895,6 +1911,7 @@
 <p>ZSET是<strong>压缩列表或跳表</strong>。<strong>跳表是在链表基础，对部分节点分层，如果next的值大于我们要找的就从下一层找结果</strong>。<strong>跳表的相邻两层的节点数量最理想的比例是 2:1</strong>。</p>
 <p><strong>跳表在创建节点时候，会生成范围为[0-1]的一个随机数，如果这个随机数小于 0.25（相当于概率 25%），那么层数就增加 1 层，然后继续生成下一个随机数，直到随机数的结果大于 0.25 结束，最终确定该节点的层数</strong>。</p>
 </blockquote>
+<p>​	</p>
 <h1 id="2、Redis线程模型"><a href="#2、Redis线程模型" class="headerlink" title="2、Redis线程模型"></a>2、Redis线程模型</h1><h2 id="2、线程模型是怎么样的？是不是单线程"><a href="#2、线程模型是怎么样的？是不是单线程" class="headerlink" title="2、线程模型是怎么样的？是不是单线程"></a>2、线程模型是怎么样的？是不是单线程</h2><p><font color='red'><u><em><strong>1）以前严格意义上来说也不是单线程，还有后台线程，比如aof刷盘</strong></em></u></font><br><font color='red'><u><em><strong>2）6.0.x后，由于网络的瓶颈出现，Redis采用了多线程来解决这个问题，具体的步骤是</strong></em></u></font></p>
 <p>流程简述如下：</p>
 <ul>
@@ -1919,46 +1936,51 @@
 <li>若发现其它 socket 上的读写请求，那就调用相应的读事件处理，和写事件处理。</li>
 </ul>
 <p>当然这里6.0以后引入了多线程，那接收数据、解析数据、写回数据都交给了io线程组，和主线程无关了。</p>
-<h2 id="3、为什么这么快？高性能"><a href="#3、为什么这么快？高性能" class="headerlink" title="3、为什么这么快？高性能"></a>3、为什么这么快？高性能</h2><p>基于内存</p>
-<p>单线程执行命令</p>
-<p>io多路复用</p>
-<p>多线程读写socket</p>
+<h2 id="3、为什么这么快？高性能"><a href="#3、为什么这么快？高性能" class="headerlink" title="3、为什么这么快？高性能"></a>3、为什么这么快？高性能</h2><p><font color='blue'><u><em><strong>基于内存</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>单线程执行命令</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>io多路复用</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>多线程读写socket</strong></em></u></font></p>
 <h2 id="6、讲一下io多路复用"><a href="#6、讲一下io多路复用" class="headerlink" title="6、讲一下io多路复用"></a>6、讲一下io多路复用</h2><p>首先我们知道用户缓冲区去内核缓冲区读数据的时候，有两个耗时的过程，一个是等待从网卡来的数据，一个是内核拷贝到用户缓冲区。</p>
 <p>阻塞io和非阻塞io都是先调用revfrom，阻塞io两个都要等、非阻塞需要等待拷贝这个过程。但是io多路复用，先监听一个socket集合，然后某个socket数据就绪了，发了个可读的通知，这时候才调用revfrom去读。</p>
-<p>io多路复用有多种实现，select、poll、epoll。select和poll收到可读通知，需要自己去遍历，是哪个发了可读通知。epoll是直接告诉你是哪个socket就绪。	</p>
+<p><font color='red'><u><em><strong>io多路复用有多种实现，select、poll、epoll。</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>select和poll要扫描所有的socket，包括就绪和没有就绪。而且select的文件描述符默认最大是1024，而poll对她进行了升级，引入了链表，所以监听的socket可以是无限的，需要自己去遍历，是哪个发了可读通知。epoll是直接告诉你是哪个socket就绪。</strong></em></u></font></p>
 <h2 id="4、采用单线程原因"><a href="#4、采用单线程原因" class="headerlink" title="4、采用单线程原因"></a>4、采用单线程原因</h2><ul>
 <li>使用单线程模型是 Redis 的开发和维护更简单</li>
 <li>即使使用单线程模型也并发的处理多客户端的请求，主要使用的是多路复用IO</li>
 <li>对于 Redis 系统来说， 主要的<code>性能瓶颈是内存或者网络带宽而并非 CPU</code>。</li>
 </ul>
 <h2 id="5、引入多线程原因"><a href="#5、引入多线程原因" class="headerlink" title="5、引入多线程原因"></a>5、引入多线程原因</h2><p>内存问题比较好解决，因此Redis的瓶颈原因为网络IO</p>
-<h1 id="3、Redis持久化"><a href="#3、Redis持久化" class="headerlink" title="3、Redis持久化"></a>3、Redis持久化</h1><p>Redis 共有三种数据持久化的方式：</p>
-<ul>
-<li><strong>AOF 日志</strong>：每执行一条写操作命令，就把该命令以追加的方式写入到一个文件里；</li>
-<li><strong>RDB 快照</strong>：将某一时刻的内存数据，以二进制的方式写入磁盘；</li>
-<li><strong>混合持久化方式</strong>：Redis 4.0 新增的方式，集成了 AOF 和 RBD 的优点；</li>
-</ul>
-<h2 id="1、AOF"><a href="#1、AOF" class="headerlink" title="1、AOF"></a>1、AOF</h2><p>执行一条写命令，就把这个命令往aof文件里面写</p>
-<h3 id="1、为什么先执行命令，再把数据写入日志呢？"><a href="#1、为什么先执行命令，再把数据写入日志呢？" class="headerlink" title="1、为什么先执行命令，再把数据写入日志呢？"></a>1、为什么先执行命令，再把数据写入日志呢？</h3><blockquote>
+<h1 id="3、Redis持久化"><a href="#3、Redis持久化" class="headerlink" title="3、Redis持久化"></a>3、Redis持久化</h1><h2 id="1、AOF"><a href="#1、AOF" class="headerlink" title="1、AOF"></a>1、AOF</h2><blockquote>
+<p>每执行一条写操作命令，就把该<font color='blue'><u><em><strong>命令的形式</strong></em></u></font>以追加的方式写入到一个文件里，不过是先写到aof缓冲里面，然后在写回aof文件</p>
+<p><font color='red'><u><em><strong>AOF写回策略几种？</strong></em></u></font></p>
+<blockquote>
+<p>三种：Always everySec no</p>
+<p>第一种就是<font color='blue'><u><em><strong>每次都同步</strong></em></u></font></p>
+<p>第二种就是<font color='blue'><u><em><strong>每一秒都讲缓冲区里面的写会磁盘</strong></em></u></font></p>
+<p>第三种就是<font color='blue'><u><em><strong>写到缓冲区里面，但是什么时候写到磁盘依赖于操作系统</strong></em></u></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>AOF 日志过大，会触发什么机制？</strong></em></u></font></p>
+<blockquote>
+<p><font color='blue'><u><em><strong>aof重写机制(后台子进程)：读取当前数据库中的所有键值对，对每一键值对用一条命令记录到「新的 AOF 文件」，等到全部记录完后，就将新的 AOF 文件替换掉现有的 AOF 文件。</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>如果aof重写过程中，主进程对内存进行了修改，怎么办？会触发写时复制。假设A，我们复制一个A’出来，然后修改操作就在A’上面做，把原本的A留给AOF重写，并且要把写命令加入aof缓冲区和aof重写缓冲区，重写完成后，把重写缓冲区里面的内容追加到新的aof文件里面</strong></em></u></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>为什么先执行命令，再把数据写入日志呢？</strong></em></u></font></p>
+<blockquote>
 <p>1、避免额外的开销</p>
 <p>2、不会阻塞当前的写命令</p>
 <p>缺点：</p>
 <p>1、可能数据丢失，因为如果在执行完还没写入aof文件之间宕机，那就丢失</p>
 <p>2、可能阻塞下一个命令</p>
 </blockquote>
-<h3 id="2、写回策略几种？"><a href="#2、写回策略几种？" class="headerlink" title="2、写回策略几种？"></a>2、写回策略几种？</h3><p>三种：Always everySec no，其实和mysql的binlog非常相似</p>
-<p>第一种就是每次都同步</p>
-<p>第二种就是每一秒都讲缓冲区里面的写会磁盘</p>
-<p>第三种就是写到缓冲区里面，但是什么时候写到磁盘依赖于操作系统</p>
-<h3 id="3、AOF-日志过大，会触发什么机制？"><a href="#3、AOF-日志过大，会触发什么机制？" class="headerlink" title="3、AOF 日志过大，会触发什么机制？"></a>3、AOF 日志过大，会触发什么机制？</h3><p>aof重写机制：读取当前数据库中的所有键值对，对每一键值对用一条命令记录到「新的 AOF 文件」，等到全部记录完后，就将新的 AOF 文件替换掉现有的 AOF 文件。</p>
-<p>aof是由后台子进程完成的，这里有一个问题，就是如果aof重写过程中，主进程对内存进行了修改，怎么办？会触发写时复制。</p>
-<p>当aof重写过程中父进程修改内存，那我们执行一个写命令后，会写到aof缓冲区和aof重写缓冲区里面。当子进程完成重写，再去吧重写缓冲区里面的内容追加到aof文件</p>
-<h2 id="2、RDB快照"><a href="#2、RDB快照" class="headerlink" title="2、RDB快照"></a>2、RDB快照</h2><p>快照就是记录一瞬间的意思。记录的是当前的实际数据。</p>
+</blockquote>
+<h2 id="2、RDB快照"><a href="#2、RDB快照" class="headerlink" title="2、RDB快照"></a>2、RDB快照</h2><blockquote>
+<p><font color='blue'><u><em><strong>快照就是记录持久化启动的那一瞬间的数据，二进制的形式。所以rdb快照不会想aof那样开辟一个缓冲区用于记录新操作。这里rdb用的是全量快照数据。如果在rdb快照的时候，主线程修改了内容，那么这时候会出发写保护中断，写时复制，原本的物理内存A，复制一份A‘，然后主线程修改A’就好了</strong></em></u></font></p>
 <p>有两种启动的方式，一个save阻塞住线程，一种bgsave，后台线程，fork一个子进程，也复制了页表。他的做法是</p>
-<p>所以rdb快照不会想aof那样开辟一个缓冲区用于记录新操作。这里rdb用的是全量快照数据。</p>
-<p>如果在rdb快照的时候，主线程修改了内容，那么这时候会出发写保护中断，写时复制，原本的物理内存A，复制一份A‘，然后主线程修改A’就好了</p>
-<h2 id="3、混合持久化"><a href="#3、混合持久化" class="headerlink" title="3、混合持久化"></a>3、混合持久化</h2><p>混合持久化就是合并了aof和rdb的两个优点，rdb恢复数据块，aof丢失数据少</p>
+</blockquote>
+<h2 id="3、混合持久化"><a href="#3、混合持久化" class="headerlink" title="3、混合持久化"></a>3、混合持久化</h2><blockquote>
+<p>混合持久化就是合并了aof和rdb的两个优点，rdb恢复数据块，aof丢失数据少</p>
 <p>混合持久化，fork出来的子进程先去把共享内存以rdb的格式写入到aof文件里面，然后写入过程中主进程执行的命令会被记录到重写缓冲区里面，然后这些增量命令最后会以aof的格式增加到aof文件里面，所以aof文件里面前一部分时rdb，后一部分是aof。</p>
+</blockquote>
 <h1 id="4、Redis主从复制"><a href="#4、Redis主从复制" class="headerlink" title="4、Redis主从复制"></a>4、Redis主从复制</h1><p>主服务器可以进行读写操作，当发生写操作时自动将写操作同步给从服务器，而从服务器一般是只读，并接受主服务器同步过来写操作命令，然后执行这条命令。</p>
 <blockquote>
 <p><font color='red'><u><em><strong>全量同步</strong></em></u></font></p>
@@ -1997,7 +2019,7 @@
 <h2 id="哨兵模式（怎么保证redis的高可用？）"><a href="#哨兵模式（怎么保证redis的高可用？）" class="headerlink" title="哨兵模式（怎么保证redis的高可用？）"></a>哨兵模式（怎么保证redis的高可用？）</h2><p>他有三大作用：监控、恢复、通知。</p>
 <p><strong>怎么监控？怎么主从切换</strong></p>
 <blockquote>
-<p>监控是基于心跳机制去监控节点。每隔1s会向实例发送ping命令，然后实例响应pong，假如规定时间内，没回复，那就认为主观下线。如果主节点超过一半的哨兵都认为下线了，那就是客观下线，这个时候就要选取新的master。判断主节点客观下线的那个哨兵成为候选者，候选节点向其他哨兵发送成为leader的请求，如果成功就负责进行主从切换。</p>
+<p>哨兵是基于心跳机制去监控节点。每隔1s会向实例发送ping命令，然后实例响应pong，假如规定时间内，没回复，那就认为主观下线。如果主节点超过一半的哨兵都认为下线了，那就是客观下线，这个时候就要选取新的master。判断主节点客观下线的那个哨兵成为候选者，候选节点向其他哨兵发送成为leader的请求，如果成功就负责进行主从切换。</p>
 <p>1、选出主节点、先看优先值，再看offset，再看id</p>
 <p>2、将从节点指向新主节点</p>
 <p>3、通知客户的主节点已更换</p>
@@ -2072,8 +2094,7 @@
 <p>1、volatile random</p>
 <p>2、volatile lru 最近最少使用</p>
 <p>3、volatile lfu <strong>最近最不常用的</strong></p>
-<h3 id="LRU-算法和-LFU-算法有什么区别？"><a href="#LRU-算法和-LFU-算法有什么区别？" class="headerlink" title="LRU 算法和 LFU 算法有什么区别？"></a>LRU 算法和 LFU 算法有什么区别？</h3><p>传统的lru算法依赖于一个链表，数据被访问时候，链表中的节点会出现很多的移动操作，降低性能</p>
-<p>LRU</p>
+<h3 id="LRU-算法和-LFU-算法有什么区别？"><a href="#LRU-算法和-LFU-算法有什么区别？" class="headerlink" title="LRU 算法和 LFU 算法有什么区别？"></a>LRU 算法和 LFU 算法有什么区别？</h3><p>LRU</p>
 <blockquote>
 <p>Redis实现lru是在RedisObject里面新增一个字段，记录最后一次访问时间</p>
 <p>进行淘汰的时候，随机选取五个，然后淘汰访问时间最早的</p>
@@ -2090,28 +2111,37 @@
 </blockquote>
 <p><img src="/../images/Redis/%E8%BF%87%E6%9C%9F%E5%88%A0%E9%99%A4%E7%AD%96%E7%95%A5.jpg" alt="img"></p>
 <p><img src="/../images/Redis/%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5.jpg" alt="img"></p>
-<h1 id="6、Redis缓存设计"><a href="#6、Redis缓存设计" class="headerlink" title="6、Redis缓存设计"></a>6、Redis缓存设计</h1><h2 id="1、如何避免缓存雪崩？"><a href="#1、如何避免缓存雪崩？" class="headerlink" title="1、如何避免缓存雪崩？"></a>1、如何避免缓存雪崩？</h2><p>缓存雪崩是指在同一时间大量的key同时过期了</p>
+<h1 id="6、Redis缓存设计"><a href="#6、Redis缓存设计" class="headerlink" title="6、Redis缓存设计"></a>6、Redis缓存设计</h1><h2 id="1、如何避免缓存雪崩？"><a href="#1、如何避免缓存雪崩？" class="headerlink" title="1、如何避免缓存雪崩？"></a>1、如何避免缓存雪崩？</h2><blockquote>
+<p>缓存雪崩是指在同一时间大量的key同时过期了</p>
 <p>解决方法：</p>
 <p>这里关键就是同时和过期，所以解决方法如下：</p>
 <p>1、打乱过期的时间</p>
 <p>2、设置缓存不过期</p>
-<h2 id="2、缓存击穿"><a href="#2、缓存击穿" class="headerlink" title="2、缓存击穿"></a>2、缓存击穿</h2><p>对于一个热点数据过期了，导致请求全部打到数据库</p>
+</blockquote>
+<h2 id="2、缓存击穿"><a href="#2、缓存击穿" class="headerlink" title="2、缓存击穿"></a>2、缓存击穿</h2><blockquote>
+<p>对于一个热点数据过期了，导致请求全部打到数据库</p>
 <p>1、设置缓存不过期，后台异步的去更新</p>
 <p>2、互斥锁，分布式锁的方法。让同一时间只有一个线程去访问</p>
-<h2 id="3、缓存穿透"><a href="#3、缓存穿透" class="headerlink" title="3、缓存穿透"></a>3、缓存穿透</h2><p>访问的值既不在redis 也不在mysql，所以很可能是那种黑客攻击之类的，解决方法的话</p>
+</blockquote>
+<h2 id="3、缓存穿透"><a href="#3、缓存穿透" class="headerlink" title="3、缓存穿透"></a>3、缓存穿透</h2><blockquote>
+<p>访问的值既不在redis 也不在mysql，所以很可能是那种黑客攻击之类的，解决方法的话</p>
 <p>1、非法请求的限制</p>
 <p>2、空值或者默认值</p>
-<p>3、布隆过滤器</p>
+<p>3、<font color='green'><u><em><strong>布隆过滤器</strong></em></u></font></p>
 <p>布隆过滤器的主要原理是使用一组哈希函数，将元素映射成一位数组里。当要检查一个元素是否在集合中时，将该元素进行哈希处理，然后查看哈希值对应的位数组的值是否为1。如果哈希值对应的位数组的值都为1，那么这个元素可能在集合中，否则这个元素肯定不在集合中。</p>
-<h2 id="4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性"><a href="#4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性" class="headerlink" title="4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性"></a>4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性</h2><blockquote>
-<p>redis和mysql的数据一致性其实有两类方式：<font color='red'><u><em><strong>一种是双写，一种是缓存删除。</strong></em></u></font></p>
-<blockquote>
-<p>对于双写策略，两个请求并发更新同一条数据的时候，会出现数据不一致的情况，另外更新缓存的代价有时候是很高的，可能你1分钟内更新了100次，然后只访问了一次，那代价着实太大了。所以我们一般选择缓存删除的策略。</p>
+<p>4、<font color='green'><u><em><strong>布谷鸟过滤器</strong></em></u></font></p>
+<p>它是一种鸠占鹊巢的过滤器，默认的布谷鸟过滤器用两个hash函数得到两个下标，如果都为空，插入一个，如果有一个空，那就插入空的位置，如果都不为空，那就随机踢出一个元素，再为这个元素重新hash做插入。</p>
+<p><font color='red'><u><em><strong>循环挤兑</strong></em></u></font>怎么办？</p>
+<p>1、对桶进行扩容</p>
+<p>2、增加hash函数</p>
 </blockquote>
-<p>对于双写策略：如果对一致性要求高，就需要加分布式锁，但是我们业务对同步的实时性要求没那么高，我们想要的是最终一致性，所以我们用的是异步消息+canal监听。redis修改后发送异步消息给mysql，mysql如果有一些热点数据的修改，就监听这些数据去更新redis。</p>
-<p>缓存删除也有延迟双删。</p>
-<p>然后我们一般来说是<font color='red'><u><em><strong>先更新数据库，再去删除缓存</strong></em></u></font>。虽然在理论上存在着 一个读请求读到旧值然后准备更新到redis里面的时候，有一个写请求更新数据库并且删除了缓存，这时候读请求才把旧值缓存到redis里面，这样出现redis和mysql的不一致。但是其实由于我们的缓存写入是远远快于数据库的写入，所以很难出现我一个请求更新完数据库删除完缓存了这时候，原先的读请求才写入缓存。为了保证第二个操作能成功，可以订阅binlog或者消息队列做删除。</p>
-<p>对于并发引起的不一致性，那就用延迟双删</p>
+<h2 id="4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性"><a href="#4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性" class="headerlink" title="4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性"></a>4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性</h2><blockquote>
+<p>redis和mysql的数据一致性其实有两类方式：<font color='red'><u><em><strong>一种是更新数据库+更新缓存，一种是更新数据库+删除缓存。</strong></em></u></font></p>
+<blockquote>
+<p>对于第一种策略，两个请求并发更新同一条数据的时候，会出现数据不一致的情况，另外更新缓存的代价有时候是很高的，可能你1分钟内更新了100次，然后只访问了一次，那代价着实太大了。所以我们一般选择缓存删除的策略。</p>
+</blockquote>
+<p>我们一般来说是<font color='red'><u><em><strong>先更新数据库，再去删除缓存</strong></em></u></font>。虽然在理论上存在着 一个读请求读到旧值然后准备更新到redis里面的时候，有一个写请求更新数据库并且删除了缓存，这时候读请求才把旧值缓存到redis里面，这样出现redis和mysql的不一致。但是其实由于我们的缓存写入是远远快于数据库的写入，所以很难出现我一个请求更新完数据库删除完缓存了这时候，原先的读请求才写入缓存。为了保证第二个操作能成功，可以订阅binlog或者消息队列做删除。</p>
+<p>对于双写策略：如果对一致性要求高，就需要加<font color='red'><u><em><strong>分布式锁</strong></em></u></font>和<font color='red'><u><em><strong>延迟双删</strong></em></u></font>，但是我们业务对同步的实时性要求没那么高，我们想要的是最终一致性，所以我们用的是异步消息+canal监听。redis修改后发送异步消息给mysql，mysql如果有一些热点数据的修改，就监听这些数据去更新redis。</p>
 <blockquote>
 <p>常见的缓存更新策略共有3种：</p>
 </blockquote>
@@ -2173,7 +2203,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2202,7 +2232,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    Aug 07, 2023
+		    07 Aug 2023
     	
     </time>
     
@@ -2229,6 +2259,8 @@
 <p><strong>二者区别</strong><br>总结一下两者的区别吧：</p>
 <p>JDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰<br>JDK 是自带的、CGLIB需要加载包</p>
 <p>JDK是反射机制，CGLIB是使用ASM框架。</p>
+<p><strong>为什么Java不能多继承？</strong></p>
+<p>会出现方法冲突和变量冲突</p>
 <h1 id="集合"><a href="#集合" class="headerlink" title="集合"></a>集合</h1><p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231116121230926.png" alt="image-20231116121230926"></p>
 <h2 id="Arraylist底层原理"><a href="#Arraylist底层原理" class="headerlink" title="Arraylist底层原理"></a>Arraylist底层原理</h2><p>可以从底层数据结构，构造函数和关键方法理解。</p>
 <blockquote>
@@ -2323,6 +2355,7 @@
 <li><p><strong>底层数据结构：</strong> <strong>hashmap 数组+链表+红黑树，hashtable 数组+链表</strong></p>
 </li>
 </ul>
+<h2 id="hashmap的key规范"><a href="#hashmap的key规范" class="headerlink" title="hashmap的key规范"></a>hashmap的key规范</h2><p>用自定义类作为key，必须<font color='red'><u><em><strong>重写equals()和hashCode()方法。</strong></em></u></font></p>
 </blockquote>
 <h2 id="ConcurrentHashMap"><a href="#ConcurrentHashMap" class="headerlink" title="ConcurrentHashMap"></a><strong>ConcurrentHashMap</strong></h2><blockquote>
 <p><code>ConcurrentHashMap</code>是线程安全的，而是通过原子操作和局部加锁的方法保证了多线程的线程安全。</p>
@@ -2333,21 +2366,32 @@
 <h2 id="元素排序-Comparable-和-Comparator-有什么区别？"><a href="#元素排序-Comparable-和-Comparator-有什么区别？" class="headerlink" title="元素排序 Comparable 和 Comparator 有什么区别？"></a>元素排序 Comparable 和 Comparator 有什么区别？</h2><p>Comparable：实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。</p>
 <p>Comparator 除了可以通过创建自定义比较器外，还可以通过<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%8C%BF%E5%90%8D%E7%B1%BB&spm=1001.2101.3001.7020">匿名类</a>的方式，更快速、便捷的完成自定义比较器的功能，具体的代码实现如下：</p>
 <p><font color='red'><u><em><strong>Comparable 必须由自定义类内部实现排序方法，而 Comparator 是外部定义并实现排序的</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>Linux常用命令</strong></em></u></font>：cat, pwd, ls、TOP，mpstat，chattr，lsattr</p>
+<p><font color='green'><u><em><strong>怎么排查项目故障</strong></em></u></font>：</p>
+<blockquote>
+<p>可以用top先看看是cpu还是内存的问题，cpu的话，可以拿到进程id，然后ps H -eo pid,tid,%cpu | grep进程id查看线程，最好jstack查看堆栈信息。内存泄漏的话就jmap -dump一个内存快照，然后加载到visualVM里面。</p>
+<p>标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、</p>
+</blockquote>
+<p><strong>查看机器的负载情况linux</strong></p>
+<blockquote>
+<p>Top htop mpstat vmstat</p>
+</blockquote>
 <h1 id="Spirng"><a href="#Spirng" class="headerlink" title="Spirng"></a>Spirng</h1><p><strong>Bean是线程安全的吗？</strong></p>
 <blockquote>
-<p>他是单例，但是不是线程安全。因为Bean内部的成员变量是共享可修改的。</p>
+<p>默认单例（可以多例），但是不是线程安全。因为Bean内部的成员变量是共享可修改的。</p>
 </blockquote>
-<p><strong>AOP是什么？</strong></p>
+<p><font color='red'><u><em><strong>AOP是什么？</strong></em></u></font></p>
 <blockquote>
-<p><font color='red'><u><em><strong>aop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。</strong>然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop</em>** 底层是动态代理JDK和CGLIB**</u></font></p>
+<p><font color='red'><u>*<strong>aop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop 底层是动态代理JDK和CGLIB</strong></u></font></p>
+<p><font color='green'><u><em><strong>有没有用过AOP</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>有的，我之前在一个分库分表的组件项目里面用到过，就是分库分表要切换数据源，我就是用aop切面去计算出落到哪个库哪个表里面，切入点是一个注解。</strong></em></u></font></p>
 </blockquote>
-<p>IOC</p>
-<p>控制反转的意思，以前我们创建的时候new，但是这种方法很麻烦，且很难处理对象直接的依赖关系。他是把对象创建和对象之间的调用过程，交给spring进行管理。</p>
-<p><strong>有没有使用过AOP</strong></p>
+<p><strong>IOC</strong></p>
 <blockquote>
-<p>全局异常处理、aop做一些权限校验等等</p>
+<p><font color='red'><u><em><strong>控制反转的意思，以前我们创建的时候new，但是这种方法很麻烦，且很难处理对象直接的依赖关系。他是把对象创建和对象之间的调用过程，交给spring进行管理。</strong></em></u></font></p>
 </blockquote>
 <p><strong>Spring事务失效的场景?</strong></p>
+<blockquote>
 <ul>
 <li><p>自己捕获异常。如果没有抛出会失效，解决方法：手动抛出异常</p>
 </li>
@@ -2356,6 +2400,7 @@
 <li><p>没有用public修饰，</p>
 </li>
 </ul>
+</blockquote>
 <p><strong>Bean的生命周期？</strong></p>
 <blockquote>
 <p>1 通过<strong>XML</strong>、注解和配置类等方式加载<strong>Spring Bean</strong></p>
@@ -2367,10 +2412,16 @@
 <p>8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）</p>
 <p>9、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em> aop核心底层动态代理</p>
 </blockquote>
-<p><strong>Bean的循环依赖？</strong></p>
-<p>Spring解决这个是用三级缓存或者懒加载（构造函数的循环依赖问题），三次缓存中：一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。</p>
-<p><strong>为什么三层？</strong></p>
+<p><strong>BeanBeanFactory和FactoryBean的区别！</strong></p>
+<blockquote>
+<p>BeanFactory是管理Bean的容器，FactoryBean是一个生产Bean的工厂。</p>
+</blockquote>
+<p><font color='green'><u><em><strong>Bean的循环依赖？</strong></em></u></font></p>
+<blockquote>
+<p>Spring解决这个是用三级缓存或者懒加载（构造函数的循环依赖问题），三次缓存中：<font color='green'><u><em><strong>一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>为什么三层？</strong></em></u></font></p>
 <p><strong>所以如果没有AOP的话确实可以两级缓存就可以解决循环依赖的问题，如果加上AOP，两级缓存是无法解决的。如果对象被AOP代理了，我每次从三级缓存中拿到singleFactory对象，执行getObject()方法会产生新的代理对象，所以还要借助另外一个缓存来保存产生的代理对象</strong></p>
+</blockquote>
 <p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231222001434059.png" alt="image-20231222001434059"></p>
 <p><strong>Spring用到的设计模式</strong></p>
 <p>单例模式：这个在创建Bean的时候用到，创建单例Bean的时候会先去缓存里面找，如果找不到，在触发createBean方法。</p>
@@ -2384,6 +2435,7 @@
 <p>9、onRefresh()：留给子容器、子类重写这个方法，在容器刷新的时候可以自定义逻辑</p>
 <p>10、registerListeners()：注册监听器：将容器中所有的ApplicationListener注册到事件派发器中，并派发之前步骤产生的事件：<br>11、finishBeanFactoryInitialization(beanFactory)：初始化所有剩下的单实例bean，核心方法是preInstantiateSingletons()，会调用getBean()方法创建对象；<br>12、finishRefresh()：发布BeanFactory容器刷新完成事件：</p>
 <p>综上所述：</p>
+<blockquote>
 <p>其实我觉得Spring的IOC容器，主要做三步：</p>
 <p>1、初始化Spring容器，创建一个DefaultListableBeanFactory</p>
 <p>2、将配置类的BeanDefinition注册到容器。</p>
@@ -2392,12 +2444,34 @@
 <p>第二块：后置处理器，执行BeanFactory的后置处理器，然后在容器里面注册一个Bean的后置处理器。</p>
 <p>第三块：就是一些国际化，事件分派器的东西。</p>
 <p>第四块：非常重要了，finishBeanFactoryInitailization，<strong>初始化所有剩下的单实例bean</strong>，bean的生命周期也从这里开始。</p>
-<p><strong>Springboot自动配置？</strong></p>
+</blockquote>
+<p><font color='red'><u><em><strong>Springboot启动流程</strong></em></u></font></p>
+<blockquote>
+<p>主要分为4步：服务构建、环境准备、容器创建、填充容器。</p>
+<p>1、服务构建就是构造springapplication，包括主方法类、确认web服务器、加载spring.factories下的所有初始化类。</p>
+<p>2、然后调用run方法进入环境准备，通过配置类、和配置文件构造出一个environment，用于后面的容器创建。</p>
+<p>3、容器创建的话，其实就是创建一个BeanFactory，然后加载bean信息，通过beanDefinitionReader把bean信息读成BeanDefinition并且把他放到beanDefinitionMap里面</p>
+<p>4、填充容器。就是我们的refresh（）方法，一个12步，但是可以分成四块，预处理，后置处理器，国际化分派器，实例化剩下的所有bean。</p>
+</blockquote>
+<p><font color='red'><u><em><strong>Springboot自动配置？</strong></em></u></font></p>
 <p>springboot的main方法会有一个springbootapplication的注解，这个注解有三个注解组成、ComponentScan（扫描包和子包，加载符合条件的组件或bean定义）、SpringbootConfiguration（声明当前是配置类，然后去找被configuration修饰的类，读取信息）、还有一个最重要的EnableAutoConfiguraion，这个就是来启动自动化配置的。这个注解里面有一个Import注解，这个注解会加入一个配置选择类，他会去这个项目和项目引用的jar包的meta-inf的spring.factories找全类名，然后在这些配置类里面根据注解@comditionnalXXX 定义的条件进行选择加载</p>
 <p><strong>MVC的执行流程</strong></p>
+<p>请求发到前端控制器上，然后用处理器映射器找到具体的处理器，使用处理器适配器调用真正的处理器，然后结果转化成JSON响应。</p>
 <blockquote>
 <p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231118193113289.png" alt="image-20231118193113289"></p>
 </blockquote>
+<p><strong>Mybatis怎么传多个参数：</strong></p>
+<blockquote>
+<p>顺序传参</p>
+<p>map传参</p>
+<p>用mybatis的注解</p>
+</blockquote>
+<p><strong>MyBatis中${} 和 #{} 有什么区别</strong></p>
+<p>1、功能不同： #{} 是占位符，${} 是直接替换，；2、使用场景不同：普通参数使用 #{}，如果传递的是 SQL 命令或 SQL 关键字，需要使用 ${}，但在使用前一定要做好安全验证；3、安全性不同：使用 ${} 存在安全问题，而 #{} 则不存在安全问题。</p>
+<p><strong>setNX有什么缺陷？</strong></p>
+<p>有单点风险</p>
+<p>可能会导致同一把锁被多人使用</p>
+<p>redlock</p>
 
                     
                         
@@ -2411,7 +2485,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2440,7 +2514,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -2547,7 +2621,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2576,7 +2650,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -2592,9 +2666,11 @@
             
                 <div class="postShorten-content">
                     <p>常见面试问题：</p>
+<p><strong>为什么用Kafka？</strong></p>
+<p>1、性能强、2兼容性好</p>
 <h2 id="Kafka高性能的设计"><a href="#Kafka高性能的设计" class="headerlink" title="Kafka高性能的设计"></a><strong>Kafka高性能的设计</strong></h2><p><font color='red'><u><em><strong>1）分区设计，可以实现并行操作。</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>2）磁盘顺序写</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>3）MMF+页缓存</strong></em></u></font> 即使kafka是顺序写，这个本身比较快，但是即使这样，速度也追不上内存。所以Kafka不是实时写入磁盘，而是先把数据写到页缓存里面，满足一定条件在刷回磁盘。它的工作原理是MMF，直接利用操作系统的页缓存来实现磁盘文件到物理内存的直接映射，完成映射之后你对物理内存的操作会被同步到硬盘上（操作系统在适当的时候）。</p>
+<p><font color='red'><u><em><strong>2）磁盘顺序写（减少磁盘寻址时间）</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>3）MMF+页缓存</strong></em></u></font> 即使kafka是顺序写（），这个本身比较快，但是即使这样，速度也追不上内存。所以Kafka不是实时写入磁盘，而是先把数据写到页缓存里面，满足一定条件在刷回磁盘。它的工作原理是MMF，直接利用操作系统的页缓存来实现磁盘文件到物理内存的直接映射，完成映射之后你对物理内存的操作会被同步到硬盘上（操作系统在适当的时候）。</p>
 <p><font color='red'><u><em><strong>4）零拷贝</strong></em></u></font></p>
 <p>传统的io，先读取、再发送，实际经过 4 次 copy。</p>
 <p>分别是：</p>
@@ -2665,8 +2741,9 @@
 </blockquote>
 </blockquote>
 <h2 id="重复消费问题怎么解决？"><a href="#重复消费问题怎么解决？" class="headerlink" title="重复消费问题怎么解决？"></a>重复消费问题怎么解决？</h2><p>重复消费的话也分生产者和消费者。</p>
-<p>生产者：生产者自带的重试机制，单分区内是可以用幂等性解决的。</p>
-<p>消费者：消费者重复消费是因为自动提交，首先最好关闭自动提交，然后开启手动提交。用同步+异步的组合方式。最好我们给了一个保底的方案，就是防重字段。</p>
+<p>生产者：生产者自带的重试机制，单分区内是可以用<font color='green'><u><em><strong>幂等性</strong></em></u></font>解决的。</p>
+<p>消费者：消费者重复消费是因为自动提交，首先最好关闭自动提交，然后开启<font color='green'><u><em><strong>手动提交</strong></em></u></font>。用同步+异步的组合方式。最好我们给了一个保底的方案，就是防重字段。</p>
+<p><font color='green'><u><em><strong>Kafka并发数和消费者的实例数有关，和批的大小无关</strong></em></u></font></p>
 <h2 id="怎么保证顺序性-？"><a href="#怎么保证顺序性-？" class="headerlink" title="怎么保证顺序性 ？"></a>怎么保证顺序性 ？</h2><p>一个topic的数据会通过那个分区分配器分发到某个分区，如果会发到多个分区，我们是不能保证顺序性的，但是我们可以用幂等性保证在一个分区内是顺序的。因为生产者发送消息给broker的时候会携带PID和sequence number，一个是生产者的id，一个是消息的序列号。我们靠这个可以保证顺序性。所以我们尽可能的要把消息发到一个分区里面。那这个就要配合分区器来使用，如果你指定了分区号或者指定key，那就代表指定了某个分区，这样就能实现顺序性。如果你用没有指定，他就会用随机粘性分区策略，那就不能保证顺序性。</p>
 <blockquote>
 <p>生产者发送消息给broker的时候会携带PID和sequence number，一个是生产者的id，一个是消息的序列号。</p>
@@ -2799,7 +2876,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2828,7 +2905,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -2883,7 +2960,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2901,14 +2978,14 @@
             <a
                 class="btn btn--default btn--small"
                 href="/archives/page/2/"
-                aria-label="OLDER POSTS"
+                aria-label="ÄLTERE BEITRÄGE"
             >
-              <span>OLDER POSTS</span>
+              <span>ÄLTERE BEITRÄGE</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">page 1 of 5</li>
+        <li class="pagination-number">Seite 1 von 5</li>
     </ul>
 </div>
 
@@ -2918,7 +2995,7 @@
 
                 <footer id="footer" class="main-content-wrap">
     <span class="copyrights">
-        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+        Copyrights &copy; 2024 CSEN. All Rights Reserved.
     </span>
 </footer>
 
@@ -2938,7 +3015,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

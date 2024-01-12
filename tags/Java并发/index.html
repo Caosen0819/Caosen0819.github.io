@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    Nov 08, 2023
+		    08 Nov 2023
     	
     </time>
     
@@ -282,7 +282,7 @@
 <ul>
 <li><strong>1、编译器重排序：</strong> 例如将循环内重复调用的操作提前到循环外执行；</li>
 <li><strong>2、处理器系统重排序：</strong> 例如指令并行技术将多条指令重叠执行，或者使用分支预测技术提前执行分支的指令，并把计算结果放到重排列缓冲区（Reorder Buffer）的硬件缓存中，当程序真的进入分支后直接使用缓存中的结算结果；</li>
-<li><strong>3、存储器系统重排序：</strong> 例如写缓冲区和失效队列机制，即是可见性问题，从内存的角度也是指令重排问题。</li>
+<li><strong>3、存储器系统重排序：</strong> 例如写缓冲区（发消息不等直接写到storebuffer，收消息不看直接返回，然后放到invalid queue）和失效队列机制，即是可见性问题，从内存的角度也是指令重排问题。</li>
 </ul>
 <p>解决办法就是<font color='green'><u>*** Memory Barrier（内存屏障）***</u></font>。借助内存屏障可以很好地保证了顺序一致性。</p>
 <p>JMM就是有4种屏障，（cpu三种，读屏障，写屏障，全屏障）</p>
@@ -340,7 +340,7 @@
 <p>当第二个操作是volatile写时，不管第一个操作是什么，都不能重排序。这个规则确保volatile写之前的操作不会被编译器重排序到volatile写之后。</p>
 <p>当第一个操作是volatile读时，不管第二个操作是什么，都不能重排序。这个规则确保volatile读之后的操作不会被编译器重排序到volatile读之前。</p>
 <p>当第一个操作是volatile写，第二个操作是volatile读时，不能重排序。</p>
-<h3 id="2、Synchronized"><a href="#2、Synchronized" class="headerlink" title="2、Synchronized"></a>2、Synchronized</h3><p><font color='red'><u><em><strong>它是一种互斥锁，他的实现原理是 通过基于进入和退出Monitor对象来控制同步。锁有3种形式：普通方法（锁是当前实例对象）、静态方法（锁是当前类的Class对象）、方法块（括号里的对象）。方法和代码块具体实现是不一样的，一个是monitorenter和monitorexit；一个是ACC_SYNCHRONIZED。</strong></em></u></font></p>
+<h3 id="2、Synchronized"><a href="#2、Synchronized" class="headerlink" title="2、Synchronized"></a>2、Synchronized</h3><p><font color='red'><u><em><strong>它是一种互斥锁，他的实现原理是 通过基于进入和退出Monitor对象来控制同步。有三种使用方法：普通方法（锁是类实例对象）、静态方法（锁是当前类的Class对象）、方法块（括号里的对象）。方法和代码块具体实现是不一样的，一个是monitorenter和monitorexit；一个是ACC_SYNCHRONIZED。</strong></em></u></font></p>
 <blockquote>
 <p>方法级的同步是隐式，JVM可以从方法表里面检查方法的 ACC_SYNCHRONIZED 访问标志是否被设置，如果设置了，执行线程将先持有monitor， 然后再执行方法，方法完成释放monitor。</p>
 <p>代码块的同步是利用monitorenter和monitorexit这两个字节码指令。它们分别位于同步代码块的开始和结束位置。当jvm执行到monitorenter指令时，当前线程试图获取monitor对象的所有权，如果未加锁或者已经被当前线程所持有，就把锁的计数器+1；当执行monitorexit指令时，锁计数器-1；当锁计数器为0时，该锁就被释放了。如果获取monitor对象失败，该线程则会进入阻塞状态，直到其他线程释放锁。</p>
@@ -357,7 +357,7 @@
 </blockquote>
 <p><font color='red'><u><em><strong>锁升级</strong></em></u></font></p>
 <p>而Java1.6为了减少性能消耗，引入了“偏向锁”“轻量级锁”。</p>
-<p><strong>偏向锁</strong></p>
+<p><strong>偏向锁</strong>（101）</p>
 <blockquote>
 <p>偏向锁是用于没有竞争的时候。</p>
 <p>他的加锁过程是：把markword后三位改成101，然后通过CAS的方式把markword的线程id改为自己就好就代表自己获得了锁，后续如果再次获取锁，直接去markword里面线程id是不是自己的就可以了。</p>
@@ -365,7 +365,7 @@
 <p>1、线程没执行完，那就升级轻量级继续执行。</p>
 <p>2、线程执行完了那么我们就尝试重偏向。</p>
 </blockquote>
-<p><strong>轻量级锁</strong></p>
+<p><strong>轻量级锁</strong>（000）</p>
 <blockquote>
 <p>轻量级锁由偏向锁升级而来，适用少量线程交替执行。</p>
 <p>他的加锁过程是：</p>
@@ -373,7 +373,7 @@
 <p>4、如果失败会自旋再次CAS去获取锁。若失败的次数过多，则轻量级锁会膨胀为重量级锁。</p>
 <p>解锁过程：通过CAS操作把Mark Word 和锁记录替换回来，如果失败了，那能是因为其他线程自旋太多次导致升级为重量级锁，那就释放锁并唤醒阻塞的线程竞争锁</p>
 </blockquote>
-<p><strong>重量级锁</strong></p>
+<p><strong>重量级锁</strong>（010）</p>
 <p>重量级锁是轻量级锁受到激烈竞争时，为防止cpu被自旋的线程浪费膨胀而来，因此重量级锁肯定是应付大量线程同时访问同步块的情景。让申请锁失败的线程阻塞后，cpu的负担会减小不少，因此数据的吞吐量也就上来了。</p>
 <h3 id="3、锁（LOCK接口）"><a href="#3、锁（LOCK接口）" class="headerlink" title="3、锁（LOCK接口）"></a><strong>3、锁（LOCK接口）</strong></h3><p><img src="/../images/Java%E5%B9%B6%E5%8F%91/image-20231022145201049.png" alt="image-20231022145201049"></p>
 <p><strong>锁的内存语义</strong></p>
@@ -385,7 +385,7 @@
 <p>性能方面：在竞争激烈时，Lock能提供更好的性能。</p>
 <h4 id="1、AQS"><a href="#1、AQS" class="headerlink" title="1、AQS"></a>1、AQS</h4><blockquote>
 <p>本质是一个抽象类，用来构造锁或其他同步组件的基础框架。</p>
-<p>AQS有两个比较关键的东西，<font color='red'><u><em><strong>一个是volatile的state变量，一个是同步队列。</strong></em></u></font></p>
+<p>AQS有3个比较关键的东西，<font color='red'><u><em><strong>一个是volatile的state变量，一个是同步队列。一个owner</strong></em></u></font></p>
 <p><strong>state</strong>表示同步状态（volatile）</p>
 <p><strong>同步队列</strong>是一个双向列表，获取失败的线程会被构造成一个节点通过CAS的方式加入到这个队列尾部。一个节点保存着线程的引用，状态，前驱节点，后继结点。</p>
 <p><font color='red'><u><strong>AQS</strong> <strong>资源共享方式</strong>：两种</u></font></p>
@@ -402,11 +402,16 @@
 <p><font color='red'><u><em><strong>他是LOCK接口的一个子类，他有一个内部类Sync，这个类继承了AQS，所以我们也说重入锁依赖AQS，AQS使用一个整形的volatile变量（state）来维护同步状态。用CAS对state进行原子操作。state&#x3D;0表示初始状态可以占有锁，state&#x3D;1表示已有线程占有，大于1是重入锁。具体加锁的流程，就是sync调用lock，lock去调用acquire函数，acquire调用tryacquire，这里就开始操作aqs了。sync的实现有公平锁和非公平锁。</strong></em></u></font></p>
 <p><strong>公平锁和非公平锁区别？</strong></p>
 <p><font color='red'><u><em><strong>Sync有公平锁 和非公平锁，公平锁和非公平锁区别: 非公平锁在tryacquire的时候，里面有一个步骤是获取同步状态，如果这个同步状态是0的话，说明现在没人拿，我可以去直接去拿，公平锁这里会多一个判断hasQueuedPredecessors，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>加入的时候怎么加入的？</strong></em></u></font></p>
+<p>新的节点的Pre指向尾结点，然后用cas的方式让尾结点指向新节点，最好尾结点更新。</p>
 </blockquote>
-<h4 id="3、死锁"><a href="#3、死锁" class="headerlink" title="3、死锁"></a>3、死锁</h4><p>两个线程，互相请求对方已经持有的资源。</p>
+<h4 id="3、死锁"><a href="#3、死锁" class="headerlink" title="3、死锁"></a>3、死锁</h4><p>互斥条件：</p>
+<p>请求和保持，并且不可被剥夺。</p>
+<p>循环等待：</p>
+<p>两个线程，互相请求对方已经持有的资源。</p>
 <p>死锁的检测：</p>
 <ul>
-<li>可以依赖jps和jstack。用jps拿到java进程的id，然后jstack分析堆栈信息。</li>
+<li>可以依赖JPS和JSTACK。用jps拿到java进程的id，然后jstack分析堆栈信息。</li>
 <li>也可以用可视化工具jconsole virtualVM</li>
 </ul>
 <hr>
@@ -466,8 +471,9 @@
 <p>继承Thread、实现runnbale接口，实现callable接口，还有线程池（也是项目中的创建方法）</p>
 <p><font color='red'><u><em><strong>线程池创建线程</strong></em></u></font>有两种方式：</p>
 <blockquote>
-<p><strong>方式一：通过<code>ThreadPoolExecutor</code>构造函数来创建（推荐）。</strong></p>
-<p><strong>方式二：通过 <code>Executor</code> 框架的工具类 <code>Executors</code> 来创建。</strong></p>
+<p><strong>方式一：通过<code>ThreadPoolExecutor</code>构造方法来创建（推荐）。</strong></p>
+<p><strong>方式二： <code>Executors的工厂方法：比如Executors.newCachedThreadPool()</code>（不推荐）。</strong></p>
+<p>两种方法都在concurrent包下面。</p>
 <p>为什么不推荐？我觉得就是Executors提供的创建的几个线程池都有点局限性，都有不足的地方。</p>
 <p>然后像Fixed和Single用的<font color='red'><u><em><strong>工作队列是无界队列</strong></em></u></font>，可能会堆积大量的请求,导致OOM</p>
 <p>还有<font color='red'><u><em><strong>cached和Schedule最大的线程数量是Integer.MAX_VALUE</strong></em></u></font>，可能堆积大量的线程，导致OOM</p>
@@ -486,31 +492,60 @@
 <p>SynchronousQueue</p>
 </blockquote>
 </blockquote>
-<p><strong>runnable和callable有什么区别？</strong></p>
-<p>callable是有返回值的，配合futuretask获得线程执行结果，call方法可以抛出异常</p>
-<p><strong>启动的时候可以run方法吗</strong></p>
-<p>调用run，就是调用普通方法。不会启动线程</p>
-<p><strong>线程有哪些状态</strong></p>
+<p><font color='red'><u><strong>runnable和callable有什么区别？</strong></u></font></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>callable</th>
+<th>runnable</th>
+</tr>
+</thead>
+<tbody><tr>
+<td></td>
+<td>有返回值的配合futuretask获得线程执行结果</td>
+<td>无返回值</td>
+</tr>
+<tr>
+<td></td>
+<td>callable方法抛出异常</td>
+<td>runnable不抛异常</td>
+</tr>
+<tr>
+<td></td>
+<td>call</td>
+<td>Run</td>
+</tr>
+</tbody></table>
+<p><font color='blue'><u><em><strong>怎么退出线程？</strong></em></u></font></p>
+<blockquote>
+<p><font color='red'><u><em><strong>1、Interrupt，一种温和的方式，会把线程的中断状态位设置为true，告诉他他自己应该在合适的时间中断</strong></em></u></font></p>
+<table>
+<thead>
+<tr>
+<th>isInterrupted</th>
+<th>检查线程的中断标记位，</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>interrupted</td>
+<td>返回当前线程的中断标记位，同时清除中断标记，改为false</td>
+<td></td>
+</tr>
+</tbody></table>
+<p><font color='red'><u><em><strong>如果调用interrupt的时候正处于阻塞的状态，那就抛出一个异常，提前终止阻塞。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>如果正常进行，那就是简单的把中断状态改成true，后面如果遇到wait、sleep就抛异常，不进行阻塞</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>2、退出标记</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>3、stop</strong></em></u></font></p>
+</blockquote>
+<p><font color='blue'><u><em><strong>线程有哪些状态，怎么转换</strong></em></u></font></p>
 <p>new runnable blocked waiting timewaiting terminated</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<p><img src="/../images/Java%E5%B9%B6%E5%8F%91/image-20231116193315032.png" alt="image-20231116193315032"></p>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
+<p><img src="/../images/JUC/image-20240102183939276.png" alt="image-20240102183939276"></p>
 <p><strong>wait和sleep有什么不同</strong></p>
+<blockquote>
 <p>首先是锁特性，wait会释放锁，但是sleep不会释放锁。wait没有时间参数的时候要等待notify唤醒，但是sleep就是时间到期就恢复。</p>
-<p><strong>怎么退出线程？</strong></p>
-<p>interrupt，打断阻塞的线程会抛出异常，打断正常的不会抛出异常</p>
-<p>stop</p>
-<p>退出标记</p>
+</blockquote>
 <p><font color='red'><u><em><strong>线程池就是管理线程的资源池。当有任务要处理时，直接从线程池中获取线程来处理，处理完之后线程并不会立即被销毁，而是等待下一个任务。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>处理流程：</strong></em></u></font></p>
 <p>1）先看核心线程池，有没有都在执行任务。如果不是都在执行，就创建一个工作线程执行任务，否则就看工作列表。</p>
@@ -529,31 +564,33 @@
 <p><strong><code>DiscardPolicy</code></strong>:不处理新任务，直接丢弃掉。</p>
 <p><strong><code>DiscardOldestPolicy</code>：</strong> 此策略将丢弃阻塞队列最早任务，重新提交</p>
 </blockquote>
-<blockquote>
-</blockquote>
 <p><font color='red'><u><em><strong>怎么确认核心线程数</strong></em></u></font></p>
 <blockquote>
 <p>IO密集型，就设置成2*cpu核数+ 1</p>
 <p>cpu密集型任务，就避免线程上下文切换，可以设置成cpu+1</p>
 </blockquote>
-<p><strong>如何设定线程池的大小？</strong></p>
+<p><font color='red'><u><strong>如何设定线程池的大小？</strong></u></font></p>
 <blockquote>
-<p>最佳线程数 &#x3D; CPU 核心数 ∗（1+WT（线程等待时间）&#x2F;ST（线程计算时间</p>
+<p>最佳线程数 &#x3D; CPU 核心数 ∗（1+WT（线程等待时间）&#x2F;ST（线程计算时间）</p>
 <p>反正和cpu核数和线程等待时间计算时间有关。</p>
 </blockquote>
 <p><font color='red'><u><em><strong>线程池的使用场景</strong></em></u></font></p>
 <blockquote>
 <p>使用线程池就是要用多线程，多线程其实可以说是尽量把一个线程串行的工作变成并行的，所以什么那种数据查询然后汇总就可以用线程池。还有数据分批导入可以用线程池、甚至某些异步调用也可以用线程池。</p>
-<p>数据汇总</p>
-<p>数据导入</p>
+<p><font color='blue'><u><em><strong>数据汇总</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>数据分批导入</strong></em></u></font></p>
 </blockquote>
-<p>怎么限制接口可以访问的线程数？限流？</p>
+<p><font color='red'><u><em><strong>怎么限制接口可以访问的线程数？限流？</strong></em></u></font></p>
 <blockquote>
-<p>这个可以是共享锁的一种扩展吧，那个信号量可以实现这个</p>
+<p><font color='blue'><u><em><strong>令牌桶，那个信号量可以实现这个</strong></em></u></font></p>
 </blockquote>
 <p><strong>MQ和线程池区别？</strong></p>
 <blockquote>
 <p>mq是两个服务间解耦，线程池是一个服务加速</p>
+</blockquote>
+<p><strong>启动的时候可以run方法吗</strong></p>
+<blockquote>
+<p>调用run，就是调用普通方法。不会启动线程</p>
 </blockquote>
 <p><strong>如何设计一个能够根据任务的优先级来执行的线程池？</strong></p>
 <blockquote>
@@ -568,7 +605,7 @@
 <p>颜屹钧：钧的话，本来想取一个君子的君，代表那种不轻言放弃、凛然正义的君子，但是君是属于水，就换成了钧，钧的话，本身就有尊贵的意思，然后还可以通“均”，这个均就有均衡的意思，各个方面都不差。</p>
 <p>颜屹琛：琛，属金，本身是宝玉的意思，和小宝、66的瑾和瑜是一类意思，而且取得人少。</p>
 <p>颜屹正。正属于金，反过来还刚好是正义。希望孩子刚正不阿，笔画也少点，寓意肯定是极好的。</p>
-<p>颜屹心：取自“钧是人也,或从其大体,或从其小体,何也”–《孟子》。这句话的意思是：孟子说，同样是人，有的人注重身体重要部分，有的人注重身体次要部分。这是因为眼睛、耳朵等器官不会思考，容易被外物所蒙蔽，而心这个器官则有思考的能力，一思考就会有所得，不思考就得不到。所以，如果首先把心这个身体的重要部分树立起来，其他次要部分就不会被引入迷途，这样便可以成为君子。刚刚好，嫂子说过希望孩子有想法，前面那个屹也能对上树立，也蛮适合。不过这个“心”有一个问题，有人说属于金，有人说属于火。</p>
+<p>颜屹心：取自“钧是人也,或从其大体,或从其小体,何也”–《孟子》。这句话的意思是：孟子说，同样是人，有的人注重身体重要部分，有的人注重身体次要部分。这是因为眼睛、耳朵等器官不会思考，容易被外物所蒙蔽，而心这个器官则有思考的能力，一思考就会有所得，不思考就得不到。所以，如果首先把心这个身体的重要部分树立起来，其他次要部分就不会被引入迷途，这样便可以成为君子。刚刚好，嫂子说过希望孩子有想法，前面那个屹也能对上树立，也蛮适合。不过这个“心”有一个问题，有人说属于金，有人说属于火。	</p>
 
                     
                         
@@ -582,7 +619,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -596,7 +633,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -605,7 +642,7 @@
 
                 <footer id="footer" class="main-content-wrap">
     <span class="copyrights">
-        Copyrights &copy; 2023 CSEN. All Rights Reserved.
+        Copyrights &copy; 2024 CSEN. All Rights Reserved.
     </span>
 </footer>
 
@@ -625,7 +662,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
