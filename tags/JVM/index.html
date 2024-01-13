@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="پیوند را باز کنید: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
         
         </a>
     
@@ -93,13 +93,13 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="درباره نویسنده بیشتر بخوانید"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
-                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+                    <h5 class="sidebar-profile-bio"><p>یادداشت‌های یه المپیاد کامپیوتری در حال یادگیری لینوکس!</p>
 </h5>
                 
             </div>
@@ -243,11 +243,11 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-04T00:00:00+08:00">
 	
-		    04 Nov 2023
+		    Saturday، 04 Nov 2023
     	
     </time>
     
-        <span>in </span>
+        <span>در </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -335,7 +335,7 @@
 <li><p>属性表：太复杂了</p>
 </li>
 </ul>
-<h1 id="4、类加载机制"><a href="#4、类加载机制" class="headerlink" title="4、类加载机制"></a>4、类加载机制</h1><p>类加载分成三个阶段，加载、连接、初始化。连接可以分成，验证、准备、解析</p>
+<h1 id="4、类加载机制"><a href="#4、类加载机制" class="headerlink" title="4、类加载机制"></a>4、类加载机制</h1><p>类加载分成三个阶段，<font color='blue'><u><em><strong>加载、连接、初始化</strong></em></u></font>。连接可以分成，验证、准备、解析</p>
 <h2 id="1、加载"><a href="#1、加载" class="headerlink" title="1、加载"></a>1、加载</h2><p>加载是类加载过程的第一步，主要完成下面 3 件事情：</p>
 <ol>
 <li>通过全类名获取定义此类的二进制字节流</li>
@@ -478,7 +478,7 @@
 <blockquote>
 <p>-XX:+UseAdaptiveSizePolicy：不需要手动指定新生代大小，虚拟机会自动调整参数（GC自适应）</p>
 </blockquote>
-<h3 id=""><a href="#" class="headerlink" title=""></a></h3></blockquote>
+</blockquote>
 <h3 id="老生代"><a href="#老生代" class="headerlink" title="老生代"></a>老生代</h3><blockquote>
 <h4 id="1、Serial-Old"><a href="#1、Serial-Old" class="headerlink" title="1、Serial Old"></a>1、Serial Old</h4><p>Serial的老年代版本，</p>
 <p>收集策略：标记-整理</p>
@@ -492,9 +492,9 @@
 <p>3）重新标记，因为和用户线程一起进行，对于漏标问题的解决方案是（写后屏障+增量更新（<font color='green'><u><em><strong>就是把新增加的引用进行记录</strong></em></u></font>））。（STW）</p>
 <p>4）并发清除，清除对象，因为策略是标记-清除，不需要移动所以同样选择了并发的方式。</p>
 <p>缺点：</p>
-<p>1）对处理资源敏感，而且大于1&#x2F;4。CMS的默认收集线程数量是（处理器数量+3）&#x2F;4。</p>
-<p>2）无法处理浮动垃圾（用户线程使得原来某些对象不是垃圾，但是当 CMS 进行清理的时候变成了垃圾，从可达到不可达，但是没扫出来），有可能触发full gc</p>
-<p>3）用的是标记清除，会有内存碎片</p>
+<p>1）<font color='blue'><u><em><strong>对处理资源敏感</strong></em></u></font>，而且大于1&#x2F;4。CMS的默认收集线程数量是（处理器数量+3）&#x2F;4。</p>
+<p>2）<font color='blue'><u><em><strong>无法处理浮动垃圾</strong></em></u></font>（用户线程使得原来某些对象不是垃圾，但是当 CMS 进行清理的时候变成了垃圾，从可达到不可达，但是没扫出来），有可能触发full gc</p>
+<p>3）<font color='blue'><u><em><strong>用的是标记清除，会有内存碎片</strong></em></u></font></p>
 <p>​	</p>
 <p>CMSFullGCsBeforeCompaction</p>
 <h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><blockquote>
@@ -506,12 +506,23 @@
 </blockquote>
 <p>下面我们讲讲G1的垃圾收集过程，分为四个步骤</p>
 <p>然后他把region作为单次回收的最小单元，那每次回收都是region的整数倍。</p>
+<blockquote>
 <p>1、初始标记，只是标记一下和能直达的对象，这个和young gc密切相关，这个之前讲过（STW）</p>
 <p>2、并发标记，扫描对象图</p>
 <p>3、最终标记，处理并发标记中变化的哪些引用，这里对于漏标情况G1用的SATB（原始快照）（STW）</p>
 <p>4、筛选回收，后台维护一个优先级列表，跟踪每一个region的回收价值（空间大小和回收所需时间），在指定的停顿时间内回收回收价值最大的region。（STW）</p>
-<p>优点：可以指定最大停顿时间，不会产生内存碎片，按收益回收，分region的内存布局。</p>
-<p>缺点：内存占用和负载都比较高。</p>
+</blockquote>
+<p>优点：</p>
+<blockquote>
+<p><font color='blue'><u><em><strong>可以指定最大停顿时间，</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>不会产生内存碎片，</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>按收益回收</strong></em></u></font></p>
+</blockquote>
+<p>缺点：</p>
+<blockquote>
+<p><font color='blue'><u><em><strong>内存占用负载都比较高。</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>浮动垃圾也很严重。</strong></em></u></font></p>
+</blockquote>
 <p>为什么年轻代比以前的快？</p>
 <p>他是筛选回收，是通过region个数进行minor gc 不用对整个eden区minorgc ，而且有个容忍时间。</p>
 <p>G1的SATB算法为什么比CMS的增量标记算法快（原因之一）：</p>
@@ -572,7 +583,7 @@
 <p><font color='red'><u><em><strong>命令：</strong></em></u></font></p>
 <p>jps + jstack 查看进程内线程的堆栈信息</p>
 <p>jmap -dump 生成一个内存快照的信息</p>
-<p>jstat ：JVM性能监测工具。 显示伊甸区 幸存者区、老年区的比例</p>
+<p>jstat ：JVM性能监测工具。 显示伊甸区 幸存者区、老年区的比例，还有gc压力</p>
 <p><font color='red'><u><em><strong>可视化工具：</strong></em></u></font></p>
 <p>jconsole</p>
 <p>visualVM</p>
@@ -582,8 +593,14 @@
 <p>1、可以获得内存的快照dump（jmap -dump或者启动的时候就加上参数-XX：heapdumpOnOutOfMemery）</p>
 <p>2、visualVM去加载</p>
 </blockquote>
-<h2 id="CPU标高的排查"><a href="#CPU标高的排查" class="headerlink" title="CPU标高的排查"></a>CPU标高的排查</h2><p>top或者pidstat命令找到cpu明显过高的进程id，然后用进程id去找到线程id（ps H -eo pid,tid,%cpu | grep进程id），最后jstack 一下定位到该线程就可以</p>
+<h2 id="CPU标高的排查"><a href="#CPU标高的排查" class="headerlink" title="CPU标高的排查"></a>CPU标高的排查</h2><p><font color='blue'><u><em><strong>top或者pidstat命令找到cpu明显过高的进程id，然后用进程id去找到线程id（ps H -eo pid,tid,%cpu | grep进程id），最后jstack 一下定位到该线程就可以</strong></em></u></font></p>
 <p>标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、</p>
+<h2 id="FULL-GC的原因"><a href="#FULL-GC的原因" class="headerlink" title="FULL GC的原因"></a>FULL GC的原因</h2><blockquote>
+<p>老年代不够用</p>
+<p>元空间不够用</p>
+<p>System.gc方法调用</p>
+<p><strong>分配担保失败</strong></p>
+</blockquote>
 
                     
                         
@@ -597,7 +614,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                در مورد پست بحث کنید
                             </a>
                         </p>
                     
@@ -611,7 +628,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">صفحه 1 از 1</li>
     </ul>
 </div>
 
@@ -640,18 +657,18 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
-            <div id="about-card-bio"><p>author.bio</p>
+            <div id="about-card-bio"><p>یادداشت‌های یه المپیاد کامپیوتری در حال یادگیری لینوکس!</p>
 </div>
         
         
             <div id="about-card-job">
                 <i class="fa fa-briefcase"></i>
                 <br/>
-                <p>author.job</p>
+                <p>المپیادی، برنامه نویس!</p>
 
             </div>
         

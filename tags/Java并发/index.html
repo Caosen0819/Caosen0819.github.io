@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="پیوند را باز کنید: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
         
         </a>
     
@@ -93,13 +93,13 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="درباره نویسنده بیشتر بخوانید"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
-                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+                    <h5 class="sidebar-profile-bio"><p>یادداشت‌های یه المپیاد کامپیوتری در حال یادگیری لینوکس!</p>
 </h5>
                 
             </div>
@@ -243,11 +243,11 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    08 Nov 2023
+		    Wednesday، 08 Nov 2023
     	
     </time>
     
-        <span>in </span>
+        <span>در </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -326,7 +326,7 @@
 <p><img src="/../images/Java%E5%B9%B6%E5%8F%91/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAQWxhbjA1MTc=,size_20,color_FFFFFF,t_70,g_se,x_16.png" alt="在这里插入图片描述"></p>
 <hr>
 <p>为什么不保证原子性：</p>
-<p>在执行内存屏障之前，不同 CPU 依旧可以对同一个缓存行持有，一个 CPU 对同一个缓存行的修改不能让另一个 CPU 及时感知，因此出现并发冲突。这里我看到一篇博客，他的意思是刚刚好计算的过程在寄存器执行。</p>
+<p>在执行内存屏障之前，不同 CPU 依旧可以对同一个缓存行持有，一个 CPU 对同一个缓存行的修改不能让另一个 CPU 及时感知，因此出现并发冲突。这里我看到一篇博客，他的意思是刚刚好计算的过程在寄存器执行。<font color='red'><u><em><strong>同时加锁，总线仲裁</strong></em></u></font></p>
 <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_38322527/article/details/119937531">https://blog.csdn.net/qq_38322527/article/details/119937531</a></p>
 <hr>
 <p><font color='blue'><u><em><strong>重排序</strong></em></u></font></p>
@@ -403,7 +403,7 @@
 <p><strong>公平锁和非公平锁区别？</strong></p>
 <p><font color='red'><u><em><strong>Sync有公平锁 和非公平锁，公平锁和非公平锁区别: 非公平锁在tryacquire的时候，里面有一个步骤是获取同步状态，如果这个同步状态是0的话，说明现在没人拿，我可以去直接去拿，公平锁这里会多一个判断hasQueuedPredecessors，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</strong></em></u></font></p>
 <p><font color='green'><u><em><strong>加入的时候怎么加入的？</strong></em></u></font></p>
-<p>新的节点的Pre指向尾结点，然后用cas的方式让尾结点指向新节点，最好尾结点更新。</p>
+<p><font color='blue'><u><em><strong>新的节点的Pre指向尾结点，然后用cas的方式让尾结点指向新节点，最后尾结点更新。</strong></em></u></font></p>
 </blockquote>
 <h4 id="3、死锁"><a href="#3、死锁" class="headerlink" title="3、死锁"></a>3、死锁</h4><p>互斥条件：</p>
 <p>请求和保持，并且不可被剥夺。</p>
@@ -412,7 +412,7 @@
 <p>死锁的检测：</p>
 <ul>
 <li>可以依赖JPS和JSTACK。用jps拿到java进程的id，然后jstack分析堆栈信息。</li>
-<li>也可以用可视化工具jconsole virtualVM</li>
+<li>也可以用可视化工具virtualVM</li>
 </ul>
 <hr>
 <h3 id="4、原子操作的实现原理"><a href="#4、原子操作的实现原理" class="headerlink" title="4、原子操作的实现原理"></a>4、原子操作的实现原理</h3><h4 id="1、处理器如何实现原子操作？"><a href="#1、处理器如何实现原子操作？" class="headerlink" title="1、处理器如何实现原子操作？"></a>1、处理器如何实现原子操作？</h4><p>总线锁：使用LOCK 信号，其他请求都被阻塞，独占共享内存</p>
@@ -432,12 +432,12 @@
 <li><strong>3、存储器系统重排序：</strong> 例如写缓冲区和失效队列机制，即是可见性问题，从内存的角度也是指令重排问题。</li>
 </ul>
 <p>编译器方面有这么一个规定</p>
-<blockquote>
 <p><font color='red'><u><em><strong>那重排序的原则是什么？</strong></em></u></font></p>
+<blockquote>
 <p>as-if-serial : 单线程 无论你怎么排，你结果不能给我变了。但是在多线程是会出问题的。</p>
 </blockquote>
+<p><font color='blue'><u><em><strong>如何解决重排序问题</strong></em></u></font></p>
 <blockquote>
-<p>如何解决重排序问题</p>
 <p><font color='red'><u><em><strong>内存屏障</strong></em></u></font></p>
 </blockquote>
 </blockquote>
@@ -512,7 +512,7 @@
 <td>runnable不抛异常</td>
 </tr>
 <tr>
-<td></td>
+<td>实现方法</td>
 <td>call</td>
 <td>Run</td>
 </tr>
@@ -541,7 +541,7 @@
 </blockquote>
 <p><font color='blue'><u><em><strong>线程有哪些状态，怎么转换</strong></em></u></font></p>
 <p>new runnable blocked waiting timewaiting terminated</p>
-<p><img src="/../images/JUC/image-20240102183939276.png" alt="image-20240102183939276"></p>
+<p><img src="/../images/JUC/image-20240113135657239.png" alt="image-20240113135657239"></p>
 <p><strong>wait和sleep有什么不同</strong></p>
 <blockquote>
 <p>首先是锁特性，wait会释放锁，但是sleep不会释放锁。wait没有时间参数的时候要等待notify唤醒，但是sleep就是时间到期就恢复。</p>
@@ -550,11 +550,7 @@
 <p><font color='red'><u><em><strong>处理流程：</strong></em></u></font></p>
 <p>1）先看核心线程池，有没有都在执行任务。如果不是都在执行，就创建一个工作线程执行任务，否则就看工作列表。</p>
 <p>2）线程池判断工作列表有没有满，如果没有满，就把新提交的任务存到这个工作队列里面，</p>
-<p>3）如果满了判断线程池里面的线程是否都在工作状态，如果没有就创建一个新的工作线程执行，如果满了，就交给饱和策略。（抛出异常、调用自己的线程执行、直接丢掉、丢掉队列中最早未处理的任务然后加进去）</p>
-<blockquote>
-<blockquote>
-</blockquote>
-</blockquote>
+<p>3）如果满了判断线程池里面的线程是否都在工作状态，如果没有就创建一个新的工作线程执行，如果满了，就交给饱和策略。（<font color='blue'><u><em><strong>抛出异常、调用自己的线程执行、直接丢掉、丢掉队列中最早未处理的任务然后加进去</strong></em></u></font>）</p>
 <p><font color='red'><u><em><strong>线程池核心参数</strong></em></u></font></p>
 <p>从他的处理流程就能知道，像核心线程数、最大线程数、工作队列，饱和策略。</p>
 <blockquote>
@@ -619,7 +615,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                در مورد پست بحث کنید
                             </a>
                         </p>
                     
@@ -633,7 +629,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">صفحه 1 از 1</li>
     </ul>
 </div>
 
@@ -662,18 +658,18 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
-            <div id="about-card-bio"><p>author.bio</p>
+            <div id="about-card-bio"><p>یادداشت‌های یه المپیاد کامپیوتری در حال یادگیری لینوکس!</p>
 </div>
         
         
             <div id="about-card-job">
                 <i class="fa fa-briefcase"></i>
                 <br/>
-                <p>author.job</p>
+                <p>المپیادی، برنامه نویس!</p>
 
             </div>
         

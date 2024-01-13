@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv: 2023/7 - 森</title>
+    <title>آرشیو مطالب: 2023/7 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="پیوند را باز کنید: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
         
         </a>
     
@@ -93,13 +93,13 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="درباره نویسنده بیشتر بخوانید"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
-                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
+                    <h5 class="sidebar-profile-bio"><p>یادداشت‌های یه المپیاد کامپیوتری در حال یادگیری لینوکس!</p>
 </h5>
                 
             </div>
@@ -243,11 +243,11 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Saturday، 08 Jul 2023
     	
     </time>
     
-        <span>in </span>
+        <span>در </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -350,7 +350,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                در مورد پست بحث کنید
                             </a>
                         </p>
                     
@@ -379,11 +379,11 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Saturday، 08 Jul 2023
     	
     </time>
     
-        <span>in </span>
+        <span>در </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -411,7 +411,7 @@
 </ol>
 <p>零拷贝是只拷贝两次，</p>
 <ul>
-<li>transferTo() 方法引发 DMA 引擎将文件内容拷贝到内核缓冲区。数据拷贝到 socket缓存区，文件描述可以代替数据拷贝</li>
+<li><font color='blue'><u><em><strong>Sendfile 方法引发 DMA 引擎将文件内容拷贝到内核缓冲区，优化成了3次，后来在linux2.4里面直接可以用文件描述可以代替数据拷贝</strong></em></u></font></li>
 <li>DMA 引擎直接把数据从内核缓冲区传输到协议引擎，</li>
 </ul>
 <p><strong>DMA（直接存储器访问）用来提供在外设和存储器之间或者存储器和存储器之间的高速数据传输，他本质是一个硬件技术，就是比如你要把外设A的数据传到内存B，你直接给A和B之间加一条数据通路，然后给几个配件就可以实现，传输操作交给DMAC控制器（类似CPU）</strong></p>
@@ -494,40 +494,35 @@
 <p>事务启动，消息发送</p>
 <p>事务提交</p>
 </blockquote>
-<h2 id="Kafka文件存储机制"><a href="#Kafka文件存储机制" class="headerlink" title="Kafka文件存储机制"></a>Kafka文件存储机制</h2><p>文件存储实际是按分区存的，一个分区对应多个segment（删除和查找方便），每一个segment里面都有三个文件，分别是log日志文件，index索引文件，timeindex时间戳索引文件，producer的数据会追加到log里面，每次往log里面写4k数据，就会到index文件写一条索引。</p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928232748011.png" alt="在这里插入图片描述"></p>
+<h2 id="Kafka文件存储机制"><a href="#Kafka文件存储机制" class="headerlink" title="Kafka文件存储机制"></a>Kafka文件存储机制</h2><blockquote>
+<p><font color='blue'><u><em><strong>文件存储实际是按分区存的，一个分区对应多个segment（删除和查找方便），每一个segment里面都有三个文件，分别是log日志文件，index索引文件，timeindex时间戳索引文件，producer的数据会追加到log里面，每次往log里面写4k数据，就会到index文件写一条索引。</strong></em></u></font></p>
+</blockquote>
 <h2 id="Kafka数据清理机制"><a href="#Kafka数据清理机制" class="headerlink" title="Kafka数据清理机制"></a>Kafka数据清理机制</h2><p>Kafka提供了两种日志清理策略。</p>
-<p>日志删除(delete) : 日志删除也分两种</p>
+<p><font color='blue'><u>**日志删除(delete) **</u></font>: 日志删除也分两种</p>
 <p>​		按照时间，当消息保存的时间超过指定的时间（默认七天），就会触发清理</p>
 <p>​		按照文件大小：当topic所有 分区的数据总和达到了默认的阈值（1G），就开始删除最久的消息	</p>
-<p>日志压缩(compact) :针对每个消息的key进行整合，对于有相同key的不同value值，只保留最后一个版本。</p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928233315113.png" alt="在这里插入图片描述"></p>
-<h4 id="数据积压-（-消费者如何提高吞吐量）"><a href="#数据积压-（-消费者如何提高吞吐量）" class="headerlink" title="数据积压 （ 消费者如何提高吞吐量）"></a>数据积压 （ 消费者如何提高吞吐量）</h4><p>1、增加分区数和消费者数量</p>
-<p>2、提高消费者每次拉取的数量</p>
-<p>3、调整linger.ms 和 batch_size</p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929001531640.png" alt="在这里插入图片描述"></p>
-<h2 id="Kafka由三个方面会涉及到选举："><a href="#Kafka由三个方面会涉及到选举：" class="headerlink" title="Kafka由三个方面会涉及到选举："></a>Kafka由三个方面会涉及到选举：</h2><ul>
-<li>broker（控制器）选leader</li>
-</ul>
+<p><font color='blue'><u>**日志压缩(compact) **</u></font>:针对每个消息的key进行整合，对于有相同key的不同value值，只保留最后一个版本。</p>
+<h4 id="数据积压-（-消费者如何提高吞吐量）"><a href="#数据积压-（-消费者如何提高吞吐量）" class="headerlink" title="数据积压 （ 消费者如何提高吞吐量）"></a>数据积压 （ 消费者如何提高吞吐量）</h4><p><font color='blue'><u><em><strong>上游可以增加分区数量和调整batchsize和lingerms</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>下游可以增加消费者数量和调大消费者每次拉取的消息大小</strong></em></u></font></p>
+<h2 id="Kafka选举机制："><a href="#Kafka选举机制：" class="headerlink" title="Kafka选举机制："></a>Kafka选举机制：</h2><p><font color='blue'><u><em><strong>broker（控制器）选leader</strong></em></u></font></p>
 <blockquote>
 <p>集群中由很多的broker选出一个leader，其他事follower。负责主题创建删除，管理broker，分区重分配，分区leader选举等等</p>
 <p>方法简单粗暴：</p>
 <p>每个broker都有唯一的brokerId，启动后会去竞争注册zookeeper上的Controller结点，谁先抢到，谁就是broker leader。一般第一个broker都是controller。而其他broker会监听该结点事件，以便后续leader下线后触发重新选举。</p>
 <p><img src="/../images/Kafka/12b4f076e8f82c66b00ec8782433649f.png" alt="image-20220902200901222"></p>
 </blockquote>
+<p>分区多副本选leader</p>
 <ul>
-<li>分区多副本选leader<ul>
-<li>有controller节点控制，决策是：ISR中存活，并且排在AR列表前面的优先，同时必须在isr里面。</li>
-</ul>
-</li>
+<li><font color='blue'><u><em><strong>由controller节点控制，决策是：ISR中存活，并且排在AR列表前面的优先，同时必须在isr里面。</strong></em></u></font></li>
 </ul>
 <blockquote>
 <p><img src="/../images/Kafka/e5c14b9c17123faf3eefa58a22ab0668-20230928225949575.png" alt="image-20220902201352868"></p>
 </blockquote>
-<ul>
-<li>消费者选Leader</li>
-</ul>
-<p>先用groupid%50 得到一个分区，这个分区所属的节点的消费者协调器就作为这个消费者组的老大，每个消费者向这个协调器发送joinGroup请求，具体的选举方法是，取出HashMap里面的第一个，就是消费者组的信息是放在一个hashmap里面的，我么选的时候是直接拿出第一个就好。所以比较偏随机。</p>
+<p><font color='blue'><u><em><strong>消费者选Leader</strong></em></u></font></p>
+<p>先用groupid%50 得到一个主题分区（consumer_offset），这个分区所属的节点的消费者协调器就作为这个消费者组的老大，每个消费者向这个协调器发送joinGroup请求，具体的选举方法是，取出HashMap里面的第一个，就是消费者组的信息是放在一个hashmap里面的，我么选的时候是直接拿出第一个就好。所以比较偏随机。</p>
+<h2 id="Kafka分区机制"><a href="#Kafka分区机制" class="headerlink" title="Kafka分区机制"></a>Kafka分区机制</h2><p>分为生产者分区和消费者分区。还有一种副本分区机制，那个先不说。</p>
+<p>生产者分区就是依赖于main线程里面的消息分区器，他有一个默认的分区器DefaultPartitioner，支持4种分区策略 1) 指定分区； 2）指定key，计算hash得分区； 3）指定随机粘性分区；（4）还可以自定义分区器（见代码）（下图））</p>
+<p>消费者分区就是谁去消费谁的问题，支持三种策略：RoundRobin、Range、sticky粘性分区</p>
 <h1 id="1、定义"><a href="#1、定义" class="headerlink" title="1、定义"></a>1、定义</h1><p>分布式的基于发布订阅模式的消息队列</p>
 <p>主要应用场景包括：<strong>缓存消峰</strong>、<strong>解耦</strong>和<strong>异步通信。</strong></p>
 <p>消息队列有两种模式：</p>
@@ -555,8 +550,10 @@
 <h1 id="3、Broker"><a href="#3、Broker" class="headerlink" title="3、Broker"></a>3、Broker</h1><h2 id="Broker架构"><a href="#Broker架构" class="headerlink" title="Broker架构"></a>Broker架构</h2><p>一台机器一个broker</p>
 <p><img src="/../images/Kafka/image-20231024150746020.png" alt="image-20231024150746020"></p>
 <p><strong>Zookeeper</strong>的作用</p>
+<blockquote>
 <p>Zookeeper在Kafka中扮演了重要的角色，kafka使用zookeeper进行<font color='red'><u><em><strong>元数据管理，保存broker注册信息，包括主题（Topic）、分区（Partition）信息等，选择分区leader。</strong></em></u></font></p>
 <p><img src="/../images/Kafka/b1f0ebc535b00384be6bf81540c5f416.png" alt="image-20220902200249692"></p>
+</blockquote>
 <h2 id="kafka分区策略"><a href="#kafka分区策略" class="headerlink" title="kafka分区策略"></a>kafka分区策略</h2><p>如果 kafka 服务器只有 4 个节点，那么设置 kafka 的分区数大于服务器台数，在 kafka底层如何分配存储副本呢？</p>
 <ul>
 <li>这里如果用默认的就是如下</li>
@@ -567,30 +564,31 @@
 </ul>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ vim increase-replication-factor.json</span><br><span class="line">输入如下内容：</span><br><span class="line">&#123;</span><br><span class="line">&quot;version&quot;:1,</span><br><span class="line">&quot;partitions&quot;:[</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[0,1]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[0,1]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:2,&quot;replicas&quot;:[1,0]&#125;,</span><br><span class="line">&#123;&quot;topic&quot;:&quot;three&quot;,&quot;partition&quot;:3,&quot;replicas&quot;:[1,0]&#125;]</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<h3 id="1、分区自动调整"><a href="#1、分区自动调整" class="headerlink" title="1、分区自动调整"></a><strong>1、分区自动调整</strong></h3><p>这个是指broker故障，leader集中在某台broker上的情况，造成集群负载不均衡，这时候就需要分区平衡。那他一般有个比例，就是不平衡比例超过10%，就需要再平衡。</p>
+<h3 id="1、分区自动调整"><a href="#1、分区自动调整" class="headerlink" title="1、分区自动调整"></a><strong>1、分区自动调整</strong></h3><p>这个是指broker故障，<font color='blue'><u><em><strong>leader集中在某台broker上的情况</strong></em></u></font>，造成集群负载不均衡，这时候就需要分区平衡。那他一般有个比例，就是不平衡比例超过10%，就需要再平衡。</p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16.png" alt="在这里插入图片描述"></p>
-<h1 id="4、kafka消费者"><a href="#4、kafka消费者" class="headerlink" title="4、kafka消费者"></a>4、kafka消费者</h1><h2 id="1、Kafka-消费方式（拉）"><a href="#1、Kafka-消费方式（拉）" class="headerlink" title="1、Kafka 消费方式（拉）"></a>1、Kafka 消费方式（拉）</h2><p>​	<img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928234825729.png" alt="在这里插入图片描述"></p>
+<h1 id="4、kafka消费者"><a href="#4、kafka消费者" class="headerlink" title="4、kafka消费者"></a>4、kafka消费者</h1><h2 id="1、Kafka-消费方式（pull拉）"><a href="#1、Kafka-消费方式（pull拉）" class="headerlink" title="1、Kafka 消费方式（pull拉）"></a>1、Kafka 消费方式（pull拉）</h2><p><font color='blue'><u><em><strong>为什么</strong></em></u></font></p>
+<blockquote>
+<p>能够匹配broker的发送速率和consumer的消费速率吧</p>
+</blockquote>
 <h2 id="2、消费者工作流程"><a href="#2、消费者工作流程" class="headerlink" title="2、消费者工作流程"></a>2、消费者工作流程</h2><p><strong>消费者组初始化流程</strong></p>
 <p><a target="_blank" rel="noopener" href="https://baijiahao.baidu.com/s?id=1767477534734641183&amp;wfr=spider&amp;for=pc">https://baijiahao.baidu.com/s?id=1767477534734641183&amp;wfr=spider&amp;for=pc</a></p>
 <p>多个消费者协调器发送JoinGroup请求，协调器选一个消费者leader，消费者leader指定消费方案，并发送给协调器，协调器把这个方案通知到每一个消费者。</p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235058845.png" alt="在这里插入图片描述"></p>
 <p><strong>消费者组详细消费流程</strong></p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235306060.png" alt="在这里插入图片描述"></p>
+<h2 id="3、消费者组再平衡"><a href="#3、消费者组再平衡" class="headerlink" title="3、消费者组再平衡"></a>3、消费者组再平衡</h2><p><font color='blue'><u><em><strong>消费者组里面的成员数量发生变化，心跳中断就会发生。</strong></em></u></font></p>
+<p>有三种再平衡的方法：</p>
+<p>Range、RoundRobin、Sticky</p>
 <h2 id="4、消费者分区的分配"><a href="#4、消费者分区的分配" class="headerlink" title="4、消费者分区的分配"></a>4、消费者分区的分配</h2><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235523539.png" alt="在这里插入图片描述"></p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235554746.png" alt="在这里插入图片描述"></p>
-<h5 id="Range-分区分配再平衡案例"><a href="#Range-分区分配再平衡案例" class="headerlink" title="Range 分区分配再平衡案例"></a><strong>Range 分区分配再平衡案例</strong></h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230928235744058.png" alt="在这里插入图片描述"></p>
-<h5 id="RoundRobin-以及再平衡原理"><a href="#RoundRobin-以及再平衡原理" class="headerlink" title="RoundRobin 以及再平衡原理"></a>RoundRobin 以及再平衡原理</h5><h5 id=""><a href="#" class="headerlink" title=""></a></h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000334551.png" alt="在这里插入图片描述"></p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000415710.png" alt="在这里插入图片描述"></p>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000334551.png" alt="在这里插入图片描述"></p>
 <h5 id="Sticky-以及再平衡"><a href="#Sticky-以及再平衡" class="headerlink" title="Sticky 以及再平衡"></a>Sticky 以及再平衡</h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000640458.png" alt="在这里插入图片描述"></p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000653360.png" alt="在这里插入图片描述"></p>
-<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000715131.png" alt="在这里插入图片描述"></p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000728390.png" alt="在这里插入图片描述"></p>
-<h2 id="5、offset-位移"><a href="#5、offset-位移" class="headerlink" title="5、offset 位移"></a>5、offset 位移</h2><h5 id="1、offset-的默认维护"><a href="#1、offset-的默认维护" class="headerlink" title="1、offset 的默认维护"></a>1、offset 的默认维护</h5><p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000851750.png" alt="在这里插入图片描述"></p>
-<p>__consumer_offsets 主题里面采用 key 和 value 的方式存储数据。</p>
-<p>key 是group.id+topic+分区号，value 就是当前 offset 的值。</p>
-<p>offset是消费者提交的，分为自动提交和手动提交。</p>
-<p>自动提交会出现重复消费的问题。默认5s提交一次</p>
-<p>手动提交会出现漏消费的问题，因为消费完数据后，如果来不及调用哪个sync函数，消费者宕机，就会丢失数据。</p>
+<h2 id="5、offset-位移"><a href="#5、offset-位移" class="headerlink" title="5、offset 位移"></a>5、offset 位移</h2><h5 id="1、offset-的默认维护"><a href="#1、offset-的默认维护" class="headerlink" title="1、offset 的默认维护"></a>1、offset 的默认维护</h5><blockquote>
+<p><font color='blue'><u><em><strong>__consumer_offsets 主题里面采用 key 和 value 的方式存储数据。</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>key 是group.id+topic+分区号，value 就是当前 offset 的值。</strong></em></u></font></p>
+</blockquote>
+<p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929000851750.png" alt="在这里插入图片描述"></p>
 <p><img src="/../images/Kafka/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA6Zi_5piM5Zac5qyi5ZCD6buE5qGD,size_20,color_FFFFFF,t_70,g_se,x_16-20230929001509066.png" alt="在这里插入图片描述"></p>
 
                     
@@ -605,7 +603,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                در مورد پست بحث کنید
                             </a>
                         </p>
                     
@@ -634,11 +632,11 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Saturday، 08 Jul 2023
     	
     </time>
     
-        <span>in </span>
+        <span>در </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -689,7 +687,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                در مورد پست بحث کنید
                             </a>
                         </p>
                     
@@ -718,11 +716,11 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Saturday، 08 Jul 2023
     	
     </time>
     
-        <span>in </span>
+        <span>در </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -879,7 +877,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                در مورد پست بحث کنید
                             </a>
                         </p>
                     
@@ -908,11 +906,11 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Saturday، 08 Jul 2023
     	
     </time>
     
-        <span>in </span>
+        <span>در </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1253,7 +1251,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                در مورد پست بحث کنید
                             </a>
                         </p>
                     
@@ -1267,7 +1265,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">صفحه 1 از 1</li>
     </ul>
 </div>
 
@@ -1297,18 +1295,18 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
-            <div id="about-card-bio"><p>author.bio</p>
+            <div id="about-card-bio"><p>یادداشت‌های یه المپیاد کامپیوتری در حال یادگیری لینوکس!</p>
 </div>
         
         
             <div id="about-card-job">
                 <i class="fa fa-briefcase"></i>
                 <br/>
-                <p>author.job</p>
+                <p>المپیادی، برنامه نویس!</p>
 
             </div>
         
