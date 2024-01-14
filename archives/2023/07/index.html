@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>آرشیو مطالب: 2023/7 - 森</title>
+    <title>Archiv: 2023/7 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="پیوند را باز کنید: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,13 +93,13 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="درباره نویسنده بیشتر بخوانید"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
-                    <h5 class="sidebar-profile-bio"><p>یادداشت‌های یه المپیاد کامپیوتری در حال یادگیری لینوکس!</p>
+                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
 </h5>
                 
             </div>
@@ -243,11 +243,11 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Saturday، 08 Jul 2023
+		    08 Jul 2023
     	
     </time>
     
-        <span>در </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -350,7 +350,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                در مورد پست بحث کنید
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -379,11 +379,11 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Saturday، 08 Jul 2023
+		    08 Jul 2023
     	
     </time>
     
-        <span>در </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -470,7 +470,7 @@
 </blockquote>
 </blockquote>
 <h2 id="重复消费问题怎么解决？"><a href="#重复消费问题怎么解决？" class="headerlink" title="重复消费问题怎么解决？"></a>重复消费问题怎么解决？</h2><p>重复消费的话也分生产者和消费者。</p>
-<p>生产者：生产者自带的重试机制，单分区内是可以用<font color='green'><u><em><strong>幂等性</strong></em></u></font>解决的。</p>
+<p>生产者：生产者自带的重试机制，单分区内是可以用<font color='green'><u><em><strong>幂等性</strong></em></u></font>解决的。<font color='red'><u><em><strong>（enable.idempotence&#x3D;true）</strong></em></u></font></p>
 <p>消费者：消费者重复消费是因为自动提交，首先最好关闭自动提交，然后开启<font color='green'><u><em><strong>手动提交</strong></em></u></font>。用同步+异步的组合方式。最好我们给了一个保底的方案，就是防重字段。</p>
 <p><font color='green'><u><em><strong>Kafka并发数和消费者的实例数有关，和批的大小无关</strong></em></u></font></p>
 <h2 id="怎么保证顺序性-？"><a href="#怎么保证顺序性-？" class="headerlink" title="怎么保证顺序性 ？"></a>怎么保证顺序性 ？</h2><p>一个topic的数据会通过那个分区分配器分发到某个分区，如果会发到多个分区，我们是不能保证顺序性的，但是我们可以用幂等性保证在一个分区内是顺序的。因为生产者发送消息给broker的时候会携带PID和sequence number，一个是生产者的id，一个是消息的序列号。我们靠这个可以保证顺序性。所以我们尽可能的要把消息发到一个分区里面。那这个就要配合分区器来使用，如果你指定了分区号或者指定key，那就代表指定了某个分区，这样就能实现顺序性。如果你用没有指定，他就会用随机粘性分区策略，那就不能保证顺序性。</p>
@@ -603,7 +603,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                در مورد پست بحث کنید
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -632,11 +632,11 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Saturday، 08 Jul 2023
+		    08 Jul 2023
     	
     </time>
     
-        <span>در </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -687,7 +687,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                در مورد پست بحث کنید
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -716,11 +716,11 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Saturday، 08 Jul 2023
+		    08 Jul 2023
     	
     </time>
     
-        <span>در </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -877,7 +877,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                در مورد پست بحث کنید
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -906,11 +906,11 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Saturday، 08 Jul 2023
+		    08 Jul 2023
     	
     </time>
     
-        <span>در </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -1251,7 +1251,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                در مورد پست بحث کنید
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1265,7 +1265,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">صفحه 1 از 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -1295,18 +1295,18 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
-            <div id="about-card-bio"><p>یادداشت‌های یه المپیاد کامپیوتری در حال یادگیری لینوکس!</p>
+            <div id="about-card-bio"><p>author.bio</p>
 </div>
         
         
             <div id="about-card-job">
                 <i class="fa fa-briefcase"></i>
                 <br/>
-                <p>المپیادی، برنامه نویس!</p>
+                <p>author.job</p>
 
             </div>
         

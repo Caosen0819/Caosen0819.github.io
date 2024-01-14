@@ -11,16 +11,16 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"设计模式策略模式是一种 if else 的优化方法，一个策略接口由不同的实现策略，传进来不同的参数返回不同的策略。\n但是原始的策略模式，他如果遇到参数是可变的，那他依旧会尽力if else的阶段，那就意义不大。所以我们的\n优化方法就是枚举类+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的，\n抽奖的时候根据抽奖算法的id是1还是2，直接去map里面get就可以；生成订单id的时候用雪花还是美团哪一种方法，直接去map里面找\n模版模式模版模式的主要思路就是把自己要实现的功能抽象成一组步骤，也就是在抽象类中定义算法的骨架，具体实现留给子类。但是这里有一点非常重要，就是模版类的流程是定义好的，或者说定死了，子类就是在每一个步骤中实现自己的个性化。\n工厂模式\n工厂模式有三种，简单工厂、工厂模式、抽象工厂模式。\n**简单工厂（工厂不是抽象的）只适合单一产品的生产，他的思路很简单，就是根据不同信息new出来不同的对象。比如车 **\n工厂模式是把原来的工厂作为抽象模型创建不同的子类工厂生产不同的商品。\n*抽象工厂模式就考虑了产品族的问题，一个工厂可以生产多等级的产品，说得简单点就是在抽象工厂里面增加生产其他产品的接口，子类去实现它。*\n\n组合模式组合模式用树形结构描述整体与部分的关系中 。最顶层的节点称为根节点 ，根节点下面可以包含树枝节点和叶子节点 ，树枝节点下面又可以包含树枝节点和叶子节点。宗旨是通过将单个对象（叶子节点）和组合对象（树枝节点）用相同的接口进行表示 ，使得客户对单个对象和组合对象的使用具有一致性\n代理模式\n代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。\n动态代理是代理类在程序运行时创建的代理方式被成为动态代理。\n动态代理有两种方式一种是jdk方法，一种是cglib方法\njdk代理依赖于一个Proxy类和一个InvocationHandler接口，通过这个类和这个接口可以生成JDK动态代理类和动态代理对象。\nInvocationHandler接口，他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组.被代理方法和参数组是可以变化的，所以在这里我们说实现了动态的意义。 代理方法和参数组其实我们可以依赖于最基础反射得到\n那我们怎么去调用这个方法呢？先要靠Proxy类和他的方法newproxyInstance，getProxyClass0(loader, intfs)这个类的产生就是整个动态代理的关键，产生的类反编译之后知道，调用被代理对象的方法其实会直接调用我们InvocationHandler接口的invoke方法，在invoke方法中调用了被代理对象的相应方法。\n下面来讲CGLIB代理\n在 CGLIB 动态代理机制中 MethodInterceptor 接口和 Enhancer 类是核心。你可以通过 Enhancer类来动态获取被代理类，\n  CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法拦截器拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 MethodInterceptor 中的 intercept 方法。\n为什么JDK动态代理只能代理接口实现类，原因是JDK动态代理是基于接口实现的。\n有两个原因，一个是继承Proxy。第二个是当你使用Proxy类创建代理对象时，你需要指定一个接口列表来表示理对象的类型。代理对象的类型是由接口列表决定的，因此只有实现了接口的类才能被代理。如果你想代理一个类而不是一个接口，你需要使用其他的代理技术，比如CGLIB。\n二者区别总结一下两者的区别吧：\nJDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承 java.lang.reflect.Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰JDK 和 CGLIB 动态代理都是在运行期生成字节码。而 JDK 是直接写 Class 字节码；而 CGLIB 使用 ASM 框架写 Class 字节码（不鼓励直接使用ASM，因为它要求你必须对 JVM 内部结构包括 class 文件的格式和指令集都很熟悉）JDK 通过反射调用方法，CGLIB 通过 FastClass 机制直接调用方法。所以，CGLIB 执行的效率较高JDK 核心是实现 InvocationHandler接口，使用 invoke()方法进行面向切面的处理，调用相应的通知；CGLIB 动态代理是利用 asm 开源包，对代理对象类的 class 文件加载进来，通过修改其字节码生成子类来处理。核心是实现 MethodInterceptor 接口，使用 intercept() 方法进行面向切面的处理，调用相应的通知。\n\n工厂模式\n讲一讲简单工厂模式以及在项目中的应用？\n\n简单工厂模式包含三块，工厂：负责实现创建实例的内部逻辑；抽象产品：负责描述所有实例共有的接口；具体产品：被创建的对象，简单工厂只适合单一产品的生产。其实思路很简单，就是把根据不同信息new出不同对象的这一个过程抽象出来了，不然每次都要走一遍这种代码就比较繁琐。\n我的项目里面就是对于发放奖品的时候选用哪一个奖品用到了简单工厂。\n组合模式\n讲一讲组合模式以及在项目中的应用\n\n这里我们是用组合模式搭建规则引擎树，规则树有两种对象。一种是树节点，一种是树枝，树节点包括连接的树枝集合，树枝里面包含了连接的前后两个树节点和判断依据，这样子就能构建出一个有判断规则的规则树了。具体的流程就是假设我们现在在根节点，然后看了下根节点的规则是性别，那我就拿到年龄规则过滤器，遍历根节点的树枝集合，假如这里有两个树枝，一个树枝的规则是&#x3D;男，就走这个树枝；另一个树枝的规则是&#x3D;女，就走这个树枝。这时候我们拿出用户的信息一对比，发现应该走男生那个树枝。这样就进入下一个节点，然后这个节点的判断规则是年龄，可能大于某个枝走某个树枝，小于就走另外的树枝。直到我们找到叶子结点就结束。\n单例模式该类负责创建自己的对象，保证只有单个对象被创建。\n单例模式分两类，饿汉式和饱汉式。饿汉式就是类加载的时候就会创建，其实类加载有个准备和初始化过程，静态变量和静态代码块，里就可以创建，懒汉式是用到了才创建。Bean是饿汉式。\nvolatile懒汉式单例使用的场景？\n线程安全的单例场景吧，线程池，数据库连接池\nBean默认是单例还是多例，怎么设置多例？（单例，scope设置成prototype）\n装饰器模式\n装饰器模式其实就是在原本类的基础上包装一个装饰器类，这个类在执行源类的行为的前后再加入一些新的逻辑。\n\n抽象组件public abstract class Component &#123;    public abstract void execute();&#125;具体组件（需要被装饰的组件）public class ConcreteComponent extends Component &#123;    @Override    public void execute() &#123;        System.out.println(&quot;具体组件处理业务逻辑&quot;);    &#125;&#125;抽象装饰器（继承、实现抽象组件，并持有抽象组件）public abstract class Decorator extends Component &#123;     * 抽象组件    public Component component;    public Decorator(Component component) &#123;        this.component = component;    &#125;    public void execute() &#123;        component.execute();    &#125;&#125;具体装饰器A继承抽象装饰器public class ConcreteDecorator extends Decorator &#123;    public ConcreteDecorator(Component component) &#123;        super(component);    &#125;    public void before()&#123;        System.out.println(&quot;ConcreteDecorator前置操作....&quot;);    &#125;    public void after()&#123;        System.out.println(&quot;ConcreteDecorator后置操作....&quot;);    &#125;组件本身执行的动作    public void execute() &#123;        before();        component.execute();        after();    &#125;&#125;decorator 通用写法测试public class Test &#123;    public static void main(String[] args) &#123;        //创建需要被装饰的组件        Component component = new ConcreteComponent();        //给对象透明的增加功能并调用        Decorator decorator = new ConcreteDecorator(component);        decorator.execute();    &#125;&#125;\n\n适配器模式\n目标角色（Target）：该角色定义把其他类转换为何种接口。\n源角色（Adaptee）：被适配的对象\n适配器角色（Adapter）：该对象将源对象转换成目标接口\n\n总结一下就是：我们在适配器里面实现目标角色的接口，然后在这个接口里面去调用源角色的方法。\n如果这个源角色类需继承，那我们就叫类适配器。如果直接作为适配器的一个变量，那么就叫做对象适配器。\n分为两类：类适配器和 对象适配器\n桥接模式桥接模式通过将继承改为组合的方式来解决这个问题。具体来说，就是抽取其中一个维度并使之成为独立的类层次，这样就可以在初始类中引用这个新层次的对象，从而使得一个类不必拥有所有的状态和行为。\t\npublic class BridgeD &#123;    public static void main(String[] args) &#123;        Color color = new yellow();        bag1 bag1 = new bag1(color);        bag1.get();    &#125;&#125;interface Color&#123;    void get();&#125;class yellow implements Color &#123;    @Override    public void get() &#123;        System.out.println(&quot;yellow&quot;);    &#125;&#125;abstract class bag &#123;    Color color;    public bag(Color color) &#123;        this.color = color;    &#125;    void get() &#123;        color.get();    &#125;&#125;class bag1 extends bag&#123;    public bag1(Color color) &#123;        super(color);    &#125;    @Override    void get() &#123;        System.out.println(&quot;bag1&quot;);        super.get();    &#125;&#125;\n\n外观模式外观模式可以理解为转换一群接口，客户只要调用这一个接口而不用调用多个接口才能达到目的，也不需关心这个子系统的内部细节。就是解决多个复杂接口带来的使用困难，起到简化用户操作的作用。\n享元模式\n其本质就是缓存共享对象，降低内存消耗。\n\n**享元模式其实就是工厂模式的一个改进机制，享元模式同样要求创建一个或一组对象，并且就是通过**工厂方法**生成对象的，不同的地方在于享元模式增加了*缓存*的功能\n/** * @author Created by njy on 2023/6/21 * 1.抽象享元类（FlyWeight）：单车 * 单车有很多共同的信息比如：价格、颜色 */public abstract class Bike &#123;     protected String color;     protected int price;     public Bike(String color,int price)&#123;        this.color=color;        this.price=price;    &#125;     //展示单车信息    public abstract void show(); &#125;/** * @author Created by njy on 2023/6/21 * 2.具体享元类（ConcreteFlyWeight）：摩拜单车 */public class Mobike extends Bike&#123;     public Mobike(String color,int price)&#123;        super(color,price);    &#125;     @Override    public void show() &#123;        System.out.println(&quot;生产成功：摩拜单车——&quot;+color+&quot;,&quot;+&quot;起步价&quot;+price+&quot;元&quot;);    &#125;&#125;/** * @author Created by njy on 2023/6/21 * 2.具体享元类（ConcreteFlyWeight）：美团单车 */public class MTBike extends Bike&#123;     public MTBike(String color,int price)&#123;        super(color,price);    &#125;     @Override    public void show() &#123;        System.out.println(&quot;生产成功：小黄车——&quot;+color+&quot;,&quot;+&quot;起步价&quot;+price+&quot;元&quot;);    &#125;&#125;/** * @author Created by njy on 2023/6/21 * 3.享元工厂类（FlyWeightFactory）：单车工厂 */public class BikeFactory &#123;    //map缓存    public static Map&lt;String,Bike&gt; bikeMap=new HashMap&lt;&gt;();    public static Bike getBike(String color,String type)&#123;        String key=color+&quot;_&quot;+type;        if(bikeMap.containsKey(key))&#123;            //如果已经有该颜色和类型的单车，直接返回            return bikeMap.get(key);        &#125;else &#123;            Bike bike=null;            //没有，创建并放入缓存            if(&quot;mobike&quot;.equals(type))&#123;                bike=new Mobike(color,1);            &#125;else if (&quot;MT&quot;.equals(type))&#123;                bike=new MTBike(color,2);            &#125;else &#123;                System.out.println(&quot;抛异常！没有该类型的单车&quot;);            &#125;            //放入缓存            bikeMap.put(key,bike);            return bike;        &#125;    &#125;&#125;\n\n","dateCreated":"2023-10-10T00:00:00+08:00","dateModified":"2024-01-02T21:48:20+08:00","datePublished":"2023-10-10T00:00:00+08:00","description":"","headline":"设计模式","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/","keywords":"设计模式"}</script>
-    <meta name="description" content="设计模式策略模式是一种 if else 的优化方法，一个策略接口由不同的实现策略，传进来不同的参数返回不同的策略。 但是原始的策略模式，他如果遇到参数是可变的，那他依旧会尽力if else的阶段，那就意义不大。所以我们的 优化方法就是枚举类+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的， 抽奖的时候根据抽奖算法的id是1还是2，直接去map里">
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"设计模式策略模式是一种 if else 的优化方法，一个策略接口有不同的实现策略，传进来不同的参数返回不同的策略。\n但是原始的策略模式，他如果遇到参数是可变的，那他依旧会尽力if else的阶段，那就意义不大。所以我们的\n优化方法就是+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的，\n抽奖的时候根据抽奖算法的id是1还是2，直接去map里面get就可以；生成订单id的时候用雪花还是美团哪一种方法，直接去map里面找\n模版模式模版模式的主要思路就是把自己要实现的功能抽象成一组步骤，也就是在抽象类中定义算法的骨架，具体实现留给子类。但是这里有一点非常重要，就是模版类的流程是定义好的，或者说定死了，子类就是在每一个步骤中实现自己的个性化。\n工厂模式\n工厂模式有三种，简单工厂、工厂模式、抽象工厂模式。\n**简单工厂（工厂不是抽象的）只适合单一产品的生产，他的思路很简单，就是根据不同信息new出来不同的对象。比如海尔冰箱和格力冰箱 **\n工厂模式是把原来的工厂作为抽象模型创建不同的子类工厂生产不同的商品。比如海尔冰箱工厂，格力空调工厂\n抽象工厂模式就考虑了产品族的问题，一个工厂可以生产多等级的产品，说得简单点就是在抽象工厂里面增加生产其他产品的接口，子类去实现它。\n\n组合模式组合模式用树形结构描述整体与部分的关系中 。最顶层的节点称为根节点 ，根节点下面可以包含树枝节点和叶子节点 ，树枝节点下面又可以包含树枝节点和叶子节点。宗旨是通过将单个对象（叶子节点）和组合对象（树枝节点）用相同的接口进行表示 ，使得客户对单个对象和组合对象的使用具有一致性\n代理模式\n代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。\n动态代理是代理类在程序运行时创建的代理方式被成为动态代理。\n动态代理有两种方式一种是jdk方法，一种是cglib方法\njdk代理依赖于一个Proxy类和一个InvocationHandler接口，通过这个类和这个接口可以生成JDK动态代理类和动态代理对象。\nInvocationHandler接口，他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组.被代理方法和参数组是可以变化的，所以在这里我们说实现了动态的意义。 代理方法和参数组其实我们可以依赖于最基础反射得到\n那我们怎么去调用这个方法呢？先要靠Proxy类和他的方法newproxyInstance，getProxyClass0(loader, intfs)这个类的产生就是整个动态代理的关键，产生的类反编译之后知道，调用被代理对象的方法其实会直接调用我们InvocationHandler接口的invoke方法，在invoke方法中调用了被代理对象的相应方法。\n下面来讲CGLIB代理\n在 CGLIB 动态代理机制中 MethodInterceptor 接口和 Enhancer 类是核心。你可以通过 Enhancer类来动态获取被代理类，\n  CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法拦截器拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 MethodInterceptor 中的 intercept 方法。\n为什么JDK动态代理只能代理接口实现类，原因是JDK动态代理是基于接口实现的。\n有两个原因，一个是继承Proxy。第二个是当你使用Proxy类创建代理对象时，你需要指定一个接口列表来表示理对象的类型。代理对象的类型是由接口列表决定的，因此只有实现了接口的类才能被代理。如果你想代理一个类而不是一个接口，你需要使用其他的代理技术，比如CGLIB。\n二者区别总结一下两者的区别吧：\nJDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承 java.lang.reflect.Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰JDK 和 CGLIB 动态代理都是在运行期生成字节码。而 JDK 是直接写 Class 字节码；而 CGLIB 使用 ASM 框架写 Class 字节码（不鼓励直接使用ASM，因为它要求你必须对 JVM 内部结构包括 class 文件的格式和指令集都很熟悉）JDK 通过反射调用方法，CGLIB 通过 FastClass 机制直接调用方法。所以，CGLIB 执行的效率较高JDK 核心是实现 InvocationHandler接口，使用 invoke()方法进行面向切面的处理，调用相应的通知；CGLIB 动态代理是利用 asm 开源包，对代理对象类的 class 文件加载进来，通过修改其字节码生成子类来处理。核心是实现 MethodInterceptor 接口，使用 intercept() 方法进行面向切面的处理，调用相应的通知。\n\n工厂模式\n讲一讲简单工厂模式以及在项目中的应用？\n\n简单工厂模式包含三块，工厂：负责实现创建实例的内部逻辑；抽象产品：负责描述所有实例共有的接口；具体产品：被创建的对象，简单工厂只适合单一产品的生产。其实思路很简单，就是把根据不同信息new出不同对象的这一个过程抽象出来了，不然每次都要走一遍这种代码就比较繁琐。\n我的项目里面就是对于发放奖品的时候选用哪一个奖品用到了简单工厂。\n组合模式\n讲一讲组合模式以及在项目中的应用\n\n这里我们是用组合模式搭建规则引擎树，规则树有两种对象。一种是树节点，一种是树枝，树节点包括连接的树枝集合，树枝里面包含了连接的前后两个树节点和判断依据，这样子就能构建出一个有判断规则的规则树了。具体的流程就是假设我们现在在根节点，然后看了下根节点的规则是性别，那我就拿到年龄规则过滤器，遍历根节点的树枝集合，假如这里有两个树枝，一个树枝的规则是&#x3D;男，就走这个树枝；另一个树枝的规则是&#x3D;女，就走这个树枝。这时候我们拿出用户的信息一对比，发现应该走男生那个树枝。这样就进入下一个节点，然后这个节点的判断规则是年龄，可能大于某个枝走某个树枝，小于就走另外的树枝。直到我们找到叶子结点就结束。\n单例模式\n该类负责创建自己的对象，保证只有单个对象被创建。\n单例模式分两类，饿汉式和懒汉式。饿汉式就是类加载的时候就会创建，其实类加载有个准备和初始化过程，静态变量和静态代码块，里就可以创建，懒汉式是用到了才创建。Bean是饿汉式。\nvolatile懒汉式单例使用的场景？\n线程安全的单例场景，线程池，数据库连接池\nBean默认是单例还是多例，怎么设置多例？（单例，scope设置成prototype）\n懒汉式里面的双重检查锁JVM在实例化对象的时候会进行优化和指令重排序操作。指令重排序导致空指针问题\n\n装饰器模式\n装饰器模式其实就是在原本类的基础上包装一个装饰器类，这个类在执行源类的行为的前后再加入一些新的逻辑。\n\n抽象组件public abstract class Component &#123;    public abstract void execute();&#125;具体组件（需要被装饰的组件）public class ConcreteComponent extends Component &#123;    @Override    public void execute() &#123;        System.out.println(&quot;具体组件处理业务逻辑&quot;);    &#125;&#125;抽象装饰器（继承、实现抽象组件，并持有抽象组件）public abstract class Decorator extends Component &#123;     * 抽象组件    public Component component;    public Decorator(Component component) &#123;        this.component = component;    &#125;    public void execute() &#123;        component.execute();    &#125;&#125;具体装饰器A继承抽象装饰器public class ConcreteDecorator extends Decorator &#123;    public ConcreteDecorator(Component component) &#123;        super(component);    &#125;    public void before()&#123;        System.out.println(&quot;ConcreteDecorator前置操作....&quot;);    &#125;    public void after()&#123;        System.out.println(&quot;ConcreteDecorator后置操作....&quot;);    &#125;组件本身执行的动作    public void execute() &#123;        before();        component.execute();        after();    &#125;&#125;decorator 通用写法测试public class Test &#123;    public static void main(String[] args) &#123;        //创建需要被装饰的组件        Component component = new ConcreteComponent();        //给对象透明的增加功能并调用        Decorator decorator = new ConcreteDecorator(component);        decorator.execute();    &#125;&#125;\n\n适配器模式\n目标角色（Target）：该角色定义把其他类转换为何种接口。\n源角色（Adaptee）：被适配的对象\n适配器角色（Adapter）：该对象将源对象转换成目标接口\n\n总结一下就是：我们在适配器里面实现目标角色的接口，然后在这个接口里面去调用源角色的方法。\n如果这个源角色类需继承，那我们就叫类适配器。如果直接作为适配器的一个变量，那么就叫做对象适配器。\n分为两类：类适配器和 对象适配器\n桥接模式桥接模式通过将继承改为组合的方式来解决这个问题。具体来说，就是抽取其中一个维度并使之成为独立的类层次，这样就可以在初始类中引用这个新层次的对象，从而使得一个类不必拥有所有的状态和行为。\t\npublic class BridgeD &#123;    public static void main(String[] args) &#123;        Color color = new yellow();        bag1 bag1 = new bag1(color);        bag1.get();    &#125;&#125;interface Color&#123;    void get();&#125;class yellow implements Color &#123;    @Override    public void get() &#123;        System.out.println(&quot;yellow&quot;);    &#125;&#125;abstract class bag &#123;    Color color;    public bag(Color color) &#123;        this.color = color;    &#125;    void get() &#123;        color.get();    &#125;&#125;class bag1 extends bag&#123;    public bag1(Color color) &#123;        super(color);    &#125;    @Override    void get() &#123;        System.out.println(&quot;bag1&quot;);        super.get();    &#125;&#125;\n\n外观模式外观模式可以理解为转换一群接口，客户只要调用这一个接口而不用调用多个接口才能达到目的，也不需关心这个子系统的内部细节。就是解决多个复杂接口带来的使用困难，起到简化用户操作的作用。\n享元模式\n其本质就是缓存共享对象，降低内存消耗。\n\n**享元模式其实就是工厂模式的一个改进机制，享元模式同样要求创建一个或一组对象，并且就是通过**工厂方法**生成对象的，不同的地方在于享元模式增加了*缓存*的功能\n/** * @author Created by njy on 2023/6/21 * 1.抽象享元类（FlyWeight）：单车 * 单车有很多共同的信息比如：价格、颜色 */public abstract class Bike &#123;     protected String color;     protected int price;     public Bike(String color,int price)&#123;        this.color=color;        this.price=price;    &#125;     //展示单车信息    public abstract void show(); &#125;/** * @author Created by njy on 2023/6/21 * 2.具体享元类（ConcreteFlyWeight）：摩拜单车 */public class Mobike extends Bike&#123;     public Mobike(String color,int price)&#123;        super(color,price);    &#125;     @Override    public void show() &#123;        System.out.println(&quot;生产成功：摩拜单车——&quot;+color+&quot;,&quot;+&quot;起步价&quot;+price+&quot;元&quot;);    &#125;&#125;/** * @author Created by njy on 2023/6/21 * 2.具体享元类（ConcreteFlyWeight）：美团单车 */public class MTBike extends Bike&#123;     public MTBike(String color,int price)&#123;        super(color,price);    &#125;     @Override    public void show() &#123;        System.out.println(&quot;生产成功：小黄车——&quot;+color+&quot;,&quot;+&quot;起步价&quot;+price+&quot;元&quot;);    &#125;&#125;/** * @author Created by njy on 2023/6/21 * 3.享元工厂类（FlyWeightFactory）：单车工厂 */public class BikeFactory &#123;    //map缓存    public static Map&lt;String,Bike&gt; bikeMap=new HashMap&lt;&gt;();    public static Bike getBike(String color,String type)&#123;        String key=color+&quot;_&quot;+type;        if(bikeMap.containsKey(key))&#123;            //如果已经有该颜色和类型的单车，直接返回            return bikeMap.get(key);        &#125;else &#123;            Bike bike=null;            //没有，创建并放入缓存            if(&quot;mobike&quot;.equals(type))&#123;                bike=new Mobike(color,1);            &#125;else if (&quot;MT&quot;.equals(type))&#123;                bike=new MTBike(color,2);            &#125;else &#123;                System.out.println(&quot;抛异常！没有该类型的单车&quot;);            &#125;            //放入缓存            bikeMap.put(key,bike);            return bike;        &#125;    &#125;&#125;\n\n","dateCreated":"2023-10-10T00:00:00+08:00","dateModified":"2024-01-14T20:00:05+08:00","datePublished":"2023-10-10T00:00:00+08:00","description":"","headline":"设计模式","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/","keywords":"设计模式"}</script>
+    <meta name="description" content="设计模式策略模式是一种 if else 的优化方法，一个策略接口有不同的实现策略，传进来不同的参数返回不同的策略。 但是原始的策略模式，他如果遇到参数是可变的，那他依旧会尽力if else的阶段，那就意义不大。所以我们的 优化方法就是+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的， 抽奖的时候根据抽奖算法的id是1还是2，直接去map里面ge">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="设计模式">
 <meta property="og:url" content="http://example.com/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/index.html">
 <meta property="og:site_name" content="森">
-<meta property="og:description" content="设计模式策略模式是一种 if else 的优化方法，一个策略接口由不同的实现策略，传进来不同的参数返回不同的策略。 但是原始的策略模式，他如果遇到参数是可变的，那他依旧会尽力if else的阶段，那就意义不大。所以我们的 优化方法就是枚举类+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的， 抽奖的时候根据抽奖算法的id是1还是2，直接去map里">
+<meta property="og:description" content="设计模式策略模式是一种 if else 的优化方法，一个策略接口有不同的实现策略，传进来不同的参数返回不同的策略。 但是原始的策略模式，他如果遇到参数是可变的，那他依旧会尽力if else的阶段，那就意义不大。所以我们的 优化方法就是+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的， 抽奖的时候根据抽奖算法的id是1还是2，直接去map里面ge">
 <meta property="og:locale" content="zh_CH">
 <meta property="article:published_time" content="2023-10-09T16:00:00.000Z">
-<meta property="article:modified_time" content="2024-01-02T13:48:20.857Z">
+<meta property="article:modified_time" content="2024-01-14T12:00:05.910Z">
 <meta property="article:author" content="CSEN">
 <meta property="article:tag" content="设计模式">
 <meta name="twitter:card" content="summary">
@@ -75,11 +75,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="پیوند را باز کنید: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -98,13 +98,13 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="درباره نویسنده بیشتر بخوانید"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
-                    <h5 class="sidebar-profile-bio"><p>یادداشت‌های یه المپیاد کامپیوتری در حال یادگیری لینوکس!</p>
+                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
 </h5>
                 
             </div>
@@ -240,11 +240,11 @@
         <div class="post-meta">
     <time datetime="2023-10-10T00:00:00+08:00">
 	
-		    Tuesday، 10 Oct 2023
+		    10 Oct 2023
     	
     </time>
     
-        <span>در </span>
+        <span>in </span>
         
     <a class="category-link" href="/categories/Java/">Java</a>
 
@@ -258,16 +258,16 @@
     
     <div class="post-content markdown">
         <div class="main-content-wrap">
-            <h1 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h1><h2 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h2><p><strong>是一种 if else 的优化方法</strong>，一个策略接口由不同的实现策略，传进来不同的参数返回不同的策略。</p>
+            <h1 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h1><h2 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h2><p><strong>是一种 if else 的优化方法</strong>，一个策略接口有不同的实现策略，传进来不同的参数返回不同的策略。</p>
 <p>但是原始的策略模式，他如果遇到参数是可变的，那他依旧会尽力if else的阶段，那就意义不大。所以我们的</p>
-<p>优化方法就是枚举类+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的，</p>
+<p>优化方法就是+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的，</p>
 <p>抽奖的时候根据抽奖算法的id是1还是2，直接去map里面get就可以；生成订单id的时候用雪花还是美团哪一种方法，直接去map里面找</p>
 <h2 id="模版模式"><a href="#模版模式" class="headerlink" title="模版模式"></a>模版模式</h2><p>模版模式的主要思路就是把自己要实现的功能抽象成一组<strong>步骤</strong>，也就是在抽象类中定义算法的骨架，具体实现留给子类。但是这里有一点非常重要，就是模版类的流程是定义好的，或者说定死了，子类就是在每一个步骤中实现自己的个性化。</p>
 <h2 id="工厂模式"><a href="#工厂模式" class="headerlink" title="工厂模式"></a>工厂模式</h2><blockquote>
 <p>工厂模式有三种，简单工厂、工厂模式、抽象工厂模式。</p>
-<p><font color='red'><u>**简单工厂（工厂不是抽象的）只适合单一产品的生产，他的思路很简单，就是根据不同信息new出来不同的对象。比如车 **</u></font></p>
-<p><font color='red'><u><em><strong>工厂模式是把原来的工厂作为抽象模型创建不同的子类工厂生产不同的商品。</strong></em></u></font></p>
-<p><font color='red'><u><em>*<em><strong>抽象工厂模式</strong>就考虑了产品族的问题，一个工厂可以生产多等级的产品，说得简单点就是在抽象工厂里面增加生产其他产品的接口，子类去实现它。</em>*</em></u></font></p>
+<p><font color='red'><u>**简单工厂（工厂不是抽象的）只适合单一产品的生产，他的思路很简单，就是根据不同信息new出来不同的对象。比如海尔冰箱和格力冰箱 **</u></font></p>
+<p><font color='red'><u><em><strong>工厂模式是把原来的工厂作为抽象模型创建不同的子类工厂生产不同的商品。比如海尔冰箱工厂，格力空调工厂</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>抽象工厂模式就考虑了产品族的问题，一个工厂可以生产多等级的产品，说得简单点就是在抽象工厂里面增加生产其他产品的接口，子类去实现它。</strong></em></u></font></p>
 </blockquote>
 <h2 id="组合模式"><a href="#组合模式" class="headerlink" title="组合模式"></a>组合模式</h2><p>组合模式用树形结构描述整体与部分的关系中 。最顶层的节点称为根节点 ，根节点下面可以包含树枝节点和叶子节点 ，树枝节点下面又可以包含树枝节点和叶子节点。宗旨是通过将单个对象（叶子节点）和组合对象（树枝节点）用相同的接口进行表示 ，使得客户对单个对象和组合对象的使用具有一致性</p>
 <h2 id="代理模式"><a href="#代理模式" class="headerlink" title="代理模式"></a>代理模式</h2><blockquote>
@@ -294,11 +294,14 @@
 <li><h2 id="讲一讲组合模式以及在项目中的应用"><a href="#讲一讲组合模式以及在项目中的应用" class="headerlink" title="讲一讲组合模式以及在项目中的应用"></a><strong>讲一讲组合模式以及在项目中的应用</strong></h2></li>
 </ul>
 <p>这里我们是用组合模式搭建规则引擎树，规则树有两种对象。一种是树节点，一种是树枝，树节点包括连接的树枝集合，树枝里面包含了连接的前后两个树节点和判断依据，这样子就能构建出一个有判断规则的规则树了。具体的流程就是假设我们现在在根节点，然后看了下根节点的规则是性别，那我就拿到年龄规则过滤器，遍历根节点的树枝集合，假如这里有两个树枝，一个树枝的规则是&#x3D;男，就走这个树枝；另一个树枝的规则是&#x3D;女，就走这个树枝。这时候我们拿出用户的信息一对比，发现应该走男生那个树枝。这样就进入下一个节点，然后这个节点的判断规则是年龄，可能大于某个枝走某个树枝，小于就走另外的树枝。直到我们找到叶子结点就结束。</p>
-<h2 id="单例模式"><a href="#单例模式" class="headerlink" title="单例模式"></a>单例模式</h2><p>该类负责创建自己的对象，保证只有单个对象被创建。</p>
-<p>单例模式分两类，饿汉式和饱汉式。饿汉式就是类加载的时候就会创建，其实类加载有个准备和初始化过程，静态变量和静态代码块，里就可以创建，懒汉式是用到了才创建。Bean是饿汉式。</p>
+<h2 id="单例模式"><a href="#单例模式" class="headerlink" title="单例模式"></a>单例模式</h2><blockquote>
+<p>该类负责创建自己的对象，保证只有单个对象被创建。</p>
+<p>单例模式分两类，<font color='blue'><u><em><strong>饿汉式和懒汉式。饿汉式就是类加载的时候就会创建，其实类加载有个准备和初始化过程，静态变量和静态代码块，里就可以创建，懒汉式是用到了才创建</strong></em></u></font>。<font color='red'><u><em><strong>Bean是饿汉式</strong></em></u></font>。</p>
 <p><strong>volatile懒汉式单例使用的场景？</strong></p>
-<p>线程安全的单例场景吧，线程池，数据库连接池</p>
+<p>线程安全的单例场景，<font color='blue'><u><em><strong>线程池，数据库连接池</strong></em></u></font></p>
 <p><strong>Bean默认是单例还是多例，怎么设置多例？</strong>（单例，scope设置成prototype）</p>
+<p>懒汉式里面的<font color='red'><u><em><strong>双重检查锁</strong></em></u></font>JVM在实例化对象的时候会进行优化和指令重排序操作。<strong>指令重排序导致空指针问题</strong></p>
+</blockquote>
 <h2 id="装饰器模式"><a href="#装饰器模式" class="headerlink" title="装饰器模式"></a>装饰器模式</h2><blockquote>
 <p><font color='red'><u><em><strong>装饰器模式其实就是在原本类的基础上包装一个装饰器类，这个类在执行源类的行为的前后再加入一些新的逻辑。</strong></em></u></font></p>
 </blockquote>
@@ -331,7 +334,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">تگ شده در</span><br/>
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a>
 
@@ -348,11 +351,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/10/28/MySQL45%E8%AE%B2/"
                     data-tooltip="MYSQL45讲"
-                    aria-label="قبلی: MYSQL45讲"
+                    aria-label="FRÜHER: MYSQL45讲"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">قبلی</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -362,10 +365,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/10/09/Redis/"
                     data-tooltip="Redis"
-                    aria-label="بعدی: Redis"
+                    aria-label="NÄCHSTER: Redis"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">بعدی</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -388,8 +391,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
-                    title="در فیسبوک به اشتراک بگذارید"
-                    aria-label="در فیسبوک به اشتراک بگذارید"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -401,8 +404,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
-                    title="در توییتر به اشتراک بگذارید"
-                    aria-label="در توییتر به اشتراک بگذارید"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -414,8 +417,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
-                    title="در گوگل پلاس به اشتراک بگذارید"
-                    aria-label="در گوگل پلاس به اشتراک بگذارید"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -463,11 +466,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/10/28/MySQL45%E8%AE%B2/"
                     data-tooltip="MYSQL45讲"
-                    aria-label="قبلی: MYSQL45讲"
+                    aria-label="FRÜHER: MYSQL45讲"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">قبلی</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -477,10 +480,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/10/09/Redis/"
                     data-tooltip="Redis"
-                    aria-label="بعدی: Redis"
+                    aria-label="NÄCHSTER: Redis"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">بعدی</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -503,8 +506,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
-                    title="در فیسبوک به اشتراک بگذارید"
-                    aria-label="در فیسبوک به اشتراک بگذارید"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -516,8 +519,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
-                    title="در توییتر به اشتراک بگذارید"
-                    aria-label="در توییتر به اشتراک بگذارید"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -529,8 +532,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
-                    title="در گوگل پلاس به اشتراک بگذارید"
-                    aria-label="در گوگل پلاس به اشتراک بگذارید"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -563,9 +566,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
-                        aria-label="در فیسبوک به اشتراک بگذارید"
+                        aria-label="Teilen auf Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>در فیسبوک به اشتراک بگذارید</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
                     </a>
                 </li>
             
@@ -576,9 +579,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
-                        aria-label="در توییتر به اشتراک بگذارید"
+                        aria-label="Teilen auf Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>در توییتر به اشتراک بگذارید</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
                     </a>
                 </li>
             
@@ -589,9 +592,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
-                        aria-label="در گوگل پلاس به اشتراک بگذارید"
+                        aria-label="Teilen auf Google Plus"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>در گوگل پلاس به اشتراک بگذارید</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
                     </a>
                 </li>
             
@@ -614,18 +617,18 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="تصویر نویسنده"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
-            <div id="about-card-bio"><p>یادداشت‌های یه المپیاد کامپیوتری در حال یادگیری لینوکس!</p>
+            <div id="about-card-bio"><p>author.bio</p>
 </div>
         
         
             <div id="about-card-job">
                 <i class="fa fa-briefcase"></i>
                 <br/>
-                <p>المپیادی، برنامه نویس!</p>
+                <p>author.job</p>
 
             </div>
         
