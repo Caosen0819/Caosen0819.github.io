@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-04T00:00:00+08:00">
 	
-		    04 Nov 2023
+		    Nov 04, 2023
     	
     </time>
     
@@ -365,7 +365,7 @@
 <p>只有当父加载器反馈自己无法完成这个加载请求（它的搜索范围中没有找到所需的类）时，子加载器才会尝试自己去加载（调用自己的 <code>findClass()</code> 方法来加载类）。</p>
 <p>如果子类加载器也无法加载这个类，那么它会抛出一个 <code>ClassNotFoundException</code> 异常。</p>
 <p><strong>好处</strong></p>
-<p>可以避免类的重复加载（JVM 区分不同类的方式不仅仅根据类名，相同的类文件被不同的类加载器加载产生的是两个不同的类），也保证了 Java 的核心 API 不被篡改。</p>
+<p><font color='blue'><u><em><strong>可以避免类的重复加载（JVM 区分不同类的方式不仅仅根据类名，相同的类文件被不同的类加载器加载产生的是两个不同的类），也保证了 Java 的核心 API 不被篡改。</strong></em></u></font></p>
 <h2 id="打破双亲委派"><a href="#打破双亲委派" class="headerlink" title="打破双亲委派"></a>打破双亲委派</h2><p>1、自定义类加载器，重写 <code>loadClass()</code>方法之后，我们就可以改变传统双亲委派模型的执行流程。例如，子类加载器可以在委派给父类加载器之前，先自己尝试加载这个类，或者在父类加载器返回之后，再尝试从其他地方加载这个类。具体的规则由我们自己实现，根据项目需求定制化。</p>
 <blockquote>
 <p>解决方案：新添加一个findClass</p>
@@ -435,8 +435,6 @@
 <p>白色：对象没有被垃圾收集器访问过</p>
 <p>黑色：已经被访问过了，且这个对象的所有引用都已经扫描过。</p>
 <p>灰色：已经被访问过了，但是至少有一个引用没有被扫描。</p>
-<h4 id="记忆集和卡表。"><a href="#记忆集和卡表。" class="headerlink" title="记忆集和卡表。"></a>记忆集和卡表。</h4><p>为了解决对象跨代，需要在新生代建立名为记忆集的数据结构。记忆集是一种用于记录从非收集区指向收集区域的指针集合的数据结构。为了节省记忆集的存储和维护成本，我们选用了一种叫卡表的精度。就是每个记录精确到一块内存区域，这个区域里面有对象含有跨代指针。</p>
-<p>为了维护这个记忆集，如果有其他代的的对象引用了本区域的对象，为了保证在引用的一瞬间记录下来，我们是在机器码层面做了操作，就是加一个写屏障，在写屏障中去更新卡表。</p>
 <h4 id="说一下JVM的分代回收"><a href="#说一下JVM的分代回收" class="headerlink" title="说一下JVM的分代回收"></a>说一下JVM的分代回收</h4><p><img src="/../images/JVM/image-20231117194042634.png" alt="image-20231117194042634"></p>
 <h2 id="3、垃圾回收器"><a href="#3、垃圾回收器" class="headerlink" title="3、垃圾回收器"></a>3、垃圾回收器</h2><p><font color='red'><u><em><strong>四种引用</strong></em></u></font></p>
 <blockquote>
@@ -493,16 +491,17 @@
 <p>4）并发清除，清除对象，因为策略是标记-清除，不需要移动所以同样选择了并发的方式。</p>
 <p>缺点：</p>
 <p>1）<font color='blue'><u><em><strong>对处理资源敏感</strong></em></u></font>，而且大于1&#x2F;4。CMS的默认收集线程数量是（处理器数量+3）&#x2F;4。</p>
-<p>2）<font color='blue'><u><em><strong>无法处理浮动垃圾</strong></em></u></font>（用户线程使得原来某些对象不是垃圾，但是当 CMS 进行清理的时候变成了垃圾，从可达到不可达，但是没扫出来），有可能触发full gc</p>
+<p>2）<font color='blue'><u><em><strong>无法处理浮动垃圾</strong></em></u></font>（<font color='red'><u><em><strong>在并发标记与并发清理阶段，有些对象从可达到不可达，但是没扫出来），有可能触发full gc</strong></em></u></font></p>
 <p>3）<font color='blue'><u><em><strong>用的是标记清除，会有内存碎片</strong></em></u></font></p>
 <p>​	</p>
-<p>CMSFullGCsBeforeCompaction</p>
+<p>CMSFullGCsBeforeCompaction：进行过几次不整理的full gc之后进行碎片整理的full gc</p>
+<p>CMSInitialtingOccupancyfraction 什么时候触发cms</p>
 <h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><blockquote>
-<p>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。</p>
-<p>为了加快搜索，G1是使用card table和RSet。</p>
-<p>card table是CMS的解决方案，他可以避免对老年代进行整个扫描。他的做法是把region分成一个个512字节的card，然后用一个位0或者1去标记他的状态，如果有指向年轻代的对象，就置为1，否则0。所以你扫描的时候直接找card状态是1的区域就可以找到gcroot，不用对老年代扫描。</p>
-<p>Rset是G1提出来的，每个region都有rset，它记录了哪些region引用了当前的region。他是一个键值对的形式，键就是这个region编号，值就是card编号的集合，这样就把card table和rset配合起来了。</p>
-<p>维护这两个是依赖写屏障</p>
+<p><font color='blue'><u><em><strong>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>为了加快搜索，G1是使用card table和RSet。</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>card table是CMS的解决方案，他可以避免对老年代进行整个扫描。他的做法是把region分成一个个512字节的card，然后用一个位0或者1去标记他的状态，如果有指向年轻代的对象，就置为1，否则0。所以你扫描的时候直接找card状态是1的区域就可以找到gcroot，不用对老年代扫描。</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>Rset是G1提出来的，每个region都有rset，它记录了哪些region引用了当前的region。他是一个键值对的形式，键就是其他region的起始地址，值就是card的索引号的集合，这样就把card table和rset配合起来了。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>维护这两个是依赖写屏障</strong></em></u></font></p>
 </blockquote>
 <p>下面我们讲讲G1的垃圾收集过程，分为四个步骤</p>
 <p>然后他把region作为单次回收的最小单元，那每次回收都是region的整数倍。</p>
@@ -526,7 +525,7 @@
 <p>为什么年轻代比以前的快？</p>
 <p>他是筛选回收，是通过region个数进行minor gc 不用对整个eden区minorgc ，而且有个容忍时间。</p>
 <p>G1的SATB算法为什么比CMS的增量标记算法快（原因之一）：</p>
-<p>① CMS的重新标记需要重新扫描所有root</p>
+<p>① CMS的重新标记需要重新扫描所有root，包括年轻代</p>
 <p>② G1：在开始标记的时候生成一个快照图，标记存活对象。所有被改变引用关系的对象都标记，至于它是不是真的存活。留给下一次gc扫描</p>
 <h3 id="三色标记"><a href="#三色标记" class="headerlink" title="三色标记"></a>三色标记</h3><p>三色标记在并发会出现问题。</p>
 <p>CMS解决对象消失问题，用的是写屏障+增量更新（黑色对象一旦新插入了指向白色对象的引用之后，它就变回灰色对象了，后续对这个对象再进行扫描）</p>
@@ -614,7 +613,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -628,7 +627,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -657,7 +656,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

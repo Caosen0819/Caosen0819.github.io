@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -242,7 +242,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    08 Nov 2023
+		    Nov 08, 2023
     	
     </time>
     
@@ -273,7 +273,7 @@
 <h2 id="2、内存"><a href="#2、内存" class="headerlink" title="2、内存"></a>2、内存</h2><p>内存方面就是缓冲池、lrulist freelist flushlist、redo log buffer 三块，还有一些额外内存池（为了数据结构的内存申请服务）</p>
 <h3 id="1、缓冲池"><a href="#1、缓冲池" class="headerlink" title="1、缓冲池"></a>1、缓冲池</h3><p><font color='red'><u><em><strong>本质就是一块内存，缓冲池里面有数据页、索引页、undo 页、insert buffer、自适应哈希索引、锁信息、数据字典。</strong></em></u></font></p>
 <p>所以修改操作，基本都现修改缓冲池里面的数据，然后按照一定刷回机制磁盘。</p>
-<h3 id="2、List"><a href="#2、List" class="headerlink" title="2、List"></a>2、List</h3><p>缓冲池是通过改进的LRU算法（在原本的基础上加了midpoint，新加入的页放到这里，默认<font color='red'><u><em><strong>5&#x2F;8</strong></em></u></font>）进行管理的，方法就是LRUlist、freelist flushlist。如果缓冲池不能放新的，就把lru里面末尾的释放掉。</p>
+<h3 id="2、List"><a href="#2、List" class="headerlink" title="2、List"></a>2、List</h3><p>缓冲池是通过改进的LRU算法（在原本的基础上加了midpoint，新加入的页放到这里，默认<font color='red'><u><em><strong>5&#x2F;8</strong></em></u></font>）进行管理的，方法就是LRUlist、freelist flushlist。如果缓冲池不能放新的，就把lru里面末尾的释放掉。<font color='red'><u><em><strong>处于 old 区域的数据页，每次被访问的时候都要做下面这个判断：若这个数据页在 LRU 链表中存在的时间超过了 1 秒，就把它移动到链表头部；否则不变。</strong></em></u></font></p>
 <p>改进lru的原因：有可能新页仅仅是这次查询需要用到，并不是真正的热点数据，这样反而有可能将真正的热点数据淘汰。</p>
 <p>flushlist就是脏页列表，就像上面说的，用checkpoint机制刷新</p>
 <p>一页16k</p>
@@ -307,7 +307,7 @@
 <p>fuzzy checkpoint是刷新部分脏页？刷新到时机如下：</p>
 <p>master thread checkpoint（空闲）</p>
 <p>flushlrulist checkpoint：这饿是lru列表需要有100个空闲的页，否则移除lru末尾的页，如果有脏页就checkpoint（内存不足）</p>
-<p>async sycn flush checkpoint：这个是<font color='red'><u>***重做日志文件不可用的情况，需要强制将一些刷新回磁盘  ***</u></font>（redo）</p>
+<p>async sycn flush checkpoint：这个是<font color='red'><u>**重做日志文件不可用的情况，需要强制将一些刷新回磁盘  **</u></font>（redo）</p>
 <p>dirty page too much：这个是脏页数量太多了，强制checkpoint ，脏页的比例达到75%</p>
 </blockquote>
 <h3 id="3、Redo-log-buffer"><a href="#3、Redo-log-buffer" class="headerlink" title="3、Redo log buffer"></a>3、Redo log buffer</h3><p>这个是innodb独有的，重做日志信息 -&gt;Redo log buffer -〉 重做日志文件，为重做日志文件服务，重做日志文件本身是为了数据库的恢复功能，但是同样的，为了缓解和磁盘的差距，我们给他加一个buffer。</p>
@@ -555,8 +555,8 @@
 <p>假设表TB1上有索引IDX_C1_C2_C3(C1,C2,C3)，对于查询SELECT * FROM TB1 WHERE C1&#x3D;’XXX’ AND C3&#x3D;’XXX’</p>
 <p>在MySQL 5.6版本以前，由于缺少C2的过滤条件，Innodb存储引擎层只能使用索引IDX_C1_C2_C3按照C1&#x3D;’XXX’条件找出所有满足条件的索引记录，再根据这些索引记录去聚集索引中查找，将找到的表数据返回给MySQL Server层，然后由MySQL Server层使用C3&#x3D;’XXX’条件进行过滤得到最终结果。</p>
 <p>假设满足C1&#x3D;’XXX’条件的数据行为100000条，而满足C1&#x3D;’XXX’ AND C3&#x3D;’XXX’的数据行为100条，则：</p>
-<p>1、在MySQL 5.5版本中，需要对TB1的聚集索引进行100000次Index Seek操作，Innodb存储引擎层向MySQL Server层传递100000行数据。</p>
-<p>2、在MySQL 5.6版本中，使用ICP仅需要对TB1的聚集索引进行100次的Index Seek操作，Innodb存储引擎层向MySQL Server层传递100行数据。</p>
+<p>1、回表100000次，给server层传100000条数据</p>
+<p>2、回表100次，Innodb存储引擎层向MySQL Server层传递100行数据。</p>
 </blockquote>
 <h3 id="5、自适应哈希索引"><a href="#5、自适应哈希索引" class="headerlink" title="5、自适应哈希索引"></a>5、自适应哈希索引</h3><p>InnoDB中的哈希用的字典进行查找，冲突用链表解决，哈希函数用除法散列</p>
 <p>自适应哈希索引就是用的这种方法。</p>
@@ -587,14 +587,9 @@
 <h2 id="1、锁的类型"><a href="#1、锁的类型" class="headerlink" title="1、锁的类型"></a>1、锁的类型</h2><h3 id="1、全局锁"><a href="#1、全局锁" class="headerlink" title="1、全局锁"></a>1、全局锁</h3><blockquote>
 <p><font color='red'><u><em><strong>典型的使用场景就是做全库的逻辑备份</strong></em></u></font></p>
 <ul>
-<li><p>一旦加了全局锁之后，其他的DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句，也就是处于只读状态</p>
-</li>
-<li><p>语法</p>
-</li>
+<li>一旦加了全局锁之后，其他的DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句，也就是处于只读状态</li>
 </ul>
- <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">flush tables <span class="keyword">with</span> read lock;<span class="number">1</span>、加全局锁</span><br><span class="line">mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>pxxx db_name <span class="operator">-</span><span class="operator">&gt;</span> xxx.sql;<span class="number">2</span>、数据备份</span><br><span class="line">unlock tables;<span class="number">3</span>、释放锁</span><br></pre></td></tr></table></figure>
-
-
+<p><font color='red'><u><em><strong>两种方法<br>flush tables with read lock;<br>mysqldump -single-tranctions<br>single-transaction只适用于支持事务引擎的库，如果支持的话建议用single-transactions，否则用flush table with read lock</strong></em></u></font></p>
 </blockquote>
 <h3 id="2、表级锁"><a href="#2、表级锁" class="headerlink" title="2、表级锁"></a>2、表级锁</h3><blockquote>
 <p>表级锁，主要分为4类：</p>
@@ -629,9 +624,11 @@
 <p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/6e6b275c2d6d4dfcbbb338be4f61bee9.png" alt="img"></p>
 <p>所以，<strong>意向锁的目的是为了快速判断表里是否有记录被加锁</strong>。</p>
 <h4 id="4、自增锁"><a href="#4、自增锁" class="headerlink" title="4、自增锁"></a>4、自增锁</h4><blockquote>
-<p><font color='red'><u><em><strong>主键设置成自增之后，会自动给主键赋递增的值.</strong></em></u></font></p>
-<p>然后这里有两种方式一种是，AUTO-INC 锁<strong>，</strong>不是一个事务提交后才释放，而是在<font color='red'><u><em><strong>执行完插入语句后就会立即释放。</strong></em></u></font></p>
-<p>但是，对大量数据进行插入的时候，会影响插入性能，因为另一个事务中的插入会被阻塞。</p>
+<p><font color='red'><u><em><strong>主键设置成自增之后，会自动给主键赋递增的值，5.7保存在内存里面，但是8.0以后保存在redo log里面</strong></em></u></font></p>
+<p>然后这里有两种方式。一种是，AUTO-INC 锁<strong>，</strong>不是一个事务提交后才释放，而是在<font color='red'><u><em><strong>执行完插入语句后就会立即释放。</strong></em></u></font></p>
+<p>后面提供了一种轻量级锁，申请完就释放，但是伴随着两个问题：1、自增主键不是连续的。2、主库和从库不一致。</p>
+<p><font color='red'><u><em><strong>自增逐渐不连续的原因：唯一键的冲突、事务回滚、批量插入</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>主库存库不一致的原因：批量插入</strong></em></u></font></p>
 <p>所以后面InnoDB 存储引擎提供了一种<strong>轻量级的锁</strong>，并且提供了一个参数，叫innodb autoinc lock mode</p>
 <ul>
 <li>当 innodb_autoinc_lock_mode &#x3D; 0，就采用 AUTO-INC 锁，语句执行结束后才释放锁；</li>
@@ -641,8 +638,6 @@
 <li>类似 insert … select 这样的批量插入数据的语句，自增锁还是要等语句结束后才被释放<font color='red'><u><em><strong>（因为“不知道要预先申请多少个 id）</strong></em></u></font></li>
 <li>原因如下：</li>
 </ul>
-</blockquote>
-<p><img src="/../images/MySQL%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/innodb_autoinc_lock_mode=2.png" alt="img"></p>
 <p>session A 往表 t 中插入了 4 行数据，然后创建了一个相同结构的表 t2，然后<strong>两个 session 同时执行向表 t2 中插入数据</strong>。</p>
 <p>如果 innodb_autoinc_lock_mode &#x3D; 2，意味着「申请自增主键后就释放锁，不必等插入语句执行完」。那么就可能出现这样的情况：</p>
 <ul>
@@ -655,21 +650,24 @@
 <p>但不论是哪一种，这个 binlog 拿去「从库」执行，这时从库是按「顺序」执行语句的，只有当执行完一条 SQL 语句后，才会执行下一条 SQL。因此，在<strong>从库上「不会」发生像主库那样两个 session 「同时」执行向表 t2 中插入数据的场景。所以，在备库上执行了 session B 的 insert 语句，生成的结果里面，id 都是连续的。这时，主从库就发生了数据不一致</strong>。</p>
 <p>要解决这问题，binlog 日志格式要设置为 row，这样在 binlog 里面记录的是主库分配的自增值，到备库执行的时候，主库的自增值是什么，从库的自增值就是什么。</p>
 <p>所以，<strong>当 innodb_autoinc_lock_mode &#x3D; 2 时，并且 binlog_format &#x3D; row，既能提升并发性，又不会出现数据一致性问题</strong>。</p>
+</blockquote>
 <h3 id="3、行锁"><a href="#3、行锁" class="headerlink" title="3、行锁"></a>3、行锁</h3><blockquote>
 <p><strong>MySQL 的行锁是在引擎层由各个引擎自己实现的。</strong></p>
 </blockquote>
 <blockquote>
-<p>InnoDB有三种行锁的算法：</p>
-<p>Record Lock：单个行记录的锁</p>
-<p>Gap Lock：间隙锁，锁定一个范围，但不包括记录本身</p>
-<p>Next-Key Lock（临建锁）：Record Lock + Gap Lock 左开右闭</p>
+<p><font color='red'><u><em><strong>InnoDB有三种行锁的算法：Record Lock：记录锁、Gap Lock：间隙锁，锁定一个范围，但不包括记录本身，Next-Key Lock（临建锁）：Record Lock + Gap Lock 左开右闭</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>InnoDB就是用Next-Key去解决幻读问题（同一事务下，连续执行两次相同的sql语句可能导致不同的结果，第二次sql可能会返回之前不存在的行）间隙锁在可重复读才生效</strong></em></u></font></p>
+<p>加锁规则里面，包含了两个“原则”、两个“优化”和一个“bug”。 </p>
+<ol>
+<li>原则 1：加锁的基本单位是 next-key lock。希望你还记得，next-key lock 是前开后闭 区间。 </li>
+<li>原则 2：查找过程中访问到的对象才会加锁。 </li>
+<li>优化 1：索引上的等值查询，给唯一索引加锁的时候，next-key lock 退化为行锁。 </li>
+<li>优化 2：索引上的等值查询，向右遍历时且最后一个值不满足等值条件的时候，nextkey lock 退化为间隙锁。 </li>
+<li>一个 bug：唯一索引上的范围查询会访问到不满足条件的第一个值为止。</li>
+</ol>
 </blockquote>
 <blockquote>
 <blockquote>
-<p>InnoDB就是用Next-Key去解决幻读问题（同一事务下，连续执行两次相同的sql语句可能导致不同的结果，第二次sql可能会返回之前不存在的行）</p>
-</blockquote>
-<blockquote>
-<p>查询的索引如果是唯一性质，那么降级为Record Lock</p>
 </blockquote>
 </blockquote>
 <blockquote>
@@ -777,7 +775,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -806,7 +804,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    08 Nov 2023
+		    Nov 08, 2023
     	
     </time>
     
@@ -919,7 +917,7 @@
 </ol>
 </blockquote>
 <p><font color='red'><u><em><strong>锁升级</strong></em></u></font></p>
-<p>而Java1.6为了减少性能消耗，引入了“偏向锁”“轻量级锁”。</p>
+<p><font color='blue'><u><em><strong>而Java1.6为了减少性能消耗，引入了“偏向锁”“轻量级锁”。</strong></em></u></font></p>
 <p><strong>偏向锁</strong>（101）</p>
 <blockquote>
 <p>偏向锁是用于没有竞争的时候。</p>
@@ -967,10 +965,14 @@
 <p><font color='red'><u><em><strong>Sync有公平锁 和非公平锁，公平锁和非公平锁区别: 非公平锁在tryacquire的时候，里面有一个步骤是获取同步状态，如果这个同步状态是0的话，说明现在没人拿，我可以去直接去拿，公平锁这里会多一个判断hasQueuedPredecessors，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</strong></em></u></font></p>
 <p><font color='green'><u><em><strong>加入的时候怎么加入的？</strong></em></u></font></p>
 <p><font color='blue'><u><em><strong>新的节点的Pre指向尾结点，然后用cas的方式让尾结点指向新节点，最后尾结点更新。</strong></em></u></font></p>
+<h2 id="Condition"><a href="#Condition" class="headerlink" title="Condition"></a>Condition</h2><p><code>Condition</code>提供了与<code>Object#wait</code>和<code>Object#notify</code>相同的功能，一般和lock搭配使用。他其实是一个条件队列。await的时候会释放锁，signal会回到AQS的同步队列。</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/629921197">https://zhuanlan.zhihu.com/p/629921197</a></p>
 </blockquote>
-<h4 id="3、死锁"><a href="#3、死锁" class="headerlink" title="3、死锁"></a>3、死锁</h4><p>互斥条件：</p>
+<h4 id="4、死锁"><a href="#4、死锁" class="headerlink" title="4、死锁"></a>4、死锁</h4><blockquote>
+<p>互斥条件：</p>
 <p>请求和保持，并且不可被剥夺。</p>
 <p>循环等待：</p>
+</blockquote>
 <p>两个线程，互相请求对方已经持有的资源。</p>
 <p>死锁的检测：</p>
 <ul>
@@ -981,7 +983,7 @@
 <h3 id="4、原子操作的实现原理"><a href="#4、原子操作的实现原理" class="headerlink" title="4、原子操作的实现原理"></a>4、原子操作的实现原理</h3><h4 id="1、处理器如何实现原子操作？"><a href="#1、处理器如何实现原子操作？" class="headerlink" title="1、处理器如何实现原子操作？"></a>1、处理器如何实现原子操作？</h4><p>总线锁：使用LOCK 信号，其他请求都被阻塞，独占共享内存</p>
 <p>缓存锁：所谓缓存锁定是指内存被缓存在处理器的缓存中，当他执行锁操作写回内存的时候，而是修改内部的内存地址，并允许他缓存一致性保证操作原子性。</p>
 <h4 id="2、Java怎么实现原子操作"><a href="#2、Java怎么实现原子操作" class="headerlink" title="2、Java怎么实现原子操作"></a>2、Java怎么实现原子操作</h4><p>锁–JVM实现锁的方式其实都用到了循环CAS</p>
-<p>循环CAS –版本号解决ABA，</p>
+<p>循环CAS –版本号解决ABA</p>
 <h4 id="3、CAS："><a href="#3、CAS：" class="headerlink" title="3、CAS："></a>3、CAS：</h4><p>cas是旧值和获得的值进行对比，如果一样，认为没有被修改过，可以去改，如果不一样就不能修改。</p>
 <p>jdk提供的CAS方案是unsafe类的cas方法，他是调用了一个本地方法，本地方法会调cmpxchg方法，<strong>它是在汇编层级，会禁止变量两侧的指令优化，然后使用cmpxchg指令比较并更新变量值(原子性)，如果是多核则加一个lock锁定(缓存锁、MESI)</strong></p>
 <p>硬件层间不能保证有序和内存可见，只能保证原子，但是加了LOCK就可以保证有序可见了</p>
@@ -1013,7 +1015,7 @@
 <p><font color='red'><u><strong>JMM设计</strong></u></font>:<font color='red'><u><em><strong>一方面，要为程序员提供足够强的内存可见性保证；另一方面，对编译器和处理器的限制要尽可能地放松 。</strong></em></u></font></p>
 </blockquote>
 <h2 id="4、happens-before-原则"><a href="#4、happens-before-原则" class="headerlink" title="4、happens-before 原则"></a>4、<font color='red'><u><em><strong>happens-before 原则</strong></em></u></font></h2><blockquote>
-<p><font color='blue'><u><em><strong>as-if-serial语义保证单线程内程序的执行结果不被改变，happens-before关系保证正确同步的多线程程序的执行结果不被改变。如果一个操作happens-before另一个操作，那么第一个操作的执行结果将对第二个操作可见，而且第一个操作的执行顺序排在第二个操作之前。</strong></em></u></font></p>
+<p>他是高级的语言层面的一组规范。<font color='blue'><u><em><strong>as-if-serial语义保证单线程内程序的执行结果不被改变，happens-before关系保证正确同步的多线程程序的执行结果不被改变。如果一个操作happens-before另一个操作，那么第一个操作的执行结果将对第二个操作可见，而且第一个操作的执行顺序排在第二个操作之前。</strong></em></u></font></p>
 <p>包括什么程序规则、锁规则、volatile规则、依赖规则</p>
 <p>不过这里我们要强调的一点是：<strong>程序规则和指令重排并不冲突，如果我们要显示的禁止重排序，要让代码按照我们想的执行，就需要显示的建立遵循happens-before的代码，比如synchronized、volatile、lock</strong>。所以我们说happensbefore是给程序员提供的</p>
 </blockquote>
@@ -1046,13 +1048,6 @@
 <p>SingleThreadExecutor，核心线程和最大线程就1个。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue</p>
 <p>CachedThreadPool：这个是没有核心线程数，全都是救济线程。阻塞队列是SynchronousQueue</p>
 <p>ScheduledThreadPool：这个是定时执行任务，阻塞队列是DelayedWorkQueue</p>
-</blockquote>
-<p><font color='red'><u><em><strong>阻塞队列有哪些</strong></em></u></font></p>
-<blockquote>
-<p>ArrayBlockingqueue：底层是数组、有界队列。一把锁</p>
-<p>LinkBlockingQueue：底层是链表、默认无界但是支持有界。头尾两把锁</p>
-<p>DelayedWorkQueue</p>
-<p>SynchronousQueue</p>
 </blockquote>
 </blockquote>
 <p><font color='red'><u><strong>runnable和callable有什么区别？</strong></u></font></p>
@@ -1178,7 +1173,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1207,7 +1202,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-04T00:00:00+08:00">
 	
-		    04 Nov 2023
+		    Nov 04, 2023
     	
     </time>
     
@@ -1329,7 +1324,7 @@
 <p>只有当父加载器反馈自己无法完成这个加载请求（它的搜索范围中没有找到所需的类）时，子加载器才会尝试自己去加载（调用自己的 <code>findClass()</code> 方法来加载类）。</p>
 <p>如果子类加载器也无法加载这个类，那么它会抛出一个 <code>ClassNotFoundException</code> 异常。</p>
 <p><strong>好处</strong></p>
-<p>可以避免类的重复加载（JVM 区分不同类的方式不仅仅根据类名，相同的类文件被不同的类加载器加载产生的是两个不同的类），也保证了 Java 的核心 API 不被篡改。</p>
+<p><font color='blue'><u><em><strong>可以避免类的重复加载（JVM 区分不同类的方式不仅仅根据类名，相同的类文件被不同的类加载器加载产生的是两个不同的类），也保证了 Java 的核心 API 不被篡改。</strong></em></u></font></p>
 <h2 id="打破双亲委派"><a href="#打破双亲委派" class="headerlink" title="打破双亲委派"></a>打破双亲委派</h2><p>1、自定义类加载器，重写 <code>loadClass()</code>方法之后，我们就可以改变传统双亲委派模型的执行流程。例如，子类加载器可以在委派给父类加载器之前，先自己尝试加载这个类，或者在父类加载器返回之后，再尝试从其他地方加载这个类。具体的规则由我们自己实现，根据项目需求定制化。</p>
 <blockquote>
 <p>解决方案：新添加一个findClass</p>
@@ -1399,8 +1394,6 @@
 <p>白色：对象没有被垃圾收集器访问过</p>
 <p>黑色：已经被访问过了，且这个对象的所有引用都已经扫描过。</p>
 <p>灰色：已经被访问过了，但是至少有一个引用没有被扫描。</p>
-<h4 id="记忆集和卡表。"><a href="#记忆集和卡表。" class="headerlink" title="记忆集和卡表。"></a>记忆集和卡表。</h4><p>为了解决对象跨代，需要在新生代建立名为记忆集的数据结构。记忆集是一种用于记录从非收集区指向收集区域的指针集合的数据结构。为了节省记忆集的存储和维护成本，我们选用了一种叫卡表的精度。就是每个记录精确到一块内存区域，这个区域里面有对象含有跨代指针。</p>
-<p>为了维护这个记忆集，如果有其他代的的对象引用了本区域的对象，为了保证在引用的一瞬间记录下来，我们是在机器码层面做了操作，就是加一个写屏障，在写屏障中去更新卡表。</p>
 <h4 id="说一下JVM的分代回收"><a href="#说一下JVM的分代回收" class="headerlink" title="说一下JVM的分代回收"></a>说一下JVM的分代回收</h4><p><img src="/../images/JVM/image-20231117194042634.png" alt="image-20231117194042634"></p>
 <h2 id="3、垃圾回收器"><a href="#3、垃圾回收器" class="headerlink" title="3、垃圾回收器"></a>3、垃圾回收器</h2><p><font color='red'><u><em><strong>四种引用</strong></em></u></font></p>
 <blockquote>
@@ -1457,16 +1450,17 @@
 <p>4）并发清除，清除对象，因为策略是标记-清除，不需要移动所以同样选择了并发的方式。</p>
 <p>缺点：</p>
 <p>1）<font color='blue'><u><em><strong>对处理资源敏感</strong></em></u></font>，而且大于1&#x2F;4。CMS的默认收集线程数量是（处理器数量+3）&#x2F;4。</p>
-<p>2）<font color='blue'><u><em><strong>无法处理浮动垃圾</strong></em></u></font>（用户线程使得原来某些对象不是垃圾，但是当 CMS 进行清理的时候变成了垃圾，从可达到不可达，但是没扫出来），有可能触发full gc</p>
+<p>2）<font color='blue'><u><em><strong>无法处理浮动垃圾</strong></em></u></font>（<font color='red'><u><em><strong>在并发标记与并发清理阶段，有些对象从可达到不可达，但是没扫出来），有可能触发full gc</strong></em></u></font></p>
 <p>3）<font color='blue'><u><em><strong>用的是标记清除，会有内存碎片</strong></em></u></font></p>
 <p>​	</p>
-<p>CMSFullGCsBeforeCompaction</p>
+<p>CMSFullGCsBeforeCompaction：进行过几次不整理的full gc之后进行碎片整理的full gc</p>
+<p>CMSInitialtingOccupancyfraction 什么时候触发cms</p>
 <h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><blockquote>
-<p>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。</p>
-<p>为了加快搜索，G1是使用card table和RSet。</p>
-<p>card table是CMS的解决方案，他可以避免对老年代进行整个扫描。他的做法是把region分成一个个512字节的card，然后用一个位0或者1去标记他的状态，如果有指向年轻代的对象，就置为1，否则0。所以你扫描的时候直接找card状态是1的区域就可以找到gcroot，不用对老年代扫描。</p>
-<p>Rset是G1提出来的，每个region都有rset，它记录了哪些region引用了当前的region。他是一个键值对的形式，键就是这个region编号，值就是card编号的集合，这样就把card table和rset配合起来了。</p>
-<p>维护这两个是依赖写屏障</p>
+<p><font color='blue'><u><em><strong>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>为了加快搜索，G1是使用card table和RSet。</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>card table是CMS的解决方案，他可以避免对老年代进行整个扫描。他的做法是把region分成一个个512字节的card，然后用一个位0或者1去标记他的状态，如果有指向年轻代的对象，就置为1，否则0。所以你扫描的时候直接找card状态是1的区域就可以找到gcroot，不用对老年代扫描。</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>Rset是G1提出来的，每个region都有rset，它记录了哪些region引用了当前的region。他是一个键值对的形式，键就是其他region的起始地址，值就是card的索引号的集合，这样就把card table和rset配合起来了。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>维护这两个是依赖写屏障</strong></em></u></font></p>
 </blockquote>
 <p>下面我们讲讲G1的垃圾收集过程，分为四个步骤</p>
 <p>然后他把region作为单次回收的最小单元，那每次回收都是region的整数倍。</p>
@@ -1490,7 +1484,7 @@
 <p>为什么年轻代比以前的快？</p>
 <p>他是筛选回收，是通过region个数进行minor gc 不用对整个eden区minorgc ，而且有个容忍时间。</p>
 <p>G1的SATB算法为什么比CMS的增量标记算法快（原因之一）：</p>
-<p>① CMS的重新标记需要重新扫描所有root</p>
+<p>① CMS的重新标记需要重新扫描所有root，包括年轻代</p>
 <p>② G1：在开始标记的时候生成一个快照图，标记存活对象。所有被改变引用关系的对象都标记，至于它是不是真的存活。留给下一次gc扫描</p>
 <h3 id="三色标记"><a href="#三色标记" class="headerlink" title="三色标记"></a>三色标记</h3><p>三色标记在并发会出现问题。</p>
 <p>CMS解决对象消失问题，用的是写屏障+增量更新（黑色对象一旦新插入了指向白色对象的引用之后，它就变回灰色对象了，后续对这个对象再进行扫描）</p>
@@ -1578,7 +1572,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1607,7 +1601,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-28T00:00:00+08:00">
 	
-		    28 Oct 2023
+		    Oct 28, 2023
     	
     </time>
     
@@ -1695,7 +1689,19 @@
 <p>有可能在等锁的释放，</p>
 <p>也有可能全表扫描，然后行数靠后</p>
 </blockquote>
-<h2 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h2><p><strong>全局锁</strong></p>
+<p><font color='red'><u><em><strong>全表扫描会不会把数据库内存打爆</strong></em></u></font></p>
+<blockquote>
+<p>不会</p>
+<p>因为mysql是边读边发，他有一个net_buffer，16k大小，不会server 端保存完整的结果集，如果接收不及时，就堵住MySQL的查询过程，但是绝对不会打爆内存，而且innodb有lru这种内存淘汰策略。</p>
+</blockquote>
+<p><font color='red'><u><em><strong>能不能用join，怎么用</strong></em></u></font></p>
+<blockquote>
+<ol>
+<li>如果可以使用被驱动表的索引，join 语句还是有其优势的； </li>
+<li>在使用 join 的时候，应该让小表做驱动表。</li>
+</ol>
+</blockquote>
+<p><strong>全局锁</strong></p>
 <blockquote>
 <p>典型的使用场景就是做全库的逻辑备份，加了全局锁就是只能读（DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句）</p>
 <p>这样就保证了数据的一致性 和完整性 </p>
@@ -1713,19 +1719,11 @@
 
 <p>如果在主库上备份，那么在备份期间都不能执行更新，业务基本上就得停摆。</p>
 <p>如果在从库上备份，那么在备份期间从库不能执行主库同步过来的二进制日志（binlog）</p>
-<p>我们可以在InnoDB引擎中，我们可以在备份时加上参数 –single-transaction 参数来完成不加锁的一致 性数据备份。</p>
+<p>我们可以在InnoDB引擎中，我们可以在备份时加上参数 –single-transaction 参数来完成不加锁的一致性数据备份。</p>
 <p><font color='red'><u><em><strong>一般用于备份，但是备份也可以开启事务做，但是需要引擎支持可重复读这种隔离级别。</strong></em></u></font>。</p>
 </blockquote>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysqldump --single-transaction -uroot -pxxx db_name -&gt; xxx.sql;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<p><strong>表级锁</strong></p>
-<blockquote>
-<p>可见存储引擎那篇文章。</p>
-</blockquote>
-<p><strong>行锁</strong></p>
-<blockquote>
-<p>两阶段锁协议：需要的时候加上，结束的时候释放。</p>
-</blockquote>
 
                     
                         
@@ -1739,7 +1737,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1768,7 +1766,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-10T00:00:00+08:00">
 	
-		    10 Oct 2023
+		    Oct 10, 2023
     	
     </time>
     
@@ -1863,7 +1861,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -1892,7 +1890,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-09T00:00:00+08:00">
 	
-		    09 Oct 2023
+		    Oct 09, 2023
     	
     </time>
     
@@ -2218,7 +2216,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -2247,7 +2245,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    07 Aug 2023
+		    Aug 07, 2023
     	
     </time>
     
@@ -2283,7 +2281,6 @@
 <blockquote>
 <p><font color='red'><u><em><strong>Arraylist的底层数据结构是object[]数组，构造函数分有参无参，如果是无参就是空数组，如果是有参，就用你定义的那个初始大小。如果参数是容器，那就是把容器转成数组copy给object。关键方法就是add方法，需要保证容量够用才能添加元素，所以会在添加之前进行一个ensurecapacity的过程。他会先计算mincapacity的值，他会拿mincapacity去和现在的数组长度比较，如果大了说明要扩容，扩容的过程是先×1.5看看够不够，够的话就1.5，不够就用新的这个mincapacity。</strong></em></u></font>如果minCapacity大于最大容量，则新容量则为<code>Integer.MAX_VALUE</code>，否则，新容量大小则为 MAX_ARRAY_SIZE 即为 <code>Integer.MAX_VALUE - 8</code></p>
 <blockquote>
-<p>了解比较简单</p>
 <p><font color='blue'><u><em><strong>对于插入</strong></em></u></font>：如果不需要扩容，其实无论是头插指定位置插入都是O(n)，尾插是O(1)。如果需要扩容，就得再做一次扩容，O(n)，然后在插入，就是刚才讲的时间复杂度。</p>
 <p><font color='blue'><u><em><strong>对于删除</strong></em></u></font>：头删和指定位置删除是O(n)，尾部删除是O(1)</p>
 </blockquote>
@@ -2296,52 +2293,49 @@
 <li>指定位置插入&#x2F;删除：需要先移动到指定位置，再修改指定节点的指针完成插入&#x2F;删除，因此需要移动平均 n&#x2F;2 个元素，时间复杂度为 O(n)。</li>
 </ul>
 </blockquote>
-<h2 id="如何实现数组和arraylist之间的转换"><a href="#如何实现数组和arraylist之间的转换" class="headerlink" title="如何实现数组和arraylist之间的转换"></a>如何实现数组和arraylist之间的转换</h2><p>List.toarray  (修改原先list，array不受影响)</p>
+<h2 id="ArrayList-与-LinkedList区别"><a href="#ArrayList-与-LinkedList区别" class="headerlink" title="ArrayList 与 LinkedList区别?"></a>ArrayList 与 LinkedList区别?</h2><blockquote>
+<p><strong>底层数据结构：</strong> <code>ArrayList</code> 底层使用的是 <strong><code>Object</code> 数组</strong>；<code>LinkedList</code> 底层使用的是 <strong>双向链表</strong> 数据结构，内存一个是连续一个不是连续</p>
+<p><strong>插入和删除的时间复杂度</strong>：arraylist，头插、指定插、头删、指定删除都是On，尾插和尾删除是O1。linkedlist 头插和尾插、头删除、尾删除都是O1，指定位置是On</p>
+<p><strong>内存空间占用</strong>：<font color='blue'><u><em><strong>linkedlist每个节点要存前后指针，所以内存占用大。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>使用场景：</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>如果需要频繁进行随机访问和查询操作的场景，例如按索引读取数据或搜索特定元素，应该选择ArrayList。</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>如果需要频繁进行插入、删除或位置变动较多的场景，特别是在链表的首尾位置进行操作，那么LinkedList是更合适的选择。</strong></em></u></font></p>
+</blockquote>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><blockquote>
+<p><font color='blue'><u><em><strong>如何实现数组和arraylist之间的转换</strong></em></u></font></p>
+<p>List.toarray  (修改原先list，array不受影响)</p>
 <p>Arrays.aslist （受影响）</p>
-<blockquote>
 <p><T>&lt;?&gt;</p>
 <p><T>主要用于类或方法上，对这个类或者方法里面的泛型全是一样的。</p>
 <?>一般用在变量上，有界通配符，对类型做一定的限制。
 
-## 
-</blockquote>
-<h2 id="ArrayList-与-LinkedList-区别"><a href="#ArrayList-与-LinkedList-区别" class="headerlink" title="ArrayList 与 LinkedList 区别?"></a>ArrayList 与 LinkedList 区别?</h2><blockquote>
-<p><strong>底层数据结构：</strong> <code>ArrayList</code> 底层使用的是 <strong><code>Object</code> 数组</strong>；<code>LinkedList</code> 底层使用的是 <strong>双向链表</strong> 数据结构，内存一个是连续一个不是连续</p>
-<p><strong>插入和删除的时间复杂度</strong>：arraylist，头插、指定插、头删、指定删除都是On，尾插和尾删除是O1</p>
-<p>lingklist 头插和尾插、头删除、尾删除都是O1，指定位置是On</p>
-<p><strong>内存空间占用</strong>：<font color='blue'><u><em><strong>linkedlist每个节点要存前后指针，所以内存占用大。</strong></em></u></font></p>
-<p>是否安全：两个都是不安全的，局部变量</p>
-</blockquote>
-<hr>
-<h2 id="比较-HashSet、LinkedHashSet-和-TreeSet-三者的异同"><a href="#比较-HashSet、LinkedHashSet-和-TreeSet-三者的异同" class="headerlink" title="比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同"></a>比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同</h2><ul>
-<li><font color='red'><u><em><strong><code>HashSet</code>、<code>LinkedHashSet</code> 和 <code>TreeSet</code> 的主要区别在于底层数据结构不同。<code>HashSet</code> 的底层数据结构是哈希表（基于 <code>HashMap</code> 实现）。<code>LinkedHashSet</code> 的底层数据结构是链表和哈希表。<code>TreeSet</code> 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。</strong></em></u></font></li>
-<li>底层数据结构不同又导致这三者的应用场景不同。<code>HashSet</code> 用于不需要保证元素插入和取出顺序的场景，<code>LinkedHashSet</code> 用于保证元素的插入和取出顺序满足 FIFO 的场景，<code>TreeSet</code> 用于支持对元素自定义排序规则的场景。</li>
-</ul>
-<hr>
-<h2 id="Queue-与-Deque-的区别"><a href="#Queue-与-Deque-的区别" class="headerlink" title="Queue 与 Deque 的区别"></a>Queue 与 Deque 的区别</h2><blockquote>
-<p><code>Queue</code> 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 <strong>先进先出（FIFO）</strong> 规则。</p>
-<p><code>Deque</code> 是双端队列，在队列的两端均可以插入或删除元素。</p>
-</blockquote>
-<h2 id="ArrayDeque-与-LinkedList-的区别"><a href="#ArrayDeque-与-LinkedList-的区别" class="headerlink" title="ArrayDeque 与 LinkedList 的区别"></a>ArrayDeque 与 LinkedList 的区别</h2><blockquote>
-<p><code>ArrayDeque</code> 和 <code>LinkedList</code> 都实现了 <code>Deque</code> 接口，两者都具有队列的功能</p>
-<p><code>ArrayDeque</code> 是基于可变长的数组和双指针来实现，而 <code>LinkedList</code> 则通过链表来实现。</p>
-<p><code>ArrayDeque</code> 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 <code>LinkedList</code> 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。</p>
-</blockquote>
-<h3 id="什么是-BlockingQueue？"><a href="#什么是-BlockingQueue？" class="headerlink" title="什么是 BlockingQueue？"></a>什么是 BlockingQueue？</h3><blockquote>
-<p><code>BlockingQueue</code> （阻塞队列）是一个接口，继承自 <code>Queue</code>。<code>没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。</code>线程安全。</p>
-<p><font color='red'><u><em><strong>阻塞队列有哪些</strong></em></u></font></p>
-<blockquote>
-<p>ArrayBlockingqueue：底层是数组、有界队列。一把锁</p>
-</blockquote>
-<blockquote>
-<p>LinkBlockingQueue：底层是链表、默认无界但是支持有界。头尾两把锁</p>
-</blockquote>
-<blockquote>
-<p>DelayedWorkQueue</p>
-</blockquote>
-<blockquote>
-<p>SynchronousQueue</p>
-</blockquote>
+
+
+## <font color='red'><u>***hashmap和hashset***</u></font>
+
+> hashset还是比较适合去重和集合运算
+>
+> hashmap比较适合键值对这类数据
+
+## 比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同
+
+- <font color='red'><u>***`HashSet`、`LinkedHashSet` 和 `TreeSet` 的主要区别在于底层数据结构不同。`HashSet` 的底层数据结构是哈希表（基于 `HashMap` 实现）。`LinkedHashSet` 的底层数据结构是链表和哈希表。`TreeSet` 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。***</u></font>
+- 底层数据结构不同又导致这三者的应用场景不同。`HashSet` 用于不需要保证元素插入和取出顺序的场景，`LinkedHashSet` 用于保证元素的插入和取出顺序满足 FIFO 的场景，`TreeSet` 用于支持对元素自定义排序规则的场景。
+
+## Queue 与 Deque 的区别
+
+>`Queue` 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 **先进先出（FIFO）** 规则。
+>
+>`Deque` 是双端队列，在队列的两端均可以插入或删除元素。
+
+## ArrayDeque 与 LinkedList 的区别
+
+>`ArrayDeque` 和 `LinkedList` 都实现了 `Deque` 接口，两者都具有队列的功能
+>
+>`ArrayDeque` 是基于可变长的数组和双指针来实现，而 `LinkedList` 则通过链表来实现。
+>
+>`ArrayDeque` 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 `LinkedList` 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。
+
 </blockquote>
 <h1 id="Hashmap："><a href="#Hashmap：" class="headerlink" title="Hashmap："></a>Hashmap：</h1><p>hashmap最关键的是他的<font color='blue'><u><em><strong>底层数据结构、put 扩容 和 线程安全方面的知识。</strong></em></u></font></p>
 <blockquote>
@@ -2374,125 +2368,262 @@
 </ul>
 <h2 id="hashmap的key规范"><a href="#hashmap的key规范" class="headerlink" title="hashmap的key规范"></a>hashmap的key规范</h2><p>用自定义类作为key，必须<font color='red'><u><em><strong>重写equals()和hashCode()方法。</strong></em></u></font></p>
 </blockquote>
-<h2 id="ConcurrentHashMap"><a href="#ConcurrentHashMap" class="headerlink" title="ConcurrentHashMap"></a><strong>ConcurrentHashMap</strong></h2><blockquote>
-<p><code>ConcurrentHashMap</code>是线程安全的，而是通过原子操作和局部加锁的方法保证了多线程的线程安全。</p>
-<p>1.8以前是用16个<code>Segment</code> 分段锁加的Reentranlock。1.8以后现在采用数组+链表+红黑树的形式。添加元素的时候按照代码的流程先判断是不是初始化、节点为空就cas添加，如果正在扩容，就帮助扩容；如果冲突就加synchronized后再插入。</p>
+<h1 id="线程安全容器"><a href="#线程安全容器" class="headerlink" title="线程安全容器"></a><font color='red'><u><em><strong>线程安全容器</strong></em></u></font></h1><blockquote>
+<h2 id="1、ConcurrentHashMap"><a href="#1、ConcurrentHashMap" class="headerlink" title="1、ConcurrentHashMap"></a>1、<strong>ConcurrentHashMap</strong></h2><p><font color='red'><u><em><strong><code>ConcurrentHashMap</code>是线程安全的，而是通过原子操作和局部加锁的方法保证了多线程的线程安全。1.8以前是用16个<code>Segment</code> 分段锁加的Reentranlock。1.8以后现在采用数组+链表+红黑树的形式。添加元素的时候按照代码的流程先判断是不是初始化、节点为空就cas添加，如果正在扩容，就帮助扩容；如果冲突就加synchronized后再插入。</strong></em></u></font></p>
 <p>Java 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。</p>
-<p>具体的代码层面：</p>
+<h2 id="2、CopyOnWriteArrayList（读多写少）"><a href="#2、CopyOnWriteArrayList（读多写少）" class="headerlink" title="2、CopyOnWriteArrayList（读多写少）"></a>2、CopyOnWriteArrayList（读多写少）</h2><p><font color='red'><u><em><strong>原理：读的时候不加锁，对数组进行改变的时候，通过锁 + 数组拷贝 + volatile 关键字保证了线程安全；</strong></em></u></font></p>
+<ul>
+<li><font color='red'><u><em><strong>加锁</strong></em></u></font>；</li>
+<li><font color='red'><u><em><strong>从原数组中拷贝出新数组</strong></em></u></font>；</li>
+<li><font color='red'><u><em><strong>在新数组上进行操作，并把新数组赋值给数组容器</strong></em></u></font>；</li>
+<li><font color='red'><u><em><strong>解锁</strong></em></u></font></li>
+</ul>
+<h2 id="3、BlockingQueue"><a href="#3、BlockingQueue" class="headerlink" title="3、BlockingQueue"></a>3、BlockingQueue</h2><p><code>BlockingQueue</code> （阻塞队列）是一个接口，<font color='red'><u><em><strong>继承自 <code>Queue</code>。<code>没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。</code></strong></em></u></font></p>
+<p><font color='red'><u><em><strong>阻塞队列有哪些</strong></em></u></font></p>
+<blockquote>
+<p>ArrayBlockingqueue：底层是数组、有界队列。一把锁，锁是不分离的</p>
+<p>LinkBlockingQueue：底层是链表、默认无界但是支持有界。头尾两把锁</p>
+<p>PriorityBlockingQueue 由优先级堆支持的无界优先级队列</p>
+<p>DelayedWorkQueue：<font color='blue'><u><em><strong>DelayedWorkQueue是基于堆的数据结构，按照时间顺序将每个任务进行排序，将待执行时间越近的任务放在在队列的队头位置，以便于最先进行执行</strong></em></u></font></p>
+<p>SynchronousQueue</p>
 </blockquote>
-<h2 id="元素排序-Comparable-和-Comparator-有什么区别？"><a href="#元素排序-Comparable-和-Comparator-有什么区别？" class="headerlink" title="元素排序 Comparable 和 Comparator 有什么区别？"></a>元素排序 Comparable 和 Comparator 有什么区别？</h2><p>Comparable：实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。</p>
+</blockquote>
+<h1 id="线程池"><a href="#线程池" class="headerlink" title="线程池"></a><font color='red'><u><em><strong>线程池</strong></em></u></font></h1><blockquote>
+<h2 id="1、ThreadPoolExecutor"><a href="#1、ThreadPoolExecutor" class="headerlink" title="1、ThreadPoolExecutor"></a>1、ThreadPoolExecutor</h2><blockquote>
+<p> <font color='red'><u><em><strong>线程池的类型</strong></em></u></font></p>
+<blockquote>
+<p>FixedThreadPool，没有救济的线程，只有核心线程。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue</p>
+<p>SingleThreadExecutor，核心线程和最大线程就1个。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue</p>
+<p>CachedThreadPool：这个是没有核心线程数，全都是救济线程。阻塞队列是SynchronousQueue</p>
+</blockquote>
+</blockquote>
+<h2 id="2、ScheduledThreadPoolExecutor"><a href="#2、ScheduledThreadPoolExecutor" class="headerlink" title="2、ScheduledThreadPoolExecutor"></a>2、ScheduledThreadPoolExecutor</h2><blockquote>
+<p><font color='blue'><u><em><strong>ScheduledThreadPool：这个是定时执行任务，阻塞队列是DelayedWorkQueue</strong></em></u></font></p>
+</blockquote>
+<blockquote>
+<p>ScheduledThreadPoolExecutor继承了<code>ThreadPoolExecutor</code>，也实现了一个ScheduledExecutorService接口，所以有一些特有的方法：比如schedule</p>
+<p>他有个类DelayedWorkQueue，见上面。还有一个**<code>ScheduledFutureTask</code>**</p>
+<p><font color='red'><u><em><strong>ScheduledThreadPoolExecutor相比Threadpoolexcutor，具备延时执行任务和可周期性执行任务的特性</strong></em></u></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>创建线程的方式</strong></em></u></font></p>
+<p><strong>方式一：通过<code>ThreadPoolExecutor</code>构造方法来创建（推荐）。</strong></p>
+<p><strong>方式二： <code>Executors的工厂方法：比如Executors.newCachedThreadPool()</code>（不推荐）。</strong></p>
+<p>两种方法都在concurrent包下面。</p>
+<blockquote>
+<p>为什么不推荐？我觉得就是Executors提供的创建的几个线程池都有点局限性，都有不足的地方。</p>
+<p>然后像Fixed和Single用的<font color='red'><u><em><strong>工作队列是无界队列</strong></em></u></font>，可能会堆积大量的请求,导致OOM</p>
+<p>还有<font color='red'><u><em><strong>cached和Schedule最大的线程数量是Integer.MAX_VALUE</strong></em></u></font>，可能堆积大量的线程，导致OOM</p>
+</blockquote>
+<h2 id="3、CompletableFuture"><a href="#3、CompletableFuture" class="headerlink" title="3、CompletableFuture"></a>3、CompletableFuture</h2><p><code>CompletableFuture</code>是对<code>Future</code>的扩展和增强。<code>CompletableFuture</code>实现了<code>Future</code>接口，并在此基础上进行了丰富的扩展，完美弥补了<code>Future</code>的局限性，<strong>同时<code>CompletableFuture</code>实现了对任务编排的能力</strong></p>
+</blockquote>
+<h2 id="元素排序-Comparable-和-Comparator-有什么区别？"><a href="#元素排序-Comparable-和-Comparator-有什么区别？" class="headerlink" title="元素排序 Comparable 和 Comparator 有什么区别？"></a>元素排序 Comparable 和 Comparator 有什么区别？</h2><blockquote>
+<p>Comparable：实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。</p>
 <p>Comparator 除了可以通过创建自定义比较器外，还可以通过<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%8C%BF%E5%90%8D%E7%B1%BB&spm=1001.2101.3001.7020">匿名类</a>的方式，更快速、便捷的完成自定义比较器的功能，具体的代码实现如下：</p>
 <p><font color='red'><u><em><strong>Comparable 必须由自定义类内部实现排序方法，而 Comparator 是外部定义并实现排序的</strong></em></u></font></p>
-<p><font color='green'><u><em><strong>Linux常用命令</strong></em></u></font>：<font color='blue'><u><em><strong>cat, pwd, ls、TOP，mpstat，chattr，lsattr</strong></em></u></font></p>
+</blockquote>
+<h1 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a>Linux</h1><p><font color='green'><u><em><strong>Linux常用命令</strong></em></u></font>：<font color='blue'><u><em><strong>cat, pwd, ls、TOP，mpstat，chattr，lsattr</strong></em></u></font></p>
 <p><font color='green'><u><em><strong>怎么排查项目故障</strong></em></u></font>：</p>
 <blockquote>
-<p><font color='red'><u><em><strong>可以用top先看看是cpu还是内存的问题，cpu的话，可以拿到进程id，然后ps H -eo pid,tid,%cpu | grep进程id查看线程，最好jstack查看堆栈信息。内存泄漏的话就jmap -dump一个内存快照，然后加载到visualVM里面。或者jstat看看各个分区的情况和gc的压力</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>可以用top先看看是cpu还是内存的问题，cpu的话，可以拿到进程id，然后ps H -eo pid,tid,%cpu | grep进程id查看线程，最后jstack查看堆栈信息。内存泄漏的话就jmap -dump一个内存快照，然后加载到visualVM里面。或者jstat看看各个分区的情况和gc的压力</strong></em></u></font></p>
 <p>标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、</p>
 </blockquote>
 <p><strong>查看机器的负载情况linux</strong></p>
 <blockquote>
 <p>Top htop mpstat vmstat</p>
 </blockquote>
-<h1 id="Spirng"><a href="#Spirng" class="headerlink" title="Spirng"></a>Spirng</h1><p><strong>Bean是线程安全的吗？</strong></p>
-<blockquote>
-<p>默认单例（可以多例），但是不是线程安全。因为Bean内部的成员变量是共享可修改的。</p>
-</blockquote>
+<h1 id="Spirng"><a href="#Spirng" class="headerlink" title="Spirng"></a>Spirng</h1><blockquote>
 <p><font color='red'><u><em><strong>AOP是什么？</strong></em></u></font></p>
 <blockquote>
-<p><font color='red'><u>*<strong>aop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop 底层是动态代理JDK和CGLIB</strong></u></font></p>
+<p><font color='red'><u><strong>aop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop 底层是动态代理JDK和CGLIB</strong></u></font></p>
+</blockquote>
+<blockquote>
 <p><font color='green'><u><em><strong>有没有用过AOP</strong></em></u></font></p>
+</blockquote>
+<blockquote>
 <p><font color='red'><u><em><strong>有的，我之前在一个分库分表的组件项目里面用到过，就是分库分表要切换数据源，我就是用aop切面去计算出落到哪个库哪个表里面，切入点是一个注解。</strong></em></u></font></p>
 </blockquote>
-<p><strong>IOC</strong></p>
+<p><font color='red'><u><em><strong>IOC</strong></em></u></font></p>
 <blockquote>
 <p><font color='red'><u><em><strong>控制反转的意思，以前我们创建的时候new，但是这种方法很麻烦，且很难处理对象直接的依赖关系。他是把对象创建和对象之间的调用过程，交给spring进行管理。</strong></em></u></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>Bean的生命周期？</strong></em></u></font></p>
+<blockquote>
+<p>1 通过<strong>XML</strong>、注解和配置类等方式加载<strong>Spring Bean</strong></p>
+</blockquote>
+<blockquote>
+<p>2、用<strong>BeanDefinitionReader</strong>把Bean解析成BeanDefinition结构，放到beanDefinitionMap，扫描这个</p>
+</blockquote>
+<blockquote>
+<p>4、从Bean定义里面拿BeanClass的构造函数，通过反射创建Bean，这里构造函数的选用，一般先选有autowire修饰和无参构造函数。</p>
+</blockquote>
+<blockquote>
+<p>5、依赖注入</p>
+</blockquote>
+<blockquote>
+<p>6、处理三个Aware接口，	</p>
+</blockquote>
+<blockquote>
+<p>7、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em></p>
+</blockquote>
+<blockquote>
+<p>8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）</p>
+</blockquote>
+<blockquote>
+<p>9、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em> aop核心底层动态代理</p>
+</blockquote>
+<p><font color='green'><u><em><strong>Bean的循环依赖？</strong></em></u></font></p>
+<blockquote>
+<p>Spring解决这个是用三级缓存或者懒加载（构造函数的循环依赖问题），三次缓存中：<font color='green'><u><em><strong>一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。</strong></em></u></font></p>
+</blockquote>
+<blockquote>
+<p><font color='red'><u><em><strong>为什么三层？</strong></em></u></font></p>
+</blockquote>
+<blockquote>
+<p><strong>所以如果没有AOP的话确实可以两级缓存就可以解决循环依赖的问题，如果加上AOP，两级缓存是无法解决的。如果对象被AOP代理了，我每次从三级缓存中拿到singleFactory对象，执行getObject()方法会产生新的代理对象，所以还要借助另外一个缓存来保存产生的代理对象</strong></p>
+</blockquote>
+<p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231222001434059.png" alt="image-20231222001434059"></p>
+<p><font color='red'><u><em><strong>Springboot启动流程</strong></em></u></font></p>
+<blockquote>
+<p>主要分为4步：服务构建、环境准备、容器创建、填充容器。</p>
+</blockquote>
+<blockquote>
+<p>1、服务构建就是构造springapplication，包括主方法类、确认web服务器、加载spring.factories下的所有初始化类。</p>
+</blockquote>
+<blockquote>
+<p>2、然后调用run方法进入环境准备，通过配置类、和配置文件构造出一个environment，用于后面的容器创建。</p>
+</blockquote>
+<blockquote>
+<p>3、容器创建的话，其实就是创建一个BeanFactory，然后加载bean信息，通过beanDefinitionReader把bean信息读成BeanDefinition并且把他放到beanDefinitionMap里面</p>
+</blockquote>
+<blockquote>
+<p>4、填充容器。就是我们的refresh（）方法，一个12步，但是可以分成四块，预处理，后置处理器，国际化分派器，实例化剩下的所有bean。</p>
+</blockquote>
+<p><font color='red'><u><em><strong>容器初始化流程</strong></em></u></font></p>
+<blockquote>
+<p>1、prepareRefresh()刷新前的预处理：<br>2、obtainFreshBeanFactory()：创建容器对象，实际就是获取一个DefaultListenableBeanFactory：<br>3、prepareBeanFactory(beanFactory)：BeanFactory的预处理工作，向容器中添加一些组件：<br>4、postProcessBeanFactory(beanFactory)：</p>
+</blockquote>
+<blockquote>
+<p>5、invokeBeanFactoryPostProcessors(beanFactory)：即BeanFactory的后置处理器：<br>6、registerBeanPostProcessors(beanFactory)：向容器中注册Bean的后置处理器BeanPostProcessor，它的主要作用是干预Spring初始化bean的流程，从而完成代理、自动注入、循环依赖等功能</p>
+</blockquote>
+<blockquote>
+<p>7、initMessageSource()：初始化MessageSource组件，主要用于做国际化功能，消息绑定与消息解析：<br>8、initApplicationEventMulticaster()：初始化事件派发器，在注册监听器时会用到：</p>
+</blockquote>
+<blockquote>
+<p>9、onRefresh()：留给子容器、子类重写这个方法，在容器刷新的时候可以自定义逻辑</p>
+</blockquote>
+<blockquote>
+<p>10、registerListeners()：注册监听器：将容器中所有的ApplicationListener注册到事件派发器中，并派发之前步骤产生的事件：<br>11、finishBeanFactoryInitialization(beanFactory)：初始化所有剩下的单实例bean，核心方法是preInstantiateSingletons()，会调用getBean()方法创建对象；<br>12、finishRefresh()：发布BeanFactory容器刷新完成事件：</p>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>其实我觉得Spring的IOC容器，主要做三步：</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>1、初始化Spring容器，创建一个DefaultListableBeanFactory</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>2、将配置类的BeanDefinition注册到容器。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>3、Refresh，Refresh又分12步。这12步，可以分成几块。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>第一块：预处理，包括刷新的预处理，然后获取我们刚刚创建的BeanFactory再做预处理。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>第二块：后置处理器，执行BeanFactory的后置处理器，然后在容器里面注册一个Bean的后置处理器。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>第三块：就是一些国际化，事件分派器的东西。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>第四块：非常重要了，finishBeanFactoryInitailization，<strong>初始化所有剩下的单实例bean</strong>，bean的生命周期也从这里开始。</p>
+</blockquote>
+</blockquote>
+<p><font color='red'><u><em><strong>Spring用到的设计模式</strong></em></u></font></p>
+<blockquote>
+<p>单例模式：这个在创建Bean的时候用到，创建单例Bean的时候会先去缓存里面找，如果找不到，在触发createBean方法。</p>
+</blockquote>
+<blockquote>
+<p>工厂模式：就是BeanFactory接口了</p>
+</blockquote>
+<blockquote>
+<p>代理模式：就是aop。jdk和cglib</p>
+</blockquote>
+<blockquote>
+<p>模版模式：jdbcTemplate</p>
+</blockquote>
+<p><font color='red'><u><em><strong>Springboot自动装配？</strong></em></u></font></p>
+<blockquote>
+<p><font color='blue'><u><em><strong>springboot的自动装配是依赖于springbootapplication这个注解，这个注解是一个复合注解，真正实现自动装配的是一个enableautoConfiguration这个注解。 我们引入的starter里面会有@Configuration配置类和@Bean注解声明的Bean对象，然后这个配置类的路径放在spirng.factories下，最后我们spring会通过ImportSelector接口去实现动态的加载，@ConditionalOnBean和@ConditionalOnMissingBean 定义的条件进行选择加载。</strong></em></u></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>Autowire和Resourse</strong></em></u></font></p>
+<blockquote>
+<p><font color='blue'><u><em><strong>spring推荐setter和构造器，但是我们用字段注入比较简单，idea明确不推荐Autowire，我觉得原因是和框架的强耦合。</strong></em></u></font></p>
+</blockquote>
+<p><strong>Bean是线程安全的吗？</strong></p>
+<blockquote>
+<p>默认单例（可以多例），但是不是线程安全。因为Bean内部的成员变量是共享可修改的。</p>
 </blockquote>
 <p><strong>Spring事务失效的场景?</strong></p>
 <blockquote>
 <ul>
-<li><p>自己捕获异常。如果没有抛出会失效，解决方法：手动抛出异常</p>
-</li>
-<li><p>抛出检查异常，因为spring默认只回滚非检查异常。解决方法就是transcantional加rollbackfor &#x3D; exception.class</p>
-</li>
-<li><p>没有用public修饰，</p>
-</li>
+<li>自己捕获异常。如果没有抛出会失效，解决方法：手动抛出异常</li>
 </ul>
 </blockquote>
-<p><strong>Bean的生命周期？</strong></p>
 <blockquote>
-<p>1 通过<strong>XML</strong>、注解和配置类等方式加载<strong>Spring Bean</strong></p>
-<p>2、用<strong>BeanDefinitionReader</strong>把Bean解析成BeanDefinition结构，放到beanDefinitionMap，扫描这个</p>
-<p>4、从Bean定义里面拿BeanClass的构造函数，通过反射创建Bean，这里构造函数的选用，一般先选有autowire修饰和无参构造函数。</p>
-<p>5、依赖注入</p>
-<p>6、处理三个Aware接口，	</p>
-<p>7、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em></p>
-<p>8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）</p>
-<p>9、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em> aop核心底层动态代理</p>
+<ul>
+<li>抛出检查异常，因为spring默认只回滚非检查异常。解决方法就是transcantional加rollbackfor &#x3D; exception.class</li>
+<li>没有用public修饰，</li>
+</ul>
 </blockquote>
 <p><strong>BeanBeanFactory和FactoryBean的区别！</strong></p>
 <blockquote>
 <p>BeanFactory是管理Bean的容器，FactoryBean是一个生产Bean的工厂。</p>
 </blockquote>
-<p><strong>Autowire和Resourse</strong></p>
-<blockquote>
-<p>spring推荐setter和构造器，但是我们用字段注入比较简单，idea明确不推荐Autowire，我觉得原因是和框架的强耦合。</p>
 </blockquote>
-<p><font color='green'><u><em><strong>Bean的循环依赖？</strong></em></u></font></p>
-<blockquote>
-<p>Spring解决这个是用三级缓存或者懒加载（构造函数的循环依赖问题），三次缓存中：<font color='green'><u><em><strong>一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>为什么三层？</strong></em></u></font></p>
-<p><strong>所以如果没有AOP的话确实可以两级缓存就可以解决循环依赖的问题，如果加上AOP，两级缓存是无法解决的。如果对象被AOP代理了，我每次从三级缓存中拿到singleFactory对象，执行getObject()方法会产生新的代理对象，所以还要借助另外一个缓存来保存产生的代理对象</strong></p>
-</blockquote>
-<p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231222001434059.png" alt="image-20231222001434059"></p>
-<p><strong>Spring用到的设计模式</strong></p>
-<p>单例模式：这个在创建Bean的时候用到，创建单例Bean的时候会先去缓存里面找，如果找不到，在触发createBean方法。</p>
-<p>工厂模式：就是BeanFactory接口了</p>
-<p>代理模式：就是aop。jdk和cglib</p>
-<p>模版模式：jdbcTemplate</p>
-<p><strong>容器初始化流程</strong></p>
-<p>1、prepareRefresh()刷新前的预处理：<br>2、obtainFreshBeanFactory()：创建容器对象，实际就是获取一个DefaultListenableBeanFactory：<br>3、prepareBeanFactory(beanFactory)：BeanFactory的预处理工作，向容器中添加一些组件：<br>4、postProcessBeanFactory(beanFactory)：</p>
-<p>5、invokeBeanFactoryPostProcessors(beanFactory)：即BeanFactory的后置处理器：<br>6、registerBeanPostProcessors(beanFactory)：向容器中注册Bean的后置处理器BeanPostProcessor，它的主要作用是干预Spring初始化bean的流程，从而完成代理、自动注入、循环依赖等功能</p>
-<p>7、initMessageSource()：初始化MessageSource组件，主要用于做国际化功能，消息绑定与消息解析：<br>8、initApplicationEventMulticaster()：初始化事件派发器，在注册监听器时会用到：</p>
-<p>9、onRefresh()：留给子容器、子类重写这个方法，在容器刷新的时候可以自定义逻辑</p>
-<p>10、registerListeners()：注册监听器：将容器中所有的ApplicationListener注册到事件派发器中，并派发之前步骤产生的事件：<br>11、finishBeanFactoryInitialization(beanFactory)：初始化所有剩下的单实例bean，核心方法是preInstantiateSingletons()，会调用getBean()方法创建对象；<br>12、finishRefresh()：发布BeanFactory容器刷新完成事件：</p>
-<p>综上所述：</p>
-<blockquote>
-<p>其实我觉得Spring的IOC容器，主要做三步：</p>
-<p>1、初始化Spring容器，创建一个DefaultListableBeanFactory</p>
-<p>2、将配置类的BeanDefinition注册到容器。</p>
-<p>3、Refresh，Refresh又分12步。这12步，可以分成几块。</p>
-<p>第一块：预处理，包括刷新的预处理，然后获取我们刚刚创建的BeanFactory再做预处理。</p>
-<p>第二块：后置处理器，执行BeanFactory的后置处理器，然后在容器里面注册一个Bean的后置处理器。</p>
-<p>第三块：就是一些国际化，事件分派器的东西。</p>
-<p>第四块：非常重要了，finishBeanFactoryInitailization，<strong>初始化所有剩下的单实例bean</strong>，bean的生命周期也从这里开始。</p>
-</blockquote>
-<p><font color='red'><u><em><strong>Springboot启动流程</strong></em></u></font></p>
-<blockquote>
-<p>主要分为4步：服务构建、环境准备、容器创建、填充容器。</p>
-<p>1、服务构建就是构造springapplication，包括主方法类、确认web服务器、加载spring.factories下的所有初始化类。</p>
-<p>2、然后调用run方法进入环境准备，通过配置类、和配置文件构造出一个environment，用于后面的容器创建。</p>
-<p>3、容器创建的话，其实就是创建一个BeanFactory，然后加载bean信息，通过beanDefinitionReader把bean信息读成BeanDefinition并且把他放到beanDefinitionMap里面</p>
-<p>4、填充容器。就是我们的refresh（）方法，一个12步，但是可以分成四块，预处理，后置处理器，国际化分派器，实例化剩下的所有bean。</p>
-</blockquote>
-<p><font color='red'><u><em><strong>Springboot自动配置？</strong></em></u></font></p>
-<p>springboot的main方法会有一个springbootapplication的注解，这个注解有三个注解组成、ComponentScan（扫描包和子包，加载符合条件的组件或bean定义）、SpringbootConfiguration（声明当前是配置类，然后去找被configuration修饰的类，读取信息）、还有一个最重要的EnableAutoConfiguraion，这个就是来启动自动化配置的。这个注解里面有一个Import注解，这个注解会加入一个配置选择类，他会去这个项目和项目引用的jar包的meta-inf的spring.factories找全类名，然后在这些配置类里面根据注解@comditionnalXXX 定义的条件进行选择加载</p>
 <p><strong>MVC的执行流程</strong></p>
 <p>请求发到前端控制器上，然后用处理器映射器找到具体的处理器，使用处理器适配器调用真正的处理器，然后结果转化成JSON响应。</p>
 <blockquote>
 <p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231118193113289.png" alt="image-20231118193113289"></p>
 </blockquote>
-<p><strong>Mybatis怎么传多个参数：</strong></p>
+<h1 id="MyBatis"><a href="#MyBatis" class="headerlink" title="MyBatis"></a>MyBatis</h1><blockquote>
+<p><font color='blue'><u><em><strong>Mybatis怎么传多个参数：</strong></em></u></font></p>
 <blockquote>
 <p>顺序传参</p>
 <p>map传参</p>
 <p>用mybatis的注解</p>
 </blockquote>
-<p><strong>MyBatis中${} 和 #{} 有什么区别</strong></p>
+<p><font color='blue'><u><em><strong>MyBatis中${} 和 #{} 有什么区别</strong></em></u></font></p>
+<blockquote>
 <p>1、功能不同： #{} 是占位符，${} 是直接替换，；2、使用场景不同：普通参数使用 #{}，如果传递的是 SQL 命令或 SQL 关键字，需要使用 ${}，但在使用前一定要做好安全验证；3、安全性不同：使用 ${} 存在安全问题，而 #{} 则不存在安全问题。</p>
+</blockquote>
+</blockquote>
+<h1 id="GIT"><a href="#GIT" class="headerlink" title="GIT"></a>GIT</h1><p><font color='red'><u><em><strong>git rebase 和 git merge</strong></em></u></font></p>
+<blockquote>
+<p>git merge是保留历史的提交，然后new一个新的提交记录</p>
+<p>rebase是一般在非公共分支上rebase，然后合并到main分支，原来的那个分支会被清除。</p>
+</blockquote>
 <p><strong>setNX有什么缺陷？</strong></p>
+<blockquote>
 <p>有单点风险</p>
 <p>可能会导致同一把锁被多人使用</p>
 <p>redlock</p>
+</blockquote>
 
                     
                         
@@ -2506,7 +2637,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -2535,7 +2666,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -2642,7 +2773,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -2671,7 +2802,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -2895,7 +3026,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -2924,7 +3055,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    08 Jul 2023
+		    Jul 08, 2023
     	
     </time>
     
@@ -2979,7 +3110,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -2997,14 +3128,14 @@
             <a
                 class="btn btn--default btn--small"
                 href="/page/2/"
-                aria-label="ÄLTERE BEITRÄGE"
+                aria-label="OLDER POSTS"
             >
-              <span>ÄLTERE BEITRÄGE</span>
+              <span>OLDER POSTS</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">Seite 1 von 5</li>
+        <li class="pagination-number">page 1 of 5</li>
     </ul>
 </div>
 
@@ -3033,7 +3164,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

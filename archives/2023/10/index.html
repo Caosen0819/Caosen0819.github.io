@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv: 2023/10 - 森</title>
+    <title>Archives: 2023/10 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-28T00:00:00+08:00">
 	
-		    28 Oct 2023
+		    Oct 28, 2023
     	
     </time>
     
@@ -331,7 +331,19 @@
 <p>有可能在等锁的释放，</p>
 <p>也有可能全表扫描，然后行数靠后</p>
 </blockquote>
-<h2 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h2><p><strong>全局锁</strong></p>
+<p><font color='red'><u><em><strong>全表扫描会不会把数据库内存打爆</strong></em></u></font></p>
+<blockquote>
+<p>不会</p>
+<p>因为mysql是边读边发，他有一个net_buffer，16k大小，不会server 端保存完整的结果集，如果接收不及时，就堵住MySQL的查询过程，但是绝对不会打爆内存，而且innodb有lru这种内存淘汰策略。</p>
+</blockquote>
+<p><font color='red'><u><em><strong>能不能用join，怎么用</strong></em></u></font></p>
+<blockquote>
+<ol>
+<li>如果可以使用被驱动表的索引，join 语句还是有其优势的； </li>
+<li>在使用 join 的时候，应该让小表做驱动表。</li>
+</ol>
+</blockquote>
+<p><strong>全局锁</strong></p>
 <blockquote>
 <p>典型的使用场景就是做全库的逻辑备份，加了全局锁就是只能读（DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句）</p>
 <p>这样就保证了数据的一致性 和完整性 </p>
@@ -349,19 +361,11 @@
 
 <p>如果在主库上备份，那么在备份期间都不能执行更新，业务基本上就得停摆。</p>
 <p>如果在从库上备份，那么在备份期间从库不能执行主库同步过来的二进制日志（binlog）</p>
-<p>我们可以在InnoDB引擎中，我们可以在备份时加上参数 –single-transaction 参数来完成不加锁的一致 性数据备份。</p>
+<p>我们可以在InnoDB引擎中，我们可以在备份时加上参数 –single-transaction 参数来完成不加锁的一致性数据备份。</p>
 <p><font color='red'><u><em><strong>一般用于备份，但是备份也可以开启事务做，但是需要引擎支持可重复读这种隔离级别。</strong></em></u></font>。</p>
 </blockquote>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysqldump --single-transaction -uroot -pxxx db_name -&gt; xxx.sql;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<p><strong>表级锁</strong></p>
-<blockquote>
-<p>可见存储引擎那篇文章。</p>
-</blockquote>
-<p><strong>行锁</strong></p>
-<blockquote>
-<p>两阶段锁协议：需要的时候加上，结束的时候释放。</p>
-</blockquote>
 
                     
                         
@@ -375,7 +379,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -404,7 +408,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-10T00:00:00+08:00">
 	
-		    10 Oct 2023
+		    Oct 10, 2023
     	
     </time>
     
@@ -499,7 +503,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -528,7 +532,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-09T00:00:00+08:00">
 	
-		    09 Oct 2023
+		    Oct 09, 2023
     	
     </time>
     
@@ -854,7 +858,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -868,7 +872,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -898,7 +902,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

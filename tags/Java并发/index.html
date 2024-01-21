@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    08 Nov 2023
+		    Nov 08, 2023
     	
     </time>
     
@@ -356,7 +356,7 @@
 </ol>
 </blockquote>
 <p><font color='red'><u><em><strong>锁升级</strong></em></u></font></p>
-<p>而Java1.6为了减少性能消耗，引入了“偏向锁”“轻量级锁”。</p>
+<p><font color='blue'><u><em><strong>而Java1.6为了减少性能消耗，引入了“偏向锁”“轻量级锁”。</strong></em></u></font></p>
 <p><strong>偏向锁</strong>（101）</p>
 <blockquote>
 <p>偏向锁是用于没有竞争的时候。</p>
@@ -404,10 +404,14 @@
 <p><font color='red'><u><em><strong>Sync有公平锁 和非公平锁，公平锁和非公平锁区别: 非公平锁在tryacquire的时候，里面有一个步骤是获取同步状态，如果这个同步状态是0的话，说明现在没人拿，我可以去直接去拿，公平锁这里会多一个判断hasQueuedPredecessors，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</strong></em></u></font></p>
 <p><font color='green'><u><em><strong>加入的时候怎么加入的？</strong></em></u></font></p>
 <p><font color='blue'><u><em><strong>新的节点的Pre指向尾结点，然后用cas的方式让尾结点指向新节点，最后尾结点更新。</strong></em></u></font></p>
+<h2 id="Condition"><a href="#Condition" class="headerlink" title="Condition"></a>Condition</h2><p><code>Condition</code>提供了与<code>Object#wait</code>和<code>Object#notify</code>相同的功能，一般和lock搭配使用。他其实是一个条件队列。await的时候会释放锁，signal会回到AQS的同步队列。</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/629921197">https://zhuanlan.zhihu.com/p/629921197</a></p>
 </blockquote>
-<h4 id="3、死锁"><a href="#3、死锁" class="headerlink" title="3、死锁"></a>3、死锁</h4><p>互斥条件：</p>
+<h4 id="4、死锁"><a href="#4、死锁" class="headerlink" title="4、死锁"></a>4、死锁</h4><blockquote>
+<p>互斥条件：</p>
 <p>请求和保持，并且不可被剥夺。</p>
 <p>循环等待：</p>
+</blockquote>
 <p>两个线程，互相请求对方已经持有的资源。</p>
 <p>死锁的检测：</p>
 <ul>
@@ -418,7 +422,7 @@
 <h3 id="4、原子操作的实现原理"><a href="#4、原子操作的实现原理" class="headerlink" title="4、原子操作的实现原理"></a>4、原子操作的实现原理</h3><h4 id="1、处理器如何实现原子操作？"><a href="#1、处理器如何实现原子操作？" class="headerlink" title="1、处理器如何实现原子操作？"></a>1、处理器如何实现原子操作？</h4><p>总线锁：使用LOCK 信号，其他请求都被阻塞，独占共享内存</p>
 <p>缓存锁：所谓缓存锁定是指内存被缓存在处理器的缓存中，当他执行锁操作写回内存的时候，而是修改内部的内存地址，并允许他缓存一致性保证操作原子性。</p>
 <h4 id="2、Java怎么实现原子操作"><a href="#2、Java怎么实现原子操作" class="headerlink" title="2、Java怎么实现原子操作"></a>2、Java怎么实现原子操作</h4><p>锁–JVM实现锁的方式其实都用到了循环CAS</p>
-<p>循环CAS –版本号解决ABA，</p>
+<p>循环CAS –版本号解决ABA</p>
 <h4 id="3、CAS："><a href="#3、CAS：" class="headerlink" title="3、CAS："></a>3、CAS：</h4><p>cas是旧值和获得的值进行对比，如果一样，认为没有被修改过，可以去改，如果不一样就不能修改。</p>
 <p>jdk提供的CAS方案是unsafe类的cas方法，他是调用了一个本地方法，本地方法会调cmpxchg方法，<strong>它是在汇编层级，会禁止变量两侧的指令优化，然后使用cmpxchg指令比较并更新变量值(原子性)，如果是多核则加一个lock锁定(缓存锁、MESI)</strong></p>
 <p>硬件层间不能保证有序和内存可见，只能保证原子，但是加了LOCK就可以保证有序可见了</p>
@@ -450,7 +454,7 @@
 <p><font color='red'><u><strong>JMM设计</strong></u></font>:<font color='red'><u><em><strong>一方面，要为程序员提供足够强的内存可见性保证；另一方面，对编译器和处理器的限制要尽可能地放松 。</strong></em></u></font></p>
 </blockquote>
 <h2 id="4、happens-before-原则"><a href="#4、happens-before-原则" class="headerlink" title="4、happens-before 原则"></a>4、<font color='red'><u><em><strong>happens-before 原则</strong></em></u></font></h2><blockquote>
-<p><font color='blue'><u><em><strong>as-if-serial语义保证单线程内程序的执行结果不被改变，happens-before关系保证正确同步的多线程程序的执行结果不被改变。如果一个操作happens-before另一个操作，那么第一个操作的执行结果将对第二个操作可见，而且第一个操作的执行顺序排在第二个操作之前。</strong></em></u></font></p>
+<p>他是高级的语言层面的一组规范。<font color='blue'><u><em><strong>as-if-serial语义保证单线程内程序的执行结果不被改变，happens-before关系保证正确同步的多线程程序的执行结果不被改变。如果一个操作happens-before另一个操作，那么第一个操作的执行结果将对第二个操作可见，而且第一个操作的执行顺序排在第二个操作之前。</strong></em></u></font></p>
 <p>包括什么程序规则、锁规则、volatile规则、依赖规则</p>
 <p>不过这里我们要强调的一点是：<strong>程序规则和指令重排并不冲突，如果我们要显示的禁止重排序，要让代码按照我们想的执行，就需要显示的建立遵循happens-before的代码，比如synchronized、volatile、lock</strong>。所以我们说happensbefore是给程序员提供的</p>
 </blockquote>
@@ -483,13 +487,6 @@
 <p>SingleThreadExecutor，核心线程和最大线程就1个。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue</p>
 <p>CachedThreadPool：这个是没有核心线程数，全都是救济线程。阻塞队列是SynchronousQueue</p>
 <p>ScheduledThreadPool：这个是定时执行任务，阻塞队列是DelayedWorkQueue</p>
-</blockquote>
-<p><font color='red'><u><em><strong>阻塞队列有哪些</strong></em></u></font></p>
-<blockquote>
-<p>ArrayBlockingqueue：底层是数组、有界队列。一把锁</p>
-<p>LinkBlockingQueue：底层是链表、默认无界但是支持有界。头尾两把锁</p>
-<p>DelayedWorkQueue</p>
-<p>SynchronousQueue</p>
 </blockquote>
 </blockquote>
 <p><font color='red'><u><strong>runnable和callable有什么区别？</strong></u></font></p>
@@ -615,7 +612,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -629,7 +626,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -658,7 +655,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

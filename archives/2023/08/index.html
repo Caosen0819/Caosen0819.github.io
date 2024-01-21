@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv: 2023/8 - 森</title>
+    <title>Archives: 2023/8 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    07 Aug 2023
+		    Aug 07, 2023
     	
     </time>
     
@@ -279,7 +279,6 @@
 <blockquote>
 <p><font color='red'><u><em><strong>Arraylist的底层数据结构是object[]数组，构造函数分有参无参，如果是无参就是空数组，如果是有参，就用你定义的那个初始大小。如果参数是容器，那就是把容器转成数组copy给object。关键方法就是add方法，需要保证容量够用才能添加元素，所以会在添加之前进行一个ensurecapacity的过程。他会先计算mincapacity的值，他会拿mincapacity去和现在的数组长度比较，如果大了说明要扩容，扩容的过程是先×1.5看看够不够，够的话就1.5，不够就用新的这个mincapacity。</strong></em></u></font>如果minCapacity大于最大容量，则新容量则为<code>Integer.MAX_VALUE</code>，否则，新容量大小则为 MAX_ARRAY_SIZE 即为 <code>Integer.MAX_VALUE - 8</code></p>
 <blockquote>
-<p>了解比较简单</p>
 <p><font color='blue'><u><em><strong>对于插入</strong></em></u></font>：如果不需要扩容，其实无论是头插指定位置插入都是O(n)，尾插是O(1)。如果需要扩容，就得再做一次扩容，O(n)，然后在插入，就是刚才讲的时间复杂度。</p>
 <p><font color='blue'><u><em><strong>对于删除</strong></em></u></font>：头删和指定位置删除是O(n)，尾部删除是O(1)</p>
 </blockquote>
@@ -292,52 +291,49 @@
 <li>指定位置插入&#x2F;删除：需要先移动到指定位置，再修改指定节点的指针完成插入&#x2F;删除，因此需要移动平均 n&#x2F;2 个元素，时间复杂度为 O(n)。</li>
 </ul>
 </blockquote>
-<h2 id="如何实现数组和arraylist之间的转换"><a href="#如何实现数组和arraylist之间的转换" class="headerlink" title="如何实现数组和arraylist之间的转换"></a>如何实现数组和arraylist之间的转换</h2><p>List.toarray  (修改原先list，array不受影响)</p>
+<h2 id="ArrayList-与-LinkedList区别"><a href="#ArrayList-与-LinkedList区别" class="headerlink" title="ArrayList 与 LinkedList区别?"></a>ArrayList 与 LinkedList区别?</h2><blockquote>
+<p><strong>底层数据结构：</strong> <code>ArrayList</code> 底层使用的是 <strong><code>Object</code> 数组</strong>；<code>LinkedList</code> 底层使用的是 <strong>双向链表</strong> 数据结构，内存一个是连续一个不是连续</p>
+<p><strong>插入和删除的时间复杂度</strong>：arraylist，头插、指定插、头删、指定删除都是On，尾插和尾删除是O1。linkedlist 头插和尾插、头删除、尾删除都是O1，指定位置是On</p>
+<p><strong>内存空间占用</strong>：<font color='blue'><u><em><strong>linkedlist每个节点要存前后指针，所以内存占用大。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>使用场景：</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>如果需要频繁进行随机访问和查询操作的场景，例如按索引读取数据或搜索特定元素，应该选择ArrayList。</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>如果需要频繁进行插入、删除或位置变动较多的场景，特别是在链表的首尾位置进行操作，那么LinkedList是更合适的选择。</strong></em></u></font></p>
+</blockquote>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><blockquote>
+<p><font color='blue'><u><em><strong>如何实现数组和arraylist之间的转换</strong></em></u></font></p>
+<p>List.toarray  (修改原先list，array不受影响)</p>
 <p>Arrays.aslist （受影响）</p>
-<blockquote>
 <p><T>&lt;?&gt;</p>
 <p><T>主要用于类或方法上，对这个类或者方法里面的泛型全是一样的。</p>
 <?>一般用在变量上，有界通配符，对类型做一定的限制。
 
-## 
-</blockquote>
-<h2 id="ArrayList-与-LinkedList-区别"><a href="#ArrayList-与-LinkedList-区别" class="headerlink" title="ArrayList 与 LinkedList 区别?"></a>ArrayList 与 LinkedList 区别?</h2><blockquote>
-<p><strong>底层数据结构：</strong> <code>ArrayList</code> 底层使用的是 <strong><code>Object</code> 数组</strong>；<code>LinkedList</code> 底层使用的是 <strong>双向链表</strong> 数据结构，内存一个是连续一个不是连续</p>
-<p><strong>插入和删除的时间复杂度</strong>：arraylist，头插、指定插、头删、指定删除都是On，尾插和尾删除是O1</p>
-<p>lingklist 头插和尾插、头删除、尾删除都是O1，指定位置是On</p>
-<p><strong>内存空间占用</strong>：<font color='blue'><u><em><strong>linkedlist每个节点要存前后指针，所以内存占用大。</strong></em></u></font></p>
-<p>是否安全：两个都是不安全的，局部变量</p>
-</blockquote>
-<hr>
-<h2 id="比较-HashSet、LinkedHashSet-和-TreeSet-三者的异同"><a href="#比较-HashSet、LinkedHashSet-和-TreeSet-三者的异同" class="headerlink" title="比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同"></a>比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同</h2><ul>
-<li><font color='red'><u><em><strong><code>HashSet</code>、<code>LinkedHashSet</code> 和 <code>TreeSet</code> 的主要区别在于底层数据结构不同。<code>HashSet</code> 的底层数据结构是哈希表（基于 <code>HashMap</code> 实现）。<code>LinkedHashSet</code> 的底层数据结构是链表和哈希表。<code>TreeSet</code> 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。</strong></em></u></font></li>
-<li>底层数据结构不同又导致这三者的应用场景不同。<code>HashSet</code> 用于不需要保证元素插入和取出顺序的场景，<code>LinkedHashSet</code> 用于保证元素的插入和取出顺序满足 FIFO 的场景，<code>TreeSet</code> 用于支持对元素自定义排序规则的场景。</li>
-</ul>
-<hr>
-<h2 id="Queue-与-Deque-的区别"><a href="#Queue-与-Deque-的区别" class="headerlink" title="Queue 与 Deque 的区别"></a>Queue 与 Deque 的区别</h2><blockquote>
-<p><code>Queue</code> 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 <strong>先进先出（FIFO）</strong> 规则。</p>
-<p><code>Deque</code> 是双端队列，在队列的两端均可以插入或删除元素。</p>
-</blockquote>
-<h2 id="ArrayDeque-与-LinkedList-的区别"><a href="#ArrayDeque-与-LinkedList-的区别" class="headerlink" title="ArrayDeque 与 LinkedList 的区别"></a>ArrayDeque 与 LinkedList 的区别</h2><blockquote>
-<p><code>ArrayDeque</code> 和 <code>LinkedList</code> 都实现了 <code>Deque</code> 接口，两者都具有队列的功能</p>
-<p><code>ArrayDeque</code> 是基于可变长的数组和双指针来实现，而 <code>LinkedList</code> 则通过链表来实现。</p>
-<p><code>ArrayDeque</code> 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 <code>LinkedList</code> 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。</p>
-</blockquote>
-<h3 id="什么是-BlockingQueue？"><a href="#什么是-BlockingQueue？" class="headerlink" title="什么是 BlockingQueue？"></a>什么是 BlockingQueue？</h3><blockquote>
-<p><code>BlockingQueue</code> （阻塞队列）是一个接口，继承自 <code>Queue</code>。<code>没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。</code>线程安全。</p>
-<p><font color='red'><u><em><strong>阻塞队列有哪些</strong></em></u></font></p>
-<blockquote>
-<p>ArrayBlockingqueue：底层是数组、有界队列。一把锁</p>
-</blockquote>
-<blockquote>
-<p>LinkBlockingQueue：底层是链表、默认无界但是支持有界。头尾两把锁</p>
-</blockquote>
-<blockquote>
-<p>DelayedWorkQueue</p>
-</blockquote>
-<blockquote>
-<p>SynchronousQueue</p>
-</blockquote>
+
+
+## <font color='red'><u>***hashmap和hashset***</u></font>
+
+> hashset还是比较适合去重和集合运算
+>
+> hashmap比较适合键值对这类数据
+
+## 比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同
+
+- <font color='red'><u>***`HashSet`、`LinkedHashSet` 和 `TreeSet` 的主要区别在于底层数据结构不同。`HashSet` 的底层数据结构是哈希表（基于 `HashMap` 实现）。`LinkedHashSet` 的底层数据结构是链表和哈希表。`TreeSet` 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。***</u></font>
+- 底层数据结构不同又导致这三者的应用场景不同。`HashSet` 用于不需要保证元素插入和取出顺序的场景，`LinkedHashSet` 用于保证元素的插入和取出顺序满足 FIFO 的场景，`TreeSet` 用于支持对元素自定义排序规则的场景。
+
+## Queue 与 Deque 的区别
+
+>`Queue` 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 **先进先出（FIFO）** 规则。
+>
+>`Deque` 是双端队列，在队列的两端均可以插入或删除元素。
+
+## ArrayDeque 与 LinkedList 的区别
+
+>`ArrayDeque` 和 `LinkedList` 都实现了 `Deque` 接口，两者都具有队列的功能
+>
+>`ArrayDeque` 是基于可变长的数组和双指针来实现，而 `LinkedList` 则通过链表来实现。
+>
+>`ArrayDeque` 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 `LinkedList` 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。
+
 </blockquote>
 <h1 id="Hashmap："><a href="#Hashmap：" class="headerlink" title="Hashmap："></a>Hashmap：</h1><p>hashmap最关键的是他的<font color='blue'><u><em><strong>底层数据结构、put 扩容 和 线程安全方面的知识。</strong></em></u></font></p>
 <blockquote>
@@ -370,125 +366,262 @@
 </ul>
 <h2 id="hashmap的key规范"><a href="#hashmap的key规范" class="headerlink" title="hashmap的key规范"></a>hashmap的key规范</h2><p>用自定义类作为key，必须<font color='red'><u><em><strong>重写equals()和hashCode()方法。</strong></em></u></font></p>
 </blockquote>
-<h2 id="ConcurrentHashMap"><a href="#ConcurrentHashMap" class="headerlink" title="ConcurrentHashMap"></a><strong>ConcurrentHashMap</strong></h2><blockquote>
-<p><code>ConcurrentHashMap</code>是线程安全的，而是通过原子操作和局部加锁的方法保证了多线程的线程安全。</p>
-<p>1.8以前是用16个<code>Segment</code> 分段锁加的Reentranlock。1.8以后现在采用数组+链表+红黑树的形式。添加元素的时候按照代码的流程先判断是不是初始化、节点为空就cas添加，如果正在扩容，就帮助扩容；如果冲突就加synchronized后再插入。</p>
+<h1 id="线程安全容器"><a href="#线程安全容器" class="headerlink" title="线程安全容器"></a><font color='red'><u><em><strong>线程安全容器</strong></em></u></font></h1><blockquote>
+<h2 id="1、ConcurrentHashMap"><a href="#1、ConcurrentHashMap" class="headerlink" title="1、ConcurrentHashMap"></a>1、<strong>ConcurrentHashMap</strong></h2><p><font color='red'><u><em><strong><code>ConcurrentHashMap</code>是线程安全的，而是通过原子操作和局部加锁的方法保证了多线程的线程安全。1.8以前是用16个<code>Segment</code> 分段锁加的Reentranlock。1.8以后现在采用数组+链表+红黑树的形式。添加元素的时候按照代码的流程先判断是不是初始化、节点为空就cas添加，如果正在扩容，就帮助扩容；如果冲突就加synchronized后再插入。</strong></em></u></font></p>
 <p>Java 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。</p>
-<p>具体的代码层面：</p>
+<h2 id="2、CopyOnWriteArrayList（读多写少）"><a href="#2、CopyOnWriteArrayList（读多写少）" class="headerlink" title="2、CopyOnWriteArrayList（读多写少）"></a>2、CopyOnWriteArrayList（读多写少）</h2><p><font color='red'><u><em><strong>原理：读的时候不加锁，对数组进行改变的时候，通过锁 + 数组拷贝 + volatile 关键字保证了线程安全；</strong></em></u></font></p>
+<ul>
+<li><font color='red'><u><em><strong>加锁</strong></em></u></font>；</li>
+<li><font color='red'><u><em><strong>从原数组中拷贝出新数组</strong></em></u></font>；</li>
+<li><font color='red'><u><em><strong>在新数组上进行操作，并把新数组赋值给数组容器</strong></em></u></font>；</li>
+<li><font color='red'><u><em><strong>解锁</strong></em></u></font></li>
+</ul>
+<h2 id="3、BlockingQueue"><a href="#3、BlockingQueue" class="headerlink" title="3、BlockingQueue"></a>3、BlockingQueue</h2><p><code>BlockingQueue</code> （阻塞队列）是一个接口，<font color='red'><u><em><strong>继承自 <code>Queue</code>。<code>没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。</code></strong></em></u></font></p>
+<p><font color='red'><u><em><strong>阻塞队列有哪些</strong></em></u></font></p>
+<blockquote>
+<p>ArrayBlockingqueue：底层是数组、有界队列。一把锁，锁是不分离的</p>
+<p>LinkBlockingQueue：底层是链表、默认无界但是支持有界。头尾两把锁</p>
+<p>PriorityBlockingQueue 由优先级堆支持的无界优先级队列</p>
+<p>DelayedWorkQueue：<font color='blue'><u><em><strong>DelayedWorkQueue是基于堆的数据结构，按照时间顺序将每个任务进行排序，将待执行时间越近的任务放在在队列的队头位置，以便于最先进行执行</strong></em></u></font></p>
+<p>SynchronousQueue</p>
 </blockquote>
-<h2 id="元素排序-Comparable-和-Comparator-有什么区别？"><a href="#元素排序-Comparable-和-Comparator-有什么区别？" class="headerlink" title="元素排序 Comparable 和 Comparator 有什么区别？"></a>元素排序 Comparable 和 Comparator 有什么区别？</h2><p>Comparable：实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。</p>
+</blockquote>
+<h1 id="线程池"><a href="#线程池" class="headerlink" title="线程池"></a><font color='red'><u><em><strong>线程池</strong></em></u></font></h1><blockquote>
+<h2 id="1、ThreadPoolExecutor"><a href="#1、ThreadPoolExecutor" class="headerlink" title="1、ThreadPoolExecutor"></a>1、ThreadPoolExecutor</h2><blockquote>
+<p> <font color='red'><u><em><strong>线程池的类型</strong></em></u></font></p>
+<blockquote>
+<p>FixedThreadPool，没有救济的线程，只有核心线程。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue</p>
+<p>SingleThreadExecutor，核心线程和最大线程就1个。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue</p>
+<p>CachedThreadPool：这个是没有核心线程数，全都是救济线程。阻塞队列是SynchronousQueue</p>
+</blockquote>
+</blockquote>
+<h2 id="2、ScheduledThreadPoolExecutor"><a href="#2、ScheduledThreadPoolExecutor" class="headerlink" title="2、ScheduledThreadPoolExecutor"></a>2、ScheduledThreadPoolExecutor</h2><blockquote>
+<p><font color='blue'><u><em><strong>ScheduledThreadPool：这个是定时执行任务，阻塞队列是DelayedWorkQueue</strong></em></u></font></p>
+</blockquote>
+<blockquote>
+<p>ScheduledThreadPoolExecutor继承了<code>ThreadPoolExecutor</code>，也实现了一个ScheduledExecutorService接口，所以有一些特有的方法：比如schedule</p>
+<p>他有个类DelayedWorkQueue，见上面。还有一个**<code>ScheduledFutureTask</code>**</p>
+<p><font color='red'><u><em><strong>ScheduledThreadPoolExecutor相比Threadpoolexcutor，具备延时执行任务和可周期性执行任务的特性</strong></em></u></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>创建线程的方式</strong></em></u></font></p>
+<p><strong>方式一：通过<code>ThreadPoolExecutor</code>构造方法来创建（推荐）。</strong></p>
+<p><strong>方式二： <code>Executors的工厂方法：比如Executors.newCachedThreadPool()</code>（不推荐）。</strong></p>
+<p>两种方法都在concurrent包下面。</p>
+<blockquote>
+<p>为什么不推荐？我觉得就是Executors提供的创建的几个线程池都有点局限性，都有不足的地方。</p>
+<p>然后像Fixed和Single用的<font color='red'><u><em><strong>工作队列是无界队列</strong></em></u></font>，可能会堆积大量的请求,导致OOM</p>
+<p>还有<font color='red'><u><em><strong>cached和Schedule最大的线程数量是Integer.MAX_VALUE</strong></em></u></font>，可能堆积大量的线程，导致OOM</p>
+</blockquote>
+<h2 id="3、CompletableFuture"><a href="#3、CompletableFuture" class="headerlink" title="3、CompletableFuture"></a>3、CompletableFuture</h2><p><code>CompletableFuture</code>是对<code>Future</code>的扩展和增强。<code>CompletableFuture</code>实现了<code>Future</code>接口，并在此基础上进行了丰富的扩展，完美弥补了<code>Future</code>的局限性，<strong>同时<code>CompletableFuture</code>实现了对任务编排的能力</strong></p>
+</blockquote>
+<h2 id="元素排序-Comparable-和-Comparator-有什么区别？"><a href="#元素排序-Comparable-和-Comparator-有什么区别？" class="headerlink" title="元素排序 Comparable 和 Comparator 有什么区别？"></a>元素排序 Comparable 和 Comparator 有什么区别？</h2><blockquote>
+<p>Comparable：实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。</p>
 <p>Comparator 除了可以通过创建自定义比较器外，还可以通过<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%8C%BF%E5%90%8D%E7%B1%BB&spm=1001.2101.3001.7020">匿名类</a>的方式，更快速、便捷的完成自定义比较器的功能，具体的代码实现如下：</p>
 <p><font color='red'><u><em><strong>Comparable 必须由自定义类内部实现排序方法，而 Comparator 是外部定义并实现排序的</strong></em></u></font></p>
-<p><font color='green'><u><em><strong>Linux常用命令</strong></em></u></font>：<font color='blue'><u><em><strong>cat, pwd, ls、TOP，mpstat，chattr，lsattr</strong></em></u></font></p>
+</blockquote>
+<h1 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a>Linux</h1><p><font color='green'><u><em><strong>Linux常用命令</strong></em></u></font>：<font color='blue'><u><em><strong>cat, pwd, ls、TOP，mpstat，chattr，lsattr</strong></em></u></font></p>
 <p><font color='green'><u><em><strong>怎么排查项目故障</strong></em></u></font>：</p>
 <blockquote>
-<p><font color='red'><u><em><strong>可以用top先看看是cpu还是内存的问题，cpu的话，可以拿到进程id，然后ps H -eo pid,tid,%cpu | grep进程id查看线程，最好jstack查看堆栈信息。内存泄漏的话就jmap -dump一个内存快照，然后加载到visualVM里面。或者jstat看看各个分区的情况和gc的压力</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>可以用top先看看是cpu还是内存的问题，cpu的话，可以拿到进程id，然后ps H -eo pid,tid,%cpu | grep进程id查看线程，最后jstack查看堆栈信息。内存泄漏的话就jmap -dump一个内存快照，然后加载到visualVM里面。或者jstat看看各个分区的情况和gc的压力</strong></em></u></font></p>
 <p>标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、</p>
 </blockquote>
 <p><strong>查看机器的负载情况linux</strong></p>
 <blockquote>
 <p>Top htop mpstat vmstat</p>
 </blockquote>
-<h1 id="Spirng"><a href="#Spirng" class="headerlink" title="Spirng"></a>Spirng</h1><p><strong>Bean是线程安全的吗？</strong></p>
-<blockquote>
-<p>默认单例（可以多例），但是不是线程安全。因为Bean内部的成员变量是共享可修改的。</p>
-</blockquote>
+<h1 id="Spirng"><a href="#Spirng" class="headerlink" title="Spirng"></a>Spirng</h1><blockquote>
 <p><font color='red'><u><em><strong>AOP是什么？</strong></em></u></font></p>
 <blockquote>
-<p><font color='red'><u>*<strong>aop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop 底层是动态代理JDK和CGLIB</strong></u></font></p>
+<p><font color='red'><u><strong>aop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop 底层是动态代理JDK和CGLIB</strong></u></font></p>
+</blockquote>
+<blockquote>
 <p><font color='green'><u><em><strong>有没有用过AOP</strong></em></u></font></p>
+</blockquote>
+<blockquote>
 <p><font color='red'><u><em><strong>有的，我之前在一个分库分表的组件项目里面用到过，就是分库分表要切换数据源，我就是用aop切面去计算出落到哪个库哪个表里面，切入点是一个注解。</strong></em></u></font></p>
 </blockquote>
-<p><strong>IOC</strong></p>
+<p><font color='red'><u><em><strong>IOC</strong></em></u></font></p>
 <blockquote>
 <p><font color='red'><u><em><strong>控制反转的意思，以前我们创建的时候new，但是这种方法很麻烦，且很难处理对象直接的依赖关系。他是把对象创建和对象之间的调用过程，交给spring进行管理。</strong></em></u></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>Bean的生命周期？</strong></em></u></font></p>
+<blockquote>
+<p>1 通过<strong>XML</strong>、注解和配置类等方式加载<strong>Spring Bean</strong></p>
+</blockquote>
+<blockquote>
+<p>2、用<strong>BeanDefinitionReader</strong>把Bean解析成BeanDefinition结构，放到beanDefinitionMap，扫描这个</p>
+</blockquote>
+<blockquote>
+<p>4、从Bean定义里面拿BeanClass的构造函数，通过反射创建Bean，这里构造函数的选用，一般先选有autowire修饰和无参构造函数。</p>
+</blockquote>
+<blockquote>
+<p>5、依赖注入</p>
+</blockquote>
+<blockquote>
+<p>6、处理三个Aware接口，	</p>
+</blockquote>
+<blockquote>
+<p>7、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em></p>
+</blockquote>
+<blockquote>
+<p>8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）</p>
+</blockquote>
+<blockquote>
+<p>9、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em> aop核心底层动态代理</p>
+</blockquote>
+<p><font color='green'><u><em><strong>Bean的循环依赖？</strong></em></u></font></p>
+<blockquote>
+<p>Spring解决这个是用三级缓存或者懒加载（构造函数的循环依赖问题），三次缓存中：<font color='green'><u><em><strong>一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。</strong></em></u></font></p>
+</blockquote>
+<blockquote>
+<p><font color='red'><u><em><strong>为什么三层？</strong></em></u></font></p>
+</blockquote>
+<blockquote>
+<p><strong>所以如果没有AOP的话确实可以两级缓存就可以解决循环依赖的问题，如果加上AOP，两级缓存是无法解决的。如果对象被AOP代理了，我每次从三级缓存中拿到singleFactory对象，执行getObject()方法会产生新的代理对象，所以还要借助另外一个缓存来保存产生的代理对象</strong></p>
+</blockquote>
+<p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231222001434059.png" alt="image-20231222001434059"></p>
+<p><font color='red'><u><em><strong>Springboot启动流程</strong></em></u></font></p>
+<blockquote>
+<p>主要分为4步：服务构建、环境准备、容器创建、填充容器。</p>
+</blockquote>
+<blockquote>
+<p>1、服务构建就是构造springapplication，包括主方法类、确认web服务器、加载spring.factories下的所有初始化类。</p>
+</blockquote>
+<blockquote>
+<p>2、然后调用run方法进入环境准备，通过配置类、和配置文件构造出一个environment，用于后面的容器创建。</p>
+</blockquote>
+<blockquote>
+<p>3、容器创建的话，其实就是创建一个BeanFactory，然后加载bean信息，通过beanDefinitionReader把bean信息读成BeanDefinition并且把他放到beanDefinitionMap里面</p>
+</blockquote>
+<blockquote>
+<p>4、填充容器。就是我们的refresh（）方法，一个12步，但是可以分成四块，预处理，后置处理器，国际化分派器，实例化剩下的所有bean。</p>
+</blockquote>
+<p><font color='red'><u><em><strong>容器初始化流程</strong></em></u></font></p>
+<blockquote>
+<p>1、prepareRefresh()刷新前的预处理：<br>2、obtainFreshBeanFactory()：创建容器对象，实际就是获取一个DefaultListenableBeanFactory：<br>3、prepareBeanFactory(beanFactory)：BeanFactory的预处理工作，向容器中添加一些组件：<br>4、postProcessBeanFactory(beanFactory)：</p>
+</blockquote>
+<blockquote>
+<p>5、invokeBeanFactoryPostProcessors(beanFactory)：即BeanFactory的后置处理器：<br>6、registerBeanPostProcessors(beanFactory)：向容器中注册Bean的后置处理器BeanPostProcessor，它的主要作用是干预Spring初始化bean的流程，从而完成代理、自动注入、循环依赖等功能</p>
+</blockquote>
+<blockquote>
+<p>7、initMessageSource()：初始化MessageSource组件，主要用于做国际化功能，消息绑定与消息解析：<br>8、initApplicationEventMulticaster()：初始化事件派发器，在注册监听器时会用到：</p>
+</blockquote>
+<blockquote>
+<p>9、onRefresh()：留给子容器、子类重写这个方法，在容器刷新的时候可以自定义逻辑</p>
+</blockquote>
+<blockquote>
+<p>10、registerListeners()：注册监听器：将容器中所有的ApplicationListener注册到事件派发器中，并派发之前步骤产生的事件：<br>11、finishBeanFactoryInitialization(beanFactory)：初始化所有剩下的单实例bean，核心方法是preInstantiateSingletons()，会调用getBean()方法创建对象；<br>12、finishRefresh()：发布BeanFactory容器刷新完成事件：</p>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>其实我觉得Spring的IOC容器，主要做三步：</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>1、初始化Spring容器，创建一个DefaultListableBeanFactory</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>2、将配置类的BeanDefinition注册到容器。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>3、Refresh，Refresh又分12步。这12步，可以分成几块。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>第一块：预处理，包括刷新的预处理，然后获取我们刚刚创建的BeanFactory再做预处理。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>第二块：后置处理器，执行BeanFactory的后置处理器，然后在容器里面注册一个Bean的后置处理器。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>第三块：就是一些国际化，事件分派器的东西。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>第四块：非常重要了，finishBeanFactoryInitailization，<strong>初始化所有剩下的单实例bean</strong>，bean的生命周期也从这里开始。</p>
+</blockquote>
+</blockquote>
+<p><font color='red'><u><em><strong>Spring用到的设计模式</strong></em></u></font></p>
+<blockquote>
+<p>单例模式：这个在创建Bean的时候用到，创建单例Bean的时候会先去缓存里面找，如果找不到，在触发createBean方法。</p>
+</blockquote>
+<blockquote>
+<p>工厂模式：就是BeanFactory接口了</p>
+</blockquote>
+<blockquote>
+<p>代理模式：就是aop。jdk和cglib</p>
+</blockquote>
+<blockquote>
+<p>模版模式：jdbcTemplate</p>
+</blockquote>
+<p><font color='red'><u><em><strong>Springboot自动装配？</strong></em></u></font></p>
+<blockquote>
+<p><font color='blue'><u><em><strong>springboot的自动装配是依赖于springbootapplication这个注解，这个注解是一个复合注解，真正实现自动装配的是一个enableautoConfiguration这个注解。 我们引入的starter里面会有@Configuration配置类和@Bean注解声明的Bean对象，然后这个配置类的路径放在spirng.factories下，最后我们spring会通过ImportSelector接口去实现动态的加载，@ConditionalOnBean和@ConditionalOnMissingBean 定义的条件进行选择加载。</strong></em></u></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>Autowire和Resourse</strong></em></u></font></p>
+<blockquote>
+<p><font color='blue'><u><em><strong>spring推荐setter和构造器，但是我们用字段注入比较简单，idea明确不推荐Autowire，我觉得原因是和框架的强耦合。</strong></em></u></font></p>
+</blockquote>
+<p><strong>Bean是线程安全的吗？</strong></p>
+<blockquote>
+<p>默认单例（可以多例），但是不是线程安全。因为Bean内部的成员变量是共享可修改的。</p>
 </blockquote>
 <p><strong>Spring事务失效的场景?</strong></p>
 <blockquote>
 <ul>
-<li><p>自己捕获异常。如果没有抛出会失效，解决方法：手动抛出异常</p>
-</li>
-<li><p>抛出检查异常，因为spring默认只回滚非检查异常。解决方法就是transcantional加rollbackfor &#x3D; exception.class</p>
-</li>
-<li><p>没有用public修饰，</p>
-</li>
+<li>自己捕获异常。如果没有抛出会失效，解决方法：手动抛出异常</li>
 </ul>
 </blockquote>
-<p><strong>Bean的生命周期？</strong></p>
 <blockquote>
-<p>1 通过<strong>XML</strong>、注解和配置类等方式加载<strong>Spring Bean</strong></p>
-<p>2、用<strong>BeanDefinitionReader</strong>把Bean解析成BeanDefinition结构，放到beanDefinitionMap，扫描这个</p>
-<p>4、从Bean定义里面拿BeanClass的构造函数，通过反射创建Bean，这里构造函数的选用，一般先选有autowire修饰和无参构造函数。</p>
-<p>5、依赖注入</p>
-<p>6、处理三个Aware接口，	</p>
-<p>7、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em></p>
-<p>8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）</p>
-<p>9、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em> aop核心底层动态代理</p>
+<ul>
+<li>抛出检查异常，因为spring默认只回滚非检查异常。解决方法就是transcantional加rollbackfor &#x3D; exception.class</li>
+<li>没有用public修饰，</li>
+</ul>
 </blockquote>
 <p><strong>BeanBeanFactory和FactoryBean的区别！</strong></p>
 <blockquote>
 <p>BeanFactory是管理Bean的容器，FactoryBean是一个生产Bean的工厂。</p>
 </blockquote>
-<p><strong>Autowire和Resourse</strong></p>
-<blockquote>
-<p>spring推荐setter和构造器，但是我们用字段注入比较简单，idea明确不推荐Autowire，我觉得原因是和框架的强耦合。</p>
 </blockquote>
-<p><font color='green'><u><em><strong>Bean的循环依赖？</strong></em></u></font></p>
-<blockquote>
-<p>Spring解决这个是用三级缓存或者懒加载（构造函数的循环依赖问题），三次缓存中：<font color='green'><u><em><strong>一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>为什么三层？</strong></em></u></font></p>
-<p><strong>所以如果没有AOP的话确实可以两级缓存就可以解决循环依赖的问题，如果加上AOP，两级缓存是无法解决的。如果对象被AOP代理了，我每次从三级缓存中拿到singleFactory对象，执行getObject()方法会产生新的代理对象，所以还要借助另外一个缓存来保存产生的代理对象</strong></p>
-</blockquote>
-<p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231222001434059.png" alt="image-20231222001434059"></p>
-<p><strong>Spring用到的设计模式</strong></p>
-<p>单例模式：这个在创建Bean的时候用到，创建单例Bean的时候会先去缓存里面找，如果找不到，在触发createBean方法。</p>
-<p>工厂模式：就是BeanFactory接口了</p>
-<p>代理模式：就是aop。jdk和cglib</p>
-<p>模版模式：jdbcTemplate</p>
-<p><strong>容器初始化流程</strong></p>
-<p>1、prepareRefresh()刷新前的预处理：<br>2、obtainFreshBeanFactory()：创建容器对象，实际就是获取一个DefaultListenableBeanFactory：<br>3、prepareBeanFactory(beanFactory)：BeanFactory的预处理工作，向容器中添加一些组件：<br>4、postProcessBeanFactory(beanFactory)：</p>
-<p>5、invokeBeanFactoryPostProcessors(beanFactory)：即BeanFactory的后置处理器：<br>6、registerBeanPostProcessors(beanFactory)：向容器中注册Bean的后置处理器BeanPostProcessor，它的主要作用是干预Spring初始化bean的流程，从而完成代理、自动注入、循环依赖等功能</p>
-<p>7、initMessageSource()：初始化MessageSource组件，主要用于做国际化功能，消息绑定与消息解析：<br>8、initApplicationEventMulticaster()：初始化事件派发器，在注册监听器时会用到：</p>
-<p>9、onRefresh()：留给子容器、子类重写这个方法，在容器刷新的时候可以自定义逻辑</p>
-<p>10、registerListeners()：注册监听器：将容器中所有的ApplicationListener注册到事件派发器中，并派发之前步骤产生的事件：<br>11、finishBeanFactoryInitialization(beanFactory)：初始化所有剩下的单实例bean，核心方法是preInstantiateSingletons()，会调用getBean()方法创建对象；<br>12、finishRefresh()：发布BeanFactory容器刷新完成事件：</p>
-<p>综上所述：</p>
-<blockquote>
-<p>其实我觉得Spring的IOC容器，主要做三步：</p>
-<p>1、初始化Spring容器，创建一个DefaultListableBeanFactory</p>
-<p>2、将配置类的BeanDefinition注册到容器。</p>
-<p>3、Refresh，Refresh又分12步。这12步，可以分成几块。</p>
-<p>第一块：预处理，包括刷新的预处理，然后获取我们刚刚创建的BeanFactory再做预处理。</p>
-<p>第二块：后置处理器，执行BeanFactory的后置处理器，然后在容器里面注册一个Bean的后置处理器。</p>
-<p>第三块：就是一些国际化，事件分派器的东西。</p>
-<p>第四块：非常重要了，finishBeanFactoryInitailization，<strong>初始化所有剩下的单实例bean</strong>，bean的生命周期也从这里开始。</p>
-</blockquote>
-<p><font color='red'><u><em><strong>Springboot启动流程</strong></em></u></font></p>
-<blockquote>
-<p>主要分为4步：服务构建、环境准备、容器创建、填充容器。</p>
-<p>1、服务构建就是构造springapplication，包括主方法类、确认web服务器、加载spring.factories下的所有初始化类。</p>
-<p>2、然后调用run方法进入环境准备，通过配置类、和配置文件构造出一个environment，用于后面的容器创建。</p>
-<p>3、容器创建的话，其实就是创建一个BeanFactory，然后加载bean信息，通过beanDefinitionReader把bean信息读成BeanDefinition并且把他放到beanDefinitionMap里面</p>
-<p>4、填充容器。就是我们的refresh（）方法，一个12步，但是可以分成四块，预处理，后置处理器，国际化分派器，实例化剩下的所有bean。</p>
-</blockquote>
-<p><font color='red'><u><em><strong>Springboot自动配置？</strong></em></u></font></p>
-<p>springboot的main方法会有一个springbootapplication的注解，这个注解有三个注解组成、ComponentScan（扫描包和子包，加载符合条件的组件或bean定义）、SpringbootConfiguration（声明当前是配置类，然后去找被configuration修饰的类，读取信息）、还有一个最重要的EnableAutoConfiguraion，这个就是来启动自动化配置的。这个注解里面有一个Import注解，这个注解会加入一个配置选择类，他会去这个项目和项目引用的jar包的meta-inf的spring.factories找全类名，然后在这些配置类里面根据注解@comditionnalXXX 定义的条件进行选择加载</p>
 <p><strong>MVC的执行流程</strong></p>
 <p>请求发到前端控制器上，然后用处理器映射器找到具体的处理器，使用处理器适配器调用真正的处理器，然后结果转化成JSON响应。</p>
 <blockquote>
 <p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231118193113289.png" alt="image-20231118193113289"></p>
 </blockquote>
-<p><strong>Mybatis怎么传多个参数：</strong></p>
+<h1 id="MyBatis"><a href="#MyBatis" class="headerlink" title="MyBatis"></a>MyBatis</h1><blockquote>
+<p><font color='blue'><u><em><strong>Mybatis怎么传多个参数：</strong></em></u></font></p>
 <blockquote>
 <p>顺序传参</p>
 <p>map传参</p>
 <p>用mybatis的注解</p>
 </blockquote>
-<p><strong>MyBatis中${} 和 #{} 有什么区别</strong></p>
+<p><font color='blue'><u><em><strong>MyBatis中${} 和 #{} 有什么区别</strong></em></u></font></p>
+<blockquote>
 <p>1、功能不同： #{} 是占位符，${} 是直接替换，；2、使用场景不同：普通参数使用 #{}，如果传递的是 SQL 命令或 SQL 关键字，需要使用 ${}，但在使用前一定要做好安全验证；3、安全性不同：使用 ${} 存在安全问题，而 #{} 则不存在安全问题。</p>
+</blockquote>
+</blockquote>
+<h1 id="GIT"><a href="#GIT" class="headerlink" title="GIT"></a>GIT</h1><p><font color='red'><u><em><strong>git rebase 和 git merge</strong></em></u></font></p>
+<blockquote>
+<p>git merge是保留历史的提交，然后new一个新的提交记录</p>
+<p>rebase是一般在非公共分支上rebase，然后合并到main分支，原来的那个分支会被清除。</p>
+</blockquote>
 <p><strong>setNX有什么缺陷？</strong></p>
+<blockquote>
 <p>有单点风险</p>
 <p>可能会导致同一把锁被多人使用</p>
 <p>redlock</p>
+</blockquote>
 
                     
                         
@@ -502,7 +635,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -516,7 +649,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -546,7 +679,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
