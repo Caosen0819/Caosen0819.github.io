@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    Nov 08, 2023
+		    08 Nov 2023
     	
     </time>
     
@@ -453,7 +453,7 @@
 <p>假如创建一个（a,b,c)的联合索引，那么它的索引树是这样的：</p>
 <p>![img](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;867078-20200703134853993-1354025866.png)</p>
 <p><font color='red'><u><em><strong>(a,b,c)联合索引 where a &#x3D; ‘xxx’ b is null c &#x3D; ‘xxx’怎么走索引</strong></em></u></font></p>
-<p>is null是一个比例</p>
+<p>is null是一个比例，可以优化成a&#x3D; c&#x3D; b&#x3D;</p>
 </blockquote>
 <p><strong>in会导致索引失效吗</strong></p>
 <p>当in的条件命中的数量很少时，是走索引的；但是当in的条件命中的数量超过30%时，索引失效，走全表扫描；</p>
@@ -462,7 +462,7 @@
 <p>![image-20231115165553203](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115165553203.png)</p>
 <p><strong>超大分页优化</strong></p>
 <blockquote>
-<p>子查询+ 覆盖索引 + where 语句 </p>
+<p><font color='red'><u>***子查询+ 覆盖索引 + where 语句 ***</u></font></p>
 <p>先通过覆盖索引得到id，然后对id排序，那这个id和原来的表做关联查询</p>
 </blockquote>
 <p><strong>索引失效情况</strong>；</p>
@@ -471,6 +471,12 @@
 <p>2、范围查找右边的会失效</p>
 <p>3、在索引列有函数操作，包括显示的函数和隐式的类型转换</p>
 <p>4、优化器觉得全局更快，索引也会失效</p>
+</blockquote>
+<p><strong>mysql优化</strong></p>
+<blockquote>
+<p><font color='red'><u><em><strong>表结构的优化：分库分表、读写分离、</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>如果是sql语句的优化：explain命令去分析sql语句，看看能不能优化</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>参数方面：buffer pool的大小，刷盘策略，最大连接数</strong></em></u></font></p>
 </blockquote>
 <p>![image-20231115170958089](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115170958089.png)</p>
 <p><strong>MySQL为什么有时候会选错索引？</strong></p>
@@ -776,7 +782,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -805,7 +811,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-28T00:00:00+08:00">
 	
-		    Oct 28, 2023
+		    28 Oct 2023
     	
     </time>
     
@@ -941,7 +947,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -955,7 +961,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -984,7 +990,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

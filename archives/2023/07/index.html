@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archives: 2023/7 - 森</title>
+    <title>Archiv: 2023/7 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -350,7 +350,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -379,7 +379,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -396,7 +396,7 @@
                 <div class="postShorten-content">
                     <p>常见面试问题：</p>
 <p><strong>为什么用Kafka？</strong></p>
-<p>1、性能强、2兼容性好</p>
+<p>1、性能强，2、兼容性好</p>
 <h2 id="Kafka高性能的设计"><a href="#Kafka高性能的设计" class="headerlink" title="Kafka高性能的设计"></a><strong>Kafka高性能的设计</strong></h2><p><font color='red'><u><em><strong>1）分区设计，可以实现并行操作。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>2）磁盘顺序写（减少磁盘寻址时间）</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>3）MMF+页缓存</strong></em></u></font> 即使kafka是顺序写（），这个本身比较快，但是即使这样，速度也追不上内存。所以Kafka不是实时写入磁盘，而是先把数据写到页缓存里面，满足一定条件在刷回磁盘。它的工作原理是MMF，直接利用操作系统的页缓存来实现磁盘文件到物理内存的直接映射，完成映射之后你对物理内存的操作会被同步到硬盘上（操作系统在适当的时候）。</p>
@@ -460,8 +460,8 @@
 <p>broker存储丢失：</p>
 <blockquote>
 <p>依赖一个ACK确认机制</p>
-<p>0：发了就不管了</p>
-<p>1：需要leader成功接收</p>
+<p>0：发了就不管了，<font color='green'><u><em><strong>这意味着消息可能会在发送之后丢失，而生产者将无法知道它是否成功到达服务器</strong></em></u></font></p>
+<p>1：需要leader成功接收，<font color='green'><u><em><strong>leader同步Follower之前宕机，那消息可能就丢失</strong></em></u></font></p>
 <p>-1：所有ISR的follower都成功接收才可以</p>
 </blockquote>
 <p>消费者消费丢失：</p>
@@ -521,7 +521,7 @@
 <p><font color='blue'><u><em><strong>消费者选Leader</strong></em></u></font></p>
 <p>先用groupid%50 得到一个主题分区（consumer_offset），这个分区所属的节点的消费者协调器就作为这个消费者组的老大，每个消费者向这个协调器发送joinGroup请求，具体的选举方法是，取出HashMap里面的第一个，就是消费者组的信息是放在一个hashmap里面的，我么选的时候是直接拿出第一个就好。所以比较偏随机。</p>
 <h2 id="Kafka分区机制"><a href="#Kafka分区机制" class="headerlink" title="Kafka分区机制"></a>Kafka分区机制</h2><p>分为生产者分区和消费者分区。还有一种副本分区机制，那个先不说。</p>
-<p>生产者分区就是依赖于main线程里面的消息分区器，他有一个默认的分区器DefaultPartitioner，支持4种分区策略 1) 指定分区； 2）指定key，计算hash得分区； 3）指定随机粘性分区；（4）还可以自定义分区器（见代码）（下图））</p>
+<p>生产者分区就是依赖于main线程里面的消息分区器，他有一个默认的分区器DefaultPartitioner，支持4种分区策略 1) 指定分区； 2）指定key，计算hash得分区； 3）指定随机粘性分区以前是轮训；（4）还可以自定义分区器（见代码）（下图））</p>
 <p>消费者分区就是谁去消费谁的问题，支持三种策略：RoundRobin、Range、sticky粘性分区</p>
 <h1 id="1、定义"><a href="#1、定义" class="headerlink" title="1、定义"></a>1、定义</h1><p>分布式的基于发布订阅模式的消息队列</p>
 <p>主要应用场景包括：<strong>缓存消峰</strong>、<strong>解耦</strong>和<strong>异步通信。</strong></p>
@@ -603,7 +603,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -632,7 +632,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -687,7 +687,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -716,7 +716,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -877,7 +877,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -906,7 +906,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -1251,7 +1251,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1265,7 +1265,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -1295,7 +1295,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

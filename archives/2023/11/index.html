@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archives: 2023/11 - 森</title>
+    <title>Archiv: 2023/11 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    Nov 08, 2023
+		    08 Nov 2023
     	
     </time>
     
@@ -453,7 +453,7 @@
 <p>假如创建一个（a,b,c)的联合索引，那么它的索引树是这样的：</p>
 <p>![img](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;867078-20200703134853993-1354025866.png)</p>
 <p><font color='red'><u><em><strong>(a,b,c)联合索引 where a &#x3D; ‘xxx’ b is null c &#x3D; ‘xxx’怎么走索引</strong></em></u></font></p>
-<p>is null是一个比例</p>
+<p>is null是一个比例，可以优化成a&#x3D; c&#x3D; b&#x3D;</p>
 </blockquote>
 <p><strong>in会导致索引失效吗</strong></p>
 <p>当in的条件命中的数量很少时，是走索引的；但是当in的条件命中的数量超过30%时，索引失效，走全表扫描；</p>
@@ -462,7 +462,7 @@
 <p>![image-20231115165553203](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115165553203.png)</p>
 <p><strong>超大分页优化</strong></p>
 <blockquote>
-<p>子查询+ 覆盖索引 + where 语句 </p>
+<p><font color='red'><u>***子查询+ 覆盖索引 + where 语句 ***</u></font></p>
 <p>先通过覆盖索引得到id，然后对id排序，那这个id和原来的表做关联查询</p>
 </blockquote>
 <p><strong>索引失效情况</strong>；</p>
@@ -471,6 +471,12 @@
 <p>2、范围查找右边的会失效</p>
 <p>3、在索引列有函数操作，包括显示的函数和隐式的类型转换</p>
 <p>4、优化器觉得全局更快，索引也会失效</p>
+</blockquote>
+<p><strong>mysql优化</strong></p>
+<blockquote>
+<p><font color='red'><u><em><strong>表结构的优化：分库分表、读写分离、</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>如果是sql语句的优化：explain命令去分析sql语句，看看能不能优化</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>参数方面：buffer pool的大小，刷盘策略，最大连接数</strong></em></u></font></p>
 </blockquote>
 <p>![image-20231115170958089](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115170958089.png)</p>
 <p><strong>MySQL为什么有时候会选错索引？</strong></p>
@@ -776,7 +782,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -805,7 +811,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    Nov 08, 2023
+		    08 Nov 2023
     	
     </time>
     
@@ -1174,7 +1180,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1203,7 +1209,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-04T00:00:00+08:00">
 	
-		    Nov 04, 2023
+		    04 Nov 2023
     	
     </time>
     
@@ -1261,7 +1267,7 @@
 <p>每一个对象在堆里面分为三块：<font color='red'><u><em><strong>对象头、实例数据、对其填充。</strong></em></u></font></p>
 <p>对象头是<font color='red'><u><em><strong>markword+类型指针+数组长度（如果是数组的话），</strong></em></u></font></p>
 <ul>
-<li>markword就是记录哈希码、gc分代、锁标志、锁id，偏向锁。</li>
+<li>markword就是记录哈希码、gc分代（<font color='red'><u><em><strong>4位，所以年龄设置为15</strong></em></u></font>）、锁标志、锁id，偏向锁。</li>
 <li>类型指针就是指向类型元数据的指针</li>
 </ul>
 <p>实例数据：</p>
@@ -1532,11 +1538,12 @@
 </ul>
 <h2 id="JVM调优参数"><a href="#JVM调优参数" class="headerlink" title="JVM调优参数"></a>JVM调优参数</h2><p>jar包启动的时候java和 -jar直接可以去配置jvm的参数</p>
 <h2 id="JVM调优的参数有哪些？"><a href="#JVM调优的参数有哪些？" class="headerlink" title="JVM调优的参数有哪些？"></a>JVM调优的参数有哪些？</h2><blockquote>
-<p>换垃圾回收器 </p>
-<p>堆空间大小</p>
-<p>虚拟机栈大小</p>
-<p>eden区和幸存者区的大小比例</p>
-<p>新生代晋级老年代的阈值</p>
+<p><font color='green'><u><em><strong>内存管理：JVM-Xms（初始堆大小，默认1&#x2F;64物理内存），-Xmx（最大堆内存，默认1&#x2F;4），新生代晋级老年代的阈值（MaxTenuringThreshold，默认15），新生代大小（Xmn），永久代大小（PermSize），线程栈大小（Xss），垃圾回收器（UseParallelGC，UseConcMarkSweepGC），内存OOM导出快照（HeapDumpOnOutOfMemoryError），新生代和老年代的比例（newRadio），eden区和幸存者区的大小比例（SurvivorRatio），（）</strong></em></u></font></p>
+<p><strong>CMSFullGCsBeforeCompaction</strong>：执行多少次不压缩的Fullgc，跟着来一次压缩的FullGC</p>
+</blockquote>
+<h2 id="FullGC怎么排查"><a href="#FullGC怎么排查" class="headerlink" title="FullGC怎么排查"></a>FullGC怎么排查</h2><blockquote>
+<p><font color='red'><u><em><strong>如果出现FullGC，请求和响应会变得特别慢，系统也变得很卡。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>先用top找到pid，然后用jstat（jstat -gcutil 72 2000）去看看是否发生了GC，如果FGC确实一直在慢慢变多，那就说明FULLGC了，然后就排查CPU消耗，用top -H看看线程情况，找到占比高的用jstack看看堆栈情况</strong></em></u></font></p>
 </blockquote>
 <h2 id="JVM调优工具"><a href="#JVM调优工具" class="headerlink" title="JVM调优工具"></a>JVM调优工具</h2><blockquote>
 <p><font color='red'><u><em><strong>命令：</strong></em></u></font></p>
@@ -1555,9 +1562,9 @@
 <h2 id="CPU标高的排查"><a href="#CPU标高的排查" class="headerlink" title="CPU标高的排查"></a>CPU标高的排查</h2><p><font color='blue'><u><em><strong>top或者pidstat命令找到cpu明显过高的进程id，然后用进程id去找到线程id（ps H -eo pid,tid,%cpu | grep进程id），最后jstack 一下定位到该线程就可以</strong></em></u></font></p>
 <p>标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、</p>
 <h2 id="FULL-GC的原因"><a href="#FULL-GC的原因" class="headerlink" title="FULL GC的原因"></a>FULL GC的原因</h2><blockquote>
-<p>老年代不够用</p>
-<p>元空间不够用</p>
-<p>System.gc方法调用</p>
+<p><font color='green'><u><em><strong>System.gc方法调用</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>老年代不够用或者创建了大对象</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>元空间不够用</strong></em></u></font></p>
 <p><strong>分配担保失败</strong></p>
 </blockquote>
 
@@ -1573,7 +1580,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1587,7 +1594,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -1617,7 +1624,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archives - 森</title>
+    <title>Archiv - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -233,6 +233,181 @@
                     
                         <a
                             class="link-unstyled"
+                            href="/2022/10/04/springboot%E6%95%B4%E5%90%88kafka3.1%EF%BC%8C%E5%AE%9E%E7%8E%B0%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
+                            aria-label=": springboot整合kafka3.1，实现基本配置和操作"
+                        >
+                            springboot整合kafka3.1，实现基本配置和操作
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2022-10-04T21:25:08+08:00">
+	
+		    04 Oct 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h1 id="springboot整合kafka3-1，实现基本配置和操作"><a href="#springboot整合kafka3-1，实现基本配置和操作" class="headerlink" title="springboot整合kafka3.1，实现基本配置和操作"></a>springboot整合kafka3.1，实现基本配置和操作</h1><p>这篇是单机的zookeeper形式，适用于入门。等有时间会更新kraft搭建。</p>
+<p>博主自己装了双系统，虚拟机刚刚删了，所以没去做集群，不过当大家的kafka版本来到3.1，建议大家去学习KRaft集群搭建而不是去整合zookeeper。下面介绍一下怎么整合，正所谓举一反三，这个会了，到时候换个环境就ok，讲的不好的地方还请见谅。</p>
+<p>@[toc]</p>
+<h2 id="前提准备"><a href="#前提准备" class="headerlink" title="前提准备"></a>前提准备</h2><h3 id="1、springboot"><a href="#1、springboot" class="headerlink" title="1、springboot"></a>1、springboot</h3><p>博主自己用的是2.7版本的</p>
+<p>一般关于springboot我会引入一下依赖</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line"></span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line"></span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line"></span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-aop&lt;/artifactId&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br><span class="line">      &lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;</span><br><span class="line">          &lt;scope&gt;test&lt;/scope&gt;</span><br><span class="line">      &lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2、kafka"><a href="#2、kafka" class="headerlink" title="2、kafka"></a>2、kafka</h3><h4 id="1、kafka下载"><a href="#1、kafka下载" class="headerlink" title="1、kafka下载"></a>1、kafka下载</h4><p><a target="_blank" rel="noopener" href="https://kafka.apache.org/downloads">https://kafka.apache.org/downloads</a>  这里下载，这里再提一句，建议直接放到d盘e盘一级子目录里面，否则有可能出现启动的时候名字太长的问题</p>
+<p>下载之后修改配置文件server.properties</p>
+<p>log.dirs&#x3D;E:\kafka_2.13-3.2.3\kafka-logs</p>
+<h4 id="2、项目引入依赖"><a href="#2、项目引入依赖" class="headerlink" title="2、项目引入依赖"></a>2、项目引入依赖</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.springframework.kafka&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;spring-kafka&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;根据自己的版本选择&lt;/version&gt;  </span><br><span class="line">        &lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里提一句：不一样的springboot对应的kafka依赖版本也不一样，所以先去官网查看依赖版本。</p>
+<p><a target="_blank" rel="noopener" href="https://spring.io/projects/spring-kafka">https://spring.io/projects/spring-kafka</a>   点这个链接去找对应的，别自己乱下最新的。</p>
+<h5 id="新版本的kafka命令和老版本的不一样。"><a href="#新版本的kafka命令和老版本的不一样。" class="headerlink" title="新版本的kafka命令和老版本的不一样。"></a>新版本的kafka命令和老版本的不一样。</h5><p>试着启动，命令看你在哪个文件夹，如果是kafka，用下面的，如果是linux，把bat换成sh</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">bin\windows\kafka-server-start.bat config\server.properties</span><br></pre></td></tr></table></figure>
+
+<p>简单使用</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bin\windows\kafka-topics.bat --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic test（自己取）</span><br></pre></td></tr></table></figure>
+
+<p>查看</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bin\windows\kafka-topics.bat --list --bootstrap-server localhost:9092</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3、zookeeper"><a href="#3、zookeeper" class="headerlink" title="3、zookeeper"></a>3、zookeeper</h3><p>新版本的kafka其实自己集成了zookeeper，博主这里同样介绍两种方式，一种自己重新去下个zookeeper，一种用kafka自带的。</p>
+<h4 id="1、自带的"><a href="#1、自带的" class="headerlink" title="1、自带的"></a>1、自带的</h4><p>修改配置zookeeper.properties</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">dataDir=/opt/kafka/zookeeper/data/dataDir</span><br><span class="line">dataLogDir=/opt/kafka/zookeeper/data/dataLogDir</span><br><span class="line"># the port at which the clients will connect</span><br><span class="line">clientPort=<span class="number">2181</span></span><br><span class="line"># disable the per-ip limit on the number of connections since <span class="built_in">this</span> is a non-production config</span><br><span class="line">maxClientCnxns=<span class="number">100</span></span><br><span class="line">tickTime=<span class="number">2000</span></span><br><span class="line">initLimit=<span class="number">10</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">bin\windows\zookeeper-server-start.bat config\zookeeper.properties</span><br></pre></td></tr></table></figure>
+
+<h4 id="2、自己下载zookeeper"><a href="#2、自己下载zookeeper" class="headerlink" title="2、自己下载zookeeper"></a>2、自己下载zookeeper</h4><p>由于是自己下载所以也不用去配置kafka文件中的zookeeper.properties</p>
+<p><a target="_blank" rel="noopener" href="https://zookeeper.apache.org/releases.html#download">https://zookeeper.apache.org/releases.html#download</a>  这是下载地址</p>
+<p>进去之后很简单，一样改配置，进入conf目录下，将<code>zoo_example.cfg</code>重命名为<code>zoo.cfg</code></p>
+<p>同样修改dataDir和log， 我的是：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">example sakes.</span><br><span class="line"></span><br><span class="line">dataDir=E:\\java-configuration\\apache-zookeeper-<span class="number">3.7</span><span class="number">.1</span>-bin\\data</span><br><span class="line"></span><br><span class="line">存放事务日志目录</span><br><span class="line"></span><br><span class="line">dataLogDir=E:\\java-configuration\\apache-zookeeper-<span class="number">3.7</span><span class="number">.1</span>-bin\\logs</span><br></pre></td></tr></table></figure>
+
+<p>然后运行zkserver.cmd和zkcli.cmd, 一个是启动我们的zookeeper服务器，一个是客户端。</p>
+<h2 id="springboot整合操作kafka"><a href="#springboot整合操作kafka" class="headerlink" title="springboot整合操作kafka"></a>springboot整合操作kafka</h2><p>[外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-KCJ0jkN3-1664006842070)(C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220924153503966.png)]</p>
+<p>这里用一张图作为流程讲解如何整合。</p>
+<h3 id="1、config"><a href="#1、config" class="headerlink" title="1、config"></a>1、config</h3><p>其实可以把下面的conponent exception filter什么的都丢进来，可以配一些生产者消费者的信息，想配什么都可以，这个就不展示了。</p>
+<h3 id="2、回调（conponent）"><a href="#2、回调（conponent）" class="headerlink" title="2、回调（conponent）"></a>2、回调（conponent）</h3><p>回调有多种写法，这里介绍三种</p>
+<h4 id="1、较为泛用的"><a href="#1、较为泛用的" class="headerlink" title="1、较为泛用的"></a>1、较为泛用的</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class KafkaSendResultHandler implements ProducerListener &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onSuccess(ProducerRecord producerRecord, RecordMetadata recordMetadata) &#123;</span><br><span class="line">        System.out.println(&quot;Message send success : &quot; + producerRecord.toString());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void onError(ProducerRecord producerRecord, RecordMetadata recordMetadata, Exception exception) &#123;</span><br><span class="line">        System.out.println(&quot;Message send error : &quot; + producerRecord.toString());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后在生产者里面使用</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">private KafkaSendResultHandler kafkaSendResultHandler;</span><br><span class="line"></span><br><span class="line">。。。。。省略</span><br><span class="line"></span><br><span class="line">kafkaTemplate.setProducerListener(kafkaSendResultHandler);    </span><br></pre></td></tr></table></figure>
+
+<h4 id="2、一个方法对应一个特定的回调"><a href="#2、一个方法对应一个特定的回调" class="headerlink" title="2、一个方法对应一个特定的回调"></a>2、一个方法对应一个特定的回调</h4><h5 id="1、第一种写法"><a href="#1、第一种写法" class="headerlink" title="1、第一种写法"></a>1、第一种写法</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(<span class="string">&quot;topic1&quot;</span>, callbackMessage).addCallback(success -&gt;&#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">topic</span> <span class="operator">=</span> success.getRecordMetadata().topic();</span><br><span class="line">    <span class="type">int</span> <span class="variable">partition</span> <span class="operator">=</span> success.getRecordMetadata().partition();</span><br><span class="line">    <span class="type">long</span> <span class="variable">offset</span> <span class="operator">=</span> success.getRecordMetadata().offset();</span><br><span class="line">    System.out.println(<span class="string">&quot;发送消息成功:&quot;</span> + topic + <span class="string">&quot;-&quot;</span> + partition + <span class="string">&quot;-&quot;</span> + offset);</span><br><span class="line"></span><br><span class="line">&#125;, failure -&gt; &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;发送消息失败:&quot;</span> + failure.getMessage());</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h5 id="2、第二种写法"><a href="#2、第二种写法" class="headerlink" title="2、第二种写法"></a>2、第二种写法</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(<span class="string">&quot;topic1&quot;</span>, callbackMessage).addCallback(<span class="keyword">new</span> <span class="title class_">ListenableFutureCallback</span>&lt;SendResult&lt;String, Object&gt;&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onFailure</span><span class="params">(Throwable ex)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;发送消息失败：&quot;</span>+ex.getMessage());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onSuccess</span><span class="params">(SendResult&lt;String, Object&gt; result)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;发送消息成功：&quot;</span> + result.getRecordMetadata().topic() + <span class="string">&quot;-&quot;</span></span><br><span class="line">                + result.getRecordMetadata().partition() + <span class="string">&quot;-&quot;</span> + result.getRecordMetadata().offset());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="3、consumer-消费者"><a href="#3、consumer-消费者" class="headerlink" title="3、consumer(消费者)"></a>3、consumer(消费者)</h3><p>使用KafkaListener，指定消息类型（必选）和groupid，partitions offset（可选）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">@KafkaListener(topics = &#123;&quot;topic1&quot;&#125;, groupId = &quot;felix-group0&quot; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage1(ConsumerRecord&lt;?,?&gt; record)&#123;</span><br><span class="line">    System.out.println(&quot;简单消费：&quot; + record.topic() + &quot;--&quot; + record.partition() + &quot;--&quot; + record.value());</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@KafkaListener(id = &quot;comsumer1&quot;, groupId = &quot;felix-group1&quot;, topicPartitions = &#123;</span><br><span class="line">        @TopicPartition(topic = &quot;topic1&quot;, partitions = &#123;&quot;0&quot;&#125;),</span><br><span class="line">        @TopicPartition(topic = &quot;topic2&quot;, partitionOffsets = @PartitionOffset(partition = &quot;0&quot;, initialOffset = &quot;8&quot;))</span><br><span class="line">&#125; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage2(ConsumerRecord&lt;?, ?&gt; record)&#123;</span><br><span class="line">    System.out.println(&quot;topic:&quot;+record.topic()+&quot;|partition:&quot;+record.partition()+&quot;|offset:&quot;+record.offset()+&quot;|value:&quot;+record.value());</span><br><span class="line">&#125;</span><br><span class="line">@KafkaListener(id = &quot;consumer2&quot;,groupId = &quot;felix-group2&quot;, topics = &quot;topic1&quot; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage3(List&lt;ConsumerRecord&lt;?, ?&gt;&gt; records) &#123;</span><br><span class="line">    System.out.println(&quot;&gt;&gt;&gt;批量消费一次，records.size()=&quot;+records.size());</span><br><span class="line">    for (ConsumerRecord&lt;?, ?&gt; record : records) &#123;</span><br><span class="line">        System.out.println(record.value());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4、controller生产者（produces）"><a href="#4、controller生产者（produces）" class="headerlink" title="4、controller生产者（produces）"></a>4、controller生产者（produces）</h3><h4 id="1、同步发送"><a href="#1、同步发送" class="headerlink" title="1、同步发送"></a>1、同步发送</h4><p>如果需要使用同步发送，可以在每次发送之后使用get方法，因为producer.send方法返回一个Future类型的结果，Future的get方法会一直阻塞直到该线程的任务得到返回值，也就是broker返回发送成功。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(&quot;test&quot;, message).get();</span><br></pre></td></tr></table></figure>
+
+<h4 id="2、异步发送"><a href="#2、异步发送" class="headerlink" title="2、异步发送"></a>2、异步发送</h4><p>可以从返回的future对象中稍后获取发送的结果，ProducerRecord、RecordMetadata包含了返回的结果信息</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">kafkaTemplate.send(&quot;test&quot;, message);</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-使用ack机制实现可靠"><a href="#3-使用ack机制实现可靠" class="headerlink" title="3. 使用ack机制实现可靠"></a>3. 使用ack机制实现可靠</h4><p>producers可以一步的并行向kafka发送消息，但是通常producer在发送完消息之后会得到一个响应，返回的是offset值或者发送过程中遇到的错误。这其中有个非常重要的参数“request.required.acks”，这个参数决定了producer要求leader partition收到确认的副本个数：</p>
+<ul>
+<li>如果acks设置为0，表示producer不会等待broker的相应，所以，producer无法知道消息是否发生成功，这样有可能导致数据丢失，但同时，acks值为0会得到最大的系统吞吐量。</li>
+<li>若acks设置为1，表示producer会在leader partition收到消息时得到broker的一个确认，这样会有更好的可靠性，因为客户端会等待知道broker确认收到消息。</li>
+<li>若设置为-1，producer会在所有备份的partition收到消息时得到broker的确认，这个设置可以得到最高的可靠性保证。</li>
+</ul>
+<h3 id="5、exception"><a href="#5、exception" class="headerlink" title="5、exception"></a>5、exception</h3><p>bean注入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Bean</span><br><span class="line">public ConsumerAwareListenerErrorHandler consumerAwareErrorHandler() &#123;</span><br><span class="line">    return (message, exception, consumer) -&gt; &#123;</span><br><span class="line">        System.out.println(&quot;消费异常：&quot;+message.getPayload());</span><br><span class="line">        return null;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>消费异常配置注解实现</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@KafkaListener(topics = &#123;&quot;topic1&quot;&#125;, groupId = &quot;felix-group0&quot; ,errorHandler = &quot;consumerAwareErrorHandler&quot;)</span><br><span class="line">public void onMessage1(ConsumerRecord&lt;?,?&gt; record)&#123;</span><br><span class="line">    System.out.println(&quot;简单消费：&quot; + record.topic() + &quot;--&quot; + record.partition() + &quot;--&quot; + record.value());</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="6、filter"><a href="#6、filter" class="headerlink" title="6、filter"></a>6、filter</h3><p>bean注入factory的时候配置好消息过滤策略</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//配置消息过滤策略</span><br><span class="line">    @Bean(value = &quot;filterContainerFactory&quot;)</span><br><span class="line">    public ConcurrentKafkaListenerContainerFactory concurrentKafkaListenerContainerFactory() &#123;</span><br><span class="line">        ConcurrentKafkaListenerContainerFactory factory = new ConcurrentKafkaListenerContainerFactory();</span><br><span class="line">        factory.setConsumerFactory(consumerFactory);</span><br><span class="line">        // 被过滤的消息将被丢弃</span><br><span class="line">        factory.setAckDiscarded(true);</span><br><span class="line">        // 消息过滤策略</span><br><span class="line">        factory.setRecordFilterStrategy(consumerRecord -&gt; &#123;</span><br><span class="line">            if (Integer.parseInt(consumerRecord.value().toString()) % 2 == 0) &#123;</span><br><span class="line">                return false;</span><br><span class="line">            &#125;</span><br><span class="line">            else &#123;</span><br><span class="line">                return true;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        return factory;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>消费异常配置注解实现</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// 消息过滤监听</span><br><span class="line">    @KafkaListener(topics = &#123;&quot;topic1&quot;&#125;, containerFactory = &quot;filterContainerFactory&quot;)</span><br><span class="line">    public void onMessage6(ConsumerRecord&lt;?, ?&gt; record) &#123;</span><br><span class="line">        System.out.println(record.value());</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>e {<br>                return true;<br>            }<br>        });</p>
+<pre><code>    return factory;
+
+&#125;
+</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">消费异常配置注解实现</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>&#x2F;&#x2F; 消息过滤监听<br>    @KafkaListener(topics &#x3D; {“topic1”}, containerFactory &#x3D; “filterContainerFactory”)<br>    public void onMessage6(ConsumerRecord<?, ?> record) {<br>        System.out.println(record.value());<br>    }</p>
+<h3 id="7、序列化编码解码"><a href="#7、序列化编码解码" class="headerlink" title="7、序列化编码解码"></a>7、序列化编码解码</h3><p>序列化器都实现了接口（<code>org.apache.kafka.common.serialization.Serializer</code>）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public interface Serializer&lt;T&gt; extends Closeable &#123;</span><br><span class="line">	default void configure(Map&lt;String, ?&gt; configs, Boolean isKey) &#123;</span><br><span class="line">	&#125;</span><br><span class="line">	byte[] serialize(String var1, T var2);</span><br><span class="line">	default byte[] serialize(String topic, Headers headers, T data) &#123;</span><br><span class="line">		return this.serialize(topic, data);</span><br><span class="line">	&#125;</span><br><span class="line">	default void close() &#123;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>所以我们只用去实现serialize即可</p>
+<h4 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h4><pre><code>public class MySerializer implements Serializer &#123;
+    @Override
+    public byte[] serialize(String s, Object o) &#123;
+        String json = JSON.toJSONString(o);
+        return json.getBytes();
+&#125;
+&#125;
+</code></pre>
+<h4 id="解码"><a href="#解码" class="headerlink" title="解码"></a>解码</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class MyDeserializer implements Deserializer &#123;</span><br><span class="line">    private final static Logger logger = LoggerFactory.getLogger(MyDeserializer.class);</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Object deserialize(String s, byte[] bytes) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            String json = new String(bytes,&quot;utf-8&quot;);</span><br><span class="line">            return JSON.parse(json);</span><br><span class="line">        &#125; catch (UnsupportedEncodingException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>最后在application中配置key-serializer 和 value-serializer</p>
+<h3 id="8、分区策略"><a href="#8、分区策略" class="headerlink" title="8、分区策略"></a>8、分区策略</h3><p>分区策略一般分为四种情况：</p>
+<ul>
+<li>有分区号，直接将数据发送到指定的分区里面去</li>
+<li>没有分区号，但是给了数据的key值，根据key取hashCode进行分区</li>
+<li>分区号和key值都没有，直接使用默认的轮循分区</li>
+<li>自定义分区</li>
+</ul>
+<h4 id="常规"><a href="#常规" class="headerlink" title="常规"></a>常规</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">测试</span><br><span class="line">        kafkaTemplate.send(&quot;test&quot;, 0, key, &quot;key=&quot; + key + &quot;，msg=指定0号分区&quot;);</span><br><span class="line">        kafkaTemplate.send(&quot;test&quot;, key, &quot;key=&quot; + key + &quot;，msg=不指定分区&quot;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="自定义"><a href="#自定义" class="headerlink" title="自定义"></a>自定义</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyPartitioner</span> <span class="keyword">implements</span> <span class="title class_">Partitioner</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">partition</span><span class="params">(String topic, Object key, <span class="type">byte</span>[] keyBytes, Object value, <span class="type">byte</span>[] valueBytes, Cluster cluster)</span> &#123;</span><br><span class="line"><span class="comment">//        定义自己的分区策略</span></span><br><span class="line"><span class="comment">//                如果key以0开头，发到0号分区</span></span><br><span class="line"><span class="comment">//                其他都扔到1号分区</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">keyStr</span> <span class="operator">=</span> key+<span class="string">&quot;&quot;</span>;</span><br><span class="line">        <span class="keyword">if</span> (keyStr.startsWith(<span class="string">&quot;0&quot;</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">close</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configure</span><span class="params">(Map&lt;String, ?&gt; map)</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyPartitionTemplate</span> &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">Logger</span> <span class="variable">logger</span> <span class="operator">=</span> LoggerFactory.getLogger(<span class="built_in">this</span>.getClass());</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;spring.kafka.bootstrap-servers&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String bootstrapServers;</span><br><span class="line"></span><br><span class="line">    KafkaTemplate kafkaTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostConstruct</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setKafkaTemplate</span><span class="params">()</span> &#123;</span><br><span class="line">        Map&lt;String, Object&gt; props = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);</span><br><span class="line">        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);</span><br><span class="line">        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);</span><br><span class="line">        <span class="comment">//注意分区器在这里！！！</span></span><br><span class="line">        props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, MyPartitioner.class);</span><br><span class="line">        <span class="built_in">this</span>.kafkaTemplate = <span class="keyword">new</span> <span class="title class_">KafkaTemplate</span>&lt;String, String&gt;(<span class="keyword">new</span> <span class="title class_">DefaultKafkaProducerFactory</span>&lt;&gt;(props));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> KafkaTemplate <span class="title function_">getKafkaTemplate</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> kafkaTemplate;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//测试自定义分区发送</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyPartitionProducer</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    MyPartitionTemplate template;</span><br><span class="line"></span><br><span class="line"><span class="comment">//    使用0开头和其他任意字母开头的key发送消息</span></span><br><span class="line"><span class="comment">//    看控制台的输出，在哪个分区里？</span></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/kafka/myPartitionSend/&#123;key&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setPartition</span><span class="params">(<span class="meta">@PathVariable(&quot;key&quot;)</span> String key)</span> &#123;</span><br><span class="line">        template.getKafkaTemplate().send(<span class="string">&quot;test&quot;</span>, key,<span class="string">&quot;key=&quot;</span>+key+<span class="string">&quot;，msg=自定义分区策略&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2022/10/04/springboot%E6%95%B4%E5%90%88kafka3.1%EF%BC%8C%E5%AE%9E%E7%8E%B0%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Kommentieren und teilen
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
                             href="/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
                             aria-label=": 整合docker和中间件记录"
                         >
@@ -243,7 +418,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T21:23:41+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -329,7 +504,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -358,7 +533,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:40:04+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -409,7 +584,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -438,7 +613,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:38:01+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -578,7 +753,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -607,7 +782,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:35:52+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -872,7 +1047,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -901,7 +1076,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:35:52+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -935,7 +1110,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -964,7 +1139,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:35:52+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -1024,7 +1199,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1053,7 +1228,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:35:52+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -1126,7 +1301,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1155,7 +1330,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:35:52+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -1209,7 +1384,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1238,7 +1413,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T13:35:52+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -1319,74 +1494,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2022/10/04/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
-                            aria-label=": 养生打卡健康小程序（云开发）"
-                        >
-                            养生打卡健康小程序（云开发）
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2022-10-04T13:35:52+08:00">
-	
-		    Oct 04, 2022
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F/">微信小程序</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <p>@<a href="%E6%96%87%E7%AB%A0%E7%9B%AE%E5%BD%95">TOC</a></p>
-<p>非工作室，大学生自敲</p>
-<h1 id="一、展示"><a href="#一、展示" class="headerlink" title="一、展示"></a>一、展示</h1><h2 id="首页"><a href="#首页" class="headerlink" title="首页"></a>首页</h2><p><img src="/../images/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227161014349.png" alt="在这里插入图片描述"></p>
-<h2 id="五脏六腑食疗法"><a href="#五脏六腑食疗法" class="headerlink" title="五脏六腑食疗法"></a>五脏六腑食疗法</h2><p>中上是轮播图，左侧栏快速点击，可上下滑动<br><img src="/../images/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227161014535.png" alt="在这里插入图片描述"></p>
-<h2 id="四季食谱"><a href="#四季食谱" class="headerlink" title="四季食谱"></a>四季食谱</h2><p>由于云开发欠费，所以图像没了，不过这是小事<br>每个季节的食谱都实现了点赞收藏等功能，与云开发数据库相连接。<br><img src="/../images/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227161014402.png" alt="在这里插入图片描述"><br><img src="/../images/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227161014375.png" alt="在这里插入图片描述"></p>
-<h2 id="十二时辰养生"><a href="#十二时辰养生" class="headerlink" title="十二时辰养生"></a>十二时辰养生</h2><p>卡片左右滑动，同样中间由于欠费图像无法显示<br><img src="https://img-blog.csdnimg.cn/0d86e47452254a57ad7cc6427eeb7130.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16" alt="在这里插入图片描述"></p>
-<h2 id="养生闹钟"><a href="#养生闹钟" class="headerlink" title="养生闹钟"></a>养生闹钟</h2><p><img src="/../images/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227161014342.png" alt="在这里插入图片描述"><br>点击新建按钮<br><img src="/../images/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227161014378.png" alt="在这里插入图片描述"></p>
-<h2 id="我的收藏"><a href="#我的收藏" class="headerlink" title="我的收藏"></a>我的收藏</h2><p>同样因为欠费，数据库调取不了，所以没显示，本来是有的<br><img src="/../images/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBA5bCP6IOh5qGD5qKF6Iqx55y8,size_12,color_FFFFFF,t_70,g_se,x_16-20231227161014512.png" alt="在这里插入图片描述"></p>
-<hr>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>自己动手打的小程序还挺有意思的。</p>
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2022/10/04/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1403,10 +1511,10 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
             <a
                 class="btn btn--default btn--small"
                 href="/archives/page/3/"
-                aria-label="NEWER POSTS"
+                aria-label="NEUERE BEITRÄGE"
             >
               <i class="fa fa-angle-left text-base icon-mr"></i>
-              <span>NEWER POSTS</span>
+              <span>NEUERE BEITRÄGE</span>
             </a>
           </li>
         
@@ -1415,14 +1523,14 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
             <a
                 class="btn btn--default btn--small"
                 href="/archives/page/5/"
-                aria-label="OLDER POSTS"
+                aria-label="ÄLTERE BEITRÄGE"
             >
-              <span>OLDER POSTS</span>
+              <span>ÄLTERE BEITRÄGE</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">page 4 of 5</li>
+        <li class="pagination-number">Seite 4 von 5</li>
     </ul>
 </div>
 
@@ -1452,7 +1560,7 @@ public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

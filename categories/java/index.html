@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Category: Java - 森</title>
+    <title>Kategorie: Java - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    Nov 08, 2023
+		    08 Nov 2023
     	
     </time>
     
@@ -453,7 +453,7 @@
 <p>假如创建一个（a,b,c)的联合索引，那么它的索引树是这样的：</p>
 <p>![img](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;867078-20200703134853993-1354025866.png)</p>
 <p><font color='red'><u><em><strong>(a,b,c)联合索引 where a &#x3D; ‘xxx’ b is null c &#x3D; ‘xxx’怎么走索引</strong></em></u></font></p>
-<p>is null是一个比例</p>
+<p>is null是一个比例，可以优化成a&#x3D; c&#x3D; b&#x3D;</p>
 </blockquote>
 <p><strong>in会导致索引失效吗</strong></p>
 <p>当in的条件命中的数量很少时，是走索引的；但是当in的条件命中的数量超过30%时，索引失效，走全表扫描；</p>
@@ -462,7 +462,7 @@
 <p>![image-20231115165553203](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115165553203.png)</p>
 <p><strong>超大分页优化</strong></p>
 <blockquote>
-<p>子查询+ 覆盖索引 + where 语句 </p>
+<p><font color='red'><u>***子查询+ 覆盖索引 + where 语句 ***</u></font></p>
 <p>先通过覆盖索引得到id，然后对id排序，那这个id和原来的表做关联查询</p>
 </blockquote>
 <p><strong>索引失效情况</strong>；</p>
@@ -471,6 +471,12 @@
 <p>2、范围查找右边的会失效</p>
 <p>3、在索引列有函数操作，包括显示的函数和隐式的类型转换</p>
 <p>4、优化器觉得全局更快，索引也会失效</p>
+</blockquote>
+<p><strong>mysql优化</strong></p>
+<blockquote>
+<p><font color='red'><u><em><strong>表结构的优化：分库分表、读写分离、</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>如果是sql语句的优化：explain命令去分析sql语句，看看能不能优化</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>参数方面：buffer pool的大小，刷盘策略，最大连接数</strong></em></u></font></p>
 </blockquote>
 <p>![image-20231115170958089](..&#x2F;images&#x2F;mysql技术内幕 innodb存储引擎&#x2F;image-20231115170958089.png)</p>
 <p><strong>MySQL为什么有时候会选错索引？</strong></p>
@@ -776,7 +782,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -805,7 +811,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    Nov 08, 2023
+		    08 Nov 2023
     	
     </time>
     
@@ -1174,7 +1180,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1203,7 +1209,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-04T00:00:00+08:00">
 	
-		    Nov 04, 2023
+		    04 Nov 2023
     	
     </time>
     
@@ -1261,7 +1267,7 @@
 <p>每一个对象在堆里面分为三块：<font color='red'><u><em><strong>对象头、实例数据、对其填充。</strong></em></u></font></p>
 <p>对象头是<font color='red'><u><em><strong>markword+类型指针+数组长度（如果是数组的话），</strong></em></u></font></p>
 <ul>
-<li>markword就是记录哈希码、gc分代、锁标志、锁id，偏向锁。</li>
+<li>markword就是记录哈希码、gc分代（<font color='red'><u><em><strong>4位，所以年龄设置为15</strong></em></u></font>）、锁标志、锁id，偏向锁。</li>
 <li>类型指针就是指向类型元数据的指针</li>
 </ul>
 <p>实例数据：</p>
@@ -1532,11 +1538,12 @@
 </ul>
 <h2 id="JVM调优参数"><a href="#JVM调优参数" class="headerlink" title="JVM调优参数"></a>JVM调优参数</h2><p>jar包启动的时候java和 -jar直接可以去配置jvm的参数</p>
 <h2 id="JVM调优的参数有哪些？"><a href="#JVM调优的参数有哪些？" class="headerlink" title="JVM调优的参数有哪些？"></a>JVM调优的参数有哪些？</h2><blockquote>
-<p>换垃圾回收器 </p>
-<p>堆空间大小</p>
-<p>虚拟机栈大小</p>
-<p>eden区和幸存者区的大小比例</p>
-<p>新生代晋级老年代的阈值</p>
+<p><font color='green'><u><em><strong>内存管理：JVM-Xms（初始堆大小，默认1&#x2F;64物理内存），-Xmx（最大堆内存，默认1&#x2F;4），新生代晋级老年代的阈值（MaxTenuringThreshold，默认15），新生代大小（Xmn），永久代大小（PermSize），线程栈大小（Xss），垃圾回收器（UseParallelGC，UseConcMarkSweepGC），内存OOM导出快照（HeapDumpOnOutOfMemoryError），新生代和老年代的比例（newRadio），eden区和幸存者区的大小比例（SurvivorRatio），（）</strong></em></u></font></p>
+<p><strong>CMSFullGCsBeforeCompaction</strong>：执行多少次不压缩的Fullgc，跟着来一次压缩的FullGC</p>
+</blockquote>
+<h2 id="FullGC怎么排查"><a href="#FullGC怎么排查" class="headerlink" title="FullGC怎么排查"></a>FullGC怎么排查</h2><blockquote>
+<p><font color='red'><u><em><strong>如果出现FullGC，请求和响应会变得特别慢，系统也变得很卡。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>先用top找到pid，然后用jstat（jstat -gcutil 72 2000）去看看是否发生了GC，如果FGC确实一直在慢慢变多，那就说明FULLGC了，然后就排查CPU消耗，用top -H看看线程情况，找到占比高的用jstack看看堆栈情况</strong></em></u></font></p>
 </blockquote>
 <h2 id="JVM调优工具"><a href="#JVM调优工具" class="headerlink" title="JVM调优工具"></a>JVM调优工具</h2><blockquote>
 <p><font color='red'><u><em><strong>命令：</strong></em></u></font></p>
@@ -1555,9 +1562,9 @@
 <h2 id="CPU标高的排查"><a href="#CPU标高的排查" class="headerlink" title="CPU标高的排查"></a>CPU标高的排查</h2><p><font color='blue'><u><em><strong>top或者pidstat命令找到cpu明显过高的进程id，然后用进程id去找到线程id（ps H -eo pid,tid,%cpu | grep进程id），最后jstack 一下定位到该线程就可以</strong></em></u></font></p>
 <p>标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、</p>
 <h2 id="FULL-GC的原因"><a href="#FULL-GC的原因" class="headerlink" title="FULL GC的原因"></a>FULL GC的原因</h2><blockquote>
-<p>老年代不够用</p>
-<p>元空间不够用</p>
-<p>System.gc方法调用</p>
+<p><font color='green'><u><em><strong>System.gc方法调用</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>老年代不够用或者创建了大对象</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>元空间不够用</strong></em></u></font></p>
 <p><strong>分配担保失败</strong></p>
 </blockquote>
 
@@ -1573,7 +1580,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1602,7 +1609,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-28T00:00:00+08:00">
 	
-		    Oct 28, 2023
+		    28 Oct 2023
     	
     </time>
     
@@ -1738,7 +1745,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1767,7 +1774,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-10T00:00:00+08:00">
 	
-		    Oct 10, 2023
+		    10 Oct 2023
     	
     </time>
     
@@ -1789,7 +1796,7 @@
 <h2 id="模版模式"><a href="#模版模式" class="headerlink" title="模版模式"></a>模版模式</h2><p>模版模式的主要思路就是把自己要实现的功能抽象成一组<strong>步骤</strong>，也就是在抽象类中定义算法的骨架，具体实现留给子类。但是这里有一点非常重要，就是模版类的流程是定义好的，或者说定死了，子类就是在每一个步骤中实现自己的个性化。</p>
 <h2 id="工厂模式"><a href="#工厂模式" class="headerlink" title="工厂模式"></a>工厂模式</h2><blockquote>
 <p>工厂模式有三种，简单工厂、工厂模式、抽象工厂模式。</p>
-<p><font color='red'><u>**简单工厂（工厂不是抽象的）只适合单一产品的生产，他的思路很简单，就是根据不同信息new出来不同的对象。比如海尔冰箱和格力冰箱 **</u></font></p>
+<p><font color='red'><u>**简单工厂（工厂不是抽象的）只适合单一产品的生产，他的思路很简单，就是根据不同信息new出来不同的对象。比如海尔冰箱和格力冰箱 **</u></font>（冰箱工厂+ 收到冰箱品牌名，生成不同冰箱）</p>
 <p><font color='red'><u><em><strong>工厂模式是把原来的工厂作为抽象模型创建不同的子类工厂生产不同的商品。比如海尔冰箱工厂，格力空调工厂</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>抽象工厂模式就考虑了产品族的问题，一个工厂可以生产多等级的产品，说得简单点就是在抽象工厂里面增加生产其他产品的接口，子类去实现它。</strong></em></u></font></p>
 </blockquote>
@@ -1862,7 +1869,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1891,7 +1898,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-09T00:00:00+08:00">
 	
-		    Oct 09, 2023
+		    09 Oct 2023
     	
     </time>
     
@@ -1922,7 +1929,9 @@
 <p>SET 是整数集合（元素个数少于512）、哈希表。整数集合就是一块连续的数组</p>
 </blockquote>
 <blockquote>
-<p>ZSET是<strong>压缩列表或跳表</strong>。<strong>跳表是在链表基础，对部分节点分层，如果next的值大于我们要找的就从下一层找结果</strong>。<strong>跳表的相邻两层的节点数量最理想的比例是 2:1</strong>。</p>
+<p>ZSET是<strong>压缩列表或跳表</strong>。<font color='red'><u><em><strong>跳表是在链表基础，对部分节点分层，跳表的相邻两层的节点数量最理想的比例是 2:1。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>查找从顶层链表的头部元素开始，然后遍历该链表，如果next的值大于我们要找的就从下一层找结果</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>跳表的空间复杂度是 O(n)</strong></em></u></font></p>
 <p><strong>跳表在创建节点时候，会生成范围为[0-1]的一个随机数，如果这个随机数小于 0.25（相当于概率 25%），那么层数就增加 1 层，然后继续生成下一个随机数，直到随机数的结果大于 0.25 结束，最终确定该节点的层数</strong>。</p>
 </blockquote>
 <p>​	</p>
@@ -2033,7 +2042,7 @@
 <h2 id="哨兵模式（怎么保证redis的高可用？）"><a href="#哨兵模式（怎么保证redis的高可用？）" class="headerlink" title="哨兵模式（怎么保证redis的高可用？）"></a>哨兵模式（怎么保证redis的高可用？）</h2><p>他有三大作用：监控、恢复、通知。</p>
 <p><strong>怎么监控？怎么主从切换</strong></p>
 <blockquote>
-<p>哨兵是基于心跳机制去监控节点。每隔1s会向实例发送ping命令，然后实例响应pong，假如规定时间内，没回复，那就认为主观下线。如果主节点超过一半的哨兵都认为下线了，那就是客观下线，这个时候就要选取新的master。判断主节点客观下线的那个哨兵成为候选者，候选节点向其他哨兵发送成为leader的请求，如果成功就负责进行主从切换。</p>
+<p><font color='red'><u><em><strong>哨兵是基于心跳机制去监控节点。每隔1s会向实例发送ping命令，然后实例响应pong，假如规定时间内，没回复，那就认为主观下线。如果主节点超过一半的哨兵都认为下线了，那就是客观下线，这个时候就要选取新的master。判断主节点客观下线的那个哨兵成为候选者，候选节点向其他哨兵发送成为leader的请求，如果成功就负责进行主从切换。</strong></em></u></font></p>
 <p>1、选出主节点、先看优先值，再看offset，再看id</p>
 <p>2、将从节点指向新主节点</p>
 <p>3、通知客户的主节点已更换</p>
@@ -2117,7 +2126,7 @@
 </blockquote>
 <p>LFU</p>
 <blockquote>
-<p>lfu在RedisObject的基础上新增了一个字段，用于记录数据的访问频次。24位</p>
+<p>lfu在RedisObject的基础上新增了一个字段，<font color='red'><u><em><strong>用于记录数据的访问频次</strong></em></u></font>。24位</p>
 <p>高16位记录时间戳，后8位记录访问频次，默认5，会随着时间衰减</p>
 <p>数据每次被访问的时候：</p>
 <p>先对访问频次做一个衰减操作，根据时间和上一次访问时间的差</p>
@@ -2148,6 +2157,7 @@
 <p><font color='red'><u><em><strong>循环挤兑</strong></em></u></font>怎么办？</p>
 <p>1、对桶进行扩容</p>
 <p>2、增加hash函数</p>
+<p>区别：布谷鸟可以删除元素，查询效率更高，空间利用率更高</p>
 </blockquote>
 <h2 id="4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性"><a href="#4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性" class="headerlink" title="4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性"></a>4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性</h2><blockquote>
 <p>redis和mysql的数据一致性其实有两类方式：<font color='red'><u><em><strong>一种是更新数据库+更新缓存，一种是更新数据库+删除缓存。</strong></em></u></font></p>
@@ -2217,7 +2227,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2246,7 +2256,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    Aug 07, 2023
+		    07 Aug 2023
     	
     </time>
     
@@ -2338,7 +2348,7 @@
 >`ArrayDeque` 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 `LinkedList` 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。
 
 </blockquote>
-<h1 id="Hashmap："><a href="#Hashmap：" class="headerlink" title="Hashmap："></a>Hashmap：</h1><p>hashmap最关键的是他的<font color='blue'><u><em><strong>底层数据结构、put 扩容 和 线程安全方面的知识。</strong></em></u></font></p>
+<h1 id="HashMap："><a href="#HashMap：" class="headerlink" title="HashMap："></a>HashMap：</h1><p>hashmap最关键的是他的<font color='blue'><u><em><strong>底层数据结构、put 扩容 和 线程安全方面的知识。</strong></em></u></font></p>
 <blockquote>
 <h2 id="HashMap-的底层实现"><a href="#HashMap-的底层实现" class="headerlink" title="HashMap 的底层实现"></a>HashMap 的底层实现</h2><p>JDK1.8 之前 <code>HashMap</code> 底层是 <strong>数组和链表</strong>。1.8之后是数组+链表+红黑树</p>
 <p>构造函数是懒加载，没有初始化数据，就是把负载因子赋为0.75。</p>
@@ -2372,6 +2382,8 @@
 <h1 id="线程安全容器"><a href="#线程安全容器" class="headerlink" title="线程安全容器"></a><font color='red'><u><em><strong>线程安全容器</strong></em></u></font></h1><blockquote>
 <h2 id="1、ConcurrentHashMap"><a href="#1、ConcurrentHashMap" class="headerlink" title="1、ConcurrentHashMap"></a>1、<strong>ConcurrentHashMap</strong></h2><p><font color='red'><u><em><strong><code>ConcurrentHashMap</code>是线程安全的，而是通过原子操作和局部加锁的方法保证了多线程的线程安全。1.8以前是用16个<code>Segment</code> 分段锁加的Reentranlock。1.8以后现在采用数组+链表+红黑树的形式。添加元素的时候按照代码的流程先判断是不是初始化、节点为空就cas添加，如果正在扩容，就帮助扩容；如果冲突就加synchronized后再插入。</strong></em></u></font></p>
 <p>Java 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。</p>
+<p>1.7 size（）返回各个segment的size和，如果写入频繁，就加锁，全局锁</p>
+<p>1.8</p>
 <h2 id="2、CopyOnWriteArrayList（读多写少）"><a href="#2、CopyOnWriteArrayList（读多写少）" class="headerlink" title="2、CopyOnWriteArrayList（读多写少）"></a>2、CopyOnWriteArrayList（读多写少）</h2><p><font color='red'><u><em><strong>原理：读的时候不加锁，对数组进行改变的时候，通过锁 + 数组拷贝 + volatile 关键字保证了线程安全；</strong></em></u></font></p>
 <ul>
 <li><font color='red'><u><em><strong>加锁</strong></em></u></font>；</li>
@@ -2394,7 +2406,7 @@
 <p> <font color='red'><u><em><strong>线程池的类型</strong></em></u></font></p>
 <blockquote>
 <p>FixedThreadPool，没有救济的线程，只有核心线程。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue</p>
-<p>SingleThreadExecutor，核心线程和最大线程就1个。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue</p>
+<p>SingleThreadPool，核心线程和最大线程就1个。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue</p>
 <p>CachedThreadPool：这个是没有核心线程数，全都是救济线程。阻塞队列是SynchronousQueue</p>
 </blockquote>
 </blockquote>
@@ -2434,18 +2446,41 @@
 </blockquote>
 <h1 id="Spirng"><a href="#Spirng" class="headerlink" title="Spirng"></a>Spirng</h1><blockquote>
 <p><font color='red'><u><em><strong>AOP是什么？</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>aop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop 底层是动态代理JDK和CGLIB</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>有没有用过AOP</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>有的，我之前在一个分库分表的组件项目里面用到过，就是分库分表要切换数据源，我就是用aop切面去计算出落到哪个库哪个表里面，切入点是一个注解。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>aop的实现方式</strong></em></u></font></p>
 <blockquote>
-<p><font color='red'><u><strong>aop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop 底层是动态代理JDK和CGLIB</strong></u></font></p>
+<p>1、Spring API实现AOP，</p>
+<p>2、自定义切面类，</p>
+<p>3、通过注解实现AOP，Aspect</p>
+</blockquote>
+<p><font color='red'><u><em><strong>aop失效的原因和解决方法</strong></em></u></font></p>
+<blockquote>
+<p><font color='green'><u><em><strong>cglib， 在bean中用this来调用被AOP注解标注的方法，this下注解是不生效的。假设A和B，B被aop增强了，此时A调用的是当前类中的方法，而不是其子类加强后的方法，所以会失效</strong></em></u></font></p>
+<p>解决方法：</p>
+<p>1、直接把this换成<strong>Autowared</strong>修饰的bean</p>
+<p>2、<strong>Spring上下文获取增强后的实例引用</strong></p>
 </blockquote>
 <blockquote>
-<p><font color='green'><u><em><strong>有没有用过AOP</strong></em></u></font></p>
 </blockquote>
 <blockquote>
-<p><font color='red'><u><em><strong>有的，我之前在一个分库分表的组件项目里面用到过，就是分库分表要切换数据源，我就是用aop切面去计算出落到哪个库哪个表里面，切入点是一个注解。</strong></em></u></font></p>
 </blockquote>
 <p><font color='red'><u><em><strong>IOC</strong></em></u></font></p>
 <blockquote>
 <p><font color='red'><u><em><strong>控制反转的意思，以前我们创建的时候new，但是这种方法很麻烦，且很难处理对象直接的依赖关系。他是把对象创建和对象之间的调用过程，交给spring进行管理。</strong></em></u></font></p>
+</blockquote>
+<blockquote>
+<p><font color='green'><u><em><strong>Spring有几种容器</strong></em></u></font></p>
+</blockquote>
+<blockquote>
+<ol>
+<li><strong>BeanFactory</strong>: BeanFactory是Spring框架最基本的IOC容器。</li>
+<li><strong>ApplicationContext</strong>: ApplicationContext是BeanFactory的子接口，提供了更多的企业级功能，如国际化处理、事件传播、应用层面的异常处理等。它对BeanFactory进行了扩展，是Spring中最常用的IOC容器。</li>
+<li><strong>ClassPathXmlApplicationContext</strong>: ClassPathXmlApplicationContext是从类路径下加载配置文件的容器，通过XML文件配置来管理Bean。</li>
+<li><strong>FileSystemXmlApplicationContext</strong>: FileSystemXmlApplicationContext从文件系统中加载配置文件的容器，同样也是通过XML文件配置来管理Bean。</li>
+<li><strong>AnnotationConfigApplicationContext</strong>: AnnotationConfigApplicationContext是通过Java类配置来管理Bean的容器，不需要XML配置文件，而是通过注解来完成Bean的定义和依赖注入。</li>
+</ol>
 </blockquote>
 <p><font color='red'><u><em><strong>Bean的生命周期？</strong></em></u></font></p>
 <blockquote>
@@ -2488,7 +2523,7 @@
 <p>主要分为4步：服务构建、环境准备、容器创建、填充容器。</p>
 </blockquote>
 <blockquote>
-<p>1、服务构建就是构造springapplication，包括主方法类、确认web服务器、加载spring.factories下的所有初始化类。</p>
+<p>1、服务构建就是构造springapplication，包括确认web服务器、加载spring.factories下的所有初始化类监听器，找到主导方法。</p>
 </blockquote>
 <blockquote>
 <p>2、然后调用run方法进入环境准备，通过配置类、和配置文件构造出一个environment，用于后面的容器创建。</p>
@@ -2570,11 +2605,15 @@
 </blockquote>
 <p><font color='red'><u><em><strong>Springboot自动装配？</strong></em></u></font></p>
 <blockquote>
-<p><font color='blue'><u><em><strong>springboot的自动装配是依赖于springbootapplication这个注解，这个注解是一个复合注解，真正实现自动装配的是一个enableautoConfiguration这个注解。 我们引入的starter里面会有@Configuration配置类和@Bean注解声明的Bean对象，然后这个配置类的路径放在spirng.factories下，最后我们spring会通过ImportSelector接口去实现动态的加载，@ConditionalOnBean和@ConditionalOnMissingBean 定义的条件进行选择加载。</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>springboot的自动装配是依赖于springbootapplication这个注解，这个注解是一个复合注解，真正实现自动装配的是一个enableautoConfiguration这个注解。 我们引入的starter里面会有@Configuration配置类，然后这个配置类的路径放在spirng.factories下，我们用springfactoryloader找到配置类，最后我们spring会通过ImportSelector接口去实现动态的加载，@ConditionalOnBean和@ConditionalOnMissingBean 定义的条件进行选择加载。</strong></em></u></font></p>
 </blockquote>
 <p><font color='red'><u><em><strong>Autowire和Resourse</strong></em></u></font></p>
 <blockquote>
 <p><font color='blue'><u><em><strong>spring推荐setter和构造器，但是我们用字段注入比较简单，idea明确不推荐Autowire，我觉得原因是和框架的强耦合。</strong></em></u></font></p>
+</blockquote>
+<blockquote>
+<p>Autowire默认按类型，如果想要实现按名字注入，主要配置@Primary 或者@Qualifier，</p>
+<p>Resource默认按名字然后类型。</p>
 </blockquote>
 <p><strong>Bean是线程安全的吗？</strong></p>
 <blockquote>
@@ -2592,7 +2631,7 @@
 <li>没有用public修饰，</li>
 </ul>
 </blockquote>
-<p><strong>BeanBeanFactory和FactoryBean的区别！</strong></p>
+<p><strong>BeanFactory和FactoryBean的区别！</strong></p>
 <blockquote>
 <p>BeanFactory是管理Bean的容器，FactoryBean是一个生产Bean的工厂。</p>
 </blockquote>
@@ -2607,7 +2646,7 @@
 <blockquote>
 <p>顺序传参</p>
 <p>map传参</p>
-<p>用mybatis的注解</p>
+<p>用mybatis的注解，Param</p>
 </blockquote>
 <p><font color='blue'><u><em><strong>MyBatis中${} 和 #{} 有什么区别</strong></em></u></font></p>
 <blockquote>
@@ -2638,7 +2677,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2667,7 +2706,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -2774,7 +2813,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2803,7 +2842,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -2820,7 +2859,7 @@
                 <div class="postShorten-content">
                     <p>常见面试问题：</p>
 <p><strong>为什么用Kafka？</strong></p>
-<p>1、性能强、2兼容性好</p>
+<p>1、性能强，2、兼容性好</p>
 <h2 id="Kafka高性能的设计"><a href="#Kafka高性能的设计" class="headerlink" title="Kafka高性能的设计"></a><strong>Kafka高性能的设计</strong></h2><p><font color='red'><u><em><strong>1）分区设计，可以实现并行操作。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>2）磁盘顺序写（减少磁盘寻址时间）</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>3）MMF+页缓存</strong></em></u></font> 即使kafka是顺序写（），这个本身比较快，但是即使这样，速度也追不上内存。所以Kafka不是实时写入磁盘，而是先把数据写到页缓存里面，满足一定条件在刷回磁盘。它的工作原理是MMF，直接利用操作系统的页缓存来实现磁盘文件到物理内存的直接映射，完成映射之后你对物理内存的操作会被同步到硬盘上（操作系统在适当的时候）。</p>
@@ -2884,8 +2923,8 @@
 <p>broker存储丢失：</p>
 <blockquote>
 <p>依赖一个ACK确认机制</p>
-<p>0：发了就不管了</p>
-<p>1：需要leader成功接收</p>
+<p>0：发了就不管了，<font color='green'><u><em><strong>这意味着消息可能会在发送之后丢失，而生产者将无法知道它是否成功到达服务器</strong></em></u></font></p>
+<p>1：需要leader成功接收，<font color='green'><u><em><strong>leader同步Follower之前宕机，那消息可能就丢失</strong></em></u></font></p>
 <p>-1：所有ISR的follower都成功接收才可以</p>
 </blockquote>
 <p>消费者消费丢失：</p>
@@ -2945,7 +2984,7 @@
 <p><font color='blue'><u><em><strong>消费者选Leader</strong></em></u></font></p>
 <p>先用groupid%50 得到一个主题分区（consumer_offset），这个分区所属的节点的消费者协调器就作为这个消费者组的老大，每个消费者向这个协调器发送joinGroup请求，具体的选举方法是，取出HashMap里面的第一个，就是消费者组的信息是放在一个hashmap里面的，我么选的时候是直接拿出第一个就好。所以比较偏随机。</p>
 <h2 id="Kafka分区机制"><a href="#Kafka分区机制" class="headerlink" title="Kafka分区机制"></a>Kafka分区机制</h2><p>分为生产者分区和消费者分区。还有一种副本分区机制，那个先不说。</p>
-<p>生产者分区就是依赖于main线程里面的消息分区器，他有一个默认的分区器DefaultPartitioner，支持4种分区策略 1) 指定分区； 2）指定key，计算hash得分区； 3）指定随机粘性分区；（4）还可以自定义分区器（见代码）（下图））</p>
+<p>生产者分区就是依赖于main线程里面的消息分区器，他有一个默认的分区器DefaultPartitioner，支持4种分区策略 1) 指定分区； 2）指定key，计算hash得分区； 3）指定随机粘性分区以前是轮训；（4）还可以自定义分区器（见代码）（下图））</p>
 <p>消费者分区就是谁去消费谁的问题，支持三种策略：RoundRobin、Range、sticky粘性分区</p>
 <h1 id="1、定义"><a href="#1、定义" class="headerlink" title="1、定义"></a>1、定义</h1><p>分布式的基于发布订阅模式的消息队列</p>
 <p>主要应用场景包括：<strong>缓存消峰</strong>、<strong>解耦</strong>和<strong>异步通信。</strong></p>
@@ -3027,7 +3066,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -3056,7 +3095,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -3111,7 +3150,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -3129,14 +3168,14 @@
             <a
                 class="btn btn--default btn--small"
                 href="/categories/Java/page/2/"
-                aria-label="OLDER POSTS"
+                aria-label="ÄLTERE BEITRÄGE"
             >
-              <span>OLDER POSTS</span>
+              <span>ÄLTERE BEITRÄGE</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">page 1 of 4</li>
+        <li class="pagination-number">Seite 1 von 4</li>
     </ul>
 </div>
 
@@ -3166,7 +3205,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

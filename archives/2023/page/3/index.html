@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archives: 2023 - 森</title>
+    <title>Archiv: 2023 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -292,7 +292,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -321,7 +321,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -349,7 +349,77 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/"
+                            aria-label=": 待定"
+                        >
+                            待定
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2023-04-04T00:00:00+08:00">
+	
+		    04 Apr 2023
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p><strong>订单超时自动取消功能如何设计？</strong></p>
+<blockquote>
+<p>首先，这个订单肯定已经是产生了的。</p>
+<p>一种方法就是：定时任务+轮训，但是如果订单很多的情况下，就不好做轮训了。</p>
+<p>时间轮算法：可能浪费支援</p>
+<p>redis过期事件：</p>
+<p>延迟消息mq，设置一个时间，等到这个时间到了我们去检查用户是否支付</p>
+<p>最好还是用消息队列mq</p>
+</blockquote>
+<p><strong>在 2G 大小的文件中，找出高频top100的单词</strong></p>
+<blockquote>
+<p>关于这个问题，我说一下我的回答思路 1. 把 2G 的文件进行分割成大小为 512KB 小文件，总共得到2048 个小文件，避免一次性读入整个文件造成内存不足。 2. 定义一个长度为 2048 的 hash 表数组，用来统计每个小文件中单词出现的频率。3. 使用多线程并行遍历 2048 个小文件，针对每个单词进行 hash 取模运算分别存储到长度为 2048 的 hash 表数组中 inthash&#x3D;Math.abs(word.hashCode() %hashTableSize); hashTables[hash].merge(word, 1, Integer::sum); 4. 接着再遍历这 2048 个 hash 表，把频率前 100 的单词存入小顶堆中5. 最后，小顶堆中最终得到的 100 个单词，就是 top 100 了。这种解决方案的核心思想是将大文件分割为多个小文件，然后采用分治和堆的算法，来解决这个问题。</p>
+</blockquote>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -378,7 +448,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-03T00:00:00+08:00">
 	
-		    Apr 03, 2023
+		    03 Apr 2023
     	
     </time>
     
@@ -414,7 +484,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -443,7 +513,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-03T00:00:00+08:00">
 	
-		    Apr 03, 2023
+		    03 Apr 2023
     	
     </time>
     
@@ -518,7 +588,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -535,15 +605,15 @@
             <a
                 class="btn btn--default btn--small"
                 href="/archives/2023/page/2/"
-                aria-label="NEWER POSTS"
+                aria-label="NEUERE BEITRÄGE"
             >
               <i class="fa fa-angle-left text-base icon-mr"></i>
-              <span>NEWER POSTS</span>
+              <span>NEUERE BEITRÄGE</span>
             </a>
           </li>
         
         
-        <li class="pagination-number">page 3 of 3</li>
+        <li class="pagination-number">Seite 3 von 3</li>
     </ul>
 </div>
 
@@ -573,7 +643,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

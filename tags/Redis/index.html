@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-09T00:00:00+08:00">
 	
-		    Oct 09, 2023
+		    09 Oct 2023
     	
     </time>
     
@@ -274,7 +274,9 @@
 <p>SET 是整数集合（元素个数少于512）、哈希表。整数集合就是一块连续的数组</p>
 </blockquote>
 <blockquote>
-<p>ZSET是<strong>压缩列表或跳表</strong>。<strong>跳表是在链表基础，对部分节点分层，如果next的值大于我们要找的就从下一层找结果</strong>。<strong>跳表的相邻两层的节点数量最理想的比例是 2:1</strong>。</p>
+<p>ZSET是<strong>压缩列表或跳表</strong>。<font color='red'><u><em><strong>跳表是在链表基础，对部分节点分层，跳表的相邻两层的节点数量最理想的比例是 2:1。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>查找从顶层链表的头部元素开始，然后遍历该链表，如果next的值大于我们要找的就从下一层找结果</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>跳表的空间复杂度是 O(n)</strong></em></u></font></p>
 <p><strong>跳表在创建节点时候，会生成范围为[0-1]的一个随机数，如果这个随机数小于 0.25（相当于概率 25%），那么层数就增加 1 层，然后继续生成下一个随机数，直到随机数的结果大于 0.25 结束，最终确定该节点的层数</strong>。</p>
 </blockquote>
 <p>​	</p>
@@ -385,7 +387,7 @@
 <h2 id="哨兵模式（怎么保证redis的高可用？）"><a href="#哨兵模式（怎么保证redis的高可用？）" class="headerlink" title="哨兵模式（怎么保证redis的高可用？）"></a>哨兵模式（怎么保证redis的高可用？）</h2><p>他有三大作用：监控、恢复、通知。</p>
 <p><strong>怎么监控？怎么主从切换</strong></p>
 <blockquote>
-<p>哨兵是基于心跳机制去监控节点。每隔1s会向实例发送ping命令，然后实例响应pong，假如规定时间内，没回复，那就认为主观下线。如果主节点超过一半的哨兵都认为下线了，那就是客观下线，这个时候就要选取新的master。判断主节点客观下线的那个哨兵成为候选者，候选节点向其他哨兵发送成为leader的请求，如果成功就负责进行主从切换。</p>
+<p><font color='red'><u><em><strong>哨兵是基于心跳机制去监控节点。每隔1s会向实例发送ping命令，然后实例响应pong，假如规定时间内，没回复，那就认为主观下线。如果主节点超过一半的哨兵都认为下线了，那就是客观下线，这个时候就要选取新的master。判断主节点客观下线的那个哨兵成为候选者，候选节点向其他哨兵发送成为leader的请求，如果成功就负责进行主从切换。</strong></em></u></font></p>
 <p>1、选出主节点、先看优先值，再看offset，再看id</p>
 <p>2、将从节点指向新主节点</p>
 <p>3、通知客户的主节点已更换</p>
@@ -469,7 +471,7 @@
 </blockquote>
 <p>LFU</p>
 <blockquote>
-<p>lfu在RedisObject的基础上新增了一个字段，用于记录数据的访问频次。24位</p>
+<p>lfu在RedisObject的基础上新增了一个字段，<font color='red'><u><em><strong>用于记录数据的访问频次</strong></em></u></font>。24位</p>
 <p>高16位记录时间戳，后8位记录访问频次，默认5，会随着时间衰减</p>
 <p>数据每次被访问的时候：</p>
 <p>先对访问频次做一个衰减操作，根据时间和上一次访问时间的差</p>
@@ -500,6 +502,7 @@
 <p><font color='red'><u><em><strong>循环挤兑</strong></em></u></font>怎么办？</p>
 <p>1、对桶进行扩容</p>
 <p>2、增加hash函数</p>
+<p>区别：布谷鸟可以删除元素，查询效率更高，空间利用率更高</p>
 </blockquote>
 <h2 id="4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性"><a href="#4、说说常见的缓存更新策略？-x2F-怎么保证数据一致性" class="headerlink" title="4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性"></a>4、说说常见的缓存更新策略？&#x2F;怎么保证数据一致性</h2><blockquote>
 <p>redis和mysql的数据一致性其实有两类方式：<font color='red'><u><em><strong>一种是更新数据库+更新缓存，一种是更新数据库+删除缓存。</strong></em></u></font></p>
@@ -569,7 +572,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -583,7 +586,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -612,7 +615,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
