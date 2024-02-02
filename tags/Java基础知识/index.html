@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    Aug 07, 2023
+		    07 Aug 2023
     	
     </time>
     
@@ -303,37 +303,29 @@
 <p><font color='blue'><u><em><strong>如何实现数组和arraylist之间的转换</strong></em></u></font></p>
 <p>List.toarray  (修改原先list，array不受影响)</p>
 <p>Arrays.aslist （受影响）</p>
+<blockquote>
 <p><T>&lt;?&gt;</p>
 <p><T>主要用于类或方法上，对这个类或者方法里面的泛型全是一样的。</p>
 <?>一般用在变量上，有界通配符，对类型做一定的限制。
 
-
-
-## <font color='red'><u>***hashmap和hashset***</u></font>
-
-> hashset还是比较适合去重和集合运算
->
-> hashmap比较适合键值对这类数据
-
-## 比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同
-
-- <font color='red'><u>***`HashSet`、`LinkedHashSet` 和 `TreeSet` 的主要区别在于底层数据结构不同。`HashSet` 的底层数据结构是哈希表（基于 `HashMap` 实现）。`LinkedHashSet` 的底层数据结构是链表和哈希表。`TreeSet` 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。***</u></font>
-- 底层数据结构不同又导致这三者的应用场景不同。`HashSet` 用于不需要保证元素插入和取出顺序的场景，`LinkedHashSet` 用于保证元素的插入和取出顺序满足 FIFO 的场景，`TreeSet` 用于支持对元素自定义排序规则的场景。
-
-## Queue 与 Deque 的区别
-
->`Queue` 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 **先进先出（FIFO）** 规则。
->
->`Deque` 是双端队列，在队列的两端均可以插入或删除元素。
-
-## ArrayDeque 与 LinkedList 的区别
-
->`ArrayDeque` 和 `LinkedList` 都实现了 `Deque` 接口，两者都具有队列的功能
->
->`ArrayDeque` 是基于可变长的数组和双指针来实现，而 `LinkedList` 则通过链表来实现。
->
->`ArrayDeque` 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 `LinkedList` 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。
-
+</blockquote>
+<h2 id="hashmap和hashset"><a href="#hashmap和hashset" class="headerlink" title="hashmap和hashset"></a><font color='red'><u><em><strong>hashmap和hashset</strong></em></u></font></h2><blockquote>
+<p>hashset还是比较适合去重和集合运算</p>
+<p>hashmap比较适合键值对这类数据</p>
+</blockquote>
+<h2 id="比较-HashSet、LinkedHashSet-和-TreeSet-三者的异同"><a href="#比较-HashSet、LinkedHashSet-和-TreeSet-三者的异同" class="headerlink" title="比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同"></a>比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同</h2><ul>
+<li><font color='red'><u><em><strong><code>HashSet</code>、<code>LinkedHashSet</code> 和 <code>TreeSet</code> 的主要区别在于底层数据结构不同。<code>HashSet</code> 的底层数据结构是哈希表（基于 <code>HashMap</code> 实现）。<code>LinkedHashSet</code> 的底层数据结构是链表和哈希表。<code>TreeSet</code> 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。</strong></em></u></font></li>
+<li>底层数据结构不同又导致这三者的应用场景不同。<code>HashSet</code> 用于不需要保证元素插入和取出顺序的场景，<code>LinkedHashSet</code> 用于保证元素的插入和取出顺序满足 FIFO 的场景，<code>TreeSet</code> 用于支持对元素自定义排序规则的场景。</li>
+</ul>
+<h2 id="Queue-与-Deque-的区别"><a href="#Queue-与-Deque-的区别" class="headerlink" title="Queue 与 Deque 的区别"></a>Queue 与 Deque 的区别</h2><blockquote>
+<p><code>Queue</code> 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 <strong>先进先出（FIFO）</strong> 规则。</p>
+<p><code>Deque</code> 是双端队列，在队列的两端均可以插入或删除元素。</p>
+</blockquote>
+<h2 id="ArrayDeque-与-LinkedList-的区别"><a href="#ArrayDeque-与-LinkedList-的区别" class="headerlink" title="ArrayDeque 与 LinkedList 的区别"></a>ArrayDeque 与 LinkedList 的区别</h2><blockquote>
+<p><code>ArrayDeque</code> 和 <code>LinkedList</code> 都实现了 <code>Deque</code> 接口，两者都具有队列的功能</p>
+<p><code>ArrayDeque</code> 是基于可变长的数组和双指针来实现，而 <code>LinkedList</code> 则通过链表来实现。</p>
+<p><code>ArrayDeque</code> 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 <code>LinkedList</code> 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。</p>
+</blockquote>
 </blockquote>
 <h1 id="HashMap："><a href="#HashMap：" class="headerlink" title="HashMap："></a>HashMap：</h1><p>hashmap最关键的是他的<font color='blue'><u><em><strong>底层数据结构、put 扩容 和 线程安全方面的知识。</strong></em></u></font></p>
 <blockquote>
@@ -664,7 +656,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -678,7 +670,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -707,7 +699,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

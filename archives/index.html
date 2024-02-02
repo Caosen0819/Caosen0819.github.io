@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archives - 森</title>
+    <title>Archiv - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -233,6 +233,171 @@
                     
                         <a
                             class="link-unstyled"
+                            href="/2024/02/02/MySQL45-1/"
+                            aria-label=": MySQL45"
+                        >
+                            MySQL45
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2024-02-02T21:29:04+08:00">
+	
+		    02 Feb 2024
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h4 id="执行一个MYSQL查询语句会发生什么？"><a href="#执行一个MYSQL查询语句会发生什么？" class="headerlink" title="执行一个MYSQL查询语句会发生什么？"></a>执行一个MYSQL查询语句会发生什么？</h4><blockquote>
+<p><strong>连接器</strong></p>
+<p>**查询缓存:**对于更新比较频繁的表，查询缓存的命中率很低的，在MYSQL8被移除。</p>
+<p><strong>分析器：</strong>包括<font color='red'><u><em><strong>词法分析和语法分析</strong></em></u></font>，语法分析就是分析符不符合语法要求，如果没有问题会构造出SQL 语法树</p>
+<p><strong>优化器</strong>：优化器就是确定一个执行效率高的<font color='red'><u><em><strong>执行方案</strong></em></u></font>，比如选择索引、连接表的顺序等等</p>
+<p><strong>执行器</strong>：</p>
+</blockquote>
+<h4 id="执行一个MYSQL更新操作有什么不同？"><a href="#执行一个MYSQL更新操作有什么不同？" class="headerlink" title="执行一个MYSQL更新操作有什么不同？"></a>执行一个MYSQL更新操作有什么不同？</h4><blockquote>
+<p>更新操作还会涉及两个表的操作，<font color='red'><u><em><strong>一个是redo log（解决崩溃恢复） 一个是binlog（备份）</strong></em></u></font></p>
+<p>这两种日志有以下三点不同。</p>
+<ol>
+<li>redo log 是 InnoDB 引擎特有的；binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。</li>
+<li>redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如“给 ID&#x3D;2 这一行的 c 字段加 1 ”。</li>
+<li>redo log 是循环写的，空间固定会用完；binlog 是可以追加写入的。“追加写”是指 binlog 文件写到一定大小后会切换到下一个，并不会覆盖以前的日志。</li>
+</ol>
+<p><img src="/../images/MySQL45-1/image-20231028134812838.png" alt="image-20231028134812838"></p>
+<p>write pos 是当前记录的位置,checkpoint 是当前要擦除的位置</p>
+<p>我们举一个例子来演示一下（<font color='red'><u><em><strong>两阶段提交</strong></em></u></font>）：</p>
+<ol>
+<li>执行器先找引擎取 ID&#x3D;2 这一行。ID 是主键，引擎直接用树搜索找到这一行。如果 ID&#x3D;2 这一行所在的数据页本来就在内存中，就直接返回给执行器；否则，需要先从磁盘读入内存，然后再返回。</li>
+<li>执行器拿到引擎给的行数据，把这个值加上 1，比如原来是 N，现在就是 N+1，得到新的一行数据，再调用引擎接口写入这行新数据。</li>
+<li>引擎将这行新数据更新到内存中，同时将这个更新操作记录到 redo log 里面，<font color='red'><u><em><strong>此时 redo log 处于 prepare 状态</strong></em></u></font>。然后告知执行器执行完成了，随时可以提交事务。</li>
+<li>执行器生成这个操作的 binlog，并把 binlog 写入磁盘。</li>
+<li>执行器调用引擎的<font color='red'><u><em><strong>提交事务接口，引擎把刚刚写入的 redo log 改成提交（commit）状态</strong></em></u></font>，更新完成。</li>
+</ol>
+</blockquote>
+<p>这两个日志的配合是使用两阶段提交</p>
+<p><img src="/../images/MySQL45-1/image-20230805142953314.png"></p>
+<blockquote>
+<p>可以发现将redo log的写入分成了两个阶段，一个是prepare 一个commit</p>
+<p>在两阶段提交的情况下，是怎么实现崩溃恢复的呢？<br>首先比较重要的一点是，在写入redo log时，会顺便记录XID，即当前事务id。在写入binlog时，也会写入XID。</p>
+<p>如果在写入redo log之前崩溃，那么此时redo log与binlog中都没有，是一致的情况，崩溃也无所谓。</p>
+<p>如果在写入redo log prepare阶段后立马崩溃，之后会在崩恢复时，由于redo log没有被标记为commit。于是拿着redo log中的XID去binlog中查找，此时肯定是找不到的，那么执行回滚操作。</p>
+<p>如果在写入binlog后立马崩溃，在恢复时，由redo log中的XID可以找到对应的binlog，这个时候直接提交即可。</p>
+<p>总的来说，在崩溃恢复后，只要redo log不是处于commit阶段，那么就拿着redo log中的XID去binlog中寻找，找得到就提交，否则就回滚。</p>
+<p>在这样的机制下，两阶段提交能在崩溃恢复时，能够对提交中断的事务进行补偿，来确保redo log与binlog的数据一致性。</p>
+</blockquote>
+<h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a><strong>索引</strong></h2><p><img src="/../images/MySQL45-1/image-20240109120737217.png" alt="image-20240109120737217"></p>
+<p>执行流程：(<font color='red'><u><em><strong>所以回表不是只回表一次，而是多次</strong></em></u></font>)</p>
+<blockquote>
+<ol>
+<li>在 k 索引树上找到 k&#x3D;3 的记录，取得 ID &#x3D; 300； </li>
+<li>再到 ID 索引树查到 ID&#x3D;300 对应的 R3； </li>
+<li>在 k 索引树取下一个值 k&#x3D;5，取得 ID&#x3D;500； </li>
+<li>再回到 ID 索引树查到 ID&#x3D;500 对应的 R4；</li>
+<li>在 k 索引树取下一个值 k&#x3D;6，不满足条件，循环结束。</li>
+</ol>
+</blockquote>
+<p><font color='red'><u><em><strong>为什么有时候会选错索引？（两个原因）</strong></em></u></font></p>
+<blockquote>
+<p><font color='green'><u><em><strong>MySQL在真正执行之前只能根据统计信息来估算记录数。</strong></em></u></font>这个统计信息就是基数（随机采样得到一个页的平均值，然后乘以页数）</p>
+<p><font color='green'><u><em><strong>第二个原因是优化器，优化器还要估计执行这个语句本身要扫描多少行？</strong></em></u></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>用 delete 命令把整个表的数据删除呢容量不变小？</strong></em></u></font></p>
+<blockquote>
+<p>数据页都会 被标记为可复用。但是磁盘上，文件不会变小</p>
+<p><font color='red'><u><em><strong>所以需要重建，重建现在基本上都是OnlineDDL，algorithm是copy的时候就是需要临时表，还会丢数据，inplace则是在innodb层开一个临时空间去做，这个允许dml操作（DML写锁会退化成DML读锁）</strong></em></u></font></p>
+</blockquote>
+<p><font color='red'><u>**count(字段)&lt;count(主键 id)&lt;count(1)&lt;count( * )**</u></font></p>
+<blockquote>
+<ol>
+<li>server 层要什么就给什么； 2. InnoDB 只给必要的值； 3. 现在的优化器只优化了 count(*) 的语义为“取行数”，其他“显而易见”的优化并没有做。</li>
+</ol>
+</blockquote>
+<p><font color='red'><u><em><strong>Order By怎么工作？</strong></em></u></font></p>
+<blockquote>
+<p><font color='green'><u><em><strong>order by分两种排序，一种是全字段排序，一种是rowid排序。后者要比前者多一次访问主键索引。MySQL 的一个设计思想：如果内存够，就要多利用内存，也就是全字段排序，尽量减少磁盘访 问。</strong></em></u></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>为什么有时候查询一条语句也很慢？</strong></em></u></font></p>
+<blockquote>
+<p>有可能在等锁的释放，</p>
+<p>也有可能全表扫描，然后行数靠后</p>
+</blockquote>
+<p><font color='red'><u><em><strong>全表扫描会不会把数据库内存打爆</strong></em></u></font></p>
+<blockquote>
+<p>不会</p>
+<p>因为mysql是边读边发，他有一个net_buffer，16k大小，不会server 端保存完整的结果集，如果接收不及时，就堵住MySQL的查询过程，但是绝对不会打爆内存，而且innodb有lru这种内存淘汰策略。</p>
+</blockquote>
+<p><font color='red'><u><em><strong>能不能用join，怎么用</strong></em></u></font></p>
+<blockquote>
+<ol>
+<li>如果可以使用被驱动表的索引，join 语句还是有其优势的； </li>
+<li>在使用 join 的时候，应该让小表做驱动表。</li>
+</ol>
+</blockquote>
+<p><strong>全局锁</strong></p>
+<blockquote>
+<p>典型的使用场景就是做全库的逻辑备份，加了全局锁就是只能读（DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句）</p>
+<p>这样就保证了数据的一致性 和完整性 </p>
+<ul>
+<li>语法</li>
+</ul>
+<p>1、加全局锁</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="operator">&gt;</span>flush tables <span class="keyword">with</span> read lock;</span><br></pre></td></tr></table></figure>
+
+<p>2、数据备份</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="operator">&gt;</span>mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>pxxx db_name <span class="operator">-</span><span class="operator">&gt;</span> xxx.sql;</span><br></pre></td></tr></table></figure>
+
+<p>3、释放锁</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="operator">&gt;</span>unlock tables;</span><br></pre></td></tr></table></figure>
+
+<p>如果在主库上备份，那么在备份期间都不能执行更新，业务基本上就得停摆。</p>
+<p>如果在从库上备份，那么在备份期间从库不能执行主库同步过来的二进制日志（binlog）</p>
+<p>我们可以在InnoDB引擎中，我们可以在备份时加上参数 –single-transaction 参数来完成不加锁的一致性数据备份。</p>
+<p><font color='red'><u><em><strong>一般用于备份，但是备份也可以开启事务做，但是需要引擎支持可重复读这种隔离级别。</strong></em></u></font>。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysqldump --single-transaction -uroot -pxxx db_name -&gt; xxx.sql;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2024/02/02/MySQL45-1/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Kommentieren und teilen
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
                             href="/2023/11/08/JUC/"
                             aria-label=": JUC"
                         >
@@ -243,7 +408,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    Nov 08, 2023
+		    08 Nov 2023
     	
     </time>
     
@@ -612,7 +777,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -641,7 +806,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    Nov 08, 2023
+		    08 Nov 2023
     	
     </time>
     
@@ -1180,7 +1345,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1209,7 +1374,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-04T00:00:00+08:00">
 	
-		    Nov 04, 2023
+		    04 Nov 2023
     	
     </time>
     
@@ -1581,172 +1746,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
-                            </a>
-                        </p>
-                    
-                </div>
-            
-        </div>
-        
-    </article>
-    
-    
-    <article class="postShorten postShorten--thumbnailimg-bottom">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2023/10/28/MySQL45/"
-                            aria-label=": MySQL45"
-                        >
-                            MySQL45
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2023-10-28T00:00:00+08:00">
-	
-		    Oct 28, 2023
-    	
-    </time>
-    
-        <span>in </span>
-        
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-content">
-                    <h4 id="执行一个MYSQL查询语句会发生什么？"><a href="#执行一个MYSQL查询语句会发生什么？" class="headerlink" title="执行一个MYSQL查询语句会发生什么？"></a>执行一个MYSQL查询语句会发生什么？</h4><blockquote>
-<p><strong>连接器</strong></p>
-<p>**查询缓存:**对于更新比较频繁的表，查询缓存的命中率很低的，在MYSQL8被移除。</p>
-<p><strong>分析器：</strong>包括<font color='red'><u><em><strong>词法分析和语法分析</strong></em></u></font>，语法分析就是分析符不符合语法要求，如果没有问题会构造出SQL 语法树</p>
-<p><strong>优化器</strong>：优化器就是确定一个执行效率高的<font color='red'><u><em><strong>执行方案</strong></em></u></font>，比如选择索引、连接表的顺序等等</p>
-<p><strong>执行器</strong>：</p>
-</blockquote>
-<h4 id="执行一个MYSQL更新操作有什么不同？"><a href="#执行一个MYSQL更新操作有什么不同？" class="headerlink" title="执行一个MYSQL更新操作有什么不同？"></a>执行一个MYSQL更新操作有什么不同？</h4><blockquote>
-<p>更新操作还会涉及两个表的操作，<font color='red'><u><em><strong>一个是redo log（解决崩溃恢复） 一个是binlog（备份）</strong></em></u></font></p>
-<p>这两种日志有以下三点不同。</p>
-<ol>
-<li>redo log 是 InnoDB 引擎特有的；binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。</li>
-<li>redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如“给 ID&#x3D;2 这一行的 c 字段加 1 ”。</li>
-<li>redo log 是循环写的，空间固定会用完；binlog 是可以追加写入的。“追加写”是指 binlog 文件写到一定大小后会切换到下一个，并不会覆盖以前的日志。</li>
-</ol>
-<p><img src="/../images/MySQL45/image-20231028134812838.png" alt="image-20231028134812838"></p>
-<p>write pos 是当前记录的位置,checkpoint 是当前要擦除的位置</p>
-<p>我们举一个例子来演示一下（<font color='red'><u><em><strong>两阶段提交</strong></em></u></font>）：</p>
-<ol>
-<li>执行器先找引擎取 ID&#x3D;2 这一行。ID 是主键，引擎直接用树搜索找到这一行。如果 ID&#x3D;2 这一行所在的数据页本来就在内存中，就直接返回给执行器；否则，需要先从磁盘读入内存，然后再返回。</li>
-<li>执行器拿到引擎给的行数据，把这个值加上 1，比如原来是 N，现在就是 N+1，得到新的一行数据，再调用引擎接口写入这行新数据。</li>
-<li>引擎将这行新数据更新到内存中，同时将这个更新操作记录到 redo log 里面，<font color='red'><u><em><strong>此时 redo log 处于 prepare 状态</strong></em></u></font>。然后告知执行器执行完成了，随时可以提交事务。</li>
-<li>执行器生成这个操作的 binlog，并把 binlog 写入磁盘。</li>
-<li>执行器调用引擎的<font color='red'><u><em><strong>提交事务接口，引擎把刚刚写入的 redo log 改成提交（commit）状态</strong></em></u></font>，更新完成。</li>
-</ol>
-</blockquote>
-<p>这两个日志的配合是使用两阶段提交</p>
-<p><img src="/../images/MySQL45/image-20230805142953314.png"></p>
-<blockquote>
-<p>可以发现将redo log的写入分成了两个阶段，一个是prepare 一个commit</p>
-<p>在两阶段提交的情况下，是怎么实现崩溃恢复的呢？<br>首先比较重要的一点是，在写入redo log时，会顺便记录XID，即当前事务id。在写入binlog时，也会写入XID。</p>
-<p>如果在写入redo log之前崩溃，那么此时redo log与binlog中都没有，是一致的情况，崩溃也无所谓。</p>
-<p>如果在写入redo log prepare阶段后立马崩溃，之后会在崩恢复时，由于redo log没有被标记为commit。于是拿着redo log中的XID去binlog中查找，此时肯定是找不到的，那么执行回滚操作。</p>
-<p>如果在写入binlog后立马崩溃，在恢复时，由redo log中的XID可以找到对应的binlog，这个时候直接提交即可。</p>
-<p>总的来说，在崩溃恢复后，只要redo log不是处于commit阶段，那么就拿着redo log中的XID去binlog中寻找，找得到就提交，否则就回滚。</p>
-<p>在这样的机制下，两阶段提交能在崩溃恢复时，能够对提交中断的事务进行补偿，来确保redo log与binlog的数据一致性。</p>
-</blockquote>
-<h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a><strong>索引</strong></h2><p><img src="/../images/MySQL45/image-20240109120737217.png" alt="image-20240109120737217"></p>
-<p>执行流程：(<font color='red'><u><em><strong>所以回表不是只回表一次，而是多次</strong></em></u></font>)</p>
-<blockquote>
-<ol>
-<li>在 k 索引树上找到 k&#x3D;3 的记录，取得 ID &#x3D; 300； </li>
-<li>再到 ID 索引树查到 ID&#x3D;300 对应的 R3； </li>
-<li>在 k 索引树取下一个值 k&#x3D;5，取得 ID&#x3D;500； </li>
-<li>再回到 ID 索引树查到 ID&#x3D;500 对应的 R4；</li>
-<li>在 k 索引树取下一个值 k&#x3D;6，不满足条件，循环结束。</li>
-</ol>
-</blockquote>
-<p><font color='red'><u><em><strong>为什么有时候会选错索引？（两个原因）</strong></em></u></font></p>
-<blockquote>
-<p><font color='green'><u><em><strong>MySQL在真正执行之前只能根据统计信息来估算记录数。</strong></em></u></font>这个统计信息就是基数（随机采样得到一个页的平均值，然后乘以页数）</p>
-<p><font color='green'><u><em><strong>第二个原因是优化器，优化器还要估计执行这个语句本身要扫描多少行？</strong></em></u></font></p>
-</blockquote>
-<p><font color='red'><u><em><strong>用 delete 命令把整个表的数据删除呢容量不变小？</strong></em></u></font></p>
-<blockquote>
-<p>数据页都会 被标记为可复用。但是磁盘上，文件不会变小</p>
-<p><font color='red'><u><em><strong>所以需要重建，重建现在基本上都是OnlineDDL，algorithm是copy的时候就是需要临时表，还会丢数据，inplace则是在innodb层开一个临时空间去做，这个允许dml操作（DML写锁会退化成DML读锁）</strong></em></u></font></p>
-</blockquote>
-<p><font color='red'><u>**count(字段)&lt;count(主键 id)&lt;count(1)&lt;count( * )**</u></font></p>
-<blockquote>
-<ol>
-<li>server 层要什么就给什么； 2. InnoDB 只给必要的值； 3. 现在的优化器只优化了 count(*) 的语义为“取行数”，其他“显而易见”的优化并没有做。</li>
-</ol>
-</blockquote>
-<p><font color='red'><u><em><strong>Order By怎么工作？</strong></em></u></font></p>
-<blockquote>
-<p><font color='green'><u><em><strong>order by分两种排序，一种是全字段排序，一种是rowid排序。后者要比前者多一次访问主键索引。MySQL 的一个设计思想：如果内存够，就要多利用内存，也就是全字段排序，尽量减少磁盘访 问。</strong></em></u></font></p>
-</blockquote>
-<p><font color='red'><u><em><strong>为什么有时候查询一条语句也很慢？</strong></em></u></font></p>
-<blockquote>
-<p>有可能在等锁的释放，</p>
-<p>也有可能全表扫描，然后行数靠后</p>
-</blockquote>
-<p><font color='red'><u><em><strong>全表扫描会不会把数据库内存打爆</strong></em></u></font></p>
-<blockquote>
-<p>不会</p>
-<p>因为mysql是边读边发，他有一个net_buffer，16k大小，不会server 端保存完整的结果集，如果接收不及时，就堵住MySQL的查询过程，但是绝对不会打爆内存，而且innodb有lru这种内存淘汰策略。</p>
-</blockquote>
-<p><font color='red'><u><em><strong>能不能用join，怎么用</strong></em></u></font></p>
-<blockquote>
-<ol>
-<li>如果可以使用被驱动表的索引，join 语句还是有其优势的； </li>
-<li>在使用 join 的时候，应该让小表做驱动表。</li>
-</ol>
-</blockquote>
-<p><strong>全局锁</strong></p>
-<blockquote>
-<p>典型的使用场景就是做全库的逻辑备份，加了全局锁就是只能读（DDL、 DML全部都处于阻塞状态，但是可以执行DQL语句）</p>
-<p>这样就保证了数据的一致性 和完整性 </p>
-<ul>
-<li>语法</li>
-</ul>
-<p>1、加全局锁</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="operator">&gt;</span>flush tables <span class="keyword">with</span> read lock;</span><br></pre></td></tr></table></figure>
-
-<p>2、数据备份</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="operator">&gt;</span>mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>pxxx db_name <span class="operator">-</span><span class="operator">&gt;</span> xxx.sql;</span><br></pre></td></tr></table></figure>
-
-<p>3、释放锁</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="operator">&gt;</span>unlock tables;</span><br></pre></td></tr></table></figure>
-
-<p>如果在主库上备份，那么在备份期间都不能执行更新，业务基本上就得停摆。</p>
-<p>如果在从库上备份，那么在备份期间从库不能执行主库同步过来的二进制日志（binlog）</p>
-<p>我们可以在InnoDB引擎中，我们可以在备份时加上参数 –single-transaction 参数来完成不加锁的一致性数据备份。</p>
-<p><font color='red'><u><em><strong>一般用于备份，但是备份也可以开启事务做，但是需要引擎支持可重复读这种隔离级别。</strong></em></u></font>。</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysqldump --single-transaction -uroot -pxxx db_name -&gt; xxx.sql;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-                    
-                        
-
-
-                    
-                    
-                        <p>
-                            <a
-                                href="/2023/10/28/MySQL45/#post-footer"
-                                class="postShorten-excerpt_link link"
-                                aria-label=""
-                            >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1775,7 +1775,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-10T00:00:00+08:00">
 	
-		    Oct 10, 2023
+		    10 Oct 2023
     	
     </time>
     
@@ -1870,7 +1870,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1899,7 +1899,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-09T00:00:00+08:00">
 	
-		    Oct 09, 2023
+		    09 Oct 2023
     	
     </time>
     
@@ -2228,7 +2228,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2257,7 +2257,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    Aug 07, 2023
+		    07 Aug 2023
     	
     </time>
     
@@ -2317,37 +2317,29 @@
 <p><font color='blue'><u><em><strong>如何实现数组和arraylist之间的转换</strong></em></u></font></p>
 <p>List.toarray  (修改原先list，array不受影响)</p>
 <p>Arrays.aslist （受影响）</p>
+<blockquote>
 <p><T>&lt;?&gt;</p>
 <p><T>主要用于类或方法上，对这个类或者方法里面的泛型全是一样的。</p>
 <?>一般用在变量上，有界通配符，对类型做一定的限制。
 
-
-
-## <font color='red'><u>***hashmap和hashset***</u></font>
-
-> hashset还是比较适合去重和集合运算
->
-> hashmap比较适合键值对这类数据
-
-## 比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同
-
-- <font color='red'><u>***`HashSet`、`LinkedHashSet` 和 `TreeSet` 的主要区别在于底层数据结构不同。`HashSet` 的底层数据结构是哈希表（基于 `HashMap` 实现）。`LinkedHashSet` 的底层数据结构是链表和哈希表。`TreeSet` 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。***</u></font>
-- 底层数据结构不同又导致这三者的应用场景不同。`HashSet` 用于不需要保证元素插入和取出顺序的场景，`LinkedHashSet` 用于保证元素的插入和取出顺序满足 FIFO 的场景，`TreeSet` 用于支持对元素自定义排序规则的场景。
-
-## Queue 与 Deque 的区别
-
->`Queue` 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 **先进先出（FIFO）** 规则。
->
->`Deque` 是双端队列，在队列的两端均可以插入或删除元素。
-
-## ArrayDeque 与 LinkedList 的区别
-
->`ArrayDeque` 和 `LinkedList` 都实现了 `Deque` 接口，两者都具有队列的功能
->
->`ArrayDeque` 是基于可变长的数组和双指针来实现，而 `LinkedList` 则通过链表来实现。
->
->`ArrayDeque` 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 `LinkedList` 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。
-
+</blockquote>
+<h2 id="hashmap和hashset"><a href="#hashmap和hashset" class="headerlink" title="hashmap和hashset"></a><font color='red'><u><em><strong>hashmap和hashset</strong></em></u></font></h2><blockquote>
+<p>hashset还是比较适合去重和集合运算</p>
+<p>hashmap比较适合键值对这类数据</p>
+</blockquote>
+<h2 id="比较-HashSet、LinkedHashSet-和-TreeSet-三者的异同"><a href="#比较-HashSet、LinkedHashSet-和-TreeSet-三者的异同" class="headerlink" title="比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同"></a>比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同</h2><ul>
+<li><font color='red'><u><em><strong><code>HashSet</code>、<code>LinkedHashSet</code> 和 <code>TreeSet</code> 的主要区别在于底层数据结构不同。<code>HashSet</code> 的底层数据结构是哈希表（基于 <code>HashMap</code> 实现）。<code>LinkedHashSet</code> 的底层数据结构是链表和哈希表。<code>TreeSet</code> 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。</strong></em></u></font></li>
+<li>底层数据结构不同又导致这三者的应用场景不同。<code>HashSet</code> 用于不需要保证元素插入和取出顺序的场景，<code>LinkedHashSet</code> 用于保证元素的插入和取出顺序满足 FIFO 的场景，<code>TreeSet</code> 用于支持对元素自定义排序规则的场景。</li>
+</ul>
+<h2 id="Queue-与-Deque-的区别"><a href="#Queue-与-Deque-的区别" class="headerlink" title="Queue 与 Deque 的区别"></a>Queue 与 Deque 的区别</h2><blockquote>
+<p><code>Queue</code> 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 <strong>先进先出（FIFO）</strong> 规则。</p>
+<p><code>Deque</code> 是双端队列，在队列的两端均可以插入或删除元素。</p>
+</blockquote>
+<h2 id="ArrayDeque-与-LinkedList-的区别"><a href="#ArrayDeque-与-LinkedList-的区别" class="headerlink" title="ArrayDeque 与 LinkedList 的区别"></a>ArrayDeque 与 LinkedList 的区别</h2><blockquote>
+<p><code>ArrayDeque</code> 和 <code>LinkedList</code> 都实现了 <code>Deque</code> 接口，两者都具有队列的功能</p>
+<p><code>ArrayDeque</code> 是基于可变长的数组和双指针来实现，而 <code>LinkedList</code> 则通过链表来实现。</p>
+<p><code>ArrayDeque</code> 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 <code>LinkedList</code> 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。</p>
+</blockquote>
 </blockquote>
 <h1 id="HashMap："><a href="#HashMap：" class="headerlink" title="HashMap："></a>HashMap：</h1><p>hashmap最关键的是他的<font color='blue'><u><em><strong>底层数据结构、put 扩容 和 线程安全方面的知识。</strong></em></u></font></p>
 <blockquote>
@@ -2678,7 +2670,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2707,7 +2699,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -2814,7 +2806,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -2843,7 +2835,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -3067,7 +3059,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -3096,7 +3088,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -3151,7 +3143,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -3169,14 +3161,14 @@
             <a
                 class="btn btn--default btn--small"
                 href="/archives/page/2/"
-                aria-label="OLDER POSTS"
+                aria-label="ÄLTERE BEITRÄGE"
             >
-              <span>OLDER POSTS</span>
+              <span>ÄLTERE BEITRÄGE</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">page 1 of 5</li>
+        <li class="pagination-number">Seite 1 von 5</li>
     </ul>
 </div>
 
@@ -3206,7 +3198,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

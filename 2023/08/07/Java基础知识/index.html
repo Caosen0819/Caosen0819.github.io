@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"讲讲Java的代理代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。\n动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy，\n动态代理有两种方式一种是jdk方法，一种是cglib方法\n我们先来讲jdk代理：\n\nJDK代理依赖于Proxy类和InvocationHandler接口，InvocationHandler接口他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组。代理方法和参数组其实我们可以利用反射得到，所以参数其实是可以变化的，那这样就成功的实现了动态的代理。\n那我们怎么去调用这个方法呢？依赖于Proxy类和他的方法newproxyInstance，得到的代理类，调用方法其实会直接调用我们实现InvocationHandler接口的invoke方法\n\n下面来讲CGLIB代理\n在 CGLIB 动态代理机制中 MethodInterceptor 接口和 Enhancer 类是核心。你可以通过 Enhancer类来动态获取被代理类，\n  CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法拦截器拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 MethodInterceptor 中的 intercept 方法。\n二者区别总结一下两者的区别吧：\nJDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰JDK 是自带的、CGLIB需要加载包\nJDK是反射机制，CGLIB是使用ASM框架。\n为什么Java不能多继承？\n会出现方法冲突和变量冲突\n集合\nArraylist底层原理可以从底层数据结构，构造函数和关键方法理解。\n\nArraylist的底层数据结构是object[]数组，构造函数分有参无参，如果是无参就是空数组，如果是有参，就用你定义的那个初始大小。如果参数是容器，那就是把容器转成数组copy给object。关键方法就是add方法，需要保证容量够用才能添加元素，所以会在添加之前进行一个ensurecapacity的过程。他会先计算mincapacity的值，他会拿mincapacity去和现在的数组长度比较，如果大了说明要扩容，扩容的过程是先×1.5看看够不够，够的话就1.5，不够就用新的这个mincapacity。如果minCapacity大于最大容量，则新容量则为Integer.MAX_VALUE，否则，新容量大小则为 MAX_ARRAY_SIZE 即为 Integer.MAX_VALUE - 8\n\n对于插入：如果不需要扩容，其实无论是头插指定位置插入都是O(n)，尾插是O(1)。如果需要扩容，就得再做一次扩容，O(n)，然后在插入，就是刚才讲的时间复杂度。\n对于删除：头删和指定位置删除是O(n)，尾部删除是O(1)\n\n\nLinkedlist\nLinkedlist 是双向链表，因为是链表，所以没什么扩容的问题，基本的方法都是围绕前节点、后节点、节点值展开的。\n\n头部插入&#x2F;删除： O(1)。\n尾部插入&#x2F;删除： O(1)。\n指定位置插入&#x2F;删除：需要先移动到指定位置，再修改指定节点的指针完成插入&#x2F;删除，因此需要移动平均 n&#x2F;2 个元素，时间复杂度为 O(n)。\n\n\nArrayList 与 LinkedList区别?\n底层数据结构： ArrayList 底层使用的是 Object 数组；LinkedList 底层使用的是 双向链表 数据结构，内存一个是连续一个不是连续\n插入和删除的时间复杂度：arraylist，头插、指定插、头删、指定删除都是On，尾插和尾删除是O1。linkedlist 头插和尾插、头删除、尾删除都是O1，指定位置是On\n内存空间占用：linkedlist每个节点要存前后指针，所以内存占用大。\n使用场景：\n如果需要频繁进行随机访问和查询操作的场景，例如按索引读取数据或搜索特定元素，应该选择ArrayList。\n如果需要频繁进行插入、删除或位置变动较多的场景，特别是在链表的首尾位置进行操作，那么LinkedList是更合适的选择。\n\n其他\n如何实现数组和arraylist之间的转换\nList.toarray  (修改原先list，array不受影响)\nArrays.aslist （受影响）\n&lt;?&gt;\n主要用于类或方法上，对这个类或者方法里面的泛型全是一样的。\n一般用在变量上，有界通配符，对类型做一定的限制。\n\n\n\n## ***hashmap和hashset***\n\n> hashset还是比较适合去重和集合运算\n>\n> hashmap比较适合键值对这类数据\n\n## 比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同\n\n- ***`HashSet`、`LinkedHashSet` 和 `TreeSet` 的主要区别在于底层数据结构不同。`HashSet` 的底层数据结构是哈希表（基于 `HashMap` 实现）。`LinkedHashSet` 的底层数据结构是链表和哈希表。`TreeSet` 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。***\n- 底层数据结构不同又导致这三者的应用场景不同。`HashSet` 用于不需要保证元素插入和取出顺序的场景，`LinkedHashSet` 用于保证元素的插入和取出顺序满足 FIFO 的场景，`TreeSet` 用于支持对元素自定义排序规则的场景。\n\n## Queue 与 Deque 的区别\n\n>`Queue` 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 **先进先出（FIFO）** 规则。\n>\n>`Deque` 是双端队列，在队列的两端均可以插入或删除元素。\n\n## ArrayDeque 与 LinkedList 的区别\n\n>`ArrayDeque` 和 `LinkedList` 都实现了 `Deque` 接口，两者都具有队列的功能\n>\n>`ArrayDeque` 是基于可变长的数组和双指针来实现，而 `LinkedList` 则通过链表来实现。\n>\n>`ArrayDeque` 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 `LinkedList` 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。\n\n\nHashMap：hashmap最关键的是他的底层数据结构、put 扩容 和 线程安全方面的知识。\n\nHashMap 的底层实现JDK1.8 之前 HashMap 底层是 数组和链表。1.8之后是数组+链表+红黑树\n构造函数是懒加载，没有初始化数据，就是把负载因子赋为0.75。\nput的时候，先判断数组是否为空，如果为空，就初始化为16大小。通过 key 的 hashcode 经过扰动函数（右移16位再异或），然后通过   hash &amp; (n - 1) 判断当前元素存放的位置（这里的 n 指的是数组的长度），如果定位到的数组位置没有元素 就直接插入。如果有数据，就判断key是不是相同，相同就覆盖，不相同就判断是不是红黑树，如果是就调用putTree，如果是链表就遍历链表，看看key有没有，有就覆盖，没有就在尾部插入新的节点，然后判断长度是否大于8，大于8就去尝试转红黑树，插入结束后，最后要判断一下是否需要扩容，\n\n\nhashmap扩容过程扩容简单来说就是做了两件事。1：创建一个新数组，原来的两倍大。2：遍历旧数组每个槽如果槽位中是一个普通节点，则将节点放在新数组中，所在新数组中的下标计算方式为：e.hash &amp; (newCap - 1);如果槽位中是一个树节点，则进行红黑树的迁移操作，新数组中下标计算方式同普通节点；如果槽位中是一个链表节点，则将链表拆为高位链表和低位链表，就是拿hash值和旧容量做与操作，等于0就放入放入新数组的旧数组的下标位置和，不等于0会放到（旧数组下标 + 旧数组容量）下标位置；最后返回新数组。\nHashMap 多线程操作导致死循环问题（1.7会，1.8是在树操作）扩容问题和头插法问题\n假设两个线程同时对hashmap进行扩容，这时候两个都指向首节点A，后面的节点分别是bcd。\n那么这时候线程1正常执行，线程2卡住了。但是A执行完后因为是头插法所以abc变成了cba。线程2唤醒启动，线程2第一个e还是指向a，a的next指向b，这样子就出现了问题，但是还没出现环状。那我们继续执行。把e也就是a赋放到新链表，a &#x3D;\na的next其实就是b，b拿过来，然后b&#x3D;b的next，b的next是谁呢，就是a，然后a指向链表头，这个头节点就是b呀！这里就出问题了。\n解决的方法：concurrenthashmap，推荐；hashtable安全，不建议；或者直接加锁，也不建议。或者头插法改成尾插法。\nHashMap 为什么线程不安全？一方面就是多线程操作导致的死循环问题。\n另一方面就是两个线程 1,2 进行 put 操作，线程1 执行的时候通过判断发现没有出发hash碰撞，但是时间片用完了挂起，这时候线程2也判断有没有hash碰撞发现没有，因为线程1还没来得及插入。这时候线程2插入一个b值结束了，线程1重新获得时间片，因为之前已经成功判断过了，所以直接插入一个a值，那么这样b值就被a值覆盖了。\nHashMap 的长度为什么是 2 的幂次方散列采用%取余的操作来实现。但是，重点来了：“取余(%)操作中如果除数是 2 的幂次则等价于与其除数减一的与(&amp;)操作（也就是说 hash%length&#x3D;&#x3D;hash&amp;(length-1)的前提是 length 是 2 的 n 次方；）。” 并且 **采用二进制位操作 &amp;，相对于%能够提高运算效率）\nloadFactor 负载因子\nloadFactor 负载因子是控制数组存放数据多少的参数和扩容的界限。默认0.75\n给定的默认容量为 16，负载因子为 0.75。Map 在使用过程中不断的往里面存放数据，当数量超过了 16 * 0.75 &#x3D; 12 就需要将当前 16 的容量进行扩容，而扩容这个过程涉及到 rehash、复制数据等操作，所以非常消耗性能。\nHashMap 和 Hashtable 的区别\n线程是否安全：HashMap 是非线程安全的，Hashtable 是线程安全的,因为 Hashtable 内部的方法基本都经过synchronized 修饰。（如果你要保证线程安全的话就使用 ConcurrentHashMap 吧！）\n\n效率： 因为线程安全的问题，HashMap 要比 Hashtable 效率高一点。另外，Hashtable 基本被淘汰，不要在代码中使用它；\n\n初始容量大小和每次扩充容量大小的不同： ① 创建时如果不指定容量初始值，Hashtable 默认的初始大小为 11，之后每次扩充，容量变为原来的 2n+1。HashMap 默认的初始化大小为 16。之后每次扩充，容量变为原来的 2 倍。② 创建时如果给定了容量初始值，那么 Hashtable 会直接使用你给定的大小，而 HashMap 会将其扩充为 2 的幂次方大小（HashMap 中的tableSizeFor()方法保证，下面给出了源代码）。也就是说 HashMap 总是使用 2 的幂作为哈希表的大小,后面会介绍到为什么是 2 的幂次方。\n\n底层数据结构： hashmap 数组+链表+红黑树，hashtable 数组+链表\n\n\nhashmap的key规范用自定义类作为key，必须重写equals()和hashCode()方法。\n\n线程安全容器\n1、ConcurrentHashMapConcurrentHashMap是线程安全的，而是通过原子操作和局部加锁的方法保证了多线程的线程安全。1.8以前是用16个Segment 分段锁加的Reentranlock。1.8以后现在采用数组+链表+红黑树的形式。添加元素的时候按照代码的流程先判断是不是初始化、节点为空就cas添加，如果正在扩容，就帮助扩容；如果冲突就加synchronized后再插入。\nJava 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。\n1.7 size（）返回各个segment的size和，如果写入频繁，就加锁，全局锁\n1.8\n2、CopyOnWriteArrayList（读多写少）原理：读的时候不加锁，对数组进行改变的时候，通过锁 + 数组拷贝 + volatile 关键字保证了线程安全；\n\n加锁；\n从原数组中拷贝出新数组；\n在新数组上进行操作，并把新数组赋值给数组容器；\n解锁\n\n3、BlockingQueueBlockingQueue （阻塞队列）是一个接口，继承自 Queue。没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。\n阻塞队列有哪些\n\nArrayBlockingqueue：底层是数组、有界队列。一把锁，锁是不分离的\nLinkBlockingQueue：底层是链表、默认无界但是支持有界。头尾两把锁\nPriorityBlockingQueue 由优先级堆支持的无界优先级队列\nDelayedWorkQueue：DelayedWorkQueue是基于堆的数据结构，按照时间顺序将每个任务进行排序，将待执行时间越近的任务放在在队列的队头位置，以便于最先进行执行\nSynchronousQueue\n\n\n线程池\n1、ThreadPoolExecutor\n 线程池的类型\n\nFixedThreadPool，没有救济的线程，只有核心线程。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue\nSingleThreadPool，核心线程和最大线程就1个。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue\nCachedThreadPool：这个是没有核心线程数，全都是救济线程。阻塞队列是SynchronousQueue\n\n\n2、ScheduledThreadPoolExecutor\nScheduledThreadPool：这个是定时执行任务，阻塞队列是DelayedWorkQueue\n\n\nScheduledThreadPoolExecutor继承了ThreadPoolExecutor，也实现了一个ScheduledExecutorService接口，所以有一些特有的方法：比如schedule\n他有个类DelayedWorkQueue，见上面。还有一个**ScheduledFutureTask**\nScheduledThreadPoolExecutor相比Threadpoolexcutor，具备延时执行任务和可周期性执行任务的特性\n\n创建线程的方式\n方式一：通过ThreadPoolExecutor构造方法来创建（推荐）。\n方式二： Executors的工厂方法：比如Executors.newCachedThreadPool()（不推荐）。\n两种方法都在concurrent包下面。\n\n为什么不推荐？我觉得就是Executors提供的创建的几个线程池都有点局限性，都有不足的地方。\n然后像Fixed和Single用的工作队列是无界队列，可能会堆积大量的请求,导致OOM\n还有cached和Schedule最大的线程数量是Integer.MAX_VALUE，可能堆积大量的线程，导致OOM\n\n3、CompletableFutureCompletableFuture是对Future的扩展和增强。CompletableFuture实现了Future接口，并在此基础上进行了丰富的扩展，完美弥补了Future的局限性，同时CompletableFuture实现了对任务编排的能力\n\n元素排序 Comparable 和 Comparator 有什么区别？\nComparable：实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。\nComparator 除了可以通过创建自定义比较器外，还可以通过匿名类的方式，更快速、便捷的完成自定义比较器的功能，具体的代码实现如下：\nComparable 必须由自定义类内部实现排序方法，而 Comparator 是外部定义并实现排序的\n\nLinuxLinux常用命令：cat, pwd, ls、TOP，mpstat，chattr，lsattr\n怎么排查项目故障：\n\n可以用top先看看是cpu还是内存的问题，cpu的话，可以拿到进程id，然后ps H -eo pid,tid,%cpu | grep进程id查看线程，最后jstack查看堆栈信息。内存泄漏的话就jmap -dump一个内存快照，然后加载到visualVM里面。或者jstat看看各个分区的情况和gc的压力\n标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、\n\n查看机器的负载情况linux\n\nTop htop mpstat vmstat\n\nSpirng\nAOP是什么？\naop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop 底层是动态代理JDK和CGLIB\n有没有用过AOP\n有的，我之前在一个分库分表的组件项目里面用到过，就是分库分表要切换数据源，我就是用aop切面去计算出落到哪个库哪个表里面，切入点是一个注解。\naop的实现方式\n\n1、Spring API实现AOP，\n2、自定义切面类，\n3、通过注解实现AOP，Aspect\n\naop失效的原因和解决方法\n\ncglib， 在bean中用this来调用被AOP注解标注的方法，this下注解是不生效的。假设A和B，B被aop增强了，此时A调用的是当前类中的方法，而不是其子类加强后的方法，所以会失效\n解决方法：\n1、直接把this换成Autowared修饰的bean\n2、Spring上下文获取增强后的实例引用\n\n\n\n\n\nIOC\n\n控制反转的意思，以前我们创建的时候new，但是这种方法很麻烦，且很难处理对象直接的依赖关系。他是把对象创建和对象之间的调用过程，交给spring进行管理。\n\n\nSpring有几种容器\n\n\n\nBeanFactory: BeanFactory是Spring框架最基本的IOC容器。\nApplicationContext: ApplicationContext是BeanFactory的子接口，提供了更多的企业级功能，如国际化处理、事件传播、应用层面的异常处理等。它对BeanFactory进行了扩展，是Spring中最常用的IOC容器。\nClassPathXmlApplicationContext: ClassPathXmlApplicationContext是从类路径下加载配置文件的容器，通过XML文件配置来管理Bean。\nFileSystemXmlApplicationContext: FileSystemXmlApplicationContext从文件系统中加载配置文件的容器，同样也是通过XML文件配置来管理Bean。\nAnnotationConfigApplicationContext: AnnotationConfigApplicationContext是通过Java类配置来管理Bean的容器，不需要XML配置文件，而是通过注解来完成Bean的定义和依赖注入。\n\n\nBean的生命周期？\n\n1 通过XML、注解和配置类等方式加载Spring Bean\n\n\n2、用BeanDefinitionReader把Bean解析成BeanDefinition结构，放到beanDefinitionMap，扫描这个\n\n\n4、从Bean定义里面拿BeanClass的构造函数，通过反射创建Bean，这里构造函数的选用，一般先选有autowire修饰和无参构造函数。\n\n\n5、依赖注入\n\n\n6、处理三个Aware接口，\t\n\n\n7、BeanPostProcessor：自定义的逻辑\n\n\n8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）\n\n\n9、BeanPostProcessor：自定义的逻辑 aop核心底层动态代理\n\nBean的循环依赖？\n\nSpring解决这个是用三级缓存或者懒加载（构造函数的循环依赖问题），三次缓存中：一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。\n\n\n为什么三层？\n\n\n所以如果没有AOP的话确实可以两级缓存就可以解决循环依赖的问题，如果加上AOP，两级缓存是无法解决的。如果对象被AOP代理了，我每次从三级缓存中拿到singleFactory对象，执行getObject()方法会产生新的代理对象，所以还要借助另外一个缓存来保存产生的代理对象\n\n\nSpringboot启动流程\n\n主要分为4步：服务构建、环境准备、容器创建、填充容器。\n\n\n1、服务构建就是构造springapplication，包括确认web服务器、加载spring.factories下的所有初始化类监听器，找到主导方法。\n\n\n2、然后调用run方法进入环境准备，通过配置类、和配置文件构造出一个environment，用于后面的容器创建。\n\n\n3、容器创建的话，其实就是创建一个BeanFactory，然后加载bean信息，通过beanDefinitionReader把bean信息读成BeanDefinition并且把他放到beanDefinitionMap里面\n\n\n4、填充容器。就是我们的refresh（）方法，一个12步，但是可以分成四块，预处理，后置处理器，国际化分派器，实例化剩下的所有bean。\n\n容器初始化流程\n\n1、prepareRefresh()刷新前的预处理：2、obtainFreshBeanFactory()：创建容器对象，实际就是获取一个DefaultListenableBeanFactory：3、prepareBeanFactory(beanFactory)：BeanFactory的预处理工作，向容器中添加一些组件：4、postProcessBeanFactory(beanFactory)：\n\n\n5、invokeBeanFactoryPostProcessors(beanFactory)：即BeanFactory的后置处理器：6、registerBeanPostProcessors(beanFactory)：向容器中注册Bean的后置处理器BeanPostProcessor，它的主要作用是干预Spring初始化bean的流程，从而完成代理、自动注入、循环依赖等功能\n\n\n7、initMessageSource()：初始化MessageSource组件，主要用于做国际化功能，消息绑定与消息解析：8、initApplicationEventMulticaster()：初始化事件派发器，在注册监听器时会用到：\n\n\n9、onRefresh()：留给子容器、子类重写这个方法，在容器刷新的时候可以自定义逻辑\n\n\n10、registerListeners()：注册监听器：将容器中所有的ApplicationListener注册到事件派发器中，并派发之前步骤产生的事件：11、finishBeanFactoryInitialization(beanFactory)：初始化所有剩下的单实例bean，核心方法是preInstantiateSingletons()，会调用getBean()方法创建对象；12、finishRefresh()：发布BeanFactory容器刷新完成事件：\n\n\n\n其实我觉得Spring的IOC容器，主要做三步：\n\n\n\n\n1、初始化Spring容器，创建一个DefaultListableBeanFactory\n\n\n\n\n2、将配置类的BeanDefinition注册到容器。\n\n\n\n\n3、Refresh，Refresh又分12步。这12步，可以分成几块。\n\n\n\n\n第一块：预处理，包括刷新的预处理，然后获取我们刚刚创建的BeanFactory再做预处理。\n\n\n\n\n第二块：后置处理器，执行BeanFactory的后置处理器，然后在容器里面注册一个Bean的后置处理器。\n\n\n\n\n第三块：就是一些国际化，事件分派器的东西。\n\n\n\n\n第四块：非常重要了，finishBeanFactoryInitailization，初始化所有剩下的单实例bean，bean的生命周期也从这里开始。\n\n\nSpring用到的设计模式\n\n单例模式：这个在创建Bean的时候用到，创建单例Bean的时候会先去缓存里面找，如果找不到，在触发createBean方法。\n\n\n工厂模式：就是BeanFactory接口了\n\n\n代理模式：就是aop。jdk和cglib\n\n\n模版模式：jdbcTemplate\n\nSpringboot自动装配？\n\nspringboot的自动装配是依赖于springbootapplication这个注解，这个注解是一个复合注解，真正实现自动装配的是一个enableautoConfiguration这个注解。 我们引入的starter里面会有@Configuration配置类，然后这个配置类的路径放在spirng.factories下，我们用springfactoryloader找到配置类，最后我们spring会通过ImportSelector接口去实现动态的加载，@ConditionalOnBean和@ConditionalOnMissingBean 定义的条件进行选择加载。\n\nAutowire和Resourse\n\nspring推荐setter和构造器，但是我们用字段注入比较简单，idea明确不推荐Autowire，我觉得原因是和框架的强耦合。\n\n\nAutowire默认按类型，如果想要实现按名字注入，主要配置@Primary 或者@Qualifier，\nResource默认按名字然后类型。\n\nBean是线程安全的吗？\n\n默认单例（可以多例），但是不是线程安全。因为Bean内部的成员变量是共享可修改的。\n\nSpring事务失效的场景?\n\n\n自己捕获异常。如果没有抛出会失效，解决方法：手动抛出异常\n\n\n\n\n抛出检查异常，因为spring默认只回滚非检查异常。解决方法就是transcantional加rollbackfor &#x3D; exception.class\n没有用public修饰，\n\n\nBeanFactory和FactoryBean的区别！\n\nBeanFactory是管理Bean的容器，FactoryBean是一个生产Bean的工厂。\n\n\nMVC的执行流程\n请求发到前端控制器上，然后用处理器映射器找到具体的处理器，使用处理器适配器调用真正的处理器，然后结果转化成JSON响应。\n\n\n\nMyBatis\nMybatis怎么传多个参数：\n\n顺序传参\nmap传参\n用mybatis的注解，Param\n\nMyBatis中${} 和 #{} 有什么区别\n\n1、功能不同： #{} 是占位符，${} 是直接替换，；2、使用场景不同：普通参数使用 #{}，如果传递的是 SQL 命令或 SQL 关键字，需要使用 ${}，但在使用前一定要做好安全验证；3、安全性不同：使用 ${} 存在安全问题，而 #{} 则不存在安全问题。\n\n\nGITgit rebase 和 git merge\n\ngit merge是保留历史的提交，然后new一个新的提交记录\nrebase是一般在非公共分支上rebase，然后合并到main分支，原来的那个分支会被清除。\n\nsetNX有什么缺陷？\n\n有单点风险\n可能会导致同一把锁被多人使用\nredlock\n\n","dateCreated":"2023-08-07T00:00:00+08:00","dateModified":"2024-02-01T00:53:30+08:00","datePublished":"2023-08-07T00:00:00+08:00","description":"","headline":"Java基础知识","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/","keywords":"Java基础知识"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"讲讲Java的代理代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。\n动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy，\n动态代理有两种方式一种是jdk方法，一种是cglib方法\n我们先来讲jdk代理：\n\nJDK代理依赖于Proxy类和InvocationHandler接口，InvocationHandler接口他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组。代理方法和参数组其实我们可以利用反射得到，所以参数其实是可以变化的，那这样就成功的实现了动态的代理。\n那我们怎么去调用这个方法呢？依赖于Proxy类和他的方法newproxyInstance，得到的代理类，调用方法其实会直接调用我们实现InvocationHandler接口的invoke方法\n\n下面来讲CGLIB代理\n在 CGLIB 动态代理机制中 MethodInterceptor 接口和 Enhancer 类是核心。你可以通过 Enhancer类来动态获取被代理类，\n  CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法拦截器拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 MethodInterceptor 中的 intercept 方法。\n二者区别总结一下两者的区别吧：\nJDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰JDK 是自带的、CGLIB需要加载包\nJDK是反射机制，CGLIB是使用ASM框架。\n为什么Java不能多继承？\n会出现方法冲突和变量冲突\n集合\nArraylist底层原理可以从底层数据结构，构造函数和关键方法理解。\n\nArraylist的底层数据结构是object[]数组，构造函数分有参无参，如果是无参就是空数组，如果是有参，就用你定义的那个初始大小。如果参数是容器，那就是把容器转成数组copy给object。关键方法就是add方法，需要保证容量够用才能添加元素，所以会在添加之前进行一个ensurecapacity的过程。他会先计算mincapacity的值，他会拿mincapacity去和现在的数组长度比较，如果大了说明要扩容，扩容的过程是先×1.5看看够不够，够的话就1.5，不够就用新的这个mincapacity。如果minCapacity大于最大容量，则新容量则为Integer.MAX_VALUE，否则，新容量大小则为 MAX_ARRAY_SIZE 即为 Integer.MAX_VALUE - 8\n\n对于插入：如果不需要扩容，其实无论是头插指定位置插入都是O(n)，尾插是O(1)。如果需要扩容，就得再做一次扩容，O(n)，然后在插入，就是刚才讲的时间复杂度。\n对于删除：头删和指定位置删除是O(n)，尾部删除是O(1)\n\n\nLinkedlist\nLinkedlist 是双向链表，因为是链表，所以没什么扩容的问题，基本的方法都是围绕前节点、后节点、节点值展开的。\n\n头部插入&#x2F;删除： O(1)。\n尾部插入&#x2F;删除： O(1)。\n指定位置插入&#x2F;删除：需要先移动到指定位置，再修改指定节点的指针完成插入&#x2F;删除，因此需要移动平均 n&#x2F;2 个元素，时间复杂度为 O(n)。\n\n\nArrayList 与 LinkedList区别?\n底层数据结构： ArrayList 底层使用的是 Object 数组；LinkedList 底层使用的是 双向链表 数据结构，内存一个是连续一个不是连续\n插入和删除的时间复杂度：arraylist，头插、指定插、头删、指定删除都是On，尾插和尾删除是O1。linkedlist 头插和尾插、头删除、尾删除都是O1，指定位置是On\n内存空间占用：linkedlist每个节点要存前后指针，所以内存占用大。\n使用场景：\n如果需要频繁进行随机访问和查询操作的场景，例如按索引读取数据或搜索特定元素，应该选择ArrayList。\n如果需要频繁进行插入、删除或位置变动较多的场景，特别是在链表的首尾位置进行操作，那么LinkedList是更合适的选择。\n\n其他\n如何实现数组和arraylist之间的转换\nList.toarray  (修改原先list，array不受影响)\nArrays.aslist （受影响）\n\n&lt;?&gt;\n主要用于类或方法上，对这个类或者方法里面的泛型全是一样的。\n一般用在变量上，有界通配符，对类型做一定的限制。\n\n\nhashmap和hashset\nhashset还是比较适合去重和集合运算\nhashmap比较适合键值对这类数据\n\n比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同\nHashSet、LinkedHashSet 和 TreeSet 的主要区别在于底层数据结构不同。HashSet 的底层数据结构是哈希表（基于 HashMap 实现）。LinkedHashSet 的底层数据结构是链表和哈希表。TreeSet 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。\n底层数据结构不同又导致这三者的应用场景不同。HashSet 用于不需要保证元素插入和取出顺序的场景，LinkedHashSet 用于保证元素的插入和取出顺序满足 FIFO 的场景，TreeSet 用于支持对元素自定义排序规则的场景。\n\nQueue 与 Deque 的区别\nQueue 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 先进先出（FIFO） 规则。\nDeque 是双端队列，在队列的两端均可以插入或删除元素。\n\nArrayDeque 与 LinkedList 的区别\nArrayDeque 和 LinkedList 都实现了 Deque 接口，两者都具有队列的功能\nArrayDeque 是基于可变长的数组和双指针来实现，而 LinkedList 则通过链表来实现。\nArrayDeque 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 LinkedList 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。\n\n\nHashMap：hashmap最关键的是他的底层数据结构、put 扩容 和 线程安全方面的知识。\n\nHashMap 的底层实现JDK1.8 之前 HashMap 底层是 数组和链表。1.8之后是数组+链表+红黑树\n构造函数是懒加载，没有初始化数据，就是把负载因子赋为0.75。\nput的时候，先判断数组是否为空，如果为空，就初始化为16大小。通过 key 的 hashcode 经过扰动函数（右移16位再异或），然后通过   hash &amp; (n - 1) 判断当前元素存放的位置（这里的 n 指的是数组的长度），如果定位到的数组位置没有元素 就直接插入。如果有数据，就判断key是不是相同，相同就覆盖，不相同就判断是不是红黑树，如果是就调用putTree，如果是链表就遍历链表，看看key有没有，有就覆盖，没有就在尾部插入新的节点，然后判断长度是否大于8，大于8就去尝试转红黑树，插入结束后，最后要判断一下是否需要扩容，\n\n\nhashmap扩容过程扩容简单来说就是做了两件事。1：创建一个新数组，原来的两倍大。2：遍历旧数组每个槽如果槽位中是一个普通节点，则将节点放在新数组中，所在新数组中的下标计算方式为：e.hash &amp; (newCap - 1);如果槽位中是一个树节点，则进行红黑树的迁移操作，新数组中下标计算方式同普通节点；如果槽位中是一个链表节点，则将链表拆为高位链表和低位链表，就是拿hash值和旧容量做与操作，等于0就放入放入新数组的旧数组的下标位置和，不等于0会放到（旧数组下标 + 旧数组容量）下标位置；最后返回新数组。\nHashMap 多线程操作导致死循环问题（1.7会，1.8是在树操作）扩容问题和头插法问题\n假设两个线程同时对hashmap进行扩容，这时候两个都指向首节点A，后面的节点分别是bcd。\n那么这时候线程1正常执行，线程2卡住了。但是A执行完后因为是头插法所以abc变成了cba。线程2唤醒启动，线程2第一个e还是指向a，a的next指向b，这样子就出现了问题，但是还没出现环状。那我们继续执行。把e也就是a赋放到新链表，a &#x3D;\na的next其实就是b，b拿过来，然后b&#x3D;b的next，b的next是谁呢，就是a，然后a指向链表头，这个头节点就是b呀！这里就出问题了。\n解决的方法：concurrenthashmap，推荐；hashtable安全，不建议；或者直接加锁，也不建议。或者头插法改成尾插法。\nHashMap 为什么线程不安全？一方面就是多线程操作导致的死循环问题。\n另一方面就是两个线程 1,2 进行 put 操作，线程1 执行的时候通过判断发现没有出发hash碰撞，但是时间片用完了挂起，这时候线程2也判断有没有hash碰撞发现没有，因为线程1还没来得及插入。这时候线程2插入一个b值结束了，线程1重新获得时间片，因为之前已经成功判断过了，所以直接插入一个a值，那么这样b值就被a值覆盖了。\nHashMap 的长度为什么是 2 的幂次方散列采用%取余的操作来实现。但是，重点来了：“取余(%)操作中如果除数是 2 的幂次则等价于与其除数减一的与(&amp;)操作（也就是说 hash%length&#x3D;&#x3D;hash&amp;(length-1)的前提是 length 是 2 的 n 次方；）。” 并且 **采用二进制位操作 &amp;，相对于%能够提高运算效率）\nloadFactor 负载因子\nloadFactor 负载因子是控制数组存放数据多少的参数和扩容的界限。默认0.75\n给定的默认容量为 16，负载因子为 0.75。Map 在使用过程中不断的往里面存放数据，当数量超过了 16 * 0.75 &#x3D; 12 就需要将当前 16 的容量进行扩容，而扩容这个过程涉及到 rehash、复制数据等操作，所以非常消耗性能。\nHashMap 和 Hashtable 的区别\n线程是否安全：HashMap 是非线程安全的，Hashtable 是线程安全的,因为 Hashtable 内部的方法基本都经过synchronized 修饰。（如果你要保证线程安全的话就使用 ConcurrentHashMap 吧！）\n\n效率： 因为线程安全的问题，HashMap 要比 Hashtable 效率高一点。另外，Hashtable 基本被淘汰，不要在代码中使用它；\n\n初始容量大小和每次扩充容量大小的不同： ① 创建时如果不指定容量初始值，Hashtable 默认的初始大小为 11，之后每次扩充，容量变为原来的 2n+1。HashMap 默认的初始化大小为 16。之后每次扩充，容量变为原来的 2 倍。② 创建时如果给定了容量初始值，那么 Hashtable 会直接使用你给定的大小，而 HashMap 会将其扩充为 2 的幂次方大小（HashMap 中的tableSizeFor()方法保证，下面给出了源代码）。也就是说 HashMap 总是使用 2 的幂作为哈希表的大小,后面会介绍到为什么是 2 的幂次方。\n\n底层数据结构： hashmap 数组+链表+红黑树，hashtable 数组+链表\n\n\nhashmap的key规范用自定义类作为key，必须重写equals()和hashCode()方法。\n\n线程安全容器\n1、ConcurrentHashMapConcurrentHashMap是线程安全的，而是通过原子操作和局部加锁的方法保证了多线程的线程安全。1.8以前是用16个Segment 分段锁加的Reentranlock。1.8以后现在采用数组+链表+红黑树的形式。添加元素的时候按照代码的流程先判断是不是初始化、节点为空就cas添加，如果正在扩容，就帮助扩容；如果冲突就加synchronized后再插入。\nJava 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。\n1.7 size（）返回各个segment的size和，如果写入频繁，就加锁，全局锁\n1.8\n2、CopyOnWriteArrayList（读多写少）原理：读的时候不加锁，对数组进行改变的时候，通过锁 + 数组拷贝 + volatile 关键字保证了线程安全；\n\n加锁；\n从原数组中拷贝出新数组；\n在新数组上进行操作，并把新数组赋值给数组容器；\n解锁\n\n3、BlockingQueueBlockingQueue （阻塞队列）是一个接口，继承自 Queue。没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。\n阻塞队列有哪些\n\nArrayBlockingqueue：底层是数组、有界队列。一把锁，锁是不分离的\nLinkBlockingQueue：底层是链表、默认无界但是支持有界。头尾两把锁\nPriorityBlockingQueue 由优先级堆支持的无界优先级队列\nDelayedWorkQueue：DelayedWorkQueue是基于堆的数据结构，按照时间顺序将每个任务进行排序，将待执行时间越近的任务放在在队列的队头位置，以便于最先进行执行\nSynchronousQueue\n\n\n线程池\n1、ThreadPoolExecutor\n 线程池的类型\n\nFixedThreadPool，没有救济的线程，只有核心线程。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue\nSingleThreadPool，核心线程和最大线程就1个。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue\nCachedThreadPool：这个是没有核心线程数，全都是救济线程。阻塞队列是SynchronousQueue\n\n\n2、ScheduledThreadPoolExecutor\nScheduledThreadPool：这个是定时执行任务，阻塞队列是DelayedWorkQueue\n\n\nScheduledThreadPoolExecutor继承了ThreadPoolExecutor，也实现了一个ScheduledExecutorService接口，所以有一些特有的方法：比如schedule\n他有个类DelayedWorkQueue，见上面。还有一个**ScheduledFutureTask**\nScheduledThreadPoolExecutor相比Threadpoolexcutor，具备延时执行任务和可周期性执行任务的特性\n\n创建线程的方式\n方式一：通过ThreadPoolExecutor构造方法来创建（推荐）。\n方式二： Executors的工厂方法：比如Executors.newCachedThreadPool()（不推荐）。\n两种方法都在concurrent包下面。\n\n为什么不推荐？我觉得就是Executors提供的创建的几个线程池都有点局限性，都有不足的地方。\n然后像Fixed和Single用的工作队列是无界队列，可能会堆积大量的请求,导致OOM\n还有cached和Schedule最大的线程数量是Integer.MAX_VALUE，可能堆积大量的线程，导致OOM\n\n3、CompletableFutureCompletableFuture是对Future的扩展和增强。CompletableFuture实现了Future接口，并在此基础上进行了丰富的扩展，完美弥补了Future的局限性，同时CompletableFuture实现了对任务编排的能力\n\n元素排序 Comparable 和 Comparator 有什么区别？\nComparable：实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。\nComparator 除了可以通过创建自定义比较器外，还可以通过匿名类的方式，更快速、便捷的完成自定义比较器的功能，具体的代码实现如下：\nComparable 必须由自定义类内部实现排序方法，而 Comparator 是外部定义并实现排序的\n\nLinuxLinux常用命令：cat, pwd, ls、TOP，mpstat，chattr，lsattr\n怎么排查项目故障：\n\n可以用top先看看是cpu还是内存的问题，cpu的话，可以拿到进程id，然后ps H -eo pid,tid,%cpu | grep进程id查看线程，最后jstack查看堆栈信息。内存泄漏的话就jmap -dump一个内存快照，然后加载到visualVM里面。或者jstat看看各个分区的情况和gc的压力\n标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、\n\n查看机器的负载情况linux\n\nTop htop mpstat vmstat\n\nSpirng\nAOP是什么？\naop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop 底层是动态代理JDK和CGLIB\n有没有用过AOP\n有的，我之前在一个分库分表的组件项目里面用到过，就是分库分表要切换数据源，我就是用aop切面去计算出落到哪个库哪个表里面，切入点是一个注解。\naop的实现方式\n\n1、Spring API实现AOP，\n2、自定义切面类，\n3、通过注解实现AOP，Aspect\n\naop失效的原因和解决方法\n\ncglib， 在bean中用this来调用被AOP注解标注的方法，this下注解是不生效的。假设A和B，B被aop增强了，此时A调用的是当前类中的方法，而不是其子类加强后的方法，所以会失效\n解决方法：\n1、直接把this换成Autowared修饰的bean\n2、Spring上下文获取增强后的实例引用\n\n\n\n\n\nIOC\n\n控制反转的意思，以前我们创建的时候new，但是这种方法很麻烦，且很难处理对象直接的依赖关系。他是把对象创建和对象之间的调用过程，交给spring进行管理。\n\n\nSpring有几种容器\n\n\n\nBeanFactory: BeanFactory是Spring框架最基本的IOC容器。\nApplicationContext: ApplicationContext是BeanFactory的子接口，提供了更多的企业级功能，如国际化处理、事件传播、应用层面的异常处理等。它对BeanFactory进行了扩展，是Spring中最常用的IOC容器。\nClassPathXmlApplicationContext: ClassPathXmlApplicationContext是从类路径下加载配置文件的容器，通过XML文件配置来管理Bean。\nFileSystemXmlApplicationContext: FileSystemXmlApplicationContext从文件系统中加载配置文件的容器，同样也是通过XML文件配置来管理Bean。\nAnnotationConfigApplicationContext: AnnotationConfigApplicationContext是通过Java类配置来管理Bean的容器，不需要XML配置文件，而是通过注解来完成Bean的定义和依赖注入。\n\n\nBean的生命周期？\n\n1 通过XML、注解和配置类等方式加载Spring Bean\n\n\n2、用BeanDefinitionReader把Bean解析成BeanDefinition结构，放到beanDefinitionMap，扫描这个\n\n\n4、从Bean定义里面拿BeanClass的构造函数，通过反射创建Bean，这里构造函数的选用，一般先选有autowire修饰和无参构造函数。\n\n\n5、依赖注入\n\n\n6、处理三个Aware接口，\t\n\n\n7、BeanPostProcessor：自定义的逻辑\n\n\n8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）\n\n\n9、BeanPostProcessor：自定义的逻辑 aop核心底层动态代理\n\nBean的循环依赖？\n\nSpring解决这个是用三级缓存或者懒加载（构造函数的循环依赖问题），三次缓存中：一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。\n\n\n为什么三层？\n\n\n所以如果没有AOP的话确实可以两级缓存就可以解决循环依赖的问题，如果加上AOP，两级缓存是无法解决的。如果对象被AOP代理了，我每次从三级缓存中拿到singleFactory对象，执行getObject()方法会产生新的代理对象，所以还要借助另外一个缓存来保存产生的代理对象\n\n\nSpringboot启动流程\n\n主要分为4步：服务构建、环境准备、容器创建、填充容器。\n\n\n1、服务构建就是构造springapplication，包括确认web服务器、加载spring.factories下的所有初始化类监听器，找到主导方法。\n\n\n2、然后调用run方法进入环境准备，通过配置类、和配置文件构造出一个environment，用于后面的容器创建。\n\n\n3、容器创建的话，其实就是创建一个BeanFactory，然后加载bean信息，通过beanDefinitionReader把bean信息读成BeanDefinition并且把他放到beanDefinitionMap里面\n\n\n4、填充容器。就是我们的refresh（）方法，一个12步，但是可以分成四块，预处理，后置处理器，国际化分派器，实例化剩下的所有bean。\n\n容器初始化流程\n\n1、prepareRefresh()刷新前的预处理：2、obtainFreshBeanFactory()：创建容器对象，实际就是获取一个DefaultListenableBeanFactory：3、prepareBeanFactory(beanFactory)：BeanFactory的预处理工作，向容器中添加一些组件：4、postProcessBeanFactory(beanFactory)：\n\n\n5、invokeBeanFactoryPostProcessors(beanFactory)：即BeanFactory的后置处理器：6、registerBeanPostProcessors(beanFactory)：向容器中注册Bean的后置处理器BeanPostProcessor，它的主要作用是干预Spring初始化bean的流程，从而完成代理、自动注入、循环依赖等功能\n\n\n7、initMessageSource()：初始化MessageSource组件，主要用于做国际化功能，消息绑定与消息解析：8、initApplicationEventMulticaster()：初始化事件派发器，在注册监听器时会用到：\n\n\n9、onRefresh()：留给子容器、子类重写这个方法，在容器刷新的时候可以自定义逻辑\n\n\n10、registerListeners()：注册监听器：将容器中所有的ApplicationListener注册到事件派发器中，并派发之前步骤产生的事件：11、finishBeanFactoryInitialization(beanFactory)：初始化所有剩下的单实例bean，核心方法是preInstantiateSingletons()，会调用getBean()方法创建对象；12、finishRefresh()：发布BeanFactory容器刷新完成事件：\n\n\n\n其实我觉得Spring的IOC容器，主要做三步：\n\n\n\n\n1、初始化Spring容器，创建一个DefaultListableBeanFactory\n\n\n\n\n2、将配置类的BeanDefinition注册到容器。\n\n\n\n\n3、Refresh，Refresh又分12步。这12步，可以分成几块。\n\n\n\n\n第一块：预处理，包括刷新的预处理，然后获取我们刚刚创建的BeanFactory再做预处理。\n\n\n\n\n第二块：后置处理器，执行BeanFactory的后置处理器，然后在容器里面注册一个Bean的后置处理器。\n\n\n\n\n第三块：就是一些国际化，事件分派器的东西。\n\n\n\n\n第四块：非常重要了，finishBeanFactoryInitailization，初始化所有剩下的单实例bean，bean的生命周期也从这里开始。\n\n\nSpring用到的设计模式\n\n单例模式：这个在创建Bean的时候用到，创建单例Bean的时候会先去缓存里面找，如果找不到，在触发createBean方法。\n\n\n工厂模式：就是BeanFactory接口了\n\n\n代理模式：就是aop。jdk和cglib\n\n\n模版模式：jdbcTemplate\n\nSpringboot自动装配？\n\nspringboot的自动装配是依赖于springbootapplication这个注解，这个注解是一个复合注解，真正实现自动装配的是一个enableautoConfiguration这个注解。 我们引入的starter里面会有@Configuration配置类，然后这个配置类的路径放在spirng.factories下，我们用springfactoryloader找到配置类，最后我们spring会通过ImportSelector接口去实现动态的加载，@ConditionalOnBean和@ConditionalOnMissingBean 定义的条件进行选择加载。\n\nAutowire和Resourse\n\nspring推荐setter和构造器，但是我们用字段注入比较简单，idea明确不推荐Autowire，我觉得原因是和框架的强耦合。\n\n\nAutowire默认按类型，如果想要实现按名字注入，主要配置@Primary 或者@Qualifier，\nResource默认按名字然后类型。\n\nBean是线程安全的吗？\n\n默认单例（可以多例），但是不是线程安全。因为Bean内部的成员变量是共享可修改的。\n\nSpring事务失效的场景?\n\n\n自己捕获异常。如果没有抛出会失效，解决方法：手动抛出异常\n\n\n\n\n抛出检查异常，因为spring默认只回滚非检查异常。解决方法就是transcantional加rollbackfor &#x3D; exception.class\n没有用public修饰，\n\n\nBeanFactory和FactoryBean的区别！\n\nBeanFactory是管理Bean的容器，FactoryBean是一个生产Bean的工厂。\n\n\nMVC的执行流程\n请求发到前端控制器上，然后用处理器映射器找到具体的处理器，使用处理器适配器调用真正的处理器，然后结果转化成JSON响应。\n\n\n\nMyBatis\nMybatis怎么传多个参数：\n\n顺序传参\nmap传参\n用mybatis的注解，Param\n\nMyBatis中${} 和 #{} 有什么区别\n\n1、功能不同： #{} 是占位符，${} 是直接替换，；2、使用场景不同：普通参数使用 #{}，如果传递的是 SQL 命令或 SQL 关键字，需要使用 ${}，但在使用前一定要做好安全验证；3、安全性不同：使用 ${} 存在安全问题，而 #{} 则不存在安全问题。\n\n\nGITgit rebase 和 git merge\n\ngit merge是保留历史的提交，然后new一个新的提交记录\nrebase是一般在非公共分支上rebase，然后合并到main分支，原来的那个分支会被清除。\n\nsetNX有什么缺陷？\n\n有单点风险\n可能会导致同一把锁被多人使用\nredlock\n\n","dateCreated":"2023-08-07T00:00:00+08:00","dateModified":"2024-02-02T21:27:01+08:00","datePublished":"2023-08-07T00:00:00+08:00","description":"","headline":"Java基础知识","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/","keywords":"Java基础知识"}</script>
     <meta name="description" content="讲讲Java的代理代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。 动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy， 动态代理有两种方式一种是jdk方法，一种是cglib方法 我们先来讲jdk代理：  JDK代理依赖">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Java基础知识">
@@ -23,7 +23,7 @@
 <meta property="og:image" content="http://example.com/images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231222001434059.png">
 <meta property="og:image" content="http://example.com/images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231118193113289.png">
 <meta property="article:published_time" content="2023-08-06T16:00:00.000Z">
-<meta property="article:modified_time" content="2024-01-31T16:53:30.972Z">
+<meta property="article:modified_time" content="2024-02-02T13:27:01.239Z">
 <meta property="article:author" content="CSEN">
 <meta property="article:tag" content="Java基础知识">
 <meta name="twitter:card" content="summary">
@@ -79,11 +79,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -102,9 +102,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -244,7 +244,7 @@
         <div class="post-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    Aug 07, 2023
+		    07 Aug 2023
     	
     </time>
     
@@ -307,37 +307,29 @@
 <p><font color='blue'><u><em><strong>如何实现数组和arraylist之间的转换</strong></em></u></font></p>
 <p>List.toarray  (修改原先list，array不受影响)</p>
 <p>Arrays.aslist （受影响）</p>
+<blockquote>
 <p><T>&lt;?&gt;</p>
 <p><T>主要用于类或方法上，对这个类或者方法里面的泛型全是一样的。</p>
 <?>一般用在变量上，有界通配符，对类型做一定的限制。
 
-
-
-## <font color='red'><u>***hashmap和hashset***</u></font>
-
-> hashset还是比较适合去重和集合运算
->
-> hashmap比较适合键值对这类数据
-
-## 比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同
-
-- <font color='red'><u>***`HashSet`、`LinkedHashSet` 和 `TreeSet` 的主要区别在于底层数据结构不同。`HashSet` 的底层数据结构是哈希表（基于 `HashMap` 实现）。`LinkedHashSet` 的底层数据结构是链表和哈希表。`TreeSet` 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。***</u></font>
-- 底层数据结构不同又导致这三者的应用场景不同。`HashSet` 用于不需要保证元素插入和取出顺序的场景，`LinkedHashSet` 用于保证元素的插入和取出顺序满足 FIFO 的场景，`TreeSet` 用于支持对元素自定义排序规则的场景。
-
-## Queue 与 Deque 的区别
-
->`Queue` 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 **先进先出（FIFO）** 规则。
->
->`Deque` 是双端队列，在队列的两端均可以插入或删除元素。
-
-## ArrayDeque 与 LinkedList 的区别
-
->`ArrayDeque` 和 `LinkedList` 都实现了 `Deque` 接口，两者都具有队列的功能
->
->`ArrayDeque` 是基于可变长的数组和双指针来实现，而 `LinkedList` 则通过链表来实现。
->
->`ArrayDeque` 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 `LinkedList` 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。
-
+</blockquote>
+<h2 id="hashmap和hashset"><a href="#hashmap和hashset" class="headerlink" title="hashmap和hashset"></a><font color='red'><u><em><strong>hashmap和hashset</strong></em></u></font></h2><blockquote>
+<p>hashset还是比较适合去重和集合运算</p>
+<p>hashmap比较适合键值对这类数据</p>
+</blockquote>
+<h2 id="比较-HashSet、LinkedHashSet-和-TreeSet-三者的异同"><a href="#比较-HashSet、LinkedHashSet-和-TreeSet-三者的异同" class="headerlink" title="比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同"></a>比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同</h2><ul>
+<li><font color='red'><u><em><strong><code>HashSet</code>、<code>LinkedHashSet</code> 和 <code>TreeSet</code> 的主要区别在于底层数据结构不同。<code>HashSet</code> 的底层数据结构是哈希表（基于 <code>HashMap</code> 实现）。<code>LinkedHashSet</code> 的底层数据结构是链表和哈希表。<code>TreeSet</code> 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。</strong></em></u></font></li>
+<li>底层数据结构不同又导致这三者的应用场景不同。<code>HashSet</code> 用于不需要保证元素插入和取出顺序的场景，<code>LinkedHashSet</code> 用于保证元素的插入和取出顺序满足 FIFO 的场景，<code>TreeSet</code> 用于支持对元素自定义排序规则的场景。</li>
+</ul>
+<h2 id="Queue-与-Deque-的区别"><a href="#Queue-与-Deque-的区别" class="headerlink" title="Queue 与 Deque 的区别"></a>Queue 与 Deque 的区别</h2><blockquote>
+<p><code>Queue</code> 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 <strong>先进先出（FIFO）</strong> 规则。</p>
+<p><code>Deque</code> 是双端队列，在队列的两端均可以插入或删除元素。</p>
+</blockquote>
+<h2 id="ArrayDeque-与-LinkedList-的区别"><a href="#ArrayDeque-与-LinkedList-的区别" class="headerlink" title="ArrayDeque 与 LinkedList 的区别"></a>ArrayDeque 与 LinkedList 的区别</h2><blockquote>
+<p><code>ArrayDeque</code> 和 <code>LinkedList</code> 都实现了 <code>Deque</code> 接口，两者都具有队列的功能</p>
+<p><code>ArrayDeque</code> 是基于可变长的数组和双指针来实现，而 <code>LinkedList</code> 则通过链表来实现。</p>
+<p><code>ArrayDeque</code> 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 <code>LinkedList</code> 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。</p>
+</blockquote>
 </blockquote>
 <h1 id="HashMap："><a href="#HashMap：" class="headerlink" title="HashMap："></a>HashMap：</h1><p>hashmap最关键的是他的<font color='blue'><u><em><strong>底层数据结构、put 扩容 和 线程安全方面的知识。</strong></em></u></font></p>
 <blockquote>
@@ -664,7 +656,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" rel="tag">Java基础知识</a>
 
@@ -681,11 +673,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/10/09/Redis/"
                     data-tooltip="Redis"
-                    aria-label="PREVIOUS: Redis"
+                    aria-label="FRÜHER: Redis"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -695,10 +687,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/07/08/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/"
                     data-tooltip="输入网络，期间发生了什么？"
-                    aria-label="NEXT: 输入网络，期间发生了什么？"
+                    aria-label="NÄCHSTER: 输入网络，期间发生了什么？"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -709,7 +701,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -721,8 +713,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -734,8 +726,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -747,8 +739,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -759,7 +751,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -796,11 +788,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/10/09/Redis/"
                     data-tooltip="Redis"
-                    aria-label="PREVIOUS: Redis"
+                    aria-label="FRÜHER: Redis"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -810,10 +802,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/07/08/%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/"
                     data-tooltip="输入网络，期间发生了什么？"
-                    aria-label="NEXT: 输入网络，期间发生了什么？"
+                    aria-label="NÄCHSTER: 输入网络，期间发生了什么？"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -824,7 +816,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -836,8 +828,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -849,8 +841,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -862,8 +854,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -874,7 +866,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -896,9 +888,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                        aria-label="Share on Facebook"
+                        aria-label="Teilen auf Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
                     </a>
                 </li>
             
@@ -909,9 +901,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                        aria-label="Share on Twitter"
+                        aria-label="Teilen auf Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
                     </a>
                 </li>
             
@@ -922,9 +914,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                        aria-label="Share on Google+"
+                        aria-label="Teilen auf Google Plus"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
                     </a>
                 </li>
             
@@ -947,7 +939,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
