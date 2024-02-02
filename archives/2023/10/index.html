@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv: 2023/10 - 森</title>
+    <title>Archives: 2023/10 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -233,17 +233,17 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/10/28/MySQL45%E8%AE%B2/"
-                            aria-label=": MySQL45讲"
+                            href="/2023/10/28/MySQL45/"
+                            aria-label=": MySQL45"
                         >
-                            MySQL45讲
+                            MySQL45
                         </a>
                     
                 </h1>
                 <div class="postShorten-meta">
     <time datetime="2023-10-28T00:00:00+08:00">
 	
-		    28 Oct 2023
+		    Oct 28, 2023
     	
     </time>
     
@@ -273,7 +273,7 @@
 <li>redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如“给 ID&#x3D;2 这一行的 c 字段加 1 ”。</li>
 <li>redo log 是循环写的，空间固定会用完；binlog 是可以追加写入的。“追加写”是指 binlog 文件写到一定大小后会切换到下一个，并不会覆盖以前的日志。</li>
 </ol>
-<p><img src="/../images/MYSQL%E5%A4%8D%E4%B9%A01/image-20231028134812838.png" alt="image-20231028134812838"></p>
+<p><img src="/../images/MySQL45/image-20231028134812838.png" alt="image-20231028134812838"></p>
 <p>write pos 是当前记录的位置,checkpoint 是当前要擦除的位置</p>
 <p>我们举一个例子来演示一下（<font color='red'><u><em><strong>两阶段提交</strong></em></u></font>）：</p>
 <ol>
@@ -285,7 +285,7 @@
 </ol>
 </blockquote>
 <p>这两个日志的配合是使用两阶段提交</p>
-<p><img src="/Users/csen/Documents/Amusement/Sen-Blog/source/images/MYSQL1/image-20230805142953314.png"></p>
+<p><img src="/../images/MySQL45/image-20230805142953314.png"></p>
 <blockquote>
 <p>可以发现将redo log的写入分成了两个阶段，一个是prepare 一个commit</p>
 <p>在两阶段提交的情况下，是怎么实现崩溃恢复的呢？<br>首先比较重要的一点是，在写入redo log时，会顺便记录XID，即当前事务id。在写入binlog时，也会写入XID。</p>
@@ -295,7 +295,7 @@
 <p>总的来说，在崩溃恢复后，只要redo log不是处于commit阶段，那么就拿着redo log中的XID去binlog中寻找，找得到就提交，否则就回滚。</p>
 <p>在这样的机制下，两阶段提交能在崩溃恢复时，能够对提交中断的事务进行补偿，来确保redo log与binlog的数据一致性。</p>
 </blockquote>
-<h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a><strong>索引</strong></h2><p><img src="/../images/MySQL45%E8%AE%B2/image-20240109120737217.png" alt="image-20240109120737217"></p>
+<h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a><strong>索引</strong></h2><p><img src="/../images/MySQL45/image-20240109120737217.png" alt="image-20240109120737217"></p>
 <p>执行流程：(<font color='red'><u><em><strong>所以回表不是只回表一次，而是多次</strong></em></u></font>)</p>
 <blockquote>
 <ol>
@@ -350,14 +350,14 @@
 <ul>
 <li>语法</li>
 </ul>
-<p> 1、加全局锁</p>
- <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">flush tables <span class="keyword">with</span> read lock;</span><br></pre></td></tr></table></figure>
+<p>1、加全局锁</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="operator">&gt;</span>flush tables <span class="keyword">with</span> read lock;</span><br></pre></td></tr></table></figure>
 
-<p> 2、数据备份</p>
- <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>pxxx db_name <span class="operator">-</span><span class="operator">&gt;</span> xxx.sql;</span><br></pre></td></tr></table></figure>
+<p>2、数据备份</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="operator">&gt;</span>mysqldump <span class="operator">-</span>uroot <span class="operator">-</span>pxxx db_name <span class="operator">-</span><span class="operator">&gt;</span> xxx.sql;</span><br></pre></td></tr></table></figure>
 
-<p> 3、释放锁</p>
- <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">unlock tables;</span><br></pre></td></tr></table></figure>
+<p>3、释放锁</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="operator">&gt;</span>unlock tables;</span><br></pre></td></tr></table></figure>
 
 <p>如果在主库上备份，那么在备份期间都不能执行更新，业务基本上就得停摆。</p>
 <p>如果在从库上备份，那么在备份期间从库不能执行主库同步过来的二进制日志（binlog）</p>
@@ -375,11 +375,11 @@
                     
                         <p>
                             <a
-                                href="/2023/10/28/MySQL45%E8%AE%B2/#post-footer"
+                                href="/2023/10/28/MySQL45/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -408,7 +408,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-10T00:00:00+08:00">
 	
-		    10 Oct 2023
+		    Oct 10, 2023
     	
     </time>
     
@@ -503,7 +503,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -532,7 +532,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-09T00:00:00+08:00">
 	
-		    09 Oct 2023
+		    Oct 09, 2023
     	
     </time>
     
@@ -861,7 +861,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -875,7 +875,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -905,7 +905,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
