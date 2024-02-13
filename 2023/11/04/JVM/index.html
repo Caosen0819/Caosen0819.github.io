@@ -11,7 +11,7 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"1、JVM内存结构主要有五大部分：程序计数器（私有）、虚拟机栈（私有）、本地方法栈（私有）、堆（公有）、方法区（公有），不过在8之后，永久代就已经被元空间代替了，而元空间在本地内存。\n\n1、程序计数器\n\n存储当前指令执行的地址线程恢复都靠这个。\n\n2、虚拟机栈\n\n每个方法调用的时候都会生成一个栈帧，栈帧里面存储了局部变量表，操作数栈、动态连接、方法出口等。\n局部变量表里面放了方法参数、方法内部定义的局部变量。包括各类基本数据类型、对象引用(reference) ，以及returnAddress类型。\n对象引用要完成两件事情：找到在JVM堆里面的对象，还有一个是找到元空间存储的类型信息。\n操作数栈：同时作为计算过程中变量临时的存储空间\n动态连接：指向运行时常量池中该栈帧所属方法的引用，为了支持方法调用过程中的动态链接（Dynamic Linking）**\n方法出口：方法执行完去哪里\n\n3、本地方法栈\n\n和虚拟机栈很像，区别是为了虚拟机使用本地native方法服务的。\n\n4、堆\n\n线程共享的，存放对象实例都在这里。这里有一块是字符串常量池，存的是String实例的引用。\n他被分成年轻代和老年代，年轻代有分成伊甸区和幸存者区。垃圾回收的时候先扫伊甸区和一个幸存者区，存活的对象放到另一个幸存者区。\n然后还有一点需要提的是：1.7中的堆有方法区，或者说永久代。但是到了1.8，方法区转移到了直接内存里面变成了元空间。\n\n5、方法区\n\n存储被虚拟机加载的类信息、静态常量。\n运行时常量池：\nClass文件除了类的版本字段方法接口描述外，还有一个常量池，用于存放编译期间生成的字面量和符号引用，而当类加载到内存中后，jvm把符号引用换成直接引用，将class常量池中的内容存放到运行时常量池中。\n\n\n对象的创建\n\n1、当遇到new，先去检查在常量池找到类的符号引用，检查是不是已经类加载、解析、初始化。\n2、如果没有，就先执行类加载。\n3、然后分配内存，内存的大小在类加载的时候就确认了。具体分配用“指针碰撞”还是“空闲列表”就看用那种垃圾收集器。为了保证不出现并发问题：有两种方案。1）CAS+失败重试。2）给线程自己预先分配本地线程分配缓冲。（TLAB）\n\n对象的内存布局\n\n每一个对象在堆里面分为三块：对象头、实例数据、对其填充。\n对象头是markword+类型指针+数组长度（如果是数组的话），\n\nmarkword就是记录哈希码、gc分代（4位，所以年龄设置为15）、锁标志、锁id，偏向锁。\n类型指针就是指向类型元数据的指针\n\n实例数据：\n对象真正存储的有效信息。无论是父类继承的还是子类\n对其填充：\nHotSpot要求对象的起始地址是8字节的整数倍。\n\n对象的访问定位\n1、句柄方法。reference放的是存储的是句柄地址，句柄包含对象实例数据和类型数据，各自的具体位置。句柄最大的优势就是即使在垃圾收集的时候对象被移动了，只用修改句柄中的指针就好，不用修改reference。\n2、直接指针。存储的就是对象地址。他的优势是少一次间接访问的消耗。\n2、内存溢出异常3、字节码文件\n魔数：唯一的作用就是确定这个文件是否为一个虚拟机可以接受的Class文件\n\n次版本号\n\n主版本号\n\n常量池：第一个表类型的数据\n\n主要存放两大类常量：字面量和符号引用。比如包名、类名、接口名、方法名、变量名等等，但是Class常量池中他就是一个符号，需要在类加载的时候翻译成具体的内存地址。\n\n\n访问标志：有16个标志位，是类还是接口、是否public 是否abstract 是否final\n\n类索引、父类索引、接口索引：用着三项去确认继承关系\n\n字段表集合：描述类中声明的变量。最主要有三个部分：access_flag，是否public、是否provate、是否static。name_index：常量池的第几个，比如0005，代表常量池的第五个值（m）是discriptor_index 是int类型（0006：第六个值I，代表是int类型）\n\n方法表：方法表的结构和字段表基本一样，不过是针对方法的\n\n属性表：太复杂了\n\n\n4、类加载机制类加载分成三个阶段，加载、连接、初始化。连接可以分成，验证、准备、解析\n1、加载加载是类加载过程的第一步，主要完成下面 3 件事情：\n\n通过全类名获取定义此类的二进制字节流\n将字节流所代表的静态存储结构转换为方法区的运行时数据结构（JDK 1.8之前：永久代；JDK 1.8之后：元空间）\n在内存中生成一个代表该类的 Class 对象，作为方法区各种数据的访问入口（堆）\n\n\n2、验证确保Class文件的信息复合虚拟机的约束\n1、文件格式验证。就是去检查类文件格式是否规范。什么魔数主次版本常量池字段池方法池\n2、元数据验证。对描述信息进行语义分析，有没有父类，有没有继承不能继承的父类。\n3、字节码校验。最复杂的阶段。通过数据流分析和控制流分析程序语义是否合法，主要就是检查方法体的\n4、符号引用验证。符号引用验证发生在解析阶段，就是把符号引用转化为直接引用的时候去验证的。\n3、准备阶段为静态变量分配内存，并设置初始值的阶段。如果没有final修饰，那就是默认值，比如0这类，真正赋你定义的值那就在初始化阶段。如果用final修饰了，那就是你自己定义的了。\n4、解析把常量池中的符号引用转化为直接引用的阶段。有类和接口解析，字段解析，方法解析等。实际上就是先把类加载到方法区里面，然后返回相应直接引用。\n我们拿字段解析举个例子，先解析这个字段表所在的类或接口，假设成功解析为C。我们就在C的字段表里面找有没有匹配的简单名称和字段描述符，如果有就直接返回。没有就找C的接口和父接口，看看有没有匹配的简单名称和字段描述符。如果又返回，没有就按继承关系找父类有没有匹配的，否则就失败。\n但是方法解析有一点不一样，他有一部分是不能解析的，如果 Human h &#x3D; new Man。这种可能方法调用不能确定，这里就解析不了。能解析的叫非虚方法，不能解析的叫虚方法。虚方法需要使用另外一种调用形式就是分派，分派分为静态动态，虚方法静态分派实现重载（静态类型），动态分派实现重写（invokevirtual，先找到这个动态类型，如果有这个方法那就直接用，如果没有，我们再去找他的父类）。\n5、初始化初始化就是执行类构造器的过程，而这个类构造器做的事情就是对类中所有类变量的赋值操作和所有静态语句块的操作。\n顺序就是语句在源文件的顺序\n5、类加载器类加载器的作用就是实现类加载过程中的加载这一步，通过双亲委派机制去维护一个三层的组织架构。\n三层：\n启动类加载器：负责加载JAVA_HOME&#x2F;LIB目录的或者被-xbootclasspath指定。\n扩展类加载器：负责加载JAVA_HOME&#x2F;LIB&#x2F;EXT的类或者被JAVA.EXT.DIRS系统变量制定的所有的类库。由于是由Java代码实现，所以开发者可以在程序中直接使用这个加载器去加载Class文件\n应用程序类加载器：负责加载用户类路径CLasspath上所有的类库。开发者也可以直接使用这个\n双亲委派：双亲委派是类加载器的组织模型。\n在类加载的时候，系统会首先判断当前类是否被加载过。已经被加载的类会直接返回，否则才会尝试加载\n类加载器在进行类加载的时候，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器去完成（调用父加载器 loadClass()方法来加载类）。这样的话，所有的请求最终都会传送到顶层的启动类加载器 BootstrapClassLoader 中。\n只有当父加载器反馈自己无法完成这个加载请求（它的搜索范围中没有找到所需的类）时，子加载器才会尝试自己去加载（调用自己的 findClass() 方法来加载类）。\n如果子类加载器也无法加载这个类，那么它会抛出一个 ClassNotFoundException 异常。\n好处\n可以避免类的重复加载（JVM 区分不同类的方式不仅仅根据类名，相同的类文件被不同的类加载器加载产生的是两个不同的类），也保证了 Java 的核心 API 不被篡改。\n打破双亲委派1、自定义类加载器，重写 loadClass()方法之后，我们就可以改变传统双亲委派模型的执行流程。例如，子类加载器可以在委派给父类加载器之前，先自己尝试加载这个类，或者在父类加载器返回之后，再尝试从其他地方加载这个类。具体的规则由我们自己实现，根据项目需求定制化。\n\n解决方案：新添加一个findClass\n\n2、高层的类加载器（SharedClassLoader）借助子类加载器（ WebAppClassLoader）来加载业务类\n\n解决方案：线程上下文类加载器。\t线程上下文类加载器的原理是将一个类加载器保存在线程私有数据里，跟线程绑定，然后在需要的时候取出来使用。这个类加载器通常是由应用程序或者容器（如 Tomcat）设置的。类加载冲突问题\n\n3、OSGI实现模块化热部署，把类加载从双亲委派变成更加复杂的网状结构。\n模块化什么是JDK9模块化系统\n\n是一种新的组织方式，将Java SE分成多个模块，每个模块都有自己的API和实现\n每个模块都有一个唯一的标识符和版本号，可以独立地进行开发\n\n为了模块化系统的顺利实施。\n扩展类加载器被平台类加载器取代。加载器用于加载 JDK 中的模块\n双亲委派机制也发生了变动。\n平台或应用程序类加载器收到类加载请求后，在委派给父加载器前，先判断该类是否能够归属到某一个模块中，如果可以，就先找到负责这个模块的加载器进行加载。每个模块都有一个类加载器\n6、线程安全线程安全：不可变，绝对安全、相对安全、线程兼容、线程对立。\n线程安全的实现方式：\n1、互斥同步\nsynchronized，重入锁都是\n2、非阻塞同步\nCAS\n7、垃圾回收1、如何判断对象死亡？1、传统有个引用计数法，在对象里面加一个引用计数器，有一个地方引用他就加1，但是小问题很多，比如很难解决互相引用的问题，所以主流的虚拟机都不用这个。\n2、可达性分析法。基本思路就是从GC Roots这个根对象作为初始节点集，然后根据引用关系向下搜索，走过的路叫引用链。没有引用链可以尝试回收。但是具体要不要回收还是要经历两次标记过程。第一次发现没有引用链就会被第一次标记，然后进行一次筛选，看看有没有必要执行finalize方法，如果没有覆盖finalize或者执行过了，那就直接记为死亡。如果执行finalize的过程中建立了与引用链上的任何一个对象建立了联系，那么在第二次标记时，会被移出“即将回收”集合\n\n在 堆内存 中 , 存在一个 根对象 GC Root , GC Root 对象一般是如下几种情况 :\n线程栈 中的 栈帧 中的 局部变量表 中的 引用对象 ;方法区 中的 静态引用对象 ;方法区 中的 常量引用对象 ;本地方法栈 中的 JNI 中的 引用的对象 ;\n\n当然除了堆区，方法区也会回收。\n方法区回收\n\n主要收集两个部分，废弃的常量和不再使用的类型。\n废弃的意思：该类的所有实例被回收，类加载器被回收，Class对象没有在任何地方被引用。\n\n2、垃圾回收算法首先垃圾收集算法基本遵循分代收集。分代收集建立于两个假说：1）弱分代假说：大多数对象都是朝生夕灭的。2）强分代假说：熬过越多次垃圾收集的对象越难消亡。3）跨代引用相对于同代引用占比极少。\n先理清一些小概念：\n\n部分收集：\n\n新生代收集：Minor GC&#x2F;Young GC : 只收集新生代\n\n老生代收集：Major GC&#x2F;Old GC : 只收集老生代：目前只有CMS收集器会有。\n\n混合收集：Mixed GC：整个新生代和部分老生代，目前只有G1有\n\n\n\n整堆收集：\n\nFull GC\n\n\n\n1、标记-清除很简单，就是标记可回收或者不可回收，然后清除。\n有两个缺陷：执行效率不稳定和会有很多内存碎片（导致分配较大的对象困难）\n2、标记-复制先把内存分成两半，然后每次使用其中一块，当一块用完了，就把这块内存中存活的复制到另外一块，清楚原来那一块。现在很多Java虚拟机都采用这种方法去回收新生代。\n把新生代分为一块较大的eden区和两个较小的survivor区，每次分配只用eden和survivor的一块。发生垃圾回收，将eden和Survivor仍然存活的复制到Survivor，然后清除eden和那一块Survivor。\n缺点就是如果对象存活率比较高那就不适合。\n3、标记-整理标记后，让存活的对象都往内存空间的一端移动。\n缺点：对于老年代这种存活率很高的也不适合。必须暂停用户应用程序\n4、细节枚举根节点\n后台有个GC守护线程，当需要GC的时候，GC线程需要在标记阶段枚举根节点，这是需要stop the world。就是为了防止工作中的线程修改了引用关系，导致结果准确性不能保证。为了加快检索，hotspot用了一种oopMap的数据类型。\n从GC往下遍历对象图\n这个是和堆的大小成正比的，怎么去减少暂停时间呢？三色标记法\n白色：对象没有被垃圾收集器访问过\n黑色：已经被访问过了，且这个对象的所有引用都已经扫描过。\n灰色：已经被访问过了，但是至少有一个引用没有被扫描。\n说一下JVM的分代回收\n3、垃圾回收器四种引用\n\n强引用：只有GCroot都不通过强引用引用该对象，才可以回收\n软引用：内存不足的时候回收\n弱引用：无论内存够不够，都会回收\n虚引用：它就和没有任何引用一样，在任何时候都可能被垃圾回收器回收。\n\n新生代\n1、Serial收集器\n串行，单线程，暂停其他线程。现在用的人比较少，但是优点是简单高效，对内存消耗最少。（整体STW）\n\n\n策略：标记-复制\n\n2、Parrallel New收集器\n本质是Serial的多线程并行版本。（整体STW）\n\n\n策略：标记-复制\n\n3、Parrallel Scanvenge\n吞吐量优先收集器\n\n\nParrallel很多特性和ParNew一样，但是Parallel Scanvenge 的关键点在于它关注的是吞吐量，吞吐量 &#x3D; 代码运行时间 &#x2F; （代码运行时间 + 垃圾收集时间）\n\n\n\n策略：标记-复制\n\n\n\n\n-XX:MaxGcPauserMillis：最大停顿时间\n-XX:GCTimeRatio：吞吐量的倒数，比如 如果是 19 那么允许的最大GC时间比例为 1&#x2F;（1 + 19） &#x3D;5 %\n\n\n\n-XX:+UseAdaptiveSizePolicy：不需要手动指定新生代大小，虚拟机会自动调整参数（GC自适应）\n\n\n老生代\n1、Serial OldSerial的老年代版本，\n收集策略：标记-整理\n2、Parallel Old 收集器策略：标记-整理\n\n3、CMS收集器它是一种获取最短回收停顿时间的收集器，就是希望stw的时间越短越好。\n策略：标记-清除\n因为回收过程和用户线程一起进行，所以有四个步骤。\n1）初始标记，只是标记一下GC Roots，（是广义上的gcroots，包含了年轻代所有对象。所以初始标记除了和狭义直接关联，还有年轻代到老年代的引用）（STW）\n2）并发标记，从GC Roots遍历对象的过程，这个是和用户线程一起进行的。（这里会出现很多引用的变化，比如年轻代到老年代，直接在老年代分配、漏标）\n3）重新标记，因为和用户线程一起进行，对于漏标问题的解决方案是（写后屏障+增量更新（就是把新增加的引用进行记录））。（STW）\n4）并发清除，清除对象，因为策略是标记-清除，不需要移动所以同样选择了并发的方式。\n缺点：\n1）对处理资源敏感，而且大于1&#x2F;4。CMS的默认收集线程数量是（处理器数量+3）&#x2F;4。\n2）无法处理浮动垃圾（在并发标记与并发清理阶段，有些对象从可达到不可达，但是没扫出来），有可能触发full gc\n3）用的是标记清除，会有内存碎片\n​\t\nCMSFullGCsBeforeCompaction：进行过几次不整理的full gc之后进行碎片整理的full gc\nCMSInitialtingOccupancyfraction 什么时候触发cms\n全部1、G1\n这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。\n为了加快搜索，G1是使用card table和RSet。\ncard table是CMS的解决方案，他可以避免对老年代进行整个扫描。他的做法是把region分成一个个512字节的card，然后用一个位0或者1去标记他的状态，如果有指向年轻代的对象，就置为1，否则0。所以你扫描的时候直接找card状态是1的区域就可以找到gcroot，不用对老年代扫描。\nRset是G1提出来的，每个region都有rset，它记录了哪些region引用了当前的region。他是一个键值对的形式，键就是其他region的起始地址，值就是card的索引号的集合，这样就把card table和rset配合起来了。\n维护这两个是依赖写屏障\n\n下面我们讲讲G1的垃圾收集过程，分为四个步骤\n然后他把region作为单次回收的最小单元，那每次回收都是region的整数倍。\n\n1、初始标记，只是标记一下和能直达的对象，这个和young gc密切相关，这个之前讲过（STW）\n2、并发标记，扫描对象图\n3、最终标记，处理并发标记中变化的哪些引用，这里对于漏标情况G1用的SATB（原始快照）（STW）\n4、筛选回收，后台维护一个优先级列表，跟踪每一个region的回收价值（空间大小和回收所需时间），在指定的停顿时间内回收回收价值最大的region。（STW）\n\n优点：\n\n可以指定最大停顿时间，\n不会产生内存碎片，\n按收益回收\n\n缺点：\n\n内存占用负载都比较高。\n浮动垃圾也很严重。\n\n算法：整体标记整理，局部标记复制。\n为什么年轻代比以前的快？\n他是筛选回收，是通过region个数进行minor gc 不用对整个eden区minorgc ，而且有个容忍时间。\nG1的SATB算法为什么比CMS的增量标记算法快（原因之一）：\n① CMS的重新标记需要重新扫描所有root，包括年轻代\n② G1：在开始标记的时候生成一个快照图，标记存活对象。所有被改变引用关系的对象都标记，至于它是不是真的存活。留给下一次gc扫描\n三色标记三色标记在并发会出现问题。\nCMS解决对象消失问题，用的是写屏障+增量更新（黑色对象一旦新插入了指向白色对象的引用之后，它就变回灰色对象了，后续对这个对象再进行扫描）\nG1用的是，写屏障+STAB。（灰色对象要删除指向白色对象的引用关系的时候，就把这个删除的引用记录下来，涂成灰色，等并发扫描结束，再重新扫一次）\nZGC用的是，读屏障+STAB\n2、ZGC也是使用分区的内存分布，但是它有三种不同的区。小型、中型、大型。\n然后传统垃圾回收器是在markwork里面有个字段去标记的，但是ZGC标记是使用一种叫着色指针的机制。现在的计算机大多数64位，但是64肯定用不满，所以就把高位那一块拿出3位来实现着色机制的标记。\n\n标记过程\n\n初始标记（STW，时间很短，小于1mm）\n\n初始标记就是去扫GC Roots直接关联的对象，标记就是把蓝色变成绿色（44位置0,42位置1）\n\n\n并发标记（并发）\n\n继续遍历对象图，把蓝色变成绿色（44位置0,42位置1）\n这里要用到三色标记\n\n\n再标记（STW，时间很短，小于1mm，小于初始标记）\n\n三色标记会存在漏标的问题，重新标记并发标记阶段发生变化的对象，使用读屏障+SATB算法解决\n\n\n\n转移过程\n\n并发转移准备（并发）\n统计处本次收集过程要清理哪些region\n\n\n初始转移（STW，和初始标记差不多）\n把GC Roots直接关联的进行转移，颜色从绿色回到蓝色，（44位置为1,42位置为0）\n\n\n并发转移\n这里要维护转发表，记录老对象和新对象的转向关系。\n如果在这个阶段访问，那就依赖读屏障，去完成新老指针的修正。\n其他指针的修正就依赖于并发标记这个阶段\n\n\n\nJVM调优参数jar包启动的时候java和 -jar直接可以去配置jvm的参数\nJVM调优的参数有哪些？\n内存管理：JVM-Xms（初始堆大小，默认1&#x2F;64物理内存），-Xmx（最大堆内存，默认1&#x2F;4），新生代晋级老年代的阈值（MaxTenuringThreshold，默认15），新生代大小（Xmn），永久代大小（PermSize），线程栈大小（Xss），垃圾回收器（UseParallelGC，UseConcMarkSweepGC），内存OOM导出快照（HeapDumpOnOutOfMemoryError），新生代和老年代的比例（newRadio），eden区和幸存者区的大小比例（SurvivorRatio），（）\nCMSFullGCsBeforeCompaction：执行多少次不压缩的Fullgc，跟着来一次压缩的FullGC\n\nFullGC怎么排查\n如果出现FullGC，请求和响应会变得特别慢，系统也变得很卡。\n先用top找到pid，然后用jstat（jstat -gcutil 72 2000）去看看是否发生了GC，如果FGC确实一直在慢慢变多，那就说明FULLGC了，然后就排查CPU消耗，用top -H看看线程情况，找到占比高的用jstack看看堆栈情况\n\nJVM调优工具\n命令：\njps + jstack 查看进程内线程的堆栈信息\njmap -dump 生成一个内存快照的信息\njstat ：JVM性能监测工具。 显示伊甸区 幸存者区、老年区的比例，还有gc压力\n可视化工具：\njconsole\nvisualVM\n\nJava内存泄漏排查\n内存泄漏会逐渐累加导致内存溢出，内存溢出会发生在：虚拟机栈（stackoverflow）、方法区（OOM：metaspace）、堆空间（OOM：heap space）\n1、可以获得内存的快照dump（jmap -dump或者启动的时候就加上参数-XX：heapdumpOnOutOfMemery）\n2、visualVM去加载\n\nCPU标高的排查top或者pidstat命令找到cpu明显过高的进程id，然后用进程id去找到线程id（ps H -eo pid,tid,%cpu | grep进程id），最后jstack 一下定位到该线程就可以\n标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、\nFULL GC的原因\nSystem.gc方法调用\n老年代不够用或者创建了大对象\n元空间不够用\n分配担保失败\n\n","dateCreated":"2023-11-04T00:00:00+08:00","dateModified":"2024-02-01T16:26:06+08:00","datePublished":"2023-11-04T00:00:00+08:00","description":"","headline":"JVM","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/11/04/JVM/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/11/04/JVM/","keywords":"JVM"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"1、JVM内存结构主要有五大部分：程序计数器（私有）、虚拟机栈（私有）、本地方法栈（私有）、堆（公有）、方法区（公有），不过在8之后，永久代就已经被元空间代替了，而元空间在本地内存。\n\n1、程序计数器\n\n存储当前指令执行的地址线程恢复都靠这个。\n\n2、虚拟机栈\n\n每个方法调用的时候都会生成一个栈帧，栈帧里面存储了局部变量表，操作数栈、动态连接、方法出口等。\n局部变量表里面放了方法参数、方法内部定义的局部变量。包括各类基本数据类型、对象引用(reference) ，以及returnAddress类型。\n对象引用要完成两件事情：找到在JVM堆里面的对象，还有一个是找到元空间存储的类型信息。\n操作数栈：同时作为计算过程中变量临时的存储空间\n动态连接：指向运行时常量池中该栈帧所属方法的引用，为了支持方法调用过程中的动态链接（Dynamic Linking）**\n方法出口：方法执行完去哪里\n\n3、本地方法栈\n\n和虚拟机栈很像，区别是为了虚拟机使用本地native方法服务的。\n\n4、堆\n\n线程共享的，存放对象实例都在这里。这里有一块是字符串常量池，存的是String实例的引用。\n他被分成年轻代和老年代，年轻代有分成伊甸区和幸存者区。垃圾回收的时候先扫伊甸区和一个幸存者区，存活的对象放到另一个幸存者区。\n然后还有一点需要提的是：1.7中的堆有方法区，或者说永久代。但是到了1.8，方法区转移到了直接内存里面变成了元空间。\n\n5、方法区\n\n存储被虚拟机加载的类信息、静态常量。\n运行时常量池：\nClass文件除了类的版本字段方法接口描述外，还有一个常量池，用于存放编译期间生成的字面量和符号引用，而当类加载到内存中后，jvm把符号引用换成直接引用，将class常量池中的内容存放到运行时常量池中。\n\n\n对象的创建\n\n1、当遇到new，先去检查在常量池找到类的符号引用，检查是不是已经类加载、解析、初始化。\n2、如果没有，就先执行类加载。\n3、然后分配内存，内存的大小在类加载的时候就确认了。具体分配用“指针碰撞”还是“空闲列表”就看用那种垃圾收集器。为了保证不出现并发问题：有两种方案。1）CAS+失败重试。2）给线程自己预先分配本地线程分配缓冲。（TLAB）\n\n对象的内存布局\n\n每一个对象在堆里面分为三块：对象头、实例数据、对其填充。\n对象头是markword+类型指针+数组长度（如果是数组的话），\n\nmarkword就是记录哈希码、gc分代（4位，所以年龄设置为15）、锁标志、锁id，偏向锁。\n类型指针就是指向类型元数据的指针\n\n实例数据：\n对象真正存储的有效信息。无论是父类继承的还是子类\n对其填充：\nHotSpot要求对象的起始地址是8字节的整数倍。\n\n对象的访问定位\n1、句柄方法。reference放的是存储的是句柄地址，句柄包含对象实例数据和类型数据，各自的具体位置。句柄最大的优势就是即使在垃圾收集的时候对象被移动了，只用修改句柄中的指针就好，不用修改reference。\n2、直接指针。存储的就是对象地址。他的优势是少一次间接访问的消耗。\n2、内存溢出异常\n除了程序计数器，其他区域都有OOM的可能。\n堆是最常见的\n虚拟机栈和本地方法栈（-Xss），在HotSpot虚拟机里面，无论你是栈太深还是说栈容量太小了，都会报stackoverflow错误\n方法区，运行时常量池溢出\n\n3、字节码文件\n魔数：唯一的作用就是确定这个文件是否为一个虚拟机可以接受的Class文件\n\n次版本号\n\n主版本号\n\n常量池：第一个表类型的数据\n\n主要存放两大类常量：字面量和符号引用。比如包名、类名、接口名、方法名、变量名等等，但是Class常量池中他就是一个符号，需要在类加载的时候翻译成具体的内存地址。\n\n\n访问标志：有16个标志位，是类还是接口、是否public 是否abstract 是否final\n\n类索引、父类索引、接口索引：用着三项去确认继承关系\n\n字段表集合：描述类中声明的变量。最主要有三个部分：access_flag，是否public、是否provate、是否static。name_index：常量池的第几个，比如0005，代表常量池的第五个值（m）是discriptor_index 是int类型（0006：第六个值I，代表是int类型）\n\n方法表：方法表的结构和字段表基本一样，不过是针对方法的\n\n属性表：太复杂了\n\n\n4、类加载机制类加载分成三个阶段，加载、连接、初始化。连接可以分成，验证、准备、解析\n1、加载加载是类加载过程的第一步，主要完成下面 3 件事情：\n\n通过全类名获取定义此类的二进制字节流\n将字节流所代表的静态存储结构转换为方法区的运行时数据结构（JDK 1.8之前：永久代；JDK 1.8之后：元空间）\n在内存中生成一个代表该类的 Class 对象，作为方法区各种数据的访问入口（堆）\n\n\n2、验证确保Class文件的信息复合虚拟机的约束\n1、文件格式验证。就是去检查类文件格式是否规范。什么魔数主次版本常量池字段池方法池\n2、元数据验证。对描述信息进行语义分析，有没有父类，有没有继承不能继承的父类。\n3、字节码校验。最复杂的阶段。通过数据流分析和控制流分析程序语义是否合法，主要就是检查方法体的\n4、符号引用验证。符号引用验证发生在解析阶段，就是把符号引用转化为直接引用的时候去验证的。\n3、准备阶段为静态变量分配内存，并设置初始值的阶段。如果没有final修饰，那就是默认值，比如0这类，真正赋你定义的值那就在初始化阶段。如果用final修饰了，那就是你自己定义的了。\n4、解析把常量池中的符号引用转化为直接引用的阶段。有类和接口解析，字段解析，方法解析等。实际上就是先把类加载到方法区里面，然后返回相应直接引用。\n我们拿字段解析举个例子，先解析这个字段表所在的类或接口，假设成功解析为C。我们就在C的字段表里面找有没有匹配的简单名称和字段描述符，如果有就直接返回。没有就找C的接口和父接口，看看有没有匹配的简单名称和字段描述符。如果又返回，没有就按继承关系找父类有没有匹配的，否则就失败。\n但是方法解析有一点不一样，他有一部分在类加载的时候是不能解析的，如果 Human h &#x3D; new Man。这种可能方法调用不能确定，这里就解析不了。能解析的叫非虚方法，不能解析的叫虚方法。虚方法需要使用另外一种调用形式就是分派，分派分为静态动态，虚方法静态分派实现重载（静态类型），动态分派实现重写（invokevirtual，先找到这个动态类型，如果有这个方法那就直接用，如果没有，我们再去找他的父类）。\n5、初始化初始化就是执行类构造器的过程，而这个类构造器做的事情就是对类中所有类变量的赋值操作和所有静态语句块的操作。\n顺序就是语句在源文件的顺序\n5、类加载器类加载器的作用就是实现类加载过程中的加载这一步，通过双亲委派机制去维护一个三层的组织架构。\n三层：\n启动类加载器：负责加载JAVA_HOME&#x2F;LIB目录的或者被-xbootclasspath指定。\n扩展类加载器：负责加载JAVA_HOME&#x2F;LIB&#x2F;EXT的类或者被JAVA.EXT.DIRS系统变量制定的所有的类库。由于是由Java代码实现，所以开发者可以在程序中直接使用这个加载器去加载Class文件\n应用程序类加载器：负责加载用户类路径CLasspath上所有的类库。开发者也可以直接使用这个\n双亲委派：双亲委派是类加载器的组织模型。\n在类加载的时候，系统会首先判断当前类是否被加载过。已经被加载的类会直接返回，否则才会尝试加载\n类加载器在进行类加载的时候，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器去完成（调用父加载器 loadClass()方法来加载类）。这样的话，所有的请求最终都会传送到顶层的启动类加载器 BootstrapClassLoader 中。\n只有当父加载器反馈自己无法完成这个加载请求（它的搜索范围中没有找到所需的类）时，子加载器才会尝试自己去加载（调用自己的 findClass() 方法来加载类）。\n如果子类加载器也无法加载这个类，那么它会抛出一个 ClassNotFoundException 异常。\n好处\n可以避免类的重复加载（JVM 区分不同类的方式不仅仅根据类名，相同的类文件被不同的类加载器加载产生的是两个不同的类），也保证了 Java 的核心 API 不被篡改。\n打破双亲委派1、自定义类加载器，重写 loadClass()方法之后，我们就可以改变传统双亲委派模型的执行流程。例如，子类加载器可以在委派给父类加载器之前，先自己尝试加载这个类，或者在父类加载器返回之后，再尝试从其他地方加载这个类。具体的规则由我们自己实现，根据项目需求定制化。\n\n解决方案：新添加一个findClass\n\n2、高层的类加载器（SharedClassLoader）借助子类加载器（ WebAppClassLoader）来加载业务类\n\n解决方案：线程上下文类加载器。\t线程上下文类加载器的原理是将一个类加载器保存在线程私有数据里，跟线程绑定，然后在需要的时候取出来使用。这个类加载器通常是由应用程序或者容器（如 Tomcat）设置的。类加载冲突问题\n\n3、OSGI实现模块化热部署，把类加载从双亲委派变成更加复杂的网状结构。\n模块化什么是JDK9模块化系统\n\n是一种新的组织方式，将Java SE分成多个模块，每个模块都有自己的API和实现\n每个模块都有一个唯一的标识符和版本号，可以独立地进行开发\n\n为了模块化系统的顺利实施。\n扩展类加载器被平台类加载器取代。加载器用于加载 JDK 中的模块\n双亲委派机制也发生了变动。\n平台或应用程序类加载器收到类加载请求后，在委派给父加载器前，先判断该类是否能够归属到某一个模块中，如果可以，就先找到负责这个模块的加载器进行加载。每个模块都有一个类加载器\n6、线程安全线程安全：不可变，绝对安全、相对安全、线程兼容、线程对立。\n线程安全的实现方式：\n1、互斥同步\nsynchronized，重入锁都是\n2、非阻塞同步\nCAS\n7、垃圾回收1、如何判断对象死亡？1、传统有个引用计数法，在对象里面加一个引用计数器，有一个地方引用他就加1，但是小问题很多，比如很难解决互相引用的问题，所以主流的虚拟机都不用这个。\n2、可达性分析法。基本思路就是从GC Roots这个根对象作为初始节点集，然后根据引用关系向下搜索，走过的路叫引用链。没有引用链可以尝试回收。但是具体要不要回收还是要经历两次标记过程。第一次发现没有引用链就会被第一次标记，然后进行一次筛选，看看有没有必要执行finalize方法，如果没有覆盖finalize或者执行过了，那就直接记为死亡。如果执行finalize的过程中建立了与引用链上的任何一个对象建立了联系，那么在第二次标记时，会被移出“即将回收”集合\n\n在 堆内存 中 , 存在一个 根对象 GC Root , GC Root 对象一般是如下几种情况 :\n线程栈 中的 栈帧 中的 局部变量表 中的 引用对象 ;方法区 中的 静态引用对象 ;方法区 中的 常量引用对象 ;本地方法栈 中的 JNI 中的 引用的对象 ;\n\n当然除了堆区，方法区也会回收。\n方法区回收\n\n主要收集两个部分，废弃的常量和不再使用的类型。\n废弃的意思：该类的所有实例被回收，类加载器被回收，Class对象没有在任何地方被引用。\n\n2、垃圾回收算法首先垃圾收集算法基本遵循分代收集。分代收集建立于两个假说：1）弱分代假说：大多数对象都是朝生夕灭的。2）强分代假说：熬过越多次垃圾收集的对象越难消亡。3）跨代引用相对于同代引用占比极少。\n先理清一些小概念：\n\n部分收集：\n\n新生代收集：Minor GC&#x2F;Young GC : 只收集新生代\n\n老生代收集：Major GC&#x2F;Old GC : 只收集老生代：目前只有CMS收集器会有。\n\n混合收集：Mixed GC：整个新生代和部分老生代，目前只有G1有\n\n\n\n整堆收集：\n\nFull GC\n\n\n\n1、标记-清除很简单，就是标记可回收或者不可回收，然后清除。\n有两个缺陷：执行效率不稳定和会有很多内存碎片（导致分配较大的对象困难）\n2、标记-复制先把内存分成两半，然后每次使用其中一块，当一块用完了，就把这块内存中存活的复制到另外一块，清楚原来那一块。现在很多Java虚拟机都采用这种方法去回收新生代。\n把新生代分为一块较大的eden区和两个较小的survivor区，每次分配只用eden和survivor的一块。发生垃圾回收，将eden和Survivor仍然存活的复制到Survivor，然后清除eden和那一块Survivor。\n缺点就是如果对象存活率比较高那就不适合。\n3、标记-整理标记后，让存活的对象都往内存空间的一端移动。\n缺点：对于老年代这种存活率很高的也不适合。必须暂停用户应用程序\n4、细节枚举根节点\n后台有个GC守护线程，当需要GC的时候，GC线程需要在标记阶段枚举根节点，这是需要stop the world。就是为了防止工作中的线程修改了引用关系，导致结果准确性不能保证。为了加快检索，hotspot用了一种oopMap的数据类型。\n从GC往下遍历对象图\n这个是和堆的大小成正比的，怎么去减少暂停时间呢？三色标记法\n白色：对象没有被垃圾收集器访问过\n黑色：已经被访问过了，且这个对象的所有引用都已经扫描过。\n灰色：已经被访问过了，但是至少有一个引用没有被扫描。\n说一下JVM的分代回收\n3、垃圾回收器四种引用\n\n强引用：只有GCroot都不通过强引用引用该对象，才可以回收\n软引用：内存不足的时候回收\n弱引用：无论内存够不够，都会回收\n虚引用：它就和没有任何引用一样，在任何时候都可能被垃圾回收器回收。\n\n新生代\n1、Serial收集器\n串行，单线程，暂停其他线程。现在用的人比较少，但是优点是简单高效，对内存消耗最少。（整体STW）\n\n\n策略：标记-复制\n\n2、Parrallel New收集器\n本质是Serial的多线程并行版本。（整体STW）\n\n\n策略：标记-复制\n\n3、Parrallel Scanvenge\n吞吐量优先收集器\n\n\nParrallel很多特性和ParNew一样，但是Parallel Scanvenge 的关键点在于它关注的是吞吐量，吞吐量 &#x3D; 代码运行时间 &#x2F; （代码运行时间 + 垃圾收集时间）\n\n\n\n策略：标记-复制\n\n\n\n\n-XX:MaxGcPauserMillis：最大停顿时间\n-XX:GCTimeRatio：吞吐量的倒数，比如 如果是 19 那么允许的最大GC时间比例为 1&#x2F;（1 + 19） &#x3D;5 %\n\n\n\n-XX:+UseAdaptiveSizePolicy：不需要手动指定新生代大小，虚拟机会自动调整参数（GC自适应）\n\n\n老生代\n1、Serial OldSerial的老年代版本，\n收集策略：标记-整理\n2、Parallel Old 收集器策略：标记-整理\n\n3、CMS收集器它是一种获取最短回收停顿时间的收集器，就是希望stw的时间越短越好。\n策略：标记-清除\n因为回收过程和用户线程一起进行，所以有四个步骤。\n1）初始标记，只是标记一下GC Roots，（是广义上的gcroots，包含了年轻代所有对象。所以初始标记除了和狭义直接关联，还有年轻代到老年代的引用）（STW）\n2）并发标记，从GC Roots遍历对象的过程，这个是和用户线程一起进行的。（这里会出现很多引用的变化，比如年轻代到老年代，直接在老年代分配、漏标）\n3）重新标记，因为和用户线程一起进行，对于漏标问题的解决方案是（写后屏障+增量更新（就是把新增加的引用进行记录））。（STW）\n4）并发清除，清除对象，因为策略是标记-清除，不需要移动所以同样选择了并发的方式。\n缺点：\n1）对处理资源敏感，而且大于1&#x2F;4。CMS的默认收集线程数量是（处理器数量+3）&#x2F;4。\n2）无法处理浮动垃圾（在并发标记与并发清理阶段，有些对象从可达到不可达，但是没扫出来），有可能触发full gc\n3）用的是标记清除，会有内存碎片\n​\t\nCMSFullGCsBeforeCompaction：进行过几次不整理的full gc之后进行碎片整理的full gc\nCMSInitialtingOccupancyfraction 什么时候触发cms 默认92\n全部1、G1\n这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。\n为了加快搜索，G1是使用card table和RSet。\ncard table是CMS的解决方案，他可以避免对老年代进行整个扫描。他的做法是把region分成一个个512字节的card，然后用一个位0或者1去标记他的状态，如果有指向年轻代的对象，就置为1，否则0。所以你扫描的时候直接找card状态是1的区域就可以找到gcroot，不用对老年代扫描。\nRset是G1提出来的，每个region都有rset，它记录了哪些region引用了当前的region。他是一个键值对的形式，键就是其他region的起始地址，值就是card的索引号的集合，这样就把card table和rset配合起来了。\n维护这两个是依赖写屏障\n\n下面我们讲讲G1的垃圾收集过程，分为四个步骤\n然后他把region作为单次回收的最小单元，那每次回收都是region的整数倍。\n\n1、初始标记，只是标记一下和能直达的对象，这个和young gc密切相关，这个之前讲过（STW）\n2、并发标记，扫描对象图\n3、最终标记，处理并发标记中变化的哪些引用，这里对于漏标情况G1用的SATB（原始快照）（STW）\n4、筛选回收，后台维护一个优先级列表，跟踪每一个region的回收价值（空间大小和回收所需时间），在指定的停顿时间内回收回收价值最大的region。（STW）\n\n优点：\n\n可以指定最大停顿时间，\n不会产生内存碎片，\n按收益回收\n\n缺点：\n\n内存占用负载都比较高。\n浮动垃圾也很严重。\n\n算法：整体标记整理，局部标记复制。\n为什么年轻代比以前的快？\n他是筛选回收，是通过region个数进行minor gc 不用对整个eden区minorgc ，而且有个容忍时间。\nG1的SATB算法为什么比CMS的增量标记算法快（原因之一）：\n① CMS的重新标记需要重新扫描所有root，包括年轻代\n② G1：在开始标记的时候生成一个快照图，标记存活对象。所有被改变引用关系的对象都标记，至于它是不是真的存活。留给下一次gc扫描\n三色标记三色标记在并发会出现问题。\nCMS解决对象消失问题，用的是写屏障+增量更新（黑色对象一旦新插入了指向白色对象的引用之后，它就变回灰色对象了，后续对这个对象再进行扫描）\nG1用的是，写屏障+STAB。（灰色对象要删除指向白色对象的引用关系的时候，就把这个删除的引用记录下来，涂成灰色，等并发扫描结束，再重新扫一次）\nZGC用的是，读屏障+STAB\n2、ZGC也是使用分区的内存分布，但是它有三种不同的区。小型、中型、大型。\n然后传统垃圾回收器是在markwork里面有个字段去标记的，但是ZGC标记是使用一种叫着色指针的机制。现在的计算机大多数64位，但是64肯定用不满，所以就把高位那一块拿出3位来实现着色机制的标记。\n\n标记过程\n\n初始标记（STW，时间很短，小于1mm）\n\n初始标记就是去扫GC Roots直接关联的对象，标记就是把蓝色变成绿色（44位置0,42位置1）\n\n\n并发标记（并发）\n\n继续遍历对象图，把蓝色变成绿色（44位置0,42位置1）\n这里要用到三色标记\n\n\n再标记（STW，时间很短，小于1mm，小于初始标记）\n\n三色标记会存在漏标的问题，重新标记并发标记阶段发生变化的对象，使用读屏障+SATB算法解决\n\n\n\n转移过程\n\n并发转移准备（并发）\n统计处本次收集过程要清理哪些region\n\n\n初始转移（STW，和初始标记差不多）\n把GC Roots直接关联的进行转移，颜色从绿色回到蓝色，（44位置为1,42位置为0）\n\n\n并发转移\n这里要维护转发表，记录老对象和新对象的转向关系。\n如果在这个阶段访问，那就依赖读屏障，去完成新老指针的修正。\n其他指针的修正就依赖于并发标记这个阶段\n\n\n\nJVM调优参数jar包启动的时候java和 -jar直接可以去配置jvm的参数\nJVM调优的参数有哪些？\n内存管理：JVM-Xms（初始堆大小，默认1&#x2F;64物理内存），-Xmx（最大堆内存，默认1&#x2F;4），新生代晋级老年代的阈值（MaxTenuringThreshold，默认15），新生代大小（Xmn），永久代大小（PermSize），线程栈大小（Xss），垃圾回收器（UseParallelGC，UseConcMarkSweepGC），内存OOM导出快照（HeapDumpOnOutOfMemoryError），新生代和老年代的比例（newRadio），eden区和幸存者区的大小比例（SurvivorRatio），（）\nCMSFullGCsBeforeCompaction：进行过几次Full GC（标记清除）之后进行一次标记整理算法\nCMSInitialtingOccupancyfraction 什么时候触发cms 默认92 or 68\nCMSScavengeBeforeRemark：默认不开启 \nInitiatingHeapOccupancyPercent：老年代占用空间超过整堆比，45%\n\nFULL GC的原因\nSystem.gc方法调用\n老年代不够用（年龄晋升、大对象、CMSpromotion failed和concurrent mode failure，）\n元空间不够用\n\nMinor GC时，Survivor Space放不下，只能放老年代，，担保机制可能说可以，但是CMS他有内存碎片吗，实际上老年代也放不下，就触发promotion failed。解决方法：CMSFullGCsBeforeCompaction，或者调大幸存者区Survivorradio\nCMS GC的过程中同时业务线程将对象放入老年代，而此时老年代空间不足。调大老年代newradio\n\n\nFullGC怎么排查\n如果出现FullGC，请求和响应会变得特别慢，系统也变得很卡。\n先用top找到pid，然后用jstat（jstat -gcutil 72 2000）去看看是否发生了GC，如果FGC确实一直在慢慢变多，那就说明FULLGC了，然后就排查CPU消耗，用top -H看看线程情况，找到占比高的用jstack看看堆栈情况\n\nJVM调优工具\n命令：\njps + jstack 查看进程内线程的堆栈信息\njmap -dump 生成一个内存快照的信息\njstat ：JVM性能监测工具。 显示伊甸区 幸存者区、老年区的比例，还有gc压力\n可视化工具：\njconsole\nvisualVM，eclipse memory analyzer\n\nJava内存泄漏排查\n内存泄漏会逐渐累加导致内存溢出，内存溢出会发生在：虚拟机栈（stackoverflow）、方法区（OOM：metaspace）、堆空间（OOM：heap space）\n1、可以获得内存的快照dump（jmap -dump或者启动的时候就加上参数-XX：heapdumpOnOutOfMemery）\n2、visualVM去加载，analyzer memory analyzer\n\nCPU标高的排查top或者pidstat命令找到cpu明显过高的进程id，然后用进程id去找到线程id（ps H -eo pid,tid,%cpu | grep进程id），最后jstack 一下定位到该线程就可以\n标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、\n\n\n","dateCreated":"2023-11-04T00:00:00+08:00","dateModified":"2024-02-05T11:52:21+08:00","datePublished":"2023-11-04T00:00:00+08:00","description":"","headline":"JVM","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/11/04/JVM/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/11/04/JVM/","keywords":"JVM"}</script>
     <meta name="description" content="1、JVM内存结构主要有五大部分：程序计数器（私有）、虚拟机栈（私有）、本地方法栈（私有）、堆（公有）、方法区（公有），不过在8之后，永久代就已经被元空间代替了，而元空间在本地内存。  1、程序计数器  存储当前指令执行的地址线程恢复都靠这个。  2、虚拟机栈  每个方法调用的时候都会生成一个栈帧，栈帧里面存储了局部变量表，操作数栈、动态连接、方法出口等。 局部变量表里面放了方法参数、方法内部定义">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="JVM">
@@ -25,7 +25,7 @@
 <meta property="og:image" content="http://example.com/images/JVM/image-20231117194042634.png">
 <meta property="og:image" content="http://example.com/images/JVM/image-20231018155448410.png">
 <meta property="article:published_time" content="2023-11-03T16:00:00.000Z">
-<meta property="article:modified_time" content="2024-02-01T08:26:06.590Z">
+<meta property="article:modified_time" content="2024-02-05T03:52:21.677Z">
 <meta property="article:author" content="CSEN">
 <meta property="article:tag" content="JVM">
 <meta name="twitter:card" content="summary">
@@ -81,11 +81,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -104,9 +104,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -246,7 +246,7 @@
         <div class="post-meta">
     <time datetime="2023-11-04T00:00:00+08:00">
 	
-		    04 Nov 2023
+		    Nov 04, 2023
     	
     </time>
     
@@ -318,7 +318,13 @@
 <p><strong>对象的访问定位</strong></p>
 <p>1、句柄方法。reference放的是存储的是句柄地址，句柄包含对象实例数据和类型数据，各自的具体位置。句柄最大的优势就是即使在垃圾收集的时候对象被移动了，只用修改句柄中的指针就好，不用修改reference。</p>
 <p>2、直接指针。存储的就是对象地址。他的优势是少一次间接访问的消耗。</p>
-<h1 id="2、内存溢出异常"><a href="#2、内存溢出异常" class="headerlink" title="2、内存溢出异常"></a>2、内存溢出异常</h1><h1 id="3、字节码文件"><a href="#3、字节码文件" class="headerlink" title="3、字节码文件"></a>3、字节码文件</h1><ul>
+<h1 id="2、内存溢出异常"><a href="#2、内存溢出异常" class="headerlink" title="2、内存溢出异常"></a>2、内存溢出异常</h1><blockquote>
+<p><font color='red'><u><em><strong>除了程序计数器，其他区域都有OOM的可能。</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>堆是最常见的</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>虚拟机栈和本地方法栈（-Xss），在HotSpot虚拟机里面，无论你是栈太深还是说栈容量太小了，都会报stackoverflow错误</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>方法区，运行时常量池溢出</strong></em></u></font></p>
+</blockquote>
+<h1 id="3、字节码文件"><a href="#3、字节码文件" class="headerlink" title="3、字节码文件"></a>3、字节码文件</h1><ul>
 <li><p>魔数：唯一的作用就是确定这个文件是否为一个虚拟机可以接受的Class文件</p>
 </li>
 <li><p>次版本号</p>
@@ -357,7 +363,7 @@
 <h2 id="3、准备阶段"><a href="#3、准备阶段" class="headerlink" title="3、准备阶段"></a>3、准备阶段</h2><p>为静态变量分配内存，并设置初始值的阶段。如果没有final修饰，那就是默认值，比如0这类，真正赋你定义的值那就在初始化阶段。如果用final修饰了，那就是你自己定义的了。</p>
 <h2 id="4、解析"><a href="#4、解析" class="headerlink" title="4、解析"></a>4、解析</h2><p>把常量池中的符号引用转化为直接引用的阶段。有类和接口解析，字段解析，方法解析等。实际上就是先把类加载到方法区里面，然后返回相应直接引用。</p>
 <p>我们拿字段解析举个例子，先解析这个字段表所在的类或接口，假设成功解析为C。我们就在C的字段表里面找有没有匹配的简单名称和字段描述符，如果有就直接返回。没有就找C的接口和父接口，看看有没有匹配的简单名称和字段描述符。如果又返回，没有就按继承关系找父类有没有匹配的，否则就失败。</p>
-<p>但是方法解析有一点不一样，他有一部分是不能解析的，如果 Human h &#x3D; new Man。这种可能方法调用不能确定，这里就解析不了。能解析的叫非虚方法，不能解析的叫虚方法。虚方法需要使用另外一种调用形式就是分派，分派分为静态动态，虚方法静态分派实现重载（静态类型），动态分派实现重写（invokevirtual，先找到这个动态类型，如果有这个方法那就直接用，如果没有，我们再去找他的父类）。</p>
+<p>但是方法解析有一点不一样，他有一部分在类加载的时候是不能解析的，如果 Human h &#x3D; new Man。这种可能方法调用不能确定，这里就解析不了。能解析的叫非虚方法，不能解析的叫虚方法。虚方法需要使用另外一种调用形式就是分派，分派分为静态动态，虚方法静态分派实现重载（静态类型），动态分派实现重写（invokevirtual，先找到这个动态类型，如果有这个方法那就直接用，如果没有，我们再去找他的父类）。</p>
 <h2 id="5、初始化"><a href="#5、初始化" class="headerlink" title="5、初始化"></a>5、初始化</h2><p>初始化就是执行类构造器的过程，而这个类构造器做的事情就是对类中所有类变量的赋值操作和所有<font color='green'><u><em><strong>静态</strong></em></u></font>语句块的操作。</p>
 <p>顺序就是语句在源文件的顺序</p>
 <h1 id="5、类加载器"><a href="#5、类加载器" class="headerlink" title="5、类加载器"></a>5、类加载器</h1><p>类加载器的作用就是实现类加载过程中的加载这一步，通过双亲委派机制去维护一个三层的组织架构。</p>
@@ -501,7 +507,7 @@
 <p>3）<font color='blue'><u><em><strong>用的是标记清除，会有内存碎片</strong></em></u></font></p>
 <p>​	</p>
 <p>CMSFullGCsBeforeCompaction：进行过几次不整理的full gc之后进行碎片整理的full gc</p>
-<p>CMSInitialtingOccupancyfraction 什么时候触发cms</p>
+<p>CMSInitialtingOccupancyfraction 什么时候触发cms 默认92</p>
 <h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><blockquote>
 <p><font color='blue'><u><em><strong>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>为了加快搜索，G1是使用card table和RSet。</strong></em></u></font></p>
@@ -580,7 +586,19 @@
 <h2 id="JVM调优参数"><a href="#JVM调优参数" class="headerlink" title="JVM调优参数"></a>JVM调优参数</h2><p>jar包启动的时候java和 -jar直接可以去配置jvm的参数</p>
 <h2 id="JVM调优的参数有哪些？"><a href="#JVM调优的参数有哪些？" class="headerlink" title="JVM调优的参数有哪些？"></a>JVM调优的参数有哪些？</h2><blockquote>
 <p><font color='green'><u><em><strong>内存管理：JVM-Xms（初始堆大小，默认1&#x2F;64物理内存），-Xmx（最大堆内存，默认1&#x2F;4），新生代晋级老年代的阈值（MaxTenuringThreshold，默认15），新生代大小（Xmn），永久代大小（PermSize），线程栈大小（Xss），垃圾回收器（UseParallelGC，UseConcMarkSweepGC），内存OOM导出快照（HeapDumpOnOutOfMemoryError），新生代和老年代的比例（newRadio），eden区和幸存者区的大小比例（SurvivorRatio），（）</strong></em></u></font></p>
-<p><strong>CMSFullGCsBeforeCompaction</strong>：执行多少次不压缩的Fullgc，跟着来一次压缩的FullGC</p>
+<p>CMSFullGCsBeforeCompaction：进行过几<strong>次Full GC（标记清除）之后进行一次标记整理算法</strong></p>
+<p>CMSInitialtingOccupancyfraction 什么时候触发cms 默认92 or 68</p>
+<p>CMSScavengeBeforeRemark：默认不开启 </p>
+<p>InitiatingHeapOccupancyPercent：老年代占用空间超过整堆比，45%</p>
+</blockquote>
+<h2 id="FULL-GC的原因"><a href="#FULL-GC的原因" class="headerlink" title="FULL GC的原因"></a>FULL GC的原因</h2><blockquote>
+<p><font color='green'><u><em><strong>System.gc方法调用</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>老年代不够用（年龄晋升、大对象、CMSpromotion failed和concurrent mode failure，）</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>元空间不够用</strong></em></u></font></p>
+<blockquote>
+<p><font color='green'><u><em><strong>Minor GC时，Survivor Space放不下，只能放老年代，，担保机制可能说可以，但是CMS他有内存碎片吗，实际上老年代也放不下，就触发promotion failed。解决方法：CMSFullGCsBeforeCompaction，或者调大幸存者区Survivorradio</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>CMS GC的过程中同时业务线程将对象放入老年代，而此时老年代空间不足。调大老年代newradio</strong></em></u></font></p>
+</blockquote>
 </blockquote>
 <h2 id="FullGC怎么排查"><a href="#FullGC怎么排查" class="headerlink" title="FullGC怎么排查"></a>FullGC怎么排查</h2><blockquote>
 <p><font color='red'><u><em><strong>如果出现FullGC，请求和响应会变得特别慢，系统也变得很卡。</strong></em></u></font></p>
@@ -593,20 +611,16 @@
 <p>jstat ：JVM性能监测工具。 显示伊甸区 幸存者区、老年区的比例，还有gc压力</p>
 <p><font color='red'><u><em><strong>可视化工具：</strong></em></u></font></p>
 <p>jconsole</p>
-<p>visualVM</p>
+<p>visualVM，eclipse memory analyzer</p>
 </blockquote>
 <h2 id="Java内存泄漏排查"><a href="#Java内存泄漏排查" class="headerlink" title="Java内存泄漏排查"></a>Java内存泄漏排查</h2><blockquote>
 <p>内存泄漏会逐渐累加导致内存溢出，内存溢出会发生在：虚拟机栈（stackoverflow）、方法区（OOM：metaspace）、堆空间（OOM：heap space）</p>
 <p>1、可以获得内存的快照dump（jmap -dump或者启动的时候就加上参数-XX：heapdumpOnOutOfMemery）</p>
-<p>2、visualVM去加载</p>
+<p>2、visualVM去加载，analyzer memory analyzer</p>
 </blockquote>
 <h2 id="CPU标高的排查"><a href="#CPU标高的排查" class="headerlink" title="CPU标高的排查"></a>CPU标高的排查</h2><p><font color='blue'><u><em><strong>top或者pidstat命令找到cpu明显过高的进程id，然后用进程id去找到线程id（ps H -eo pid,tid,%cpu | grep进程id），最后jstack 一下定位到该线程就可以</strong></em></u></font></p>
 <p>标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、</p>
-<h2 id="FULL-GC的原因"><a href="#FULL-GC的原因" class="headerlink" title="FULL GC的原因"></a>FULL GC的原因</h2><blockquote>
-<p><font color='green'><u><em><strong>System.gc方法调用</strong></em></u></font></p>
-<p><font color='green'><u><em><strong>老年代不够用或者创建了大对象</strong></em></u></font></p>
-<p><font color='green'><u><em><strong>元空间不够用</strong></em></u></font></p>
-<p><strong>分配担保失败</strong></p>
+<blockquote>
 </blockquote>
 
             
@@ -617,7 +631,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">GETAGGT IN</span><br/>
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/JVM/" rel="tag">JVM</a>
 
@@ -634,11 +648,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/11/08/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/"
                     data-tooltip="mysql技术内幕"
-                    aria-label="FRÜHER: mysql技术内幕"
+                    aria-label="PREVIOUS: mysql技术内幕"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
                     </a>
             </li>
             <li class="post-action">
@@ -648,10 +662,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
                     data-tooltip="设计模式"
-                    aria-label="NÄCHSTER: 设计模式"
+                    aria-label="NEXT: 设计模式"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -662,7 +676,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
+                aria-label="Share this post"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -674,8 +688,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/11/04/JVM/"
-                    title="Teilen auf Facebook"
-                    aria-label="Teilen auf Facebook"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -687,8 +701,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/11/04/JVM/"
-                    title="Teilen auf Twitter"
-                    aria-label="Teilen auf Twitter"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -700,8 +714,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/11/04/JVM/"
-                    title="Teilen auf Google Plus"
-                    aria-label="Teilen auf Google Plus"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -712,7 +726,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -749,11 +763,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/11/08/mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/"
                     data-tooltip="mysql技术内幕"
-                    aria-label="FRÜHER: mysql技术内幕"
+                    aria-label="PREVIOUS: mysql技术内幕"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
                     </a>
             </li>
             <li class="post-action">
@@ -763,10 +777,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
                     data-tooltip="设计模式"
-                    aria-label="NÄCHSTER: 设计模式"
+                    aria-label="NEXT: 设计模式"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -777,7 +791,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
+                aria-label="Share this post"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -789,8 +803,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/11/04/JVM/"
-                    title="Teilen auf Facebook"
-                    aria-label="Teilen auf Facebook"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -802,8 +816,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/11/04/JVM/"
-                    title="Teilen auf Twitter"
-                    aria-label="Teilen auf Twitter"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -815,8 +829,8 @@
                 <a
                     class="post-action-btn btn btn--default"
                     target="new" href="https://plus.google.com/share?url=http://example.com/2023/11/04/JVM/"
-                    title="Teilen auf Google Plus"
-                    aria-label="Teilen auf Google Plus"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -827,7 +841,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -849,9 +863,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/11/04/JVM/"
-                        aria-label="Teilen auf Facebook"
+                        aria-label="Share on Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
                     </a>
                 </li>
             
@@ -862,9 +876,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://twitter.com/intent/tweet?text=http://example.com/2023/11/04/JVM/"
-                        aria-label="Teilen auf Twitter"
+                        aria-label="Share on Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
                     </a>
                 </li>
             
@@ -875,9 +889,9 @@
                         class="share-option-btn"
                         target="new"
                         href="https://plus.google.com/share?url=http://example.com/2023/11/04/JVM/"
-                        aria-label="Teilen auf Google Plus"
+                        aria-label="Share on Google+"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
                     </a>
                 </li>
             
@@ -900,7 +914,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

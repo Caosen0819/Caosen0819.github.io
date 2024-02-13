@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archiv: 2023/8 - 森</title>
+    <title>Archives: 2023/8 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    07 Aug 2023
+		    Aug 07, 2023
     	
     </time>
     
@@ -258,7 +258,77 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h2 id="讲讲Java的代理"><a href="#讲讲Java的代理" class="headerlink" title="讲讲Java的代理"></a>讲讲Java的代理</h2><p>代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。</p>
+                    <p><strong>反射</strong></p>
+<blockquote>
+<p><font color='red'><u>*** Java的反射机制是在运行状态中，对于任意一个类，都能够获得这个类的所有属性和方法。***</u></font></p>
+<p> 获得Class对象的三种方式：</p>
+<p>(1)使用**Class.*forName***方法(“类的全路径名”)；</p>
+<p>(2)使用需要反射的类名调用<em><strong>class</strong></em>方法；</p>
+<p>(3)使用需要反射的类的对象调用<em><strong>getClass</strong></em>方法</p>
+<p>缺点：</p>
+<p>耗时</p>
+</blockquote>
+<p><strong>Exception</strong></p>
+<blockquote>
+<p>检查异常：编译的时候就出问题</p>
+<p>非检查：运行的时候出问题</p>
+</blockquote>
+<blockquote>
+<p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20240214002243390.png" alt="image-20240214002243390"></p>
+</blockquote>
+<p><strong>BIO NIO AIO</strong></p>
+<blockquote>
+<p><font color='green'><strong>BIO :同步并阻塞,一个线程处理一个请求，一个请求过来我就为他创建一个线程。</strong></font></p>
+<p><font color='green'><strong>NIO :同步非阻塞,一个线程处理多个请求。Channel(通道，构件连接) ，Buffer( 缓冲区，存取数据), Selector( 选择器，用来监听多个channel的，select，poll链表，epoll红黑树)</strong></font></p>
+<p><font color='green'><strong>AIO(NIO.2) :异步非阻塞，服务器实现模式为一 个有效请求一个线程，关键就是异步，不回去等待，你空闲的时候做自己的事情就好，等socket就绪了，你再来读就可以。</strong></font></p>
+</blockquote>
+<p><strong>String StringBuffer 和 StringBuilder 的区别是什么？String 为什么是不可变的？</strong></p>
+<blockquote>
+<p><font color='green'><strong>String是字符串常量，而StringBuffer和StringBuilder是字符串变量。由String创建的字符内容是不可改变的，而由StringBuffer和StringBuidler创建的字符内容是可以改变的。</strong></font></p>
+<p><font color='green'><strong>StringBuffer是线程安全的，而StringBuilder是非线程安全的</strong></font></p>
+<p><font color='green'><strong>String类中定义的char数组是final的</strong></font></p>
+</blockquote>
+<p><strong>equals与&#x3D;&#x3D;的区别</strong></p>
+<blockquote>
+<p>equals是object的方法，在object类里面其实用的还是&#x3D;&#x3D;，如果对象类重写了equals，那就走重写的规则。</p>
+<p>&#x3D;&#x3D; 引用类型比地址。基本类型比较值</p>
+</blockquote>
+<p><strong>深拷贝和浅拷贝</strong></p>
+<blockquote>
+<p>浅拷贝：基本类型拷贝成员变量，引用类型拷贝引用地址</p>
+<p>深拷贝：基本类型拷贝成员变量，引用类型是创建新的对象保存成员变量</p>
+</blockquote>
+<p><strong>字符型常量和字符串常量的区别</strong></p>
+<blockquote>
+<p>1.形式上: 单引号，双引号<br>2.含义上: 字符常量相当于一个整形值( ASCII 值),可以参加表达式运算；字符串常量代表一个地址值(该字符串在内存中存放位置，相当于对象)</p>
+<p>3.占内存大小：字符常量只占2个字节；字符串常量占若干个字节(至少一个字符结束标志) (注意: char 在Java中占两个字节)</p>
+</blockquote>
+<p><strong>自动装箱和自动拆箱</strong></p>
+<blockquote>
+<p>装箱过程是通过调用包装器的valueOf方法实现的，而拆箱过程是通过调用包装器的 xxxValue方法实现的。（xxx代表对应的基本数据类型）。</p>
+</blockquote>
+<p><strong>请说出作用域public，private，protected，以及不写时的区别。</strong></p>
+<blockquote>
+<p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20240213231737281.png" alt="image-20240213231737281"></p>
+</blockquote>
+<p><strong>创建几个对象</strong>？</p>
+<blockquote>
+<p>1、String a&#x3D;”123”;</p>
+<p><em>创建了1个对象</em></p>
+<p>jvm在编译阶段会判断常量池中是否有 “123” 这个常量对象如果有，a直接指向这个常量的引用，如果没有会在常量池里创建这个常量对象。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="number">2</span>、<span class="title class_">String</span> a=<span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;123&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p><em>创建了2个对象</em></p>
+<p>同情况1，jvm编译阶段判断常量池中 “123”存在与否，进而来判断是否创建常量对象，然后运行阶段通过new关键字在java heap创建String对象。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="number">3</span>、<span class="title class_">String</span> a=<span class="string">&quot;123&quot;</span>+<span class="string">&quot;456&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p><em>创建了1个对象</em></p>
+<p>jvm编译阶段过编译器优化后会把字符串常量直接合并成”123456”，所有创建对象时最多会在常量池中创建1个对象。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">&gt;<span class="number">4</span>、<span class="title class_">String</span> a=<span class="string">&quot;123&quot;</span>+<span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;456&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p><em>创建了4个对象</em></p>
+</blockquote>
+<h2 id="讲讲Java的代理"><a href="#讲讲Java的代理" class="headerlink" title="讲讲Java的代理"></a>讲讲Java的代理</h2><p>代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。</p>
 <p>动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy，</p>
 <p>动态代理有两种方式一种是jdk方法，一种是cglib方法</p>
 <p><strong>我们先来讲jdk代理：</strong></p>
@@ -437,13 +507,11 @@
 <p><font color='red'><u><em><strong>aop失效的原因和解决方法</strong></em></u></font></p>
 <blockquote>
 <p><font color='green'><u><em><strong>cglib， 在bean中用this来调用被AOP注解标注的方法，this下注解是不生效的。假设A和B，B被aop增强了，此时A调用的是当前类中的方法，而不是其子类加强后的方法，所以会失效</strong></em></u></font></p>
+</blockquote>
+<blockquote>
 <p>解决方法：</p>
 <p>1、直接把this换成<strong>Autowared</strong>修饰的bean</p>
 <p>2、<strong>Spring上下文获取增强后的实例引用</strong></p>
-</blockquote>
-<blockquote>
-</blockquote>
-<blockquote>
 </blockquote>
 <p><font color='red'><u><em><strong>IOC</strong></em></u></font></p>
 <blockquote>
@@ -464,26 +532,12 @@
 <p><font color='red'><u><em><strong>Bean的生命周期？</strong></em></u></font></p>
 <blockquote>
 <p>1 通过<strong>XML</strong>、注解和配置类等方式加载<strong>Spring Bean</strong></p>
-</blockquote>
-<blockquote>
 <p>2、用<strong>BeanDefinitionReader</strong>把Bean解析成BeanDefinition结构，放到beanDefinitionMap，扫描这个</p>
-</blockquote>
-<blockquote>
 <p>4、从Bean定义里面拿BeanClass的构造函数，通过反射创建Bean，这里构造函数的选用，一般先选有autowire修饰和无参构造函数。</p>
-</blockquote>
-<blockquote>
 <p>5、依赖注入</p>
-</blockquote>
-<blockquote>
-<p>6、处理三个Aware接口，	</p>
-</blockquote>
-<blockquote>
+<p>6、处理三个Aware接口，</p>
 <p>7、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em></p>
-</blockquote>
-<blockquote>
 <p>8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）</p>
-</blockquote>
-<blockquote>
 <p>9、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em> aop核心底层动态代理</p>
 </blockquote>
 <p><font color='green'><u><em><strong>Bean的循环依赖？</strong></em></u></font></p>
@@ -497,20 +551,29 @@
 <p><strong>所以如果没有AOP的话确实可以两级缓存就可以解决循环依赖的问题，如果加上AOP，两级缓存是无法解决的。如果对象被AOP代理了，我每次从三级缓存中拿到singleFactory对象，执行getObject()方法会产生新的代理对象，所以还要借助另外一个缓存来保存产生的代理对象</strong></p>
 </blockquote>
 <p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231222001434059.png" alt="image-20231222001434059"></p>
+<p><font color='red'><u><em><strong>依赖注入有哪些方法</strong></em></u></font></p>
+<blockquote>
+<p>1、构造器</p>
+<p>2、setter</p>
+<p>3、字段注解</p>
+</blockquote>
+<p><font color='red'><u><em><strong>创建Bean的方式</strong></em></u></font></p>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42764468/article/details/103286994#1bean_8">1.使用默认的构造函数创建bean对象</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42764468/article/details/103286994#2bean_25">2.通过静态工厂方法创建bean</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42764468/article/details/103286994#3bean_90">3.通过实例工厂方法创建bean</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42764468/article/details/103286994#4FactoryBean_141">4.实现FactoryBean接口</a></li>
+</ul>
+</blockquote>
 <p><font color='red'><u><em><strong>Springboot启动流程</strong></em></u></font></p>
 <blockquote>
-<p>主要分为4步：服务构建、环境准备、容器创建、填充容器。</p>
+<p><font color='red'><u><em><strong>主要分为4步：服务构建、环境准备、容器创建、填充容器。</strong></em></u></font></p>
 </blockquote>
 <blockquote>
 <p>1、服务构建就是构造springapplication，包括确认web服务器、加载spring.factories下的所有初始化类监听器，找到主导方法。</p>
-</blockquote>
-<blockquote>
 <p>2、然后调用run方法进入环境准备，通过配置类、和配置文件构造出一个environment，用于后面的容器创建。</p>
-</blockquote>
-<blockquote>
 <p>3、容器创建的话，其实就是创建一个BeanFactory，然后加载bean信息，通过beanDefinitionReader把bean信息读成BeanDefinition并且把他放到beanDefinitionMap里面</p>
-</blockquote>
-<blockquote>
 <p>4、填充容器。就是我们的refresh（）方法，一个12步，但是可以分成四块，预处理，后置处理器，国际化分派器，实例化剩下的所有bean。</p>
 </blockquote>
 <p><font color='red'><u><em><strong>容器初始化流程</strong></em></u></font></p>
@@ -531,41 +594,17 @@
 </blockquote>
 <blockquote>
 <blockquote>
-<p>其实我觉得Spring的IOC容器，主要做三步：</p>
+<p><font color='red'><u><em><strong>其实我觉得Spring的IOC容器，主要做三步：</strong></em></u></font></p>
 </blockquote>
 </blockquote>
 <blockquote>
 <blockquote>
 <p>1、初始化Spring容器，创建一个DefaultListableBeanFactory</p>
-</blockquote>
-</blockquote>
-<blockquote>
-<blockquote>
 <p>2、将配置类的BeanDefinition注册到容器。</p>
-</blockquote>
-</blockquote>
-<blockquote>
-<blockquote>
 <p>3、Refresh，Refresh又分12步。这12步，可以分成几块。</p>
-</blockquote>
-</blockquote>
-<blockquote>
-<blockquote>
 <p>第一块：预处理，包括刷新的预处理，然后获取我们刚刚创建的BeanFactory再做预处理。</p>
-</blockquote>
-</blockquote>
-<blockquote>
-<blockquote>
 <p>第二块：后置处理器，执行BeanFactory的后置处理器，然后在容器里面注册一个Bean的后置处理器。</p>
-</blockquote>
-</blockquote>
-<blockquote>
-<blockquote>
 <p>第三块：就是一些国际化，事件分派器的东西。</p>
-</blockquote>
-</blockquote>
-<blockquote>
-<blockquote>
 <p>第四块：非常重要了，finishBeanFactoryInitailization，<strong>初始化所有剩下的单实例bean</strong>，bean的生命周期也从这里开始。</p>
 </blockquote>
 </blockquote>
@@ -592,6 +631,8 @@
 </blockquote>
 <blockquote>
 <p>Autowire默认按类型，如果想要实现按名字注入，主要配置@Primary 或者@Qualifier，</p>
+</blockquote>
+<blockquote>
 <p>Resource默认按名字然后类型。</p>
 </blockquote>
 <p><strong>Bean是线程安全的吗？</strong></p>
@@ -606,7 +647,7 @@
 </blockquote>
 <blockquote>
 <ul>
-<li>抛出检查异常，因为spring默认只回滚非检查异常。解决方法就是transcantional加rollbackfor &#x3D; exception.class</li>
+<li>没有抛出检查异常，因为spring默认只回滚非检查异常。解决方法就是transcantional加rollbackfor &#x3D; exception.class</li>
 <li>没有用public修饰，</li>
 </ul>
 </blockquote>
@@ -643,6 +684,28 @@
 <p>可能会导致同一把锁被多人使用</p>
 <p>redlock</p>
 </blockquote>
+<h3 id="操作系统"><a href="#操作系统" class="headerlink" title="操作系统"></a>操作系统</h3><p><strong>1、进程和线程的区别</strong></p>
+<blockquote>
+<p>1、进程是资源分配和调度的单位，把磁盘的代码加载到内存，分配数据空间。</p>
+<p>2、线程是进程的一个实体，独立运行和独立调度的基本单位，cpu上面真正运行的其实是线程</p>
+<p>3、一个进程可以拥有多个线程。</p>
+<p>4、线程的切换消耗要比进程小。共享代码区、数据区，堆区</p>
+</blockquote>
+<p><strong>2、死锁</strong></p>
+<blockquote>
+<p>多个进程，互相请求对方已经持有的资源。</p>
+<p><font color='green'><strong>互斥条件</strong></font></p>
+<p><font color='green'><strong>请求和保持</strong></font></p>
+<p><font color='green'><strong>不可被剥夺</strong></font></p>
+<p><font color='green'><strong>循环等待</strong></font></p>
+<p>死锁的检测：</p>
+<ul>
+<li>可以依赖JPS和JSTACK。用jps拿到java进程的id，然后jstack分析堆栈信息。</li>
+<li>也可以用可视化工具virtualVM</li>
+</ul>
+<p>预防死锁：破坏这四个条件</p>
+<p>解除死锁：资源剥夺、撤销进程、进程回退。</p>
+</blockquote>
 
                     
                         
@@ -656,7 +719,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -670,7 +733,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -700,7 +763,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Öffne den Link: /#about"
+                aria-label="Open the link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
+                    aria-label="Read more about the author"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-04T00:00:00+08:00">
 	
-		    04 Nov 2023
+		    Nov 04, 2023
     	
     </time>
     
@@ -312,7 +312,13 @@
 <p><strong>对象的访问定位</strong></p>
 <p>1、句柄方法。reference放的是存储的是句柄地址，句柄包含对象实例数据和类型数据，各自的具体位置。句柄最大的优势就是即使在垃圾收集的时候对象被移动了，只用修改句柄中的指针就好，不用修改reference。</p>
 <p>2、直接指针。存储的就是对象地址。他的优势是少一次间接访问的消耗。</p>
-<h1 id="2、内存溢出异常"><a href="#2、内存溢出异常" class="headerlink" title="2、内存溢出异常"></a>2、内存溢出异常</h1><h1 id="3、字节码文件"><a href="#3、字节码文件" class="headerlink" title="3、字节码文件"></a>3、字节码文件</h1><ul>
+<h1 id="2、内存溢出异常"><a href="#2、内存溢出异常" class="headerlink" title="2、内存溢出异常"></a>2、内存溢出异常</h1><blockquote>
+<p><font color='red'><u><em><strong>除了程序计数器，其他区域都有OOM的可能。</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>堆是最常见的</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>虚拟机栈和本地方法栈（-Xss），在HotSpot虚拟机里面，无论你是栈太深还是说栈容量太小了，都会报stackoverflow错误</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>方法区，运行时常量池溢出</strong></em></u></font></p>
+</blockquote>
+<h1 id="3、字节码文件"><a href="#3、字节码文件" class="headerlink" title="3、字节码文件"></a>3、字节码文件</h1><ul>
 <li><p>魔数：唯一的作用就是确定这个文件是否为一个虚拟机可以接受的Class文件</p>
 </li>
 <li><p>次版本号</p>
@@ -351,7 +357,7 @@
 <h2 id="3、准备阶段"><a href="#3、准备阶段" class="headerlink" title="3、准备阶段"></a>3、准备阶段</h2><p>为静态变量分配内存，并设置初始值的阶段。如果没有final修饰，那就是默认值，比如0这类，真正赋你定义的值那就在初始化阶段。如果用final修饰了，那就是你自己定义的了。</p>
 <h2 id="4、解析"><a href="#4、解析" class="headerlink" title="4、解析"></a>4、解析</h2><p>把常量池中的符号引用转化为直接引用的阶段。有类和接口解析，字段解析，方法解析等。实际上就是先把类加载到方法区里面，然后返回相应直接引用。</p>
 <p>我们拿字段解析举个例子，先解析这个字段表所在的类或接口，假设成功解析为C。我们就在C的字段表里面找有没有匹配的简单名称和字段描述符，如果有就直接返回。没有就找C的接口和父接口，看看有没有匹配的简单名称和字段描述符。如果又返回，没有就按继承关系找父类有没有匹配的，否则就失败。</p>
-<p>但是方法解析有一点不一样，他有一部分是不能解析的，如果 Human h &#x3D; new Man。这种可能方法调用不能确定，这里就解析不了。能解析的叫非虚方法，不能解析的叫虚方法。虚方法需要使用另外一种调用形式就是分派，分派分为静态动态，虚方法静态分派实现重载（静态类型），动态分派实现重写（invokevirtual，先找到这个动态类型，如果有这个方法那就直接用，如果没有，我们再去找他的父类）。</p>
+<p>但是方法解析有一点不一样，他有一部分在类加载的时候是不能解析的，如果 Human h &#x3D; new Man。这种可能方法调用不能确定，这里就解析不了。能解析的叫非虚方法，不能解析的叫虚方法。虚方法需要使用另外一种调用形式就是分派，分派分为静态动态，虚方法静态分派实现重载（静态类型），动态分派实现重写（invokevirtual，先找到这个动态类型，如果有这个方法那就直接用，如果没有，我们再去找他的父类）。</p>
 <h2 id="5、初始化"><a href="#5、初始化" class="headerlink" title="5、初始化"></a>5、初始化</h2><p>初始化就是执行类构造器的过程，而这个类构造器做的事情就是对类中所有类变量的赋值操作和所有<font color='green'><u><em><strong>静态</strong></em></u></font>语句块的操作。</p>
 <p>顺序就是语句在源文件的顺序</p>
 <h1 id="5、类加载器"><a href="#5、类加载器" class="headerlink" title="5、类加载器"></a>5、类加载器</h1><p>类加载器的作用就是实现类加载过程中的加载这一步，通过双亲委派机制去维护一个三层的组织架构。</p>
@@ -495,7 +501,7 @@
 <p>3）<font color='blue'><u><em><strong>用的是标记清除，会有内存碎片</strong></em></u></font></p>
 <p>​	</p>
 <p>CMSFullGCsBeforeCompaction：进行过几次不整理的full gc之后进行碎片整理的full gc</p>
-<p>CMSInitialtingOccupancyfraction 什么时候触发cms</p>
+<p>CMSInitialtingOccupancyfraction 什么时候触发cms 默认92</p>
 <h3 id="全部"><a href="#全部" class="headerlink" title="全部"></a>全部</h3><h4 id="1、G1"><a href="#1、G1" class="headerlink" title="1、G1"></a>1、G1</h4><blockquote>
 <p><font color='blue'><u><em><strong>这个收集器是基于Region的内存布局的，他把Java堆划分为多个大小相等的region（2048），每一个region都可以是eden，suvivor，老年代。每一个region大小最小1m，最大32m，中间是2，4，8，16 接近哪个就用哪个作为大小。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>为了加快搜索，G1是使用card table和RSet。</strong></em></u></font></p>
@@ -574,7 +580,19 @@
 <h2 id="JVM调优参数"><a href="#JVM调优参数" class="headerlink" title="JVM调优参数"></a>JVM调优参数</h2><p>jar包启动的时候java和 -jar直接可以去配置jvm的参数</p>
 <h2 id="JVM调优的参数有哪些？"><a href="#JVM调优的参数有哪些？" class="headerlink" title="JVM调优的参数有哪些？"></a>JVM调优的参数有哪些？</h2><blockquote>
 <p><font color='green'><u><em><strong>内存管理：JVM-Xms（初始堆大小，默认1&#x2F;64物理内存），-Xmx（最大堆内存，默认1&#x2F;4），新生代晋级老年代的阈值（MaxTenuringThreshold，默认15），新生代大小（Xmn），永久代大小（PermSize），线程栈大小（Xss），垃圾回收器（UseParallelGC，UseConcMarkSweepGC），内存OOM导出快照（HeapDumpOnOutOfMemoryError），新生代和老年代的比例（newRadio），eden区和幸存者区的大小比例（SurvivorRatio），（）</strong></em></u></font></p>
-<p><strong>CMSFullGCsBeforeCompaction</strong>：执行多少次不压缩的Fullgc，跟着来一次压缩的FullGC</p>
+<p>CMSFullGCsBeforeCompaction：进行过几<strong>次Full GC（标记清除）之后进行一次标记整理算法</strong></p>
+<p>CMSInitialtingOccupancyfraction 什么时候触发cms 默认92 or 68</p>
+<p>CMSScavengeBeforeRemark：默认不开启 </p>
+<p>InitiatingHeapOccupancyPercent：老年代占用空间超过整堆比，45%</p>
+</blockquote>
+<h2 id="FULL-GC的原因"><a href="#FULL-GC的原因" class="headerlink" title="FULL GC的原因"></a>FULL GC的原因</h2><blockquote>
+<p><font color='green'><u><em><strong>System.gc方法调用</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>老年代不够用（年龄晋升、大对象、CMSpromotion failed和concurrent mode failure，）</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>元空间不够用</strong></em></u></font></p>
+<blockquote>
+<p><font color='green'><u><em><strong>Minor GC时，Survivor Space放不下，只能放老年代，，担保机制可能说可以，但是CMS他有内存碎片吗，实际上老年代也放不下，就触发promotion failed。解决方法：CMSFullGCsBeforeCompaction，或者调大幸存者区Survivorradio</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>CMS GC的过程中同时业务线程将对象放入老年代，而此时老年代空间不足。调大老年代newradio</strong></em></u></font></p>
+</blockquote>
 </blockquote>
 <h2 id="FullGC怎么排查"><a href="#FullGC怎么排查" class="headerlink" title="FullGC怎么排查"></a>FullGC怎么排查</h2><blockquote>
 <p><font color='red'><u><em><strong>如果出现FullGC，请求和响应会变得特别慢，系统也变得很卡。</strong></em></u></font></p>
@@ -587,20 +605,16 @@
 <p>jstat ：JVM性能监测工具。 显示伊甸区 幸存者区、老年区的比例，还有gc压力</p>
 <p><font color='red'><u><em><strong>可视化工具：</strong></em></u></font></p>
 <p>jconsole</p>
-<p>visualVM</p>
+<p>visualVM，eclipse memory analyzer</p>
 </blockquote>
 <h2 id="Java内存泄漏排查"><a href="#Java内存泄漏排查" class="headerlink" title="Java内存泄漏排查"></a>Java内存泄漏排查</h2><blockquote>
 <p>内存泄漏会逐渐累加导致内存溢出，内存溢出会发生在：虚拟机栈（stackoverflow）、方法区（OOM：metaspace）、堆空间（OOM：heap space）</p>
 <p>1、可以获得内存的快照dump（jmap -dump或者启动的时候就加上参数-XX：heapdumpOnOutOfMemery）</p>
-<p>2、visualVM去加载</p>
+<p>2、visualVM去加载，analyzer memory analyzer</p>
 </blockquote>
 <h2 id="CPU标高的排查"><a href="#CPU标高的排查" class="headerlink" title="CPU标高的排查"></a>CPU标高的排查</h2><p><font color='blue'><u><em><strong>top或者pidstat命令找到cpu明显过高的进程id，然后用进程id去找到线程id（ps H -eo pid,tid,%cpu | grep进程id），最后jstack 一下定位到该线程就可以</strong></em></u></font></p>
 <p>标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、</p>
-<h2 id="FULL-GC的原因"><a href="#FULL-GC的原因" class="headerlink" title="FULL GC的原因"></a>FULL GC的原因</h2><blockquote>
-<p><font color='green'><u><em><strong>System.gc方法调用</strong></em></u></font></p>
-<p><font color='green'><u><em><strong>老年代不够用或者创建了大对象</strong></em></u></font></p>
-<p><font color='green'><u><em><strong>元空间不够用</strong></em></u></font></p>
-<p><strong>分配担保失败</strong></p>
+<blockquote>
 </blockquote>
 
                     
@@ -615,7 +629,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Kommentieren und teilen
+                                Comment and share
                             </a>
                         </p>
                     
@@ -629,7 +643,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">Seite 1 von 1</li>
+        <li class="pagination-number">page 1 of 1</li>
     </ul>
 </div>
 
@@ -658,7 +672,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
