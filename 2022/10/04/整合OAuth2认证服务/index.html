@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>springboot整合OAuth2认证服务 | 森</title>
+  <meta name="keywords" content=" Oauth2 , 整合中间件 ">
+  <meta name="description" content="springboot整合OAuth2认证服务 | 森">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="description" content="潮起潮落，云卷云舒">
+<meta property="og:type" content="website">
+<meta property="og:title" content="all-tags">
+<meta property="og:url" content="http://example.com/all-tags/index.html">
+<meta property="og:site_name" content="森">
+<meta property="og:description" content="潮起潮落，云卷云舒">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2023-04-12T03:28:50.336Z">
+<meta property="article:modified_time" content="2023-04-12T03:28:48.541Z">
+<meta property="article:author" content="CSEN">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="icon" href="/img/avatar.jpg">
+
+<link href="/css/style.css?v=1.1.0" rel="stylesheet">
+
+<link href="/css/hl_theme/atom-light.css?v=1.1.0" rel="stylesheet">
+
+<link href="//cdn.jsdelivr.net/npm/animate.css@4.1.0/animate.min.css" rel="stylesheet">
+
+<script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="/js/titleTip.js?v=1.1.0" ></script>
+
+<script src="//cdn.jsdelivr.net/npm/highlightjs@9.16.2/highlight.pack.min.js"></script>
+<script>
+    hljs.initHighlightingOnLoad();
+</script>
+
+<script src="//cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
+
+
+
+<script src="//cdn.jsdelivr.net/npm/jquery.cookie@1.4.1/jquery.cookie.min.js" ></script>
+
+<script src="/js/iconfont.js?v=1.1.0" ></script>
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+<div style="display: none">
+  <input class="theme_disqus_on" value="false">
+  <input class="theme_preload_comment" value="">
+  <input class="theme_blog_path" value="">
+  <input id="theme_shortcut" value="true" />
+  <input id="theme_highlight_on" value="true" />
+  <input id="theme_code_copy" value="true" />
+</div>
+
+
+
+<body>
+<aside class="nav">
+    <div class="nav-left">
+        <a href="/"
+   class="avatar_target">
+    <img class="avatar"
+         src="/img/avatar.jpg"/>
+</a>
+<div class="author">
+    <span>CSEN</span>
+</div>
+
+<div class="icon">
+    
+        
+            <a title="rss"
+               href="/atom.xml"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-rss"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="github"
+               href="https://github.com/Caosen0819"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-github"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+    
+        
+            <a title="email"
+               href="mailto:caosen0819@163.com"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-email"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="qq"
+               href="http://wpa.qq.com/msgrd?v=3&uin=1667018430&site=qq&menu=yes"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-qq"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="neteasemusic"
+               href="https://music.163.com/#/user/home?id=406574616"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-neteasemusic"></use>
+                    </svg>
+                
+            </a>
+        
+    
+</div>
+
+
+
+
+
+<ul>
+    <li>
+        <div class="all active" data-rel="All">All
+            
+                <small>(46)</small>
+            
+        </div>
+    </li>
+    
+        
+            
+                
+    <li>
+        <div data-rel="Java">
+            
+            Java
+            <small>(32)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="new">
+            
+            new
+            <small>(1)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="去雾算法">
+            
+            去雾算法
+            <small>(1)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="学习资料">
+            
+            学习资料
+            <small>(1)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="微信小程序">
+            
+            微信小程序
+            <small>(2)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="项目实践">
+            
+            项目实践
+            <small>(9)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+</ul>
+<div class="left-bottom">
+    <div class="menus">
+        
+            
+            
+            
+    </div>
+    <div>
+        
+            <a class="about  hasFriend  site_url"
+               
+               href="/about">About</a>
+        
+        <a style="width: 50%"
+                
+                                           class="friends">Friends</a>
+        
+    </div>
+</div>
+<input type="hidden" id="yelog_site_posts_number" value="46">
+
+<div style="display: none">
+    <span id="busuanzi_value_site_uv"></span>
+    <span id="busuanzi_value_site_pv"></span>
+</div>
+
+    </div>
+    <div class="nav-right">
+        <div class="friends-area">
+    <div class="friends-title">
+        Links
+        <i class="iconfont icon-left"></i>
+    </div>
+    <div class="friends-content">
+        <ul>
+            
+        </ul>
+    </div>
+</div>
+        <div class="title-list">
+    <div class="right-top">
+        <div id="default-panel">
+            <i class="iconfont icon-search" data-title="搜索 快捷键 i"></i>
+            <div class="right-title">All</div>
+            <i class="iconfont icon-file-tree" data-title="切换到大纲视图 快捷键 w"></i>
+        </div>
+        <div id="search-panel">
+            <i class="iconfont icon-left" data-title="返回"></i>
+            <input id="local-search-input" autocomplete="off"/>
+            <label class="border-line" for="input"></label>
+            <i class="iconfont icon-case-sensitive" data-title="大小写敏感"></i>
+            <i class="iconfont icon-tag" data-title="标签"></i>
+        </div>
+        <div id="outline-panel" style="display: none">
+            <div class="right-title">大纲</div>
+            <i class="iconfont icon-list" data-title="切换到文章列表"></i>
+        </div>
+    </div>
+
+    <div class="tags-list">
+    <input id="tag-search" />
+    <div class="tag-wrapper">
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>BUG</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>DBRouter-starter</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>docker</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Java基础知识</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Java并发</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>JVM</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Kafka</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>lucky项目</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>mybatis-starter</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Mysql</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>new</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Oauth2</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Redis</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>spring勇攀高峰</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>场景题</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>微信小程序</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>整合中间件</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>暗通道</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>测试</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>计算机网络</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>设计模式</a>
+            </li>
+        
+    </div>
+
+</div>
+
+    
+    <nav id="title-list-nav">
+        
+        
+        <a  class="All Java "
+           href="/2024/02/02/CS:MySQL45-1/"
+           data-tag="Mysql"
+           data-author="" >
+            <span class="post-title" title="MySQL45">MySQL45</span>
+            <span class="post-date" title="2024-02-02 21:29:04">2024/02/02</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/11/08/CS:JUC/"
+           data-tag="Java并发"
+           data-author="" >
+            <span class="post-title" title="JUC">JUC</span>
+            <span class="post-date" title="2023-11-08 00:00:00">2023/11/08</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/11/08/CS:mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/"
+           data-tag="Mysql"
+           data-author="" >
+            <span class="post-title" title="mysql技术内幕">mysql技术内幕</span>
+            <span class="post-date" title="2023-11-08 00:00:00">2023/11/08</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/11/04/CS:JVM/"
+           data-tag="JVM"
+           data-author="" >
+            <span class="post-title" title="JVM">JVM</span>
+            <span class="post-date" title="2023-11-04 00:00:00">2023/11/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/10/10/CS:%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
+           data-tag="设计模式"
+           data-author="" >
+            <span class="post-title" title="设计模式">设计模式</span>
+            <span class="post-date" title="2023-10-10 00:00:00">2023/10/10</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/10/09/CS:Redis/"
+           data-tag="Redis"
+           data-author="" >
+            <span class="post-title" title="Redis">Redis</span>
+            <span class="post-date" title="2023-10-09 00:00:00">2023/10/09</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
+           data-tag="Java基础知识"
+           data-author="" >
+            <span class="post-title" title="Java基础知识">Java基础知识</span>
+            <span class="post-date" title="2023-08-07 00:00:00">2023/08/07</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C3/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="计算机网络3">计算机网络3</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="计算机网络2">计算机网络2</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C1/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="计算机网络1">计算机网络1</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/07/08/CS:%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="输入网络，期间发生了什么？">输入网络，期间发生了什么？</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/07/08/CS:Kafka/"
+           data-tag="Kafka"
+           data-author="" >
+            <span class="post-title" title="Kafka知识">Kafka知识</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="mybatis组件的整合理解2">mybatis组件的整合理解2</span>
+            <span class="post-date" title="2023-04-27 00:00:00">2023/04/27</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="mybatis组件的整合理解3">mybatis组件的整合理解3</span>
+            <span class="post-date" title="2023-04-27 00:00:00">2023/04/27</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="mybatis组件的整合理解1">mybatis组件的整合理解1</span>
+            <span class="post-date" title="2023-04-26 00:00:00">2023/04/26</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/22/CS:DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+           data-tag="DBRouter-starter"
+           data-author="" >
+            <span class="post-title" title="DBRouter组件的整合理解">DBRouter组件的整合理解</span>
+            <span class="post-date" title="2023-04-22 00:00:00">2023/04/22</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="Spring整合mybatis">Spring整合mybatis</span>
+            <span class="post-date" title="2023-04-11 00:00:00">2023/04/11</span>
+        </a>
+        
+        
+        <a  class="All 学习资料 "
+           href="/2023/04/11/%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99/"
+           data-tag="测试"
+           data-author="" >
+            <span class="post-title" title="参考资料">参考资料</span>
+            <span class="post-date" title="2023-04-11 00:00:00">2023/04/11</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
+           data-tag="spring勇攀高峰"
+           data-author="" >
+            <span class="post-title" title="Spring ioc加载流程">Spring ioc加载流程</span>
+            <span class="post-date" title="2023-04-11 00:00:00">2023/04/11</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：10">章节：10</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：7-10，同时回顾一下4-6的内容">章节：7-10，同时回顾一下4-6的内容</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="All new "
+           href="/2023/04/04/New%20page/"
+           data-tag="new"
+           data-author="" >
+            <span class="post-title" title="待定">待定</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"
+           data-tag="场景题"
+           data-author="" >
+            <span class="post-title" title="待定">待定</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A11-13/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：11-13">章节：11-13</span>
+            <span class="post-date" title="2023-04-03 00:00:00">2023/04/03</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：小知识">章节：小知识</span>
+            <span class="post-date" title="2023-04-03 00:00:00">2023/04/03</span>
+        </a>
+        
+        
+        <a  class="All 去雾算法 "
+           href="/2022/10/23/%E6%9A%97%E9%80%9A%E9%81%93%E5%8E%BB%E9%9B%BE%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93/"
+           data-tag="暗通道"
+           data-author="" >
+            <span class="post-title" title="暗通道去雾算法总结">暗通道去雾算法总结</span>
+            <span class="post-date" title="2022-10-23 13:03:43">2022/10/23</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/20/%E5%AF%B9%E6%9D%83%E9%99%90%E6%A0%A1%E9%AA%8C%E7%9A%84%E6%96%B0%E7%90%86%E8%A7%A3/"
+           data-tag="Oauth2"
+           data-author="" >
+            <span class="post-title" title="对权限校验和token的新理解">对权限校验和token的新理解</span>
+            <span class="post-date" title="2022-10-20 14:43:00">2022/10/20</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/spring%E6%95%B4%E5%90%88docker-compose/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot/cloud整合docker-compose">springboot/cloud整合docker-compose</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94%E2%80%94nacos2.1.0/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="docker整合springboot/cloud——nacos2.1.0">docker整合springboot/cloud——nacos2.1.0</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94%E2%80%94kibana8.2.0/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="docker整合springboot/cloud——kibana8.2.0">docker整合springboot/cloud——kibana8.2.0</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springboot%E6%95%B4%E5%90%88kafka3.1%EF%BC%8C%E5%AE%9E%E7%8E%B0%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合kafka3.1，实现基本配置和操作">springboot整合kafka3.1，实现基本配置和操作</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="整合docker和中间件记录">整合docker和中间件记录</span>
+            <span class="post-date" title="2022-10-04 21:23:41">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合elasticsearch8.2.0">springboot整合elasticsearch8.2.0</span>
+            <span class="post-date" title="2022-10-04 13:40:04">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合kafka3.1-基本配置和操作">springboot整合kafka3.1-基本配置和操作</span>
+            <span class="post-date" title="2022-10-04 13:38:01">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合OAuth2认证服务">springboot整合OAuth2认证服务</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springboot%E6%95%B4%E5%90%88elasticsearch8.2%E6%8A%A5%E9%94%99unable%20to%20parse%20response%20body%20for%20Response%7BrequestLine/"
+           data-tag="整合中间件,BUG"
+           data-author="" >
+            <span class="post-title" title="springboot整合elasticsearch8.2报错unable to parse response body for Response{requestLine">springboot整合elasticsearch8.2报错unable to parse response body for Response{requestLine</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----令牌配置">springcloud整合oauth2-----令牌配置</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----鉴权服务篇">springcloud整合oauth2-----鉴权服务篇</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86springsecurity/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----前置知识springsecurity">springcloud整合oauth2-----前置知识springsecurity</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----异常配置总结">springcloud整合oauth2-----异常配置总结</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All 微信小程序 "
+           href="/2022/10/04/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+           data-tag="微信小程序"
+           data-author="" >
+            <span class="post-title" title="养生打卡健康小程序（云开发）">养生打卡健康小程序（云开发）</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All 微信小程序 "
+           href="/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+           data-tag="微信小程序"
+           data-author="" >
+            <span class="post-title" title="日常打卡积分制自律小程序（云开发）">日常打卡积分制自律小程序（云开发）</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1_%E5%89%AF%E6%9C%AC/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合OAuth2认证服务">springboot整合OAuth2认证服务</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2------认证服务篇">springcloud整合oauth2------认证服务篇</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2------认证服务篇">springcloud整合oauth2------认证服务篇</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94mysql8.0.26/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="docker整合springboot/cloud—mysql8.0.26">docker整合springboot/cloud—mysql8.0.26</span>
+            <span class="post-date" title="2022-10-04 00:00:00">2022/10/04</span>
+        </a>
+        
+        <div id="no-item-tips">
+
+        </div>
+    </nav>
+    <div id="outline-list">
+    </div>
+</div>
+
+    </div>
+    <div class="hide-list">
+        <div class="semicircle" data-title="切换全屏 快捷键 s">
+            <div class="brackets first"><</div>
+            <div class="brackets">&gt;</div>
+        </div>
+    </div>
+</aside>
+<div id="post">
+    <div class="pjax">
+        <article id="post-整合OAuth2认证服务" class="article article-type-post" itemscope itemprop="blogPost">
+    
+        <h1 class="article-title">springboot整合OAuth2认证服务</h1>
+    
+    <div class="article-meta">
+        
+        
+        
+        <span class="book">
+            <i class="iconfont icon-category"></i>
+            
+            
+            <a  data-rel="Java">Java</a>
+            
+        </span>
+        
+        
+        <span class="tag">
+            <i class="iconfont icon-tag"></i>
+            
+            <a class="color2">Oauth2</a>
+            
+            <a class="color1">整合中间件</a>
+            
+        </span>
+        
+    </div>
+    <div class="article-meta">
+        
+            Created At : <time class="date" title='Updated At: 2023-09-25 15:33:20'>2022-10-04 13:35</time>
+        
+    </div>
+    <div class="article-meta">
+        
+        
+        <span id="busuanzi_container_page_pv">
+            Views 👀 :<span id="busuanzi_value_page_pv">
+                <span class="count-comment">
+                    <span class="spinner">
+                      <div class="cube1"></div>
+                      <div class="cube2"></div>
+                    </span>
+                </span>
+            </span>
+        </span>
+        
+        
+    </div>
+    
+    <div class="toc-ref">
+    
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1%E3%80%81AuthorizationServerConfig"><span class="toc-text">1、AuthorizationServerConfig</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E3%80%90%E4%BA%8B%E5%85%88%E5%87%86%E5%A4%87%E3%80%91%EF%BC%9A"><span class="toc-text">【事先准备】：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E3%80%81LoadRolePermissionService-%E8%B0%83%E7%94%A8%E2%80%94-gt-PermissionServiceImpl"><span class="toc-text">方法、LoadRolePermissionService  调用—&gt; PermissionServiceImpl</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E3%80%901%E3%80%91AuthorizationServerConfig-%E7%BB%A7%E6%89%BF%E2%80%94-gt-AuthorizationServerConfigurerAdapter"><span class="toc-text">【1】AuthorizationServerConfig 继承—&gt; AuthorizationServerConfigurerAdapter</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%951%EF%BC%9A-configure-ClientDetailsServiceConfigurer-clients"><span class="toc-text">方法1： configure(ClientDetailsServiceConfigurer clients)</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E9%87%8D%E5%86%99configure-ClientDetailsServiceConfigurer-clients-%E6%96%B9%E6%B3%95%E4%B8%BB%E8%A6%81%E9%85%8D%E7%BD%AE%E5%AE%A2%E6%88%B7%E7%AB%AF%EF%BC%8C%E5%B0%B1%E6%98%AF%E5%91%8A%E8%AF%89auth%E6%9C%8D%E5%8A%A1%EF%BC%8C%E6%88%91%E6%9C%89%E4%BB%80%E4%B9%88%E5%AE%A2%E6%88%B7%EF%BC%8C%E6%AF%8F%E4%B8%80%E4%B8%AA%E5%AE%A2%E6%88%B7%E5%8F%88%E6%98%AF%E4%BB%80%E4%B9%88%E6%A0%B7%E5%AD%90%E7%9A%84-%EF%BC%8C"><span class="toc-text">**一、重写configure(ClientDetailsServiceConfigurer clients)方法主要配置客户端，就是告诉auth服务，我有什么客户，每一个客户又是什么样子的**，</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%AF%BC%E5%85%A5%E6%96%B9%E6%B3%95%E6%9C%89%E4%BB%A5%E4%B8%8B%E5%87%A0%E7%A7%8D%EF%BC%9A"><span class="toc-text">二、导入方法有以下几种：</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%952%EF%BC%9A-configure-AuthorizationServerEndpointsConfigurer-endpoints-%E2%80%94%E2%80%94"><span class="toc-text">方法2： configure(AuthorizationServerEndpointsConfigurer endpoints)——</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%80%E3%80%81authenticationManager-%EF%BC%88%E5%BB%BA%E8%AE%AE%E5%BF%85%E9%A1%BB%E9%85%8D%E7%BD%AE%EF%BC%89-%EF%BC%88%E5%AF%86%E7%A0%81%E6%8E%88%E6%9D%83%E7%AE%A1%E7%90%86%E5%99%A8%EF%BC%89%EF%BC%8C%E8%A7%81%E6%96%87%E4%BB%B6SecurityConfig%E8%BF%99%E4%B8%AA%E9%85%8D%E7%BD%AE%E7%B1%BB"><span class="toc-text">一、authenticationManager （建议必须配置）  （密码授权管理器），见文件SecurityConfig这个配置类</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%BB%A4%E7%89%8C%E6%9C%AC%E8%BA%AB%E5%86%85%E5%AE%B9%E7%9A%84%E9%85%8D%E7%BD%AE%EF%BC%88%E5%BB%BA%E8%AE%AE%E5%BF%85%E9%A1%BB%E9%85%8D%E7%BD%AE%EF%BC%89"><span class="toc-text">二、令牌本身内容的配置（建议必须配置）</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#I%E3%80%81-%E4%B8%A4%E7%A7%8D%E6%96%B9%E5%BC%8F%EF%BC%8C"><span class="toc-text">I、 两种方式，</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#II%E3%80%81tokenServices-%E5%B0%B1%E5%9C%A8%E6%9C%AC%E6%96%87%E4%BB%B6%E6%B3%A8%E5%85%A5-%E7%94%B1%E4%BA%8E%E6%98%AF%E6%8E%88%E6%9D%83%E6%9C%8D%E5%8A%A1%EF%BC%8C%E6%89%80%E4%BB%A5%E6%B6%89%E5%8F%8A%E5%88%B0%E9%A2%81%E5%8F%91%E4%BB%A4%E7%89%8C%EF%BC%8C%E9%82%A3%E4%B9%88%E6%9C%89%E5%85%B3%E4%BB%A4%E7%89%8C%E7%9A%84%E7%AE%A1%E7%90%86%EF%BC%8C%E6%AF%94%E5%A6%82%E8%BF%87%E6%9C%9F%E6%97%B6%E9%97%B4%EF%BC%8C%E6%98%AFjwt%E8%BF%98%E6%98%AF%E4%BB%80%E4%B9%88%E6%A0%BC%E5%BC%8F%EF%BC%8C%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AD%98%E5%82%A8%E7%AD%96%E7%95%A5%EF%BC%8C%E9%83%BD%E5%9C%A8%E8%BF%99%E9%87%8C"><span class="toc-text">II、tokenServices()  就在本文件注入,由于是授权服务，所以涉及到颁发令牌，那么有关令牌的管理，比如过期时间，是jwt还是什么格式，客户端存储策略，都在这里</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#III%E3%80%81%E6%A0%B9%E6%8D%AE%E9%A1%B9%E7%9B%AE%E7%9A%84%E8%A6%81%E6%B1%82%E5%8E%BB%E9%80%89%E6%8B%A9%E4%BB%A4%E7%89%8C%E7%9A%84%E5%86%85%E5%AE%B9%E9%85%8D%E7%BD%AE%EF%BC%8C%E4%B8%80%E8%88%AC%E6%9D%A5%E8%AF%B4%E9%83%BD%E6%98%AFjwt%E6%88%96%E8%80%85jwt-%E8%87%AA%E5%AE%9A%E4%B9%89%E5%86%85%E5%AE%B9%E3%80%82"><span class="toc-text">III、根据项目的要求去选择令牌的内容配置，一般来说都是jwt或者jwt+自定义内容。</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E9%85%8D%E7%BD%AEOAuthServerClientCredentialsTokenEndpointFilter%E2%80%94%E2%80%94%E4%B8%BB%E8%A6%81%E6%98%AF%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84%E9%AA%8C%E8%AF%81"><span class="toc-text">一、配置OAuthServerClientCredentialsTokenEndpointFilter——主要是客户端的验证</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#I%E3%80%81%E5%85%B7%E4%BD%93%E8%AE%A4%E8%AF%81%E7%9A%84%E9%80%BB%E8%BE%91%E4%BE%9D%E7%84%B6%E4%BD%BF%E7%94%A8ClientCredentialsTokenEndpointFilter%EF%BC%8C%E5%8F%AA%E6%98%AF%E8%AE%BE%E7%BD%AE%E4%B8%80%E4%B8%8BAuthenticationEntryPoint%E4%B8%BA%E5%AE%9A%E5%88%B6"><span class="toc-text">I、具体认证的逻辑依然使用ClientCredentialsTokenEndpointFilter，只是设置一下AuthenticationEntryPoint为定制</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#II%E3%80%81endpointFilter-afterPropertiesSet-%E8%AE%A4%E8%AF%81%E6%88%90%E5%8A%9F%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%8C%E8%AE%A4%E7%9C%9F%E5%A4%B1%E8%B4%A5%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%8C%E8%BF%99%E9%87%8C%E5%8F%AF%E4%BB%A5%E8%87%AA%E5%AE%9A%E4%B9%89%E5%93%88%E5%93%88"><span class="toc-text">II、endpointFilter.afterPropertiesSet(); 认证成功怎么办，认真失败怎么办，这里可以自定义哈哈</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#III%E3%80%81security-addTokenEndpointAuthenticationFilter-endpointFilter"><span class="toc-text">III、security.addTokenEndpointAuthenticationFilter(endpointFilter);</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81springconfig"><span class="toc-text">2、springconfig</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D%E4%B8%80%E4%B8%AA%E6%AF%94%E8%BE%83%E5%AE%8C%E6%95%B4%E7%9A%84securityconfig%E9%85%8D%E7%BD%AE"><span class="toc-text">介绍一个比较完整的securityconfig配置</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1"><span class="toc-text">鉴权服务</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%901%E3%80%91AccessTokenConfig-%E4%BB%A4%E7%89%8C%E7%9A%84%E4%B8%80%E4%BA%9B%E9%85%8D%E7%BD%AE"><span class="toc-text">【1】AccessTokenConfig  令牌的一些配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%902%E3%80%91JwtAuthenticationManager-token%E8%AE%A4%E8%AF%81%E7%AE%A1%E7%90%86%E5%99%A8"><span class="toc-text">【2】JwtAuthenticationManager token认证管理器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%903%E3%80%91JwtAccessManagerV2%E2%80%94%E2%80%94-%E8%AE%A4%E8%AF%81%E7%AE%A1%E7%90%86%E5%99%A8%E8%87%AA%E5%AE%9A%E4%B9%89"><span class="toc-text">【3】JwtAccessManagerV2——-认证管理器自定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%904%E3%80%91-SecurityConfig-%E5%9C%A8webflux%E4%B8%AD%E4%BD%BF%E7%94%A8security"><span class="toc-text">【4】 SecurityConfig  在webflux中使用security</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81webFluxSecurityFilterChain%E2%80%94%E2%80%94%E6%8A%8A%E4%B9%8B%E5%89%8D%E7%9A%84%E9%85%8D%E7%BD%AE%E6%95%B4%E5%90%88%E9%93%BE%E8%B7%AF"><span class="toc-text">1、webFluxSecurityFilterChain——把之前的配置整合链路</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%8A%A0%E5%85%A5%E4%BA%86%E3%80%902%E3%80%91%E7%9A%84%E8%87%AA%E5%AE%9A%E4%B9%89%E4%BB%A4%E7%89%8C%E8%AE%A4%E8%AF%81%E7%AE%A1%E7%90%86%E5%99%A8"><span class="toc-text">一、加入了【2】的自定义令牌认证管理器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%8A%A0%E5%85%A5%E4%BA%86%E3%80%903%E3%80%91%E7%9A%84%E9%89%B4%E6%9D%83%E7%AE%A1%E7%90%86%E5%99%A8"><span class="toc-text">二、加入了【3】的鉴权管理器</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81%E7%99%BD%E5%90%8D%E5%8D%95%E6%94%BE%E8%A1%8C"><span class="toc-text">**2、白名单放行 **</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%E3%80%81%E9%89%B4%E6%9D%83%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="toc-text">3、鉴权的异常处理</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE"><span class="toc-text">异常配置</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%901%E3%80%91%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%BC%82%E5%B8%B8"><span class="toc-text">【1】认证服务的异常</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81%E7%94%A8%E6%88%B7%E5%90%8D%EF%BC%8C%E5%AF%86%E7%A0%81%E9%94%99%E8%AF%AF%E5%BC%82%E5%B8%B8%E3%80%81%E6%8E%88%E6%9D%83%E7%B1%BB%E5%9E%8B%E5%BC%82%E5%B8%B8"><span class="toc-text">1、用户名，密码错误异常、授权类型异常</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%AE%9A%E5%88%B6%E6%8F%90%E7%A4%BA%E4%BF%A1%E6%81%AF%E3%80%81%E5%93%8D%E5%BA%94%E7%A0%81"><span class="toc-text">一、定制提示信息、响应码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89WebResponseExceptionTranslator"><span class="toc-text">二、自定义WebResponseExceptionTranslator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%94%B9%E9%80%A0ClientCredentialsTokenEndpointFilter"><span class="toc-text">三、改造ClientCredentialsTokenEndpointFilter</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9B%9B%E3%80%81OAuth%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E4%B8%AD%E6%8C%87%E5%AE%9A%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-text">四、OAuth配置文件中指定过滤器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%BA%90%E7%A0%81%E8%BF%BD%E8%B8%AA"><span class="toc-text">五、源码追踪</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#I%E3%80%81OAuthServerAuthenticationEntryPoint%E5%9C%A8%E4%BD%95%E6%97%B6%E8%B0%83%E7%94%A8%EF%BC%9F"><span class="toc-text">I、OAuthServerAuthenticationEntryPoint在何时调用？</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#II%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E7%9A%84%E8%BF%87%E6%BB%A4%E5%99%A8%E5%A6%82%E4%BD%95%E7%94%9F%E6%95%88%E7%9A%84%EF%BC%9F"><span class="toc-text">II、自定义的过滤器如何生效的？</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#III%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%8A%A0-allowFormAuthenticationForClients-%EF%BC%9F"><span class="toc-text">III、为什么不能加.allowFormAuthenticationForClients()？</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%902%E3%80%91%E8%B5%84%E6%BA%90%E6%9C%8D%E5%8A%A1%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BC%82%E5%B8%B8%E4%BF%A1%E6%81%AF"><span class="toc-text">【2】资源服务自定义异常信息</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C%EF%BC%9A%E6%B2%A1%E6%9C%89%E6%9D%83%E9%99%90%E8%AE%BF%E9%97%AE%E6%97%B6"><span class="toc-text">1、自定义返回结果：没有权限访问时</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81%E7%94%A8%E4%BA%8E%E5%A4%84%E7%90%86%E6%B2%A1%E6%9C%89%E7%99%BB%E5%BD%95%E6%88%96token%E8%BF%87%E6%9C%9F%E6%97%B6%E7%9A%84%E8%87%AA%E5%AE%9A%E4%B9%89%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C"><span class="toc-text">2、用于处理没有登录或token过期时的自定义返回结果</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE"><span class="toc-text">令牌配置</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%901%E3%80%91%E4%BB%A4%E7%89%8C%E6%9C%AC%E8%BA%AB%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-text">【1】令牌本身的配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%902%E3%80%91%E4%BB%A4%E7%89%8C%E7%AE%A1%E7%90%86%E6%9C%8D%E5%8A%A1%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-text">【2】令牌管理服务的配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%903%E3%80%91%E3%80%81%E4%BB%A4%E7%89%8C%E8%AE%BF%E9%97%AE%E7%AB%AF%E7%82%B9%E6%B7%BB%E5%8A%A0tokenServices"><span class="toc-text">【3】、令牌访问端点添加tokenServices</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86%EF%BC%9Asecurity"><span class="toc-text">前置知识：security</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#security%E7%9A%84%E6%A0%B8%E5%BF%83%EF%BC%8CSpring-Security%E4%BD%BF%E7%94%A8%E4%BA%86springSecurityFilterChain%E4%BD%9C%E4%B8%BA%E4%BA%86%E5%AE%89%E5%85%A8%E8%BF%87%E6%BB%A4%E7%9A%84%E5%85%A5%E5%8F%A3"><span class="toc-text">security的核心，Spring Security使用了springSecurityFilterChain作为了安全过滤的入口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%901%E3%80%91Spring-Security%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-text">【1】Spring Security过滤器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81%E6%A0%B8%E5%BF%83%E8%BF%87%E6%BB%A4%E5%99%A8%E6%A6%82%E8%BF%B0"><span class="toc-text">1、核心过滤器概述</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%902%E3%80%91Spring-Security%E6%A0%B8%E5%BF%83%E8%BF%87%E6%BB%A4%E5%99%A8%E8%A7%A3%E6%9E%90"><span class="toc-text">【2】Spring Security核心过滤器解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81SecurityContextPersistenceFilter"><span class="toc-text">1、SecurityContextPersistenceFilter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81SecurityContextPersistenceFilter"><span class="toc-text">2、SecurityContextPersistenceFilter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-AnonymousAuthenticationFilter"><span class="toc-text">2.3 AnonymousAuthenticationFilter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-ExceptionTranslationFilter"><span class="toc-text">2.4 ExceptionTranslationFilter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-FilterSecurityInterceptor"><span class="toc-text">2.5 FilterSecurityInterceptor</span></a></li></ol></li></ol>
+    
+<style>
+    .left-col .switch-btn,
+    .left-col .switch-area {
+        display: none;
+    }
+    .toc-level-3 i,
+    .toc-level-3 ol {
+        display: none !important;
+    }
+</style>
+</div>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><div class='inner-toc'><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1%E3%80%81AuthorizationServerConfig"><span class="toc-text">1、AuthorizationServerConfig</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E3%80%90%E4%BA%8B%E5%85%88%E5%87%86%E5%A4%87%E3%80%91%EF%BC%9A"><span class="toc-text">【事先准备】：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E3%80%81LoadRolePermissionService-%E8%B0%83%E7%94%A8%E2%80%94-gt-PermissionServiceImpl"><span class="toc-text">方法、LoadRolePermissionService  调用—&gt; PermissionServiceImpl</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E3%80%901%E3%80%91AuthorizationServerConfig-%E7%BB%A7%E6%89%BF%E2%80%94-gt-AuthorizationServerConfigurerAdapter"><span class="toc-text">【1】AuthorizationServerConfig 继承—&gt; AuthorizationServerConfigurerAdapter</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%951%EF%BC%9A-configure-ClientDetailsServiceConfigurer-clients"><span class="toc-text">方法1： configure(ClientDetailsServiceConfigurer clients)</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E9%87%8D%E5%86%99configure-ClientDetailsServiceConfigurer-clients-%E6%96%B9%E6%B3%95%E4%B8%BB%E8%A6%81%E9%85%8D%E7%BD%AE%E5%AE%A2%E6%88%B7%E7%AB%AF%EF%BC%8C%E5%B0%B1%E6%98%AF%E5%91%8A%E8%AF%89auth%E6%9C%8D%E5%8A%A1%EF%BC%8C%E6%88%91%E6%9C%89%E4%BB%80%E4%B9%88%E5%AE%A2%E6%88%B7%EF%BC%8C%E6%AF%8F%E4%B8%80%E4%B8%AA%E5%AE%A2%E6%88%B7%E5%8F%88%E6%98%AF%E4%BB%80%E4%B9%88%E6%A0%B7%E5%AD%90%E7%9A%84-%EF%BC%8C"><span class="toc-text">**一、重写configure(ClientDetailsServiceConfigurer clients)方法主要配置客户端，就是告诉auth服务，我有什么客户，每一个客户又是什么样子的**，</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%AF%BC%E5%85%A5%E6%96%B9%E6%B3%95%E6%9C%89%E4%BB%A5%E4%B8%8B%E5%87%A0%E7%A7%8D%EF%BC%9A"><span class="toc-text">二、导入方法有以下几种：</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%952%EF%BC%9A-configure-AuthorizationServerEndpointsConfigurer-endpoints-%E2%80%94%E2%80%94"><span class="toc-text">方法2： configure(AuthorizationServerEndpointsConfigurer endpoints)——</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%80%E3%80%81authenticationManager-%EF%BC%88%E5%BB%BA%E8%AE%AE%E5%BF%85%E9%A1%BB%E9%85%8D%E7%BD%AE%EF%BC%89-%EF%BC%88%E5%AF%86%E7%A0%81%E6%8E%88%E6%9D%83%E7%AE%A1%E7%90%86%E5%99%A8%EF%BC%89%EF%BC%8C%E8%A7%81%E6%96%87%E4%BB%B6SecurityConfig%E8%BF%99%E4%B8%AA%E9%85%8D%E7%BD%AE%E7%B1%BB"><span class="toc-text">一、authenticationManager （建议必须配置）  （密码授权管理器），见文件SecurityConfig这个配置类</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%BB%A4%E7%89%8C%E6%9C%AC%E8%BA%AB%E5%86%85%E5%AE%B9%E7%9A%84%E9%85%8D%E7%BD%AE%EF%BC%88%E5%BB%BA%E8%AE%AE%E5%BF%85%E9%A1%BB%E9%85%8D%E7%BD%AE%EF%BC%89"><span class="toc-text">二、令牌本身内容的配置（建议必须配置）</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#I%E3%80%81-%E4%B8%A4%E7%A7%8D%E6%96%B9%E5%BC%8F%EF%BC%8C"><span class="toc-text">I、 两种方式，</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#II%E3%80%81tokenServices-%E5%B0%B1%E5%9C%A8%E6%9C%AC%E6%96%87%E4%BB%B6%E6%B3%A8%E5%85%A5-%E7%94%B1%E4%BA%8E%E6%98%AF%E6%8E%88%E6%9D%83%E6%9C%8D%E5%8A%A1%EF%BC%8C%E6%89%80%E4%BB%A5%E6%B6%89%E5%8F%8A%E5%88%B0%E9%A2%81%E5%8F%91%E4%BB%A4%E7%89%8C%EF%BC%8C%E9%82%A3%E4%B9%88%E6%9C%89%E5%85%B3%E4%BB%A4%E7%89%8C%E7%9A%84%E7%AE%A1%E7%90%86%EF%BC%8C%E6%AF%94%E5%A6%82%E8%BF%87%E6%9C%9F%E6%97%B6%E9%97%B4%EF%BC%8C%E6%98%AFjwt%E8%BF%98%E6%98%AF%E4%BB%80%E4%B9%88%E6%A0%BC%E5%BC%8F%EF%BC%8C%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AD%98%E5%82%A8%E7%AD%96%E7%95%A5%EF%BC%8C%E9%83%BD%E5%9C%A8%E8%BF%99%E9%87%8C"><span class="toc-text">II、tokenServices()  就在本文件注入,由于是授权服务，所以涉及到颁发令牌，那么有关令牌的管理，比如过期时间，是jwt还是什么格式，客户端存储策略，都在这里</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#III%E3%80%81%E6%A0%B9%E6%8D%AE%E9%A1%B9%E7%9B%AE%E7%9A%84%E8%A6%81%E6%B1%82%E5%8E%BB%E9%80%89%E6%8B%A9%E4%BB%A4%E7%89%8C%E7%9A%84%E5%86%85%E5%AE%B9%E9%85%8D%E7%BD%AE%EF%BC%8C%E4%B8%80%E8%88%AC%E6%9D%A5%E8%AF%B4%E9%83%BD%E6%98%AFjwt%E6%88%96%E8%80%85jwt-%E8%87%AA%E5%AE%9A%E4%B9%89%E5%86%85%E5%AE%B9%E3%80%82"><span class="toc-text">III、根据项目的要求去选择令牌的内容配置，一般来说都是jwt或者jwt+自定义内容。</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E9%85%8D%E7%BD%AEOAuthServerClientCredentialsTokenEndpointFilter%E2%80%94%E2%80%94%E4%B8%BB%E8%A6%81%E6%98%AF%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84%E9%AA%8C%E8%AF%81"><span class="toc-text">一、配置OAuthServerClientCredentialsTokenEndpointFilter——主要是客户端的验证</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#I%E3%80%81%E5%85%B7%E4%BD%93%E8%AE%A4%E8%AF%81%E7%9A%84%E9%80%BB%E8%BE%91%E4%BE%9D%E7%84%B6%E4%BD%BF%E7%94%A8ClientCredentialsTokenEndpointFilter%EF%BC%8C%E5%8F%AA%E6%98%AF%E8%AE%BE%E7%BD%AE%E4%B8%80%E4%B8%8BAuthenticationEntryPoint%E4%B8%BA%E5%AE%9A%E5%88%B6"><span class="toc-text">I、具体认证的逻辑依然使用ClientCredentialsTokenEndpointFilter，只是设置一下AuthenticationEntryPoint为定制</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#II%E3%80%81endpointFilter-afterPropertiesSet-%E8%AE%A4%E8%AF%81%E6%88%90%E5%8A%9F%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%8C%E8%AE%A4%E7%9C%9F%E5%A4%B1%E8%B4%A5%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%8C%E8%BF%99%E9%87%8C%E5%8F%AF%E4%BB%A5%E8%87%AA%E5%AE%9A%E4%B9%89%E5%93%88%E5%93%88"><span class="toc-text">II、endpointFilter.afterPropertiesSet(); 认证成功怎么办，认真失败怎么办，这里可以自定义哈哈</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#III%E3%80%81security-addTokenEndpointAuthenticationFilter-endpointFilter"><span class="toc-text">III、security.addTokenEndpointAuthenticationFilter(endpointFilter);</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81springconfig"><span class="toc-text">2、springconfig</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D%E4%B8%80%E4%B8%AA%E6%AF%94%E8%BE%83%E5%AE%8C%E6%95%B4%E7%9A%84securityconfig%E9%85%8D%E7%BD%AE"><span class="toc-text">介绍一个比较完整的securityconfig配置</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1"><span class="toc-text">鉴权服务</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%901%E3%80%91AccessTokenConfig-%E4%BB%A4%E7%89%8C%E7%9A%84%E4%B8%80%E4%BA%9B%E9%85%8D%E7%BD%AE"><span class="toc-text">【1】AccessTokenConfig  令牌的一些配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%902%E3%80%91JwtAuthenticationManager-token%E8%AE%A4%E8%AF%81%E7%AE%A1%E7%90%86%E5%99%A8"><span class="toc-text">【2】JwtAuthenticationManager token认证管理器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%903%E3%80%91JwtAccessManagerV2%E2%80%94%E2%80%94-%E8%AE%A4%E8%AF%81%E7%AE%A1%E7%90%86%E5%99%A8%E8%87%AA%E5%AE%9A%E4%B9%89"><span class="toc-text">【3】JwtAccessManagerV2——-认证管理器自定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%904%E3%80%91-SecurityConfig-%E5%9C%A8webflux%E4%B8%AD%E4%BD%BF%E7%94%A8security"><span class="toc-text">【4】 SecurityConfig  在webflux中使用security</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81webFluxSecurityFilterChain%E2%80%94%E2%80%94%E6%8A%8A%E4%B9%8B%E5%89%8D%E7%9A%84%E9%85%8D%E7%BD%AE%E6%95%B4%E5%90%88%E9%93%BE%E8%B7%AF"><span class="toc-text">1、webFluxSecurityFilterChain——把之前的配置整合链路</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%8A%A0%E5%85%A5%E4%BA%86%E3%80%902%E3%80%91%E7%9A%84%E8%87%AA%E5%AE%9A%E4%B9%89%E4%BB%A4%E7%89%8C%E8%AE%A4%E8%AF%81%E7%AE%A1%E7%90%86%E5%99%A8"><span class="toc-text">一、加入了【2】的自定义令牌认证管理器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%8A%A0%E5%85%A5%E4%BA%86%E3%80%903%E3%80%91%E7%9A%84%E9%89%B4%E6%9D%83%E7%AE%A1%E7%90%86%E5%99%A8"><span class="toc-text">二、加入了【3】的鉴权管理器</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81%E7%99%BD%E5%90%8D%E5%8D%95%E6%94%BE%E8%A1%8C"><span class="toc-text">**2、白名单放行 **</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%E3%80%81%E9%89%B4%E6%9D%83%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="toc-text">3、鉴权的异常处理</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE"><span class="toc-text">异常配置</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%901%E3%80%91%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%BC%82%E5%B8%B8"><span class="toc-text">【1】认证服务的异常</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81%E7%94%A8%E6%88%B7%E5%90%8D%EF%BC%8C%E5%AF%86%E7%A0%81%E9%94%99%E8%AF%AF%E5%BC%82%E5%B8%B8%E3%80%81%E6%8E%88%E6%9D%83%E7%B1%BB%E5%9E%8B%E5%BC%82%E5%B8%B8"><span class="toc-text">1、用户名，密码错误异常、授权类型异常</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%AE%9A%E5%88%B6%E6%8F%90%E7%A4%BA%E4%BF%A1%E6%81%AF%E3%80%81%E5%93%8D%E5%BA%94%E7%A0%81"><span class="toc-text">一、定制提示信息、响应码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89WebResponseExceptionTranslator"><span class="toc-text">二、自定义WebResponseExceptionTranslator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%94%B9%E9%80%A0ClientCredentialsTokenEndpointFilter"><span class="toc-text">三、改造ClientCredentialsTokenEndpointFilter</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9B%9B%E3%80%81OAuth%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E4%B8%AD%E6%8C%87%E5%AE%9A%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-text">四、OAuth配置文件中指定过滤器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%BA%90%E7%A0%81%E8%BF%BD%E8%B8%AA"><span class="toc-text">五、源码追踪</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#I%E3%80%81OAuthServerAuthenticationEntryPoint%E5%9C%A8%E4%BD%95%E6%97%B6%E8%B0%83%E7%94%A8%EF%BC%9F"><span class="toc-text">I、OAuthServerAuthenticationEntryPoint在何时调用？</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#II%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E7%9A%84%E8%BF%87%E6%BB%A4%E5%99%A8%E5%A6%82%E4%BD%95%E7%94%9F%E6%95%88%E7%9A%84%EF%BC%9F"><span class="toc-text">II、自定义的过滤器如何生效的？</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#III%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%8A%A0-allowFormAuthenticationForClients-%EF%BC%9F"><span class="toc-text">III、为什么不能加.allowFormAuthenticationForClients()？</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%902%E3%80%91%E8%B5%84%E6%BA%90%E6%9C%8D%E5%8A%A1%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BC%82%E5%B8%B8%E4%BF%A1%E6%81%AF"><span class="toc-text">【2】资源服务自定义异常信息</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C%EF%BC%9A%E6%B2%A1%E6%9C%89%E6%9D%83%E9%99%90%E8%AE%BF%E9%97%AE%E6%97%B6"><span class="toc-text">1、自定义返回结果：没有权限访问时</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81%E7%94%A8%E4%BA%8E%E5%A4%84%E7%90%86%E6%B2%A1%E6%9C%89%E7%99%BB%E5%BD%95%E6%88%96token%E8%BF%87%E6%9C%9F%E6%97%B6%E7%9A%84%E8%87%AA%E5%AE%9A%E4%B9%89%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C"><span class="toc-text">2、用于处理没有登录或token过期时的自定义返回结果</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE"><span class="toc-text">令牌配置</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%901%E3%80%91%E4%BB%A4%E7%89%8C%E6%9C%AC%E8%BA%AB%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-text">【1】令牌本身的配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%902%E3%80%91%E4%BB%A4%E7%89%8C%E7%AE%A1%E7%90%86%E6%9C%8D%E5%8A%A1%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-text">【2】令牌管理服务的配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%903%E3%80%91%E3%80%81%E4%BB%A4%E7%89%8C%E8%AE%BF%E9%97%AE%E7%AB%AF%E7%82%B9%E6%B7%BB%E5%8A%A0tokenServices"><span class="toc-text">【3】、令牌访问端点添加tokenServices</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86%EF%BC%9Asecurity"><span class="toc-text">前置知识：security</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#security%E7%9A%84%E6%A0%B8%E5%BF%83%EF%BC%8CSpring-Security%E4%BD%BF%E7%94%A8%E4%BA%86springSecurityFilterChain%E4%BD%9C%E4%B8%BA%E4%BA%86%E5%AE%89%E5%85%A8%E8%BF%87%E6%BB%A4%E7%9A%84%E5%85%A5%E5%8F%A3"><span class="toc-text">security的核心，Spring Security使用了springSecurityFilterChain作为了安全过滤的入口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%901%E3%80%91Spring-Security%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-text">【1】Spring Security过滤器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81%E6%A0%B8%E5%BF%83%E8%BF%87%E6%BB%A4%E5%99%A8%E6%A6%82%E8%BF%B0"><span class="toc-text">1、核心过滤器概述</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%902%E3%80%91Spring-Security%E6%A0%B8%E5%BF%83%E8%BF%87%E6%BB%A4%E5%99%A8%E8%A7%A3%E6%9E%90"><span class="toc-text">【2】Spring Security核心过滤器解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81SecurityContextPersistenceFilter"><span class="toc-text">1、SecurityContextPersistenceFilter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81SecurityContextPersistenceFilter"><span class="toc-text">2、SecurityContextPersistenceFilter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-AnonymousAuthenticationFilter"><span class="toc-text">2.3 AnonymousAuthenticationFilter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-ExceptionTranslationFilter"><span class="toc-text">2.4 ExceptionTranslationFilter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-FilterSecurityInterceptor"><span class="toc-text">2.5 FilterSecurityInterceptor</span></a></li></ol></li></ol></div></p>
+<h2 id="1、AuthorizationServerConfig"><a href="#1、AuthorizationServerConfig" class="headerlink" title="1、AuthorizationServerConfig"></a><strong>1、AuthorizationServerConfig</strong></h2><h3 id="【事先准备】："><a href="#【事先准备】：" class="headerlink" title="【事先准备】："></a><strong>【事先准备】：</strong></h3><h4 id="方法、LoadRolePermissionService-调用—-gt-PermissionServiceImpl"><a href="#方法、LoadRolePermissionService-调用—-gt-PermissionServiceImpl" class="headerlink" title="方法、LoadRolePermissionService  调用—&gt; PermissionServiceImpl"></a><strong>方法、LoadRolePermissionService  调用—&gt; PermissionServiceImpl</strong></h4><p><strong>作用：	从数据库中将url-&gt;角色对应关系加载到Redis中</strong></p>
+<ul>
+<li>**方法1:	listRolePermission **</li>
+<li><ul>
+<li>先从数据库获取permissons</li>
+<li>根据roleid从数据库中找权限数据</li>
+<li>根据permissionid从数据库中找数据</li>
+<li>到此为止，构造了每一个permission对应所需要的权限一共后续使用</li>
+<li>简化一下，放入redis</li>
+</ul>
+</li>
+</ul>
+<h3 id="【1】AuthorizationServerConfig-继承—-gt-AuthorizationServerConfigurerAdapter"><a href="#【1】AuthorizationServerConfig-继承—-gt-AuthorizationServerConfigurerAdapter" class="headerlink" title="【1】AuthorizationServerConfig 继承—&gt; AuthorizationServerConfigurerAdapter"></a><strong>【1】AuthorizationServerConfig 继承—&gt; AuthorizationServerConfigurerAdapter</strong></h3><p><strong>作用：	配置认证中心，就是授权服务器配置</strong></p>
+<h4 id="方法1：-configure-ClientDetailsServiceConfigurer-clients"><a href="#方法1：-configure-ClientDetailsServiceConfigurer-clients" class="headerlink" title="方法1： configure(ClientDetailsServiceConfigurer clients)"></a><strong>方法1： configure(ClientDetailsServiceConfigurer clients)</strong></h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 配置客户端详情，并不是所有的客户端都能接入授权服务</span><br><span class="line"> * 用来配置客户端详情服务（ClientDetailsService），</span><br><span class="line"> * 客户端详情信息在这里进行初始化，</span><br><span class="line"> * 你能够把客户端详情信息写死在这里或者是通过数据库来存储调取详情信息</span><br><span class="line"> </span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+
+<h5 id="一、重写configure-ClientDetailsServiceConfigurer-clients-方法主要配置客户端，就是告诉auth服务，我有什么客户，每一个客户又是什么样子的-，"><a href="#一、重写configure-ClientDetailsServiceConfigurer-clients-方法主要配置客户端，就是告诉auth服务，我有什么客户，每一个客户又是什么样子的-，" class="headerlink" title="**一、重写configure(ClientDetailsServiceConfigurer clients)方法主要配置客户端，就是告诉auth服务，我有什么客户，每一个客户又是什么样子的**，"></a>**一、<u>重写configure(ClientDetailsServiceConfigurer clients)方法主要配置客户端，就是告诉auth服务，我有什么客户，每一个客户又是什么样子的</u>**，</h5><ol>
+<li>定义两个client_id，及客户端可以通过不同的client_id来获取不同的令牌；</li>
+<li>client_id为test1的令牌有效时间为3600秒，client_id为test2的令牌有效时间为7200秒；</li>
+<li>client_id为test1的refresh_token（下面会介绍到）有效时间为864000秒，即10天，也就是说在这10天内都可以通过refresh_token来换取新的令牌；</li>
+<li>在获取client_id为test1的令牌的时候，scope只能指定为all，a，b或c中的某个值，否则将获取失败；</li>
+<li>只能通过密码模式(password)来获取client_id为test1的令牌，而test2则无限制。</li>
+</ol>
+<h5 id="二、导入方法有以下几种："><a href="#二、导入方法有以下几种：" class="headerlink" title="二、导入方法有以下几种："></a><strong>二、导入方法有以下几种：</strong></h5><ul>
+<li><strong>内存</strong>，自己测试的时候比较推荐，后续数据库啊什么的</li>
+<li><strong>数据库</strong>，使用JdbcClientDetailsService，JdbcClientDetailsService自己是有一个默认的字段的表的，所以程序是从数据库中的oauth_client_details表中加载客户端信息，</li>
+<li>总而言之，就是配置把客户端信息从数据源拿过来。后面需要授权验证，要用到，所以先配。</li>
+</ul>
+<h4 id="方法2：-configure-AuthorizationServerEndpointsConfigurer-endpoints-——"><a href="#方法2：-configure-AuthorizationServerEndpointsConfigurer-endpoints-——" class="headerlink" title="方法2： configure(AuthorizationServerEndpointsConfigurer endpoints)——"></a><strong>方法2： configure(AuthorizationServerEndpointsConfigurer endpoints)——</strong></h4><p>上面和客户端有关，而这个则直接和令牌有关，比如<u><strong>配置授权（authorization）</strong></u>以及<u><strong>令牌（token）的访问端点</strong></u>和<u><strong>令牌服务(token services)</strong></u>，还有一些其他的，比如异常啊什么的，下面有例子。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 配置令牌访问的端点</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>令牌端点可用于以编程方式请求令牌（非常重要，四种方式）,下面是配置的例子</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">endpoints</span><br><span class="line">        <span class="comment">//设置异常WebResponseExceptionTranslator，用于处理用户名，密码错误、授权类型不正确的异常</span></span><br><span class="line">        .exceptionTranslator(<span class="keyword">new</span> <span class="title class_">OAuthServerWebResponseExceptionTranslator</span>())</span><br><span class="line">        <span class="comment">//授权码模式所需要的authorizationCodeServices</span></span><br><span class="line">        .authorizationCodeServices(authorizationCodeServices())</span><br><span class="line">        <span class="comment">//密码模式所需要的authenticationManager</span></span><br><span class="line">        .authenticationManager(authenticationManager)</span><br><span class="line">        <span class="comment">//令牌管理服务，无论哪种模式都需要</span></span><br><span class="line">        .tokenServices(tokenServices())</span><br><span class="line">        <span class="comment">//添加进入tokenGranter</span></span><br><span class="line">        .tokenGranter(<span class="keyword">new</span> <span class="title class_">CompositeTokenGranter</span>(tokenGranters))</span><br><span class="line">        <span class="comment">//只允许POST提交访问令牌，uri：/oauth/token</span></span><br><span class="line">        .allowedTokenEndpointRequestMethods(HttpMethod.POST);</span><br></pre></td></tr></table></figure>
+
+<h5 id="一、authenticationManager-（建议必须配置）-（密码授权管理器），见文件SecurityConfig这个配置类"><a href="#一、authenticationManager-（建议必须配置）-（密码授权管理器），见文件SecurityConfig这个配置类" class="headerlink" title="一、authenticationManager （建议必须配置）  （密码授权管理器），见文件SecurityConfig这个配置类"></a><strong>一、<u>authenticationManager （建议必须配置）  （密码授权管理器），见文件SecurityConfig这个配置类</u></strong></h5><ul>
+<li>在Spring Security中，AuthenticationManager的默认实现是ProviderManager，而且它不直接自己处理认证请求，而是委托给其所配置的AuthenticationProvider列表，然后会依次使用每一个AuthenticationProvider进行认证，如果有一个AuthenticationProvider认证后的结果不为null，则表示该AuthenticationProvider已经认证成功，之后的AuthenticationProvider将不再继续认证。然后直接以该AuthenticationProvider的认证结果作为ProviderManager的认证结果。如果所有的AuthenticationProvider的认证结果都为null，则表示认证失败，将抛出一个ProviderNotFoundException。<br>校验认证请求最常用的方法是根据请求的用户名加载对应的UserDetails，然后比对UserDetails的密码与认证请求的密码是否一致，一致则表示认证通过。<br>Spring Security内部的DaoAuthenticationProvider就是使用的这种方式。其内部使用UserDetailsService来负责加载UserDetails。在认证成功以后会使用加载的UserDetails来封装要返回的Authentication对象，加载的UserDetails对象是包含用户权限等信息的。认证成功返回的Authentication对象将会保存在当前的SecurityContext中</li>
+</ul>
+<h5 id="二、令牌本身内容的配置（建议必须配置）"><a href="#二、令牌本身内容的配置（建议必须配置）" class="headerlink" title="二、令牌本身内容的配置（建议必须配置）"></a><u><strong>二、令牌本身内容的配置（建议必须配置）</strong></u></h5><h6 id="I、-两种方式，"><a href="#I、-两种方式，" class="headerlink" title="I、 两种方式，"></a><u><strong>I、 两种方式，</strong></u></h6><p>【1】直接在endpoint这里配。</p>
+<p>【2】自己写个bean注入，举个例子：</p>
+<h6 id="II、tokenServices-就在本文件注入-由于是授权服务，所以涉及到颁发令牌，那么有关令牌的管理，比如过期时间，是jwt还是什么格式，客户端存储策略，都在这里"><a href="#II、tokenServices-就在本文件注入-由于是授权服务，所以涉及到颁发令牌，那么有关令牌的管理，比如过期时间，是jwt还是什么格式，客户端存储策略，都在这里" class="headerlink" title="II、tokenServices()  就在本文件注入,由于是授权服务，所以涉及到颁发令牌，那么有关令牌的管理，比如过期时间，是jwt还是什么格式，客户端存储策略，都在这里"></a><strong>II、tokenServices()</strong>  <strong>就在本文件注入,由于是授权服务，所以涉及到颁发令牌，那么有关令牌的管理，比如过期时间，是jwt还是什么格式，客户端存储策略，都在这里</strong></h6><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Bean</span><br><span class="line">public AuthorizationServerTokenServices tokenServices() &#123;</span><br><span class="line">    System.out.println(&quot;令牌管理服务的配置&quot;);</span><br><span class="line">    DefaultTokenServices services = new DefaultTokenServices();</span><br><span class="line">    //客户端端配置策略</span><br><span class="line">    services.setClientDetailsService(clientDetailsService);</span><br><span class="line">    //支持令牌的刷新</span><br><span class="line">    services.setSupportRefreshToken(true);</span><br><span class="line">    //令牌服务</span><br><span class="line">    services.setTokenStore(tokenStore);</span><br><span class="line">    //access_token的过期时间</span><br><span class="line">    services.setAccessTokenValiditySeconds(60 * 60 * 24 * 3);</span><br><span class="line">    //refresh_token的过期时间</span><br><span class="line">    services.setRefreshTokenValiditySeconds(60 * 60 * 24 * 3);</span><br><span class="line"></span><br><span class="line">    //设置令牌增强，使用JwtAccessTokenConverter进行转换</span><br><span class="line">    services.setTokenEnhancer(jwtAccessTokenConverter);</span><br><span class="line">    return services;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="III、根据项目的要求去选择令牌的内容配置，一般来说都是jwt或者jwt-自定义内容。"><a href="#III、根据项目的要求去选择令牌的内容配置，一般来说都是jwt或者jwt-自定义内容。" class="headerlink" title="III、根据项目的要求去选择令牌的内容配置，一般来说都是jwt或者jwt+自定义内容。"></a><strong><u>III、根据项目的要求去选择令牌的内容配置，一般来说都是jwt或者jwt+自定义内容。</u></strong></h6><ul>
+<li><p>把令牌变成jwt格式很简单，按下面2两步操作即可，反正就是</p>
+<ul>
+<li><p>~~~<br>@Configuration<br>public class JWTokenConfig {</p>
+<pre><code>@Bean
+public TokenStore jwtTokenStore() &#123;
+    return new JwtTokenStore(jwtAccessTokenConverter());
+&#125;
+
+@Bean
+public JwtAccessTokenConverter jwtAccessTokenConverter() &#123;
+    JwtAccessTokenConverter accessTokenConverter = new JwtAccessTokenConverter();
+    accessTokenConverter.setSigningKey(&quot;test_key&quot;); // 签名密钥
+    return accessTokenConverter;
+&#125;
+</code></pre>
+<p>}</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">* ~~~java</span><br><span class="line">      services.setTokenStore(tokenStore);</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>自定义的话，同样简单，按下面的操作来做，无非就是先写一些配置，然后把配置注入adapter</p>
+<ul>
+<li>&#96;&#96;&#96;java<br>@Component<br>public class JwtTokenEnhancer implements TokenEnhancer {<br>@Override<br>public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {<br>    SecurityUser securityUser &#x3D; (SecurityUser) authentication.getPrincipal();<br>    Map&lt;String, Object&gt; info &#x3D; new HashMap&lt;&gt;();<br>    &#x2F;&#x2F;把用户ID设置到JWT中<br>    info.put(“id”, securityUser.getId());<br>    info.put(“client_id”,securityUser.getClientId());<br>    ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(info);<br>    return accessToken;<br>}<br>}<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">  * ~~~</span><br><span class="line">    tokenEnhancer(enhancerChain)</span><br><span class="line">    ~~~</span><br><span class="line"></span><br><span class="line">##### **三、tokenGranter(new CompositeTokenGranter(tokenGranters))    自定义授权  非常重要**</span><br><span class="line"></span><br><span class="line">作用：自定义授权获取token，下面我们来看一看源码是怎么获取token的，在我们发起oauth/token，请求获取token时，实际上是请求Tokenpoint类的postAccessToken或者getacesstoken方法，相当于调用了一个controller方法，根据请求的方法是get还是post，但其实内部还是调用post的方法。</span><br><span class="line"></span><br><span class="line">在TokenEndPoint 获取令牌过程中, 有个这样的步骤:</span><br><span class="line"></span><br><span class="line">~~~java</span><br><span class="line">OAuth2AccessToken token = getTokenGranter().grant(tokenRequest.getGrantType(), tokenRequest);</span><br><span class="line">~~~</span><br><span class="line"></span><br><span class="line">postAccessToken这个方法中，在这个方法的132行调用TokenGranter类的grant方法来获取token，**&lt;u&gt;这个方法也是最重要的&lt;/u&gt;**，通过这个方法我们可以对请求的参数进行校验是否合法，是否给予令牌。</span><br><span class="line"></span><br><span class="line">TokenGranter是一个接口，它有多个实现类，CompositeTokenGranter是其中之一，在grant方法中，会循环遍历所有的授权方式，根据请求参数携带的授权方式码，来匹配对应的授权处理实现类，调用实现类中的grant方法。那么关键点来了，请求参数中携带的是我们**&lt;u&gt;自定义的授权方式码&lt;/u&gt;**，如果要匹配上，那么首先我们要创建自定义的授权处理类，然后把这个授权处理类放入Spring Security默认的授权处理集合中，这样才能循环匹配上，进行下一步。</span><br><span class="line"></span><br><span class="line">和以前的做法一样：创建自定义授权处理类，我们可以继承TokenGranter来实现自定义的身份验证以便获取token，而AbstractTokenGranter是一个继承TokenGranter的实现类，一般我们都会继承这个类进行使用。这一点已经得到验证，可以看下面的流程。</span><br><span class="line"></span><br><span class="line">| 实现类                            | 对应的授权模式  |</span><br><span class="line">| --------------------------------- | --------------- |</span><br><span class="line">| AuthorizationCodeTokenGranter     | 授权码模式      |</span><br><span class="line">| ClientCredentialsTokenGranter     | 客户端模式      |</span><br><span class="line">| ImplicitTokenGranter              | implicit 模式   |</span><br><span class="line">| RefreshTokenGranter               | 刷新 token 模式 |</span><br><span class="line">| ResourceOwnerPasswordTokenGranter | 密码模式        |</span><br><span class="line"></span><br><span class="line">**这些类都继承了AbstractTokenGranter** </span><br><span class="line"></span><br><span class="line">**AbstractTokenGranter   调用-------&gt;getAccessToken --------&gt;getOAuth2Authentication**</span><br><span class="line"></span><br><span class="line">**根据 client、tokenRequest 从 OAuth2RequestFactory 中创建一个 OAuth2Request, 进而可得到 OAuth2Authentication (存放着用户的认证信息)。**</span><br><span class="line"></span><br><span class="line">**通过 tokenService 去创建 OAuth2AccessToken (存放着用户的 token信息、过期时间)。**</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">###### **I、————所以，这里加入自定的tokenGrant，也就是要自定义自己的授权方法 去 授权 自定义的令牌——————**</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">自定义至关重要的一点就是修改**getOAuth2Authentication**方法 （主要文件见sms文件夹和即可）</span><br><span class="line"></span><br><span class="line">具体修改不讲，修改的流程就是1、**组装自定义模式的认证信息** 2、**用authenticationManager去调用内部自定义的Provider认证这个认证信息，认证规则自然是写在Provider里面**。可借鉴 https://blog.csdn.net/m0_38031406/article/details/89316342</span><br><span class="line"></span><br><span class="line">###### **II、&lt;u&gt;所以实现方式：继承AbstractTokenGranter + 重写 getOAuth2Authentication方法。&lt;/u&gt;**</span><br><span class="line"></span><br><span class="line">~~~</span><br><span class="line">@Override</span><br><span class="line">protected OAuth2Authentication getOAuth2Authentication(ClientDetails client, TokenRequest tokenRequest) &#123;</span><br><span class="line">    Map&lt;String, String&gt; parameters = new LinkedHashMap&lt;&gt;(tokenRequest.getRequestParameters());</span><br><span class="line">    String mobile = parameters.get(&quot;mobile&quot;);</span><br><span class="line">    String password = parameters.get(&quot;password&quot;);</span><br><span class="line">    //将其中的密码移除</span><br><span class="line">    parameters.remove(&quot;password&quot;);</span><br><span class="line">    //自定义的token类</span><br><span class="line">    Authentication userAuth = new MobilePasswordAuthenticationToken(mobile, password);</span><br><span class="line"></span><br><span class="line">    ((AbstractAuthenticationToken) userAuth).setDetails(parameters);</span><br><span class="line">    //调用AuthenticationManager进行认证，内部会根据MobileAuthenticationToken找到对应的Provider进行认证</span><br><span class="line">    userAuth = authenticationManager.authenticate(userAuth);</span><br><span class="line">    if (userAuth == null || !userAuth.isAuthenticated()) &#123;</span><br><span class="line">        throw new InvalidGrantException(&quot;Could not authenticate mobile: &quot; + mobile);</span><br><span class="line">    &#125;</span><br><span class="line">    OAuth2Request storedOAuth2Request = getRequestFactory().createOAuth2Request(client, tokenRequest);</span><br><span class="line">    return new OAuth2Authentication(storedOAuth2Request, userAuth);</span><br><span class="line">&#125;</span><br><span class="line">~~~</span><br><span class="line"></span><br><span class="line">这里调用了AuthenticationManager认证，后面回调用自定义的XXXXXAuthenticationProvider</span><br><span class="line"></span><br><span class="line">###### **III、注入**</span><br><span class="line"></span><br><span class="line">~~~</span><br><span class="line">.tokenGranter(new CompositeTokenGranter(tokenGranters))</span><br><span class="line">~~~</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">##### **四、new OAuthServerWebResponseExceptionTranslator()**  也是自己配置的见文件夹**Exception**</span><br><span class="line"></span><br><span class="line">自定义异常翻译器，针对用户名、密码异常，授权类型不支持的异常进行处理-----**关键是用户**</span><br><span class="line"></span><br><span class="line">##### **五、authorizationCodeServices()就在本文件注入**</span><br><span class="line"></span><br><span class="line">##### **六、待续**。。。。。。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#### **方法3： configure(AuthorizationServerSecurityConfigurer security)**</span><br><span class="line"></span><br><span class="line">```java</span><br><span class="line">/**</span><br><span class="line"> * 配置令牌访问的安全约束（）</span><br><span class="line"> */</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<h5 id="一、配置OAuthServerClientCredentialsTokenEndpointFilter——主要是客户端的验证"><a href="#一、配置OAuthServerClientCredentialsTokenEndpointFilter——主要是客户端的验证" class="headerlink" title="一、配置OAuthServerClientCredentialsTokenEndpointFilter——主要是客户端的验证"></a><strong>一、配置OAuthServerClientCredentialsTokenEndpointFilter——主要是客户端的验证</strong></h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> 客户端异常处理</span></span><br><span class="line"><span class="comment"> * 自定义的客户端认证的过滤器，根据客户端的id、秘钥进行认证</span></span><br><span class="line"><span class="comment"> * 重写这个过滤器用于自定义异常处理</span></span><br><span class="line"><span class="comment"> * 具体认证的逻辑依然使用ClientCredentialsTokenEndpointFilter，只是设置一下AuthenticationEntryPoint为定制</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">configure</span><span class="params">(AuthorizationServerSecurityConfigurer security)</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;配置令牌访问的安全约束&quot;</span>);</span><br><span class="line">      <span class="comment">//自定义ClientCredentialsTokenEndpointFilter，用于处理客户端id，密码错误的异常</span></span><br><span class="line">        <span class="type">OAuthServerClientCredentialsTokenEndpointFilter</span> <span class="variable">endpointFilter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">OAuthServerClientCredentialsTokenEndpointFilter</span>(security,authenticationEntryPoint);</span><br><span class="line">        endpointFilter.afterPropertiesSet();</span><br><span class="line">        security.addTokenEndpointAuthenticationFilter(endpointFilter);</span><br><span class="line"></span><br><span class="line">        security</span><br><span class="line">                .authenticationEntryPoint(authenticationEntryPoint)</span><br><span class="line">                <span class="comment">//开启/oauth/token_key验证端口权限访问</span></span><br><span class="line">                .tokenKeyAccess(<span class="string">&quot;permitAll()&quot;</span>)</span><br><span class="line">                <span class="comment">//开启/oauth/check_token验证端口认证权限访问</span></span><br><span class="line">                .checkTokenAccess(<span class="string">&quot;permitAll()&quot;</span>);</span><br><span class="line">                <span class="comment">//一定不要添加allowFormAuthenticationForClients，否则自定义的OAuthServerClientCredentialsTokenEndpointFilter不生效</span></span><br><span class="line"><span class="comment">//                .allowFormAuthenticationForClients();</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="I、具体认证的逻辑依然使用ClientCredentialsTokenEndpointFilter，只是设置一下AuthenticationEntryPoint为定制"><a href="#I、具体认证的逻辑依然使用ClientCredentialsTokenEndpointFilter，只是设置一下AuthenticationEntryPoint为定制" class="headerlink" title="I、具体认证的逻辑依然使用ClientCredentialsTokenEndpointFilter，只是设置一下AuthenticationEntryPoint为定制"></a><strong>I、具体认证的逻辑依然使用ClientCredentialsTokenEndpointFilter，只是设置一下AuthenticationEntryPoint为定制</strong></h6><p><strong>既然如此，我们就去看自定义的AuthenticationEntryPoint</strong>，这里没改，实际中可以改</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OAuthServerAuthenticationEntryPoint</span> <span class="keyword">implements</span> <span class="title class_">AuthenticationEntryPoint</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 认证失败处理器会调用这个方法返回提示信息</span></span><br><span class="line"><span class="comment">     * TODO 实际开发中可以自己定义，此处直接返回JSON数据：客户端认证失败错误提示</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">commence</span><span class="params">(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        ResponseUtils.result(response,<span class="keyword">new</span> <span class="title class_">ResultMsg</span>(ResultCode.CLIENT_AUTHENTICATION_FAILED.getCode(),ResultCode.CLIENT_AUTHENTICATION_FAILED.getMsg(),<span class="literal">null</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="II、endpointFilter-afterPropertiesSet-认证成功怎么办，认真失败怎么办，这里可以自定义哈哈"><a href="#II、endpointFilter-afterPropertiesSet-认证成功怎么办，认真失败怎么办，这里可以自定义哈哈" class="headerlink" title="II、endpointFilter.afterPropertiesSet(); 认证成功怎么办，认真失败怎么办，这里可以自定义哈哈"></a><strong>II、endpointFilter.afterPropertiesSet();</strong> 认证成功怎么办，认真失败怎么办，这里可以自定义哈哈</h6><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 设置AuthenticationEntryPoint主要逻辑</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">afterPropertiesSet</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;设置AuthenticationEntryPoint主要逻辑&quot;</span>);</span><br><span class="line">    <span class="comment">//TODO 定制认证失败处理器，开发中可以自己修改</span></span><br><span class="line">    setAuthenticationFailureHandler((request, response, exception) -&gt; &#123;</span><br><span class="line">        <span class="keyword">if</span> (exception <span class="keyword">instanceof</span> BadCredentialsException) &#123;</span><br><span class="line">            exception = <span class="keyword">new</span> <span class="title class_">BadCredentialsException</span>(exception.getMessage(), <span class="keyword">new</span> <span class="title class_">BadClientCredentialsException</span>());</span><br><span class="line">        &#125;</span><br><span class="line">        authenticationEntryPoint.commence(request, response, exception);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="comment">//成功处理器，和父类相同，为空即可。</span></span><br><span class="line">    setAuthenticationSuccessHandler((request, response, authentication) -&gt; &#123;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="III、security-addTokenEndpointAuthenticationFilter-endpointFilter"><a href="#III、security-addTokenEndpointAuthenticationFilter-endpointFilter" class="headerlink" title="III、security.addTokenEndpointAuthenticationFilter(endpointFilter);"></a><strong>III、security.addTokenEndpointAuthenticationFilter(endpointFilter);</strong></h6><ul>
+<li>注入 自定义相应异常的过滤链</li>
+</ul>
+<h2 id="2、springconfig"><a href="#2、springconfig" class="headerlink" title="2、springconfig"></a><strong>2、springconfig</strong></h2><h3 id="介绍一个比较完整的securityconfig配置"><a href="#介绍一个比较完整的securityconfig配置" class="headerlink" title="介绍一个比较完整的securityconfig配置"></a><strong>介绍一个比较完整的securityconfig配置</strong></h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="comment">//开启判断用户对某个控制层的方法是否具有访问权限的功能</span></span><br><span class="line"><span class="meta">@EnableGlobalMethodSecurity(prePostEnabled = true)</span></span><br><span class="line"><span class="meta">@EnableWebSecurity</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SecurityConfig</span> <span class="keyword">extends</span> <span class="title class_">WebSecurityConfigurerAdapter</span> &#123;</span><br><span class="line">    <span class="comment">//注入自定义的UserDetailService</span></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="meta">@Lazy</span></span><br><span class="line">    <span class="keyword">private</span> UserDetailsServiceImpl userDetailsServiceImpl;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> StringRedisTemplate stringRedisTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//替换默认AuthenticationManager中的UserDetailService，使用数据库用户认证方式登录</span></span><br><span class="line">    <span class="comment">//1. 一旦通过 configure 方法自定义 AuthenticationManager实现 就回将工厂中自动配置AuthenticationManager 进行覆盖</span></span><br><span class="line">    <span class="comment">//2. 一旦通过 configure 方法自定义 AuthenticationManager实现 需要在实现中指定认证数据源对象 UserDetailService 实例</span></span><br><span class="line">    <span class="comment">//3. 一旦通过 configure 方法自定义 AuthenticationManager实现 这种方式创建AuthenticationManager对象工厂内部本地一个 AuthenticationManager 对象 不允许在其他自定义组件中进行注入</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">configure</span><span class="params">(AuthenticationManagerBuilder builder)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        builder.userDetailsService(userDetailsServiceImpl);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * BCryptPasswordEncoder相关知识：</span></span><br><span class="line"><span class="comment">     * 用户表的密码通常使用MD5等不可逆算法加密后存储，为防止彩虹表破解更会先使用一个特定的字符串（如域名）加密，然后再使用一个随机的salt（盐值）加密。</span></span><br><span class="line"><span class="comment">     * 特定字符串是程序代码中固定的，salt是每个密码单独随机，一般给用户表加一个字段单独存储，比较麻烦。</span></span><br><span class="line"><span class="comment">     * BCrypt算法将salt随机并混入最终加密后的密码，验证时也无需单独提供之前的salt，从而无需单独处理salt问题。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> BCryptPasswordEncoder <span class="title function_">passwordEncoder</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">BCryptPasswordEncoder</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//将自定义AuthenticationManager在工厂中进行暴露,可以在任何位置注入</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> AuthenticationManager <span class="title function_">authenticationManagerBean</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">super</span>.authenticationManagerBean();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//HttpSecurity配置</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">configure</span><span class="params">(HttpSecurity http)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        http.cors(withDefaults())</span><br><span class="line">                <span class="comment">// 禁用 CSRF</span></span><br><span class="line">                .csrf().disable()</span><br><span class="line">                .authorizeRequests()</span><br><span class="line">                <span class="comment">// 指定的接口直接放行</span></span><br><span class="line">                <span class="comment">// swagger</span></span><br><span class="line">                .antMatchers(SecurityConstants.SWAGGER_WHITELIST).permitAll()</span><br><span class="line">                .antMatchers(SecurityConstants.H2_CONSOLE).permitAll()</span><br><span class="line">                .antMatchers(HttpMethod.POST, SecurityConstants.SYSTEM_WHITELIST).permitAll()</span><br><span class="line">                <span class="comment">// 其他的接口都需要认证后才能请求</span></span><br><span class="line">                .anyRequest().authenticated()</span><br><span class="line">                .and()</span><br><span class="line">                <span class="comment">//添加自定义Filter</span></span><br><span class="line">                .addFilter(<span class="keyword">new</span> <span class="title class_">JwtAuthorizationFilter</span>(authenticationManager(), stringRedisTemplate))</span><br><span class="line">                <span class="comment">// 不需要session（不创建会话）</span></span><br><span class="line">                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()</span><br><span class="line">                <span class="comment">// 授权异常处理</span></span><br><span class="line">                .exceptionHandling()</span><br><span class="line">                <span class="comment">// json提示用户没有登录不需要用户跳转到登录页面去</span></span><br><span class="line">                .authenticationEntryPoint(<span class="keyword">new</span> <span class="title class_">JwtAuthenticationEntryPoint</span>())</span><br><span class="line">                <span class="comment">// 权限拦截器，提示用户没有当前权限</span></span><br><span class="line">                .accessDeniedHandler(<span class="keyword">new</span> <span class="title class_">JwtAccessDeniedHandler</span>());</span><br><span class="line">        <span class="comment">// 防止H2 web 页面的Frame 被拦截</span></span><br><span class="line">        http.headers().frameOptions().disable();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Cors配置优化</span></span><br><span class="line"><span class="comment">     **/</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    CorsConfigurationSource <span class="title function_">corsConfigurationSource</span><span class="params">()</span> &#123;</span><br><span class="line">        org.springframework.web.cors.<span class="type">CorsConfiguration</span> <span class="variable">configuration</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CorsConfiguration</span>();</span><br><span class="line">        configuration.setAllowedOrigins(singletonList(<span class="string">&quot;*&quot;</span>));</span><br><span class="line">        <span class="comment">// configuration.setAllowedOriginPatterns(singletonList(&quot;*&quot;));</span></span><br><span class="line">        configuration.setAllowedHeaders(singletonList(<span class="string">&quot;*&quot;</span>));</span><br><span class="line">        configuration.setAllowedMethods(Arrays.asList(<span class="string">&quot;GET&quot;</span>, <span class="string">&quot;POST&quot;</span>, <span class="string">&quot;DELETE&quot;</span>, <span class="string">&quot;PUT&quot;</span>, <span class="string">&quot;OPTIONS&quot;</span>));</span><br><span class="line">        configuration.setExposedHeaders(singletonList(SecurityConstants.TOKEN_HEADER));</span><br><span class="line">        configuration.setAllowCredentials(<span class="literal">false</span>);</span><br><span class="line">        configuration.setMaxAge(<span class="number">3600L</span>);</span><br><span class="line">        <span class="type">UrlBasedCorsConfigurationSource</span> <span class="variable">source</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UrlBasedCorsConfigurationSource</span>();</span><br><span class="line">        source.registerCorsConfiguration(<span class="string">&quot;/**&quot;</span>, configuration);</span><br><span class="line">        <span class="keyword">return</span> source;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="鉴权服务"><a href="#鉴权服务" class="headerlink" title="鉴权服务"></a>鉴权服务</h1><p>和授权服务，许多程序都是围绕着配置类进行的，所以我们直接看配置类</p>
+<h2 id="【1】AccessTokenConfig-令牌的一些配置"><a href="#【1】AccessTokenConfig-令牌的一些配置" class="headerlink" title="【1】AccessTokenConfig  令牌的一些配置"></a><strong>【1】AccessTokenConfig</strong>  令牌的一些配置</h2><ul>
+<li>和授权服务一致，因为令牌要从授权服务到网关，再到客户端，不管是为了现在的还是后续的操作，最好配置，当然，用不到也可以不配，看你用不用得到。</li>
+</ul>
+<h2 id="【2】JwtAuthenticationManager-token认证管理器"><a href="#【2】JwtAuthenticationManager-token认证管理器" class="headerlink" title="【2】JwtAuthenticationManager token认证管理器"></a><strong>【2】JwtAuthenticationManager token认证管理器</strong></h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> 公众号：码猿技术专栏</span></span><br><span class="line"><span class="comment"> * JWT认证管理器，主要的作用就是对携带过来的token进行校验，比如过期时间，加密方式等</span></span><br><span class="line"><span class="comment"> * 一旦token校验通过，则交给鉴权管理器进行鉴权</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> Mono&lt;Authentication&gt; <span class="title function_">authenticate</span><span class="params">(Authentication authentication)</span> &#123;</span><br><span class="line"></span><br><span class="line">    System.out.println(<span class="string">&quot;第六步***来到JWT认证管理器 检验token&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> Mono.justOrEmpty(authentication)</span><br><span class="line">            .filter(a -&gt; a <span class="keyword">instanceof</span> BearerTokenAuthenticationToken)</span><br><span class="line">            .cast(BearerTokenAuthenticationToken.class)</span><br><span class="line">            .map(BearerTokenAuthenticationToken::getToken)</span><br><span class="line">            .flatMap((accessToken -&gt; &#123;</span><br><span class="line">                <span class="type">OAuth2AccessToken</span> <span class="variable">oAuth2AccessToken</span> <span class="operator">=</span> <span class="built_in">this</span>.tokenStore.readAccessToken(accessToken);</span><br><span class="line">                <span class="comment">//根据access_token从数据库获取不到OAuth2AccessToken</span></span><br><span class="line">                <span class="keyword">if</span> (oAuth2AccessToken == <span class="literal">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">return</span> Mono.error(<span class="keyword">new</span> <span class="title class_">InvalidTokenException</span>(<span class="string">&quot;无效的token！&quot;</span>));</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (oAuth2AccessToken.isExpired()) &#123;</span><br><span class="line">                    <span class="keyword">return</span> Mono.error(<span class="keyword">new</span> <span class="title class_">InvalidTokenException</span>(<span class="string">&quot;token已过期！&quot;</span>));</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="type">OAuth2Authentication</span> <span class="variable">oAuth2Authentication</span> <span class="operator">=</span> <span class="built_in">this</span>.tokenStore.readAuthentication(accessToken);</span><br><span class="line">                <span class="keyword">if</span> (oAuth2Authentication == <span class="literal">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">return</span> Mono.error(<span class="keyword">new</span> <span class="title class_">InvalidTokenException</span>(<span class="string">&quot;无效的token！&quot;</span>));</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">return</span> Mono.just(oAuth2Authentication);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;)).cast(Authentication.class);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="【3】JwtAccessManagerV2——-认证管理器自定义"><a href="#【3】JwtAccessManagerV2——-认证管理器自定义" class="headerlink" title="【3】JwtAccessManagerV2——-认证管理器自定义"></a><strong>【3】JwtAccessManagerV2——-认证管理器自定义</strong></h2><ul>
+<li>作用：认证管理的作用就是获取传递过来的令牌，对其进行解析、验签、过期时间判定。就是作为的鉴权</li>
+<li>获取调用方法【get&#x2F;post…】+uri.getPath()  合成完整路径例如：【uri.getPath()】</li>
+<li>从redis里面获取获取所有的uri-&gt;角色对应关系</li>
+<li>去链接里面找到和自己这次申请链接完全一致的那一个键值对，而这个键值对的值恰恰就是【权限集合】</li>
+<li>把自己的权限先从mono中解析出来，然后匹配，如果超级管理员，放行；如果存在交集，则通过；否则失败</li>
+</ul>
+<p>异常</p>
+<ul>
+<li><p>RequestAuthenticationEntryPoint</p>
+<ul>
+<li>用于处理没有登录或token过期时的自定义返回结果</li>
+</ul>
+</li>
+<li><p>RequestAccessDeniedHandler</p>
+<ul>
+<li>自定义返回结果：没有权限访问时</li>
+</ul>
+</li>
+<li><p>RequestAuthenticationEntryPoint</p>
+<ul>
+<li>用于处理没有登录或token过期时的自定义返回结果</li>
+</ul>
+</li>
+</ul>
+<h2 id="【4】-SecurityConfig-在webflux中使用security"><a href="#【4】-SecurityConfig-在webflux中使用security" class="headerlink" title="【4】 SecurityConfig  在webflux中使用security"></a><strong>【4】 SecurityConfig  在webflux中使用security</strong></h2><h3 id="1、webFluxSecurityFilterChain——把之前的配置整合链路"><a href="#1、webFluxSecurityFilterChain——把之前的配置整合链路" class="headerlink" title="1、webFluxSecurityFilterChain——把之前的配置整合链路"></a><strong>1、webFluxSecurityFilterChain——把之前的配置整合链路</strong></h3><ul>
+<li><strong>这里使用的是webFluxSecurityFilterChain</strong></li>
+<li>http下的功能可以借鉴<a target="_blank" rel="noopener" href="http://events.jianshu.io/p/8ad366b97e18">http://events.jianshu.io/p/8ad366b97e18</a></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">    SecurityWebFilterChain webFluxSecurityFilterChain(ServerHttpSecurity http) throws Exception&#123;</span><br><span class="line">    //认证过滤器，放入认证管理器tokenAuthenticationManager</span><br><span class="line">    AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(tokenAuthenticationManager);</span><br><span class="line">    System.out.println(&quot;认证过滤器，放入认证管理器tokenAuthenticationManager&quot;);</span><br><span class="line">    authenticationWebFilter.setServerAuthenticationConverter(new ServerBearerTokenAuthenticationConverter());</span><br><span class="line"></span><br><span class="line">    http</span><br><span class="line">            .httpBasic().disable()</span><br><span class="line">            .csrf().disable()</span><br><span class="line">            .authorizeExchange()</span><br><span class="line">            //白名单直接放行</span><br><span class="line">            .pathMatchers(ArrayUtil.toArray(sysConfig.getIgnoreUrls(),String.class)).permitAll()</span><br><span class="line">            //其他的请求必须鉴权，使用鉴权管理器</span><br><span class="line">            .anyExchange().access(accessManager)</span><br><span class="line">            //鉴权的异常处理，权限不足，token失效</span><br><span class="line">            .and().exceptionHandling()</span><br><span class="line">            .authenticationEntryPoint(requestAuthenticationEntryPoint)</span><br><span class="line">            .accessDeniedHandler(requestAccessDeniedHandler)</span><br><span class="line">            .and()</span><br><span class="line">            // 跨域过滤器</span><br><span class="line">            .addFilterAt(corsFilter, SecurityWebFiltersOrder.CORS)</span><br><span class="line">            //token的认证过滤器，用于校验token和认证</span><br><span class="line">            .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION);</span><br><span class="line">    return http.build();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="一、加入了【2】的自定义令牌认证管理器"><a href="#一、加入了【2】的自定义令牌认证管理器" class="headerlink" title="一、加入了【2】的自定义令牌认证管理器"></a><strong>一、加入了【2】的自定义令牌认证管理器</strong></h4><h4 id="二、加入了【3】的鉴权管理器"><a href="#二、加入了【3】的鉴权管理器" class="headerlink" title="二、加入了【3】的鉴权管理器"></a><strong>二、加入了【3】的鉴权管理器</strong></h4><h3 id="2、白名单放行"><a href="#2、白名单放行" class="headerlink" title="**2、白名单放行 **"></a>**2、白名单放行 **</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//白名单直接放行</span><br><span class="line">.pathMatchers(ArrayUtil.toArray(sysConfig.getIgnoreUrls(),String.class)).permitAll()</span><br><span class="line">//其他的请求必须鉴权，使用鉴权管理器</span><br><span class="line">.anyExchange().access(accessManager)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3、鉴权的异常处理"><a href="#3、鉴权的异常处理" class="headerlink" title="3、鉴权的异常处理"></a><strong>3、鉴权的异常处理</strong></h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//鉴权的异常处理，权限不足，token失效</span><br><span class="line">.and().exceptionHandling()</span><br><span class="line">.authenticationEntryPoint(requestAuthenticationEntryPoint)</span><br><span class="line">.accessDeniedHandler(requestAccessDeniedHandler)</span><br></pre></td></tr></table></figure>
+
+<h1 id="异常配置"><a href="#异常配置" class="headerlink" title="异常配置"></a>异常配置</h1><h2 id="【1】认证服务的异常"><a href="#【1】认证服务的异常" class="headerlink" title="【1】认证服务的异常"></a>【1】认证服务的异常</h2><ul>
+<li>用户名，密码错误异常、授权类型异常</li>
+<li>客户端ID、秘钥异常</li>
+</ul>
+<h3 id="1、用户名，密码错误异常、授权类型异常"><a href="#1、用户名，密码错误异常、授权类型异常" class="headerlink" title="1、用户名，密码错误异常、授权类型异常"></a><strong>1、用户名，密码错误异常、授权类型异常</strong></h3><p>针对用户名、密码、授权类型错误的异常解决方式比较复杂，需要定制的比较多。</p>
+<h4 id="一、定制提示信息、响应码"><a href="#一、定制提示信息、响应码" class="headerlink" title="一、定制提示信息、响应码"></a><strong>一、定制提示信息、响应码</strong></h4><p>这部分根据自己业务需要定制，举个例子，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">ResultCode</span> &#123;</span><br><span class="line"></span><br><span class="line">    CLIENT_AUTHENTICATION_FAILED(<span class="number">1001</span>,<span class="string">&quot;客户端认证失败&quot;</span>),</span><br><span class="line"></span><br><span class="line">    USERNAME_OR_PASSWORD_ERROR(<span class="number">1002</span>,<span class="string">&quot;用户名或密码错误&quot;</span>),</span><br><span class="line"></span><br><span class="line">    UNSUPPORTED_GRANT_TYPE(<span class="number">1003</span>, <span class="string">&quot;不支持的认证模式&quot;</span>),</span><br><span class="line"></span><br><span class="line">    NO_PERMISSION(<span class="number">1005</span>,<span class="string">&quot;无权限访问！&quot;</span>),</span><br><span class="line">    UNAUTHORIZED(<span class="number">401</span>, <span class="string">&quot;系统错误&quot;</span>),</span><br><span class="line"></span><br><span class="line">    INVALID_TOKEN(<span class="number">1004</span>,<span class="string">&quot;无效的token&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="二、自定义WebResponseExceptionTranslator"><a href="#二、自定义WebResponseExceptionTranslator" class="headerlink" title="二、自定义WebResponseExceptionTranslator"></a><strong>二、自定义WebResponseExceptionTranslator</strong></h4><ul>
+<li><p>需要自定义一个异常翻译器，默认的是<strong>DefaultWebResponseExceptionTranslator</strong>，此处必须重写，其中有一个需要实现的方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ResponseEntity&lt;T&gt; <span class="title function_">translate</span><span class="params">(Exception e)</span> <span class="keyword">throws</span> Exception;</span><br></pre></td></tr></table></figure>
+
+<p>这个方法就是根据传递过来的<strong>Exception</strong>判断不同的异常返回特定的信息，这里需要判断的异常的如下：</p>
+<ul>
+<li><strong>UnsupportedGrantTypeException</strong>：不支持的授权类型异常</li>
+<li><strong>InvalidGrantException</strong>：用户名或者密码错误的异常</li>
+</ul>
+</li>
+<li><p>创建一个<strong>OAuthServerWebResponseExceptionTranslator</strong>实现<strong>WebResponseExceptionTranslator</strong>，代码如下：</p>
+</li>
+<li><p>&#96;&#96;&#96;java<br>public class OAuthServerWebResponseExceptionTranslator implements WebResponseExceptionTranslator{<br>&#x2F;**<br> * 业务处理方法，重写这个方法返回客户端信息<br> <em>&#x2F;<br>@Override<br>public ResponseEntity<ResultMsg> translate(Exception e){<br>    ResultMsg resultMsg &#x3D; doTranslateHandler(e);<br>    return new ResponseEntity&lt;&gt;(resultMsg, HttpStatus.UNAUTHORIZED);<br>}<br><br>&#x2F;</em>*<br> * 根据异常定制返回信息<br> * TODO 自己根据业务封装<br> *&#x2F;<br>private ResultMsg doTranslateHandler(Exception e) {<br>    &#x2F;&#x2F;初始值，系统错误，<br>    ResultCode resultCode &#x3D; ResultCode.UNAUTHORIZED;<br>    &#x2F;&#x2F;判断异常，不支持的认证方式<br>    if(e instanceof UnsupportedGrantTypeException){<br>        resultCode &#x3D; ResultCode.UNSUPPORTED_GRANT_TYPE;<br>        &#x2F;&#x2F;用户名或密码异常<br>    }else if(e instanceof InvalidGrantException){<br>        resultCode &#x3D; ResultCode.USERNAME_OR_PASSWORD_ERROR;<br>    }<br>    return new ResultMsg(resultCode.getCode(),resultCode.getMsg(),null);<br>}<br>}</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">#### **三、认证服务配置文件中配置**</span><br><span class="line"></span><br><span class="line">需要将自定义的异常翻译器**OAuthServerWebResponseExceptionTranslator**在配置文件中配置，很简单，一行代码的事。</span><br><span class="line"></span><br><span class="line">在**AuthorizationServerConfig**配置文件指定，代码如下：</span><br><span class="line"></span><br><span class="line">![image-20220906203102659](C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220906203102659.png)</span><br><span class="line"></span><br><span class="line">#### **四、这么配置的原因**</span><br><span class="line"></span><br><span class="line">* 我们知道获取令牌的接口为 **/oauth/token**，这个接口定义在**TokenEndpoint#postAccessToken()**（POST请求）方法中，如下图</span><br><span class="line">* ![image-20220906203752062](C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220906203752062.png)</span><br><span class="line">* 是不是都继承了**OAuth2Exception**，那么尝试在**TokenEndpoint**这个类中找找有没有处理**OAuth2Exception**这个异常的处理器，果然找到了一个 **handleException()** 方法，如下：</span><br><span class="line">* ![image-20220906203840232](C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220906203840232.png)</span><br><span class="line">* 可以看到，这里的异常翻译器已经使用了我们自定义的**OAuthServerWebResponseExceptionTranslator**。可以看下默认的异常翻译器是啥，代码如下：</span><br><span class="line"></span><br><span class="line">### **2、客户端ID、秘钥异常**</span><br><span class="line"></span><br><span class="line">这部分比较复杂，想要理解还是需要些基础的，解决这个异常的方案很多，陈某只是介绍其中一种，下面详细介绍。</span><br><span class="line"></span><br><span class="line">#### **一、定制提示信息、响应码**</span><br><span class="line"></span><br><span class="line">这部分根据自己业务需要定制，和第一步一样。</span><br><span class="line"></span><br><span class="line">#### **二、自定义AuthenticationEntryPoint**</span><br><span class="line"></span><br><span class="line">这个**AuthenticationEntryPoint**是不是很熟悉，前面的文章已经介绍过了，此处需要自定义来返回定制的提示信息。</span><br><span class="line"></span><br><span class="line">创建**OAuthServerAuthenticationEntryPoint**，实现AuthenticationEntryPoint，重写其中的方法，代码如下：</span><br><span class="line"></span><br><span class="line">* ```java</span><br><span class="line">  public class OAuthServerAuthenticationEntryPoint implements AuthenticationEntryPoint &#123;</span><br><span class="line">  </span><br><span class="line">      /**</span><br><span class="line">       * 认证失败处理器会调用这个方法返回提示信息</span><br><span class="line">       * TODO 实际开发中可以自己定义，此处直接返回JSON数据：客户端认证失败错误提示</span><br><span class="line">       */</span><br><span class="line">      @Override</span><br><span class="line">      public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException &#123;</span><br><span class="line">          ResponseUtils.result(response,new ResultMsg(ResultCode.CLIENT_AUTHENTICATION_FAILED.getCode(),ResultCode.CLIENT_AUTHENTICATION_FAILED.getMsg(),null));</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="三、改造ClientCredentialsTokenEndpointFilter"><a href="#三、改造ClientCredentialsTokenEndpointFilter" class="headerlink" title="三、改造ClientCredentialsTokenEndpointFilter"></a><strong>三、改造ClientCredentialsTokenEndpointFilter</strong></h4><p><strong>ClientCredentialsTokenEndpointFilter</strong>这个过滤器的主要作用就是校验客户端的ID、秘钥，代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class OAuthServerClientCredentialsTokenEndpointFilter extends ClientCredentialsTokenEndpointFilter &#123;</span><br><span class="line"></span><br><span class="line">    private final AuthorizationServerSecurityConfigurer configurer;</span><br><span class="line"></span><br><span class="line">    private AuthenticationEntryPoint authenticationEntryPoint;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 构造方法</span><br><span class="line">     * @param configurer AuthorizationServerSecurityConfigurer对昂</span><br><span class="line">     * @param authenticationEntryPoint 自定义的AuthenticationEntryPoint</span><br><span class="line">     */</span><br><span class="line">    public OAuthServerClientCredentialsTokenEndpointFilter(AuthorizationServerSecurityConfigurer configurer, AuthenticationEntryPoint authenticationEntryPoint) &#123;</span><br><span class="line">        System.out.println(&quot;自定义的客户端认证的过滤器的构造方法&quot;);</span><br><span class="line">        this.configurer = configurer;</span><br><span class="line">        this.authenticationEntryPoint=authenticationEntryPoint;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void setAuthenticationEntryPoint(AuthenticationEntryPoint authenticationEntryPoint) &#123;</span><br><span class="line">        System.out.println(&quot;setAuthenticationEntryPoint&quot;);</span><br><span class="line">        this.authenticationEntryPoint = authenticationEntryPoint;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 需要重写这个方法，返回AuthenticationManager</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    protected AuthenticationManager getAuthenticationManager() &#123;</span><br><span class="line">        System.out.println(&quot;getAuthenticationManager&quot;);</span><br><span class="line">        return configurer.and().getSharedObject(AuthenticationManager.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 设置AuthenticationEntryPoint主要逻辑</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public void afterPropertiesSet() &#123;</span><br><span class="line">        System.out.println(&quot;设置AuthenticationEntryPoint主要逻辑&quot;);</span><br><span class="line">        //TODO 定制认证失败处理器，开发中可以自己修改</span><br><span class="line">        setAuthenticationFailureHandler((request, response, exception) -&gt; &#123;</span><br><span class="line">            if (exception instanceof BadCredentialsException) &#123;</span><br><span class="line">                exception = new BadCredentialsException(exception.getMessage(), new BadClientCredentialsException());</span><br><span class="line">            &#125;</span><br><span class="line">            authenticationEntryPoint.commence(request, response, exception);</span><br><span class="line">        &#125;);</span><br><span class="line">        //成功处理器，和父类相同，为空即可。</span><br><span class="line">        setAuthenticationSuccessHandler((request, response, authentication) -&gt; &#123;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>有几个重要的部分需要讲一下，如下：</p>
+<ul>
+<li>构造方法中需要传入第2步自定义的 <strong>OAuthServerAuthenticationEntryPoint</strong></li>
+<li>重写 <strong>getAuthenticationManager()</strong> 方法返回IOC中的AuthenticationManager</li>
+<li>重写<strong>afterPropertiesSet()</strong> 方法，用于自定义认证失败、成功处理器，失败处理器中调用<strong>OAuthServerAuthenticationEntryPoint</strong>进行异常提示信息返回</li>
+</ul>
+<h4 id="四、OAuth配置文件中指定过滤器"><a href="#四、OAuth配置文件中指定过滤器" class="headerlink" title="四、OAuth配置文件中指定过滤器"></a><strong>四、OAuth配置文件中指定过滤器</strong></h4><p>只需要将自定义的过滤器添加到<strong>AuthorizationServerSecurityConfigurer</strong>中，代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Override</span><br><span class="line">    public void configure(AuthorizationServerSecurityConfigurer security) &#123;</span><br><span class="line">        System.out.println(&quot;配置令牌访问的安全约束&quot;);</span><br><span class="line">        //自定义ClientCredentialsTokenEndpointFilter，用于处理客户端id，密码错误的异常</span><br><span class="line">        ①OAuthServerClientCredentialsTokenEndpointFilter endpointFilter = new OAuthServerClientCredentialsTokenEndpointFilter(security,authenticationEntryPoint);</span><br><span class="line">       ① endpointFilter.afterPropertiesSet();</span><br><span class="line">        ①security.addTokenEndpointAuthenticationFilter(endpointFilter);</span><br><span class="line"></span><br><span class="line">        security</span><br><span class="line">                .authenticationEntryPoint(authenticationEntryPoint)</span><br><span class="line">                //开启/oauth/token_key验证端口权限访问</span><br><span class="line">                .tokenKeyAccess(&quot;permitAll()&quot;)</span><br><span class="line">                //开启/oauth/check_token验证端口认证权限访问</span><br><span class="line">                .checkTokenAccess(&quot;permitAll()&quot;);</span><br><span class="line">               ② //一定不要添加allowFormAuthenticationForClients，否则自定义的OAuthServerClientCredentialsTokenEndpointFilter不生效</span><br><span class="line">//                .allowFormAuthenticationForClients();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>第<strong>①</strong>部分是添加过滤器，其中<strong>authenticationEntryPoint</strong>使用的是第2步自定义的<strong>OAuthServerAuthenticationEntryPoint</strong></p>
+<p>第<strong>②</strong>部分一定要注意：一定要去掉这行代码，具体原因源码解释。</p>
+<h4 id="五、源码追踪"><a href="#五、源码追踪" class="headerlink" title="五、源码追踪"></a><strong>五、源码追踪</strong></h4><h6 id="I、OAuthServerAuthenticationEntryPoint在何时调用？"><a href="#I、OAuthServerAuthenticationEntryPoint在何时调用？" class="headerlink" title="I、OAuthServerAuthenticationEntryPoint在何时调用？"></a><strong>I、OAuthServerAuthenticationEntryPoint在何时调用？</strong></h6><p>OAuthServerAuthenticationEntryPoint这个过滤器继承了 <strong>AbstractAuthenticationProcessingFilter</strong> 这个抽象类，一切的逻辑都在 <strong>doFilter()</strong> 中，陈某简化了其中的关键代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)</span><br><span class="line">			throws IOException, ServletException &#123;</span><br><span class="line">    try &#123;</span><br><span class="line">        	//调用子类的attemptAuthentication方法，获取参数并且认证</span><br><span class="line">			authResult = attemptAuthentication(request, response);</span><br><span class="line">		&#125;</span><br><span class="line">		catch (InternalAuthenticationServiceException failed) &#123;</span><br><span class="line">            //一旦认证异常，则调用unsuccessfulAuthentication方法，通过failureHandler处理</span><br><span class="line">			unsuccessfulAuthentication(request, response, failed);</span><br><span class="line">			return;</span><br><span class="line">		&#125;</span><br><span class="line">		catch (AuthenticationException failed) &#123;</span><br><span class="line">            //一旦认证异常，则调用unsuccessfulAuthentication方法，通过failureHandler处理</span><br><span class="line">			unsuccessfulAuthentication(request, response, failed);</span><br><span class="line">			return;</span><br><span class="line">		&#125;</span><br><span class="line">		//认证成功，则调用successHandler处理</span><br><span class="line">		successfulAuthentication(request, response, chain, authResult);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关键代码在 <strong>unsuccessfulAuthentication()</strong> 这个方法中，代码如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException &#123;</span><br><span class="line">    SecurityContextHolder.clearContext();</span><br><span class="line">    if (this.logger.isDebugEnabled()) &#123;</span><br><span class="line">        this.logger.debug(&quot;Authentication request failed: &quot; + failed.toString(), failed);</span><br><span class="line">        this.logger.debug(&quot;Updated SecurityContextHolder to contain null Authentication&quot;);</span><br><span class="line">        this.logger.debug(&quot;Delegating to authentication failure handler &quot; + this.failureHandler);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    this.rememberMeServices.loginFail(request, response);</span><br><span class="line">    this.failureHandler.onAuthenticationFailure(request, response, failed);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="II、自定义的过滤器如何生效的？"><a href="#II、自定义的过滤器如何生效的？" class="headerlink" title="II、自定义的过滤器如何生效的？"></a><strong>II、自定义的过滤器如何生效的？</strong></h6><p>这个就要看 <strong>AuthorizationServerSecurityConfigurer#configure()</strong> 这个方法了，其中有一段代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">while(var2.hasNext()) &#123;</span><br><span class="line">    Filter filter = (Filter)var2.next();</span><br><span class="line">    http.addFilterBefore(filter, BasicAuthenticationFilter.class);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>也就是说，我们自定义的过滤链被加到了BasicAuthenticationFilter里面</p>
+<h6 id="III、为什么不能加-allowFormAuthenticationForClients-？"><a href="#III、为什么不能加-allowFormAuthenticationForClients-？" class="headerlink" title="III、为什么不能加.allowFormAuthenticationForClients()？"></a><strong>III、为什么不能加.allowFormAuthenticationForClients()？</strong></h6><p>还是在 <strong>AuthorizationServerSecurityConfigurer#configure()</strong> 这个方法中，一旦设置了 <strong>allowFormAuthenticationForClients</strong> 为true，则会创建 <strong>ClientCredentialsTokenEndpointFilter</strong>，此时自定义的自然失效了。</p>
+<h2 id="【2】资源服务自定义异常信息"><a href="#【2】资源服务自定义异常信息" class="headerlink" title="【2】资源服务自定义异常信息"></a><strong>【2】资源服务自定义异常信息</strong></h2><p>下面针对上述两种异常分别定制异常提示信息，这个比认证服务定制简单。</p>
+<h3 id="1、自定义返回结果：没有权限访问时"><a href="#1、自定义返回结果：没有权限访问时" class="headerlink" title="1、自定义返回结果：没有权限访问时"></a><strong>1、自定义返回结果：没有权限访问时</strong></h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RequestAccessDeniedHandler</span> <span class="keyword">implements</span> <span class="title class_">ServerAccessDeniedHandler</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Mono&lt;Void&gt; <span class="title function_">handle</span><span class="params">(ServerWebExchange exchange, AccessDeniedException denied)</span> &#123;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;RequestAccessDeniedHandler&quot;</span>);</span><br><span class="line">        <span class="type">ServerHttpResponse</span> <span class="variable">response</span> <span class="operator">=</span> exchange.getResponse();</span><br><span class="line">        response.setStatusCode(HttpStatus.OK);</span><br><span class="line">        response.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);</span><br><span class="line">        System.out.println(<span class="string">&quot;wuquan2&quot;</span>);</span><br><span class="line"></span><br><span class="line">        String body= JSONUtil.toJsonStr(<span class="keyword">new</span> <span class="title class_">ResultMsg</span>(ResultCode.NO_PERMISSION.getCode(),ResultCode.NO_PERMISSION.getMsg(),<span class="literal">null</span>));</span><br><span class="line">        <span class="type">DataBuffer</span> <span class="variable">buffer</span> <span class="operator">=</span>  response.bufferFactory().wrap(body.getBytes(Charset.forName(<span class="string">&quot;UTF-8&quot;</span>)));</span><br><span class="line">        <span class="keyword">return</span> response.writeWith(Mono.just(buffer));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2、用于处理没有登录或token过期时的自定义返回结果"><a href="#2、用于处理没有登录或token过期时的自定义返回结果" class="headerlink" title="2、用于处理没有登录或token过期时的自定义返回结果"></a><strong>2、用于处理没有登录或token过期时的自定义返回结果</strong></h3><h1 id="令牌配置"><a href="#令牌配置" class="headerlink" title="令牌配置"></a>令牌配置</h1><h2 id="【1】令牌本身的配置"><a href="#【1】令牌本身的配置" class="headerlink" title="【1】令牌本身的配置"></a>【1】令牌本身的配置</h2><ul>
+<li>令牌相关的配置都放在了AccessTokenConfig这个配置类中，代码如下：</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">public class AccessTokenConfig &#123;</span><br><span class="line">    /**</span><br><span class="line">     * 令牌的存储策略</span><br><span class="line">     */</span><br><span class="line">    @Bean</span><br><span class="line">    public TokenStore tokenStore() &#123;</span><br><span class="line">        //使用JwtTokenStore生成JWT令牌</span><br><span class="line">        return new JwtTokenStore(jwtAccessTokenConverter());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * JwtAccessTokenConverter</span><br><span class="line">     * TokenEnhancer的子类，在JWT编码的令牌值和OAuth身份验证信息之间进行转换。</span><br><span class="line">     * TODO：后期可以使用非对称加密</span><br><span class="line">     */</span><br><span class="line">    @Bean</span><br><span class="line">    public JwtAccessTokenConverter jwtAccessTokenConverter()&#123;</span><br><span class="line">        JwtAccessTokenConverter converter = new JwtAccessTokenEnhancer();</span><br><span class="line">        // 设置秘钥</span><br><span class="line">        converter.setSigningKey(TokenConstant.SIGN_KEY);</span><br><span class="line">        /*</span><br><span class="line">         * 设置自定义得的令牌转换器，从map中转换身份信息</span><br><span class="line">         * fix(*)：修复刷新令牌无法获取用户详细信息的问题</span><br><span class="line">         */</span><br><span class="line">        converter.setAccessTokenConverter(new JwtEnhanceAccessTokenConverter());</span><br><span class="line">        return converter;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * JWT令牌增强，继承JwtAccessTokenConverter</span><br><span class="line">     * 将业务所需的额外信息放入令牌中，这样下游微服务就能解析令牌获取</span><br><span class="line">     */</span><br><span class="line">    public static class JwtAccessTokenEnhancer extends JwtAccessTokenConverter &#123;</span><br><span class="line">        /**</span><br><span class="line">         * 重写enhance方法，在其中扩展</span><br><span class="line">         */</span><br><span class="line">        @Override</span><br><span class="line">        public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) &#123;</span><br><span class="line">            Object principal = authentication.getUserAuthentication().getPrincipal();</span><br><span class="line">            if (principal instanceof SecurityUser)&#123;</span><br><span class="line">                //获取userDetailService中查询到用户信息</span><br><span class="line">                SecurityUser user=(SecurityUser)principal;</span><br><span class="line">                //将额外的信息放入到LinkedHashMap中</span><br><span class="line">                LinkedHashMap&lt;String,Object&gt; extendInformation=new LinkedHashMap&lt;&gt;();</span><br><span class="line">                //设置用户的userId</span><br><span class="line">                extendInformation.put(TokenConstant.USER_ID,user.getUserId());</span><br><span class="line">                //添加到additionalInformation</span><br><span class="line">                ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(extendInformation);</span><br><span class="line">            &#125;</span><br><span class="line">            return super.enhance(accessToken, authentication);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>1、JwtAccessTokenConverter</strong></li>
+</ul>
+<p>令牌增强类，用于JWT令牌和OAuth身份进行转换</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Bean</span><br><span class="line">public JwtAccessTokenConverter jwtAccessTokenConverter()&#123;</span><br><span class="line">    JwtAccessTokenConverter converter = new JwtAccessTokenEnhancer();</span><br><span class="line">    // 设置秘钥</span><br><span class="line">    converter.setSigningKey(TokenConstant.SIGN_KEY);</span><br><span class="line">    /*</span><br><span class="line">     * 设置自定义得的令牌转换器，从map中转换身份信息</span><br><span class="line">     * fix(*)：修复刷新令牌无法获取用户详细信息的问题</span><br><span class="line">     */</span><br><span class="line">    converter.setAccessTokenConverter(new JwtEnhanceAccessTokenConverter());</span><br><span class="line">    return converter;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>2、TokenStore</strong></li>
+</ul>
+<p>令牌的存储策略，这里使用的是JwtTokenStore，使用JWT的令牌生成方式，其实还有以下两个比较常用的方式</p>
+<ul>
+<li><ul>
+<li>RedisTokenStore：将令牌存储到Redis中，此种方式相对于内存方式来说性能更好</li>
+<li>JdbcTokenStore：将令牌存储到数据库中，需要新建从对应的表，有兴趣的可以尝试</li>
+</ul>
+</li>
+<li><p><strong>3</strong>、<strong>SIGN_KEY</strong></p>
+</li>
+</ul>
+<p>JWT签名的秘钥，这里使用的是对称加密，资源服务中也要使用相同的秘钥进行校验和解析JWT令牌。</p>
+<h2 id="【2】令牌管理服务的配置"><a href="#【2】令牌管理服务的配置" class="headerlink" title="【2】令牌管理服务的配置"></a>【2】令牌管理服务的配置</h2><p><strong>这个放在了AuthorizationServerConfig这个配置类中，代码如下：</strong></p>
+<ul>
+<li><strong>使用的是DefaultTokenServices这个实现类，其中可以配置令牌相关的内容，比如access_token、refresh_token的过期时间，默认时间分别为12小时、30天。</strong></li>
+<li><strong>最重要的一行代码当然是设置令牌增强，使用JWT方式生产令牌，如下：services.setTokenEnhancer(jwtAccessTokenConverter);</strong></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> AuthorizationServerTokenServices <span class="title function_">tokenServices</span><span class="params">()</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;令牌管理服务的配置&quot;</span>);</span><br><span class="line">    <span class="type">DefaultTokenServices</span> <span class="variable">services</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DefaultTokenServices</span>();</span><br><span class="line">    <span class="comment">//客户端端配置策略</span></span><br><span class="line">    services.setClientDetailsService(clientDetailsService);</span><br><span class="line">    <span class="comment">//支持令牌的刷新</span></span><br><span class="line">    services.setSupportRefreshToken(<span class="literal">true</span>);</span><br><span class="line">    <span class="comment">//令牌服务</span></span><br><span class="line">    services.setTokenStore(tokenStore);</span><br><span class="line">    <span class="comment">//access_token的过期时间</span></span><br><span class="line">    services.setAccessTokenValiditySeconds(<span class="number">60</span> * <span class="number">60</span> * <span class="number">24</span> * <span class="number">3</span>);</span><br><span class="line">    <span class="comment">//refresh_token的过期时间</span></span><br><span class="line">    services.setRefreshTokenValiditySeconds(<span class="number">60</span> * <span class="number">60</span> * <span class="number">24</span> * <span class="number">3</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//设置令牌增强，使用JwtAccessTokenConverter进行转换</span></span><br><span class="line">    services.setTokenEnhancer(jwtAccessTokenConverter);</span><br><span class="line">    <span class="keyword">return</span> services;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="【3】、令牌访问端点添加tokenServices"><a href="#【3】、令牌访问端点添加tokenServices" class="headerlink" title="【3】、令牌访问端点添加tokenServices"></a>【3】、令牌访问端点添加tokenServices</h2><h1 id="前置知识：security"><a href="#前置知识：security" class="headerlink" title="前置知识：security"></a>前置知识：security</h1><h2 id="security的核心，Spring-Security使用了springSecurityFilterChain作为了安全过滤的入口"><a href="#security的核心，Spring-Security使用了springSecurityFilterChain作为了安全过滤的入口" class="headerlink" title="security的核心，Spring Security使用了springSecurityFilterChain作为了安全过滤的入口"></a>security的核心，Spring Security使用了springSecurityFilterChain作为了安全过滤的入口</h2><h2 id="【1】Spring-Security过滤器"><a href="#【1】Spring-Security过滤器" class="headerlink" title="【1】Spring Security过滤器"></a>【1】Spring Security过滤器</h2><h3 id="1、核心过滤器概述"><a href="#1、核心过滤器概述" class="headerlink" title="1、核心过滤器概述"></a>1、核心过滤器概述</h3><p>从控制台打印过滤器可见</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">org.springframework.security.web.util.matcher.AnyRequestMatcher@<span class="number">1</span>,</span><br><span class="line">[</span><br><span class="line">org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@184de357,</span><br><span class="line">    org.springframework.security.web.context.SecurityContextPersistenceFilter@521ba38f,</span><br><span class="line">    org.springframework.security.web.header.HeaderWriterFilter@77bb916f,</span><br><span class="line">    org.springframework.security.web.csrf.CsrfFilter@76b305e1,</span><br><span class="line">    org.springframework.security.web.authentication.logout.LogoutFilter@17c53dfb,</span><br><span class="line">    org.springframework.security.web.savedrequest.RequestCacheAwareFilter@2086d469,</span><br><span class="line">    org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter<span class="meta">@b1d19ff</span>,</span><br><span class="line">    org.springframework.security.web.authentication.AnonymousAuthenticationFilter<span class="meta">@efe49ab</span>,</span><br><span class="line">    org.springframework.security.web.session.SessionManagementFilter@5a48d186,</span><br><span class="line">    org.springframework.security.web.access.ExceptionTranslationFilter@273aaab7</span><br><span class="line"></span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>SecurityContextPersistenceFilter 两个主要职责：请求来临时，创建SecurityContext安全上下文信息，请求结束时清空SecurityContextHolder。</li>
+<li>HeaderWriterFilter (文档中并未介绍，非核心过滤器) 用来给http响应添加一些Header,比如X-Frame-Options, X-XSS-Protection*，X-Content-Type-Options.</li>
+<li>CsrfFilter 在spring4这个版本中被默认开启的一个过滤器，用于防止csrf攻击，了解前后端分离的人一定不会对这个攻击方式感到陌生，前后端使用json交互需要注意的一个问题。</li>
+<li>LogoutFilter 顾名思义，处理注销的过滤器</li>
+<li>UsernamePasswordAuthenticationFilter 这个会重点分析，表单提交了username和password，被封装成token进行一系列的认证，便是主要通过这个过滤器完成的，在表单认证的方法中，这是最最关键的过滤器。</li>
+<li>RequestCacheAwareFilter (文档中并未介绍，非核心过滤器) 内部维护了一个RequestCache，用于缓存request请求</li>
+<li>SecurityContextHolderAwareRequestFilter 此过滤器对ServletRequest进行了一次包装，使得request具有更加丰富的API</li>
+<li>AnonymousAuthenticationFilter 匿名身份过滤器，这个过滤器个人认为很重要，需要将它</li>
+<li>UsernamePasswordAuthenticationFilter 放在一起比较理解，spring security为了兼容未登录的访问，也走了一套认证流程，只不过是一个匿名的身份。</li>
+<li>SessionManagementFilter 和session相关的过滤器，内部维护了一个SessionAuthenticationStrategy，两者组合使用，常用来防止session-fixation protection attack，以及限制同一用户开启多个会话的数量</li>
+<li>ExceptionTranslationFilter 直译成异常翻译过滤器，还是比较形象的，这个过滤器本身不处理异常，而是将认证过程中出现的异常交给内部维护的一些类去处理，具体是那些类下面详细介绍</li>
+<li>FilterSecurityInterceptor 这个过滤器决定了访问特定路径应该具备的权限，访问的用户的角色，权限是什么？访问的路径需要什么样的角色和权限？这些判断和处理都是由该类进行的</li>
+</ul>
+<h2 id="【2】Spring-Security核心过滤器解析"><a href="#【2】Spring-Security核心过滤器解析" class="headerlink" title="【2】Spring Security核心过滤器解析"></a>【2】Spring Security核心过滤器解析</h2><h3 id="1、SecurityContextPersistenceFilter"><a href="#1、SecurityContextPersistenceFilter" class="headerlink" title="1、SecurityContextPersistenceFilter"></a>1、SecurityContextPersistenceFilter</h3><p>SecurityContextPersistenceFilter的两个主要作用便是请求来临时，创建SecurityContext安全上下文信息和请求结束时清空SecurityContextHolder</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SecurityContextPersistenceFilter</span> <span class="keyword">extends</span> <span class="title class_">GenericFilterBean</span> &#123;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">FILTER_APPLIED</span> <span class="operator">=</span> <span class="string">&quot;__spring_security_scpf_applied&quot;</span>;</span><br><span class="line">   <span class="comment">//安全上下文存储的仓库</span></span><br><span class="line">   <span class="keyword">private</span> SecurityContextRepository repo;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">public</span> <span class="title function_">SecurityContextPersistenceFilter</span><span class="params">()</span> &#123;</span><br><span class="line">      <span class="comment">//HttpSessionSecurityContextRepository是SecurityContextRepository接口的一个实现类</span></span><br><span class="line">      <span class="comment">//使用HttpSession来存储SecurityContext</span></span><br><span class="line">      <span class="built_in">this</span>(<span class="keyword">new</span> <span class="title class_">HttpSessionSecurityContextRepository</span>());</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doFilter</span><span class="params">(ServletRequest req, ServletResponse res, FilterChain chain)</span></span><br><span class="line">         <span class="keyword">throws</span> IOException, ServletException &#123;</span><br><span class="line">      <span class="type">HttpServletRequest</span> <span class="variable">request</span> <span class="operator">=</span> (HttpServletRequest) req;</span><br><span class="line">      <span class="type">HttpServletResponse</span> <span class="variable">response</span> <span class="operator">=</span> (HttpServletResponse) res;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (request.getAttribute(FILTER_APPLIED) != <span class="literal">null</span>) &#123;</span><br><span class="line">         <span class="comment">// ensure that filter is only applied once per request</span></span><br><span class="line">         chain.doFilter(request, response);</span><br><span class="line">         <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      request.setAttribute(FILTER_APPLIED, Boolean.TRUE);</span><br><span class="line">      <span class="comment">//包装request，response</span></span><br><span class="line">      <span class="type">HttpRequestResponseHolder</span> <span class="variable">holder</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HttpRequestResponseHolder</span>(request,</span><br><span class="line">            response);</span><br><span class="line">      <span class="comment">//从Session中获取安全上下文信息</span></span><br><span class="line">      <span class="type">SecurityContext</span> <span class="variable">contextBeforeChainExecution</span> <span class="operator">=</span> repo.loadContext(holder);</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">         <span class="comment">//请求开始时，设置安全上下文信息，这样就避免了用户直接从Session中获取安全上下文信息</span></span><br><span class="line">         SecurityContextHolder.setContext(contextBeforeChainExecution);</span><br><span class="line">         chain.doFilter(holder.getRequest(), holder.getResponse());</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">finally</span> &#123;</span><br><span class="line">         <span class="comment">//请求结束后，清空安全上下文信息</span></span><br><span class="line">         <span class="type">SecurityContext</span> <span class="variable">contextAfterChainExecution</span> <span class="operator">=</span> SecurityContextHolder</span><br><span class="line">               .getContext();</span><br><span class="line">         SecurityContextHolder.clearContext();</span><br><span class="line">         repo.saveContext(contextAfterChainExecution, holder.getRequest(),</span><br><span class="line">               holder.getResponse());</span><br><span class="line">         request.removeAttribute(FILTER_APPLIED);</span><br><span class="line">         <span class="keyword">if</span> (debug) &#123;</span><br><span class="line">            logger.debug(<span class="string">&quot;SecurityContextHolder now cleared, as request processing completed&quot;</span>);</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="2、SecurityContextPersistenceFilter"><a href="#2、SecurityContextPersistenceFilter" class="headerlink" title="2、SecurityContextPersistenceFilter"></a>2、SecurityContextPersistenceFilter</h3><p>内部调用了authenticationManager完成认证，根据认证结果执行successfulAuthentication或者unsuccessfulAuthentication，无论成功失败，一般的实现都是转发或者重定向等处理，不再细究AuthenticationSuccessHandler和AuthenticationFailureHandler，有兴趣的朋友，可以去看看两者的实现类。</p>
+<h3 id="2-3-AnonymousAuthenticationFilter"><a href="#2-3-AnonymousAuthenticationFilter" class="headerlink" title="2.3 AnonymousAuthenticationFilter"></a>2.3 AnonymousAuthenticationFilter</h3><p>匿名认证过滤器，可能有人会想：匿名了还有身份？我自己对于Anonymous匿名身份的理解是Spring Security为了整体逻辑的统一性，即使是未通过认证的用户，也给予了一个匿名身份。而AnonymousAuthenticationFilter该过滤器的位置也是非常的科学的，它位于常用的身份认证过滤器（如UsernamePasswordAuthenticationFilter、BasicAuthenticationFilter、RememberMeAuthenticationFilter）之后，意味着只有在上述身份过滤器执行完毕后，SecurityContext依旧没有用户信息，AnonymousAuthenticationFilter该过滤器才会有意义—-基于用户一个匿名身份。</p>
+<h3 id="2-4-ExceptionTranslationFilter"><a href="#2-4-ExceptionTranslationFilter" class="headerlink" title="2.4 ExceptionTranslationFilter"></a>2.4 ExceptionTranslationFilter</h3><p>ExceptionTranslationFilter异常转换过滤器位于整个springSecurityFilterChain的后方，用来转换整个链路中出现的异常，将其转化，顾名思义，转化以意味本身并不处理。一般其只处理两大类异常：AccessDeniedException访问异常和AuthenticationException认证异常。</p>
+<p>这个过滤器非常重要，因为它将Java中的异常和HTTP的响应连接在了一起，这样在处理异常时，我们不用考虑密码错误该跳到什么页面，账号锁定该如何，只需要关注自己的业务逻辑，抛出相应的异常便可。如果该过滤器检测到AuthenticationException，则将会交给内部的AuthenticationEntryPoint去处理，如果检测到AccessDeniedException，需要先判断当前用户是不是匿名用户，如果是匿名访问，则和前面一样运行AuthenticationEntryPoint，否则会委托给AccessDeniedHandler去处理，而AccessDeniedHandler的默认实现，是AccessDeniedHandlerImpl。所以ExceptionTranslationFilter内部的AuthenticationEntryPoint是至关重要的，顾名思义：认证的入口点。</p>
+<h3 id="2-5-FilterSecurityInterceptor"><a href="#2-5-FilterSecurityInterceptor" class="headerlink" title="2.5 FilterSecurityInterceptor"></a>2.5 FilterSecurityInterceptor</h3><p>我们已经有了认证，有了请求的封装，有了Session的关联，还缺一个：由什么控制哪些资源是受限的，这些受限的资源需要什么权限，需要什么角色…这一切和访问控制相关的操作，都是由FilterSecurityInterceptor完成的。</p>
+<p>FilterSecurityInterceptor的工作流程可以理解如下：FilterSecurityInterceptor从SecurityContextHolder中获取Authentication对象，然后比对用户拥有的权限和资源所需的权限。前者可以通过Authentication对象直接获得，而后者则需要引入我们之前一直未提到过的两个类：SecurityMetadataSource，AccessDecisionManager。理解清楚决策管理器的整个创建流程和SecurityMetadataSource的作用需要花很大一笔功夫，这里，暂时只介绍其大概的作用</p>
+
+      
+       <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 caosen0819@163.com </span>
+    </div>
+</article>
+
+
+
+
+
+
+
+    
+
+
+
+
+    </div>
+    <div class="copyright">
+        <p class="footer-entry">
+    ©2017 CSEN
+</p>
+<p class="footer-entry">Built with <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/yelog/hexo-theme-3-hexo" target="_blank">3-hexo</a> theme</p>
+
+    </div>
+    <div class="full-toc">
+        <button class="full" data-title="切换全屏 快捷键 s"><span class="min "></span></button>
+<a class="" id="rocket" ></a>
+
+    </div>
+</div>
+
+</body>
+<script src="/js/jquery.pjax.js?v=1.1.0" ></script>
+
+<script src="/js/script.js?v=1.1.0" ></script>
+<script>
+    var img_resize = 'default';
+    function initArticle() {
+        /*渲染对应的表格样式*/
+        
+            $("#post .pjax table").addClass("green_title");
+        
+
+        /*渲染打赏样式*/
+        
+
+        /*高亮代码块行号*/
+        
+
+        /*访问数量*/
+        
+        $.getScript("//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js");
+        
+
+        /*代码高亮，行号对齐*/
+        $('.pre-numbering').css('line-height',$('.has-numbering').css('line-height'));
+
+        
+        
+    }
+
+    /*打赏页面隐藏与展示*/
+    
+
+</script>
+
+<!--加入行号的高亮代码块样式-->
+
+<!--自定义样式设置-->
+<style>
+    
+    
+    .nav {
+        width: 542px;
+    }
+    .nav.fullscreen {
+        margin-left: -542px;
+    }
+    .nav-left {
+        width: 120px;
+    }
+    
+    
+    @media screen and (max-width: 1468px) {
+        .nav {
+            width: 492px;
+        }
+        .nav.fullscreen {
+            margin-left: -492px;
+        }
+        .nav-left {
+            width: 100px;
+        }
+    }
+    
+    
+    @media screen and (max-width: 1024px) {
+        .nav {
+            width: 492px;
+            margin-left: -492px
+        }
+        .nav.fullscreen {
+            margin-left: 0;
+        }
+    }
+    
+    @media screen and (max-width: 426px) {
+        .nav {
+            width: 100%;
+        }
+        .nav-left {
+            width: 100%;
+        }
+    }
+    
+    
+    .nav-right .title-list nav a .post-title, .nav-right .title-list #local-search-result a .post-title {
+        color: #383636;
+    }
+    
+    
+    .nav-right .title-list nav a .post-date, .nav-right .title-list #local-search-result a .post-date {
+        color: #5e5e5f;
+    }
+    
+    
+    .nav-right nav a.hover, #local-search-result a.hover{
+        background-color: #e2e0e0;
+    }
+    
+    
+
+    /*列表样式*/
+    
+
+    /* 背景图样式 */
+    
+    
+
+
+    /*引用块样式*/
+    
+
+    /*文章列表背景图*/
+    
+
+    
+</style>
+
+
+
+
+
+
+
+</html>

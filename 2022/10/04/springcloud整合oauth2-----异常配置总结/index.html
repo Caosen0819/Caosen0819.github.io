@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>springcloud整合oauth2-----异常配置总结 | 森</title>
+  <meta name="keywords" content=" Oauth2 , 整合中间件 ">
+  <meta name="description" content="springcloud整合oauth2-----异常配置总结 | 森">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="description" content="潮起潮落，云卷云舒">
+<meta property="og:type" content="website">
+<meta property="og:title" content="all-tags">
+<meta property="og:url" content="http://example.com/all-tags/index.html">
+<meta property="og:site_name" content="森">
+<meta property="og:description" content="潮起潮落，云卷云舒">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2023-04-12T03:28:50.336Z">
+<meta property="article:modified_time" content="2023-04-12T03:28:48.541Z">
+<meta property="article:author" content="CSEN">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="icon" href="/img/avatar.jpg">
+
+<link href="/css/style.css?v=1.1.0" rel="stylesheet">
+
+<link href="/css/hl_theme/atom-light.css?v=1.1.0" rel="stylesheet">
+
+<link href="//cdn.jsdelivr.net/npm/animate.css@4.1.0/animate.min.css" rel="stylesheet">
+
+<script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="/js/titleTip.js?v=1.1.0" ></script>
+
+<script src="//cdn.jsdelivr.net/npm/highlightjs@9.16.2/highlight.pack.min.js"></script>
+<script>
+    hljs.initHighlightingOnLoad();
+</script>
+
+<script src="//cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
+
+
+
+<script src="//cdn.jsdelivr.net/npm/jquery.cookie@1.4.1/jquery.cookie.min.js" ></script>
+
+<script src="/js/iconfont.js?v=1.1.0" ></script>
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+<div style="display: none">
+  <input class="theme_disqus_on" value="false">
+  <input class="theme_preload_comment" value="">
+  <input class="theme_blog_path" value="">
+  <input id="theme_shortcut" value="true" />
+  <input id="theme_highlight_on" value="true" />
+  <input id="theme_code_copy" value="true" />
+</div>
+
+
+
+<body>
+<aside class="nav">
+    <div class="nav-left">
+        <a href="/"
+   class="avatar_target">
+    <img class="avatar"
+         src="/img/avatar.jpg"/>
+</a>
+<div class="author">
+    <span>CSEN</span>
+</div>
+
+<div class="icon">
+    
+        
+            <a title="rss"
+               href="/atom.xml"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-rss"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="github"
+               href="https://github.com/Caosen0819"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-github"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+    
+        
+            <a title="email"
+               href="mailto:caosen0819@163.com"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-email"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="qq"
+               href="http://wpa.qq.com/msgrd?v=3&uin=1667018430&site=qq&menu=yes"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-qq"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="neteasemusic"
+               href="https://music.163.com/#/user/home?id=406574616"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-neteasemusic"></use>
+                    </svg>
+                
+            </a>
+        
+    
+</div>
+
+
+
+
+
+<ul>
+    <li>
+        <div class="all active" data-rel="All">All
+            
+                <small>(46)</small>
+            
+        </div>
+    </li>
+    
+        
+            
+                
+    <li>
+        <div data-rel="Java">
+            
+            Java
+            <small>(32)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="new">
+            
+            new
+            <small>(1)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="去雾算法">
+            
+            去雾算法
+            <small>(1)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="学习资料">
+            
+            学习资料
+            <small>(1)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="微信小程序">
+            
+            微信小程序
+            <small>(2)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="项目实践">
+            
+            项目实践
+            <small>(9)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+</ul>
+<div class="left-bottom">
+    <div class="menus">
+        
+            
+            
+            
+    </div>
+    <div>
+        
+            <a class="about  hasFriend  site_url"
+               
+               href="/about">About</a>
+        
+        <a style="width: 50%"
+                
+                                           class="friends">Friends</a>
+        
+    </div>
+</div>
+<input type="hidden" id="yelog_site_posts_number" value="46">
+
+<div style="display: none">
+    <span id="busuanzi_value_site_uv"></span>
+    <span id="busuanzi_value_site_pv"></span>
+</div>
+
+    </div>
+    <div class="nav-right">
+        <div class="friends-area">
+    <div class="friends-title">
+        Links
+        <i class="iconfont icon-left"></i>
+    </div>
+    <div class="friends-content">
+        <ul>
+            
+        </ul>
+    </div>
+</div>
+        <div class="title-list">
+    <div class="right-top">
+        <div id="default-panel">
+            <i class="iconfont icon-search" data-title="搜索 快捷键 i"></i>
+            <div class="right-title">All</div>
+            <i class="iconfont icon-file-tree" data-title="切换到大纲视图 快捷键 w"></i>
+        </div>
+        <div id="search-panel">
+            <i class="iconfont icon-left" data-title="返回"></i>
+            <input id="local-search-input" autocomplete="off"/>
+            <label class="border-line" for="input"></label>
+            <i class="iconfont icon-case-sensitive" data-title="大小写敏感"></i>
+            <i class="iconfont icon-tag" data-title="标签"></i>
+        </div>
+        <div id="outline-panel" style="display: none">
+            <div class="right-title">大纲</div>
+            <i class="iconfont icon-list" data-title="切换到文章列表"></i>
+        </div>
+    </div>
+
+    <div class="tags-list">
+    <input id="tag-search" />
+    <div class="tag-wrapper">
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>BUG</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>DBRouter-starter</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>docker</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Java基础知识</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Java并发</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>JVM</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Kafka</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>lucky项目</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>mybatis-starter</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Mysql</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>new</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Oauth2</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Redis</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>spring勇攀高峰</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>场景题</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>微信小程序</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>整合中间件</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>暗通道</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>测试</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>计算机网络</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>设计模式</a>
+            </li>
+        
+    </div>
+
+</div>
+
+    
+    <nav id="title-list-nav">
+        
+        
+        <a  class="All Java "
+           href="/2024/02/02/CS:MySQL45-1/"
+           data-tag="Mysql"
+           data-author="" >
+            <span class="post-title" title="MySQL45">MySQL45</span>
+            <span class="post-date" title="2024-02-02 21:29:04">2024/02/02</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/11/08/CS:JUC/"
+           data-tag="Java并发"
+           data-author="" >
+            <span class="post-title" title="JUC">JUC</span>
+            <span class="post-date" title="2023-11-08 00:00:00">2023/11/08</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/11/08/CS:mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/"
+           data-tag="Mysql"
+           data-author="" >
+            <span class="post-title" title="mysql技术内幕">mysql技术内幕</span>
+            <span class="post-date" title="2023-11-08 00:00:00">2023/11/08</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/11/04/CS:JVM/"
+           data-tag="JVM"
+           data-author="" >
+            <span class="post-title" title="JVM">JVM</span>
+            <span class="post-date" title="2023-11-04 00:00:00">2023/11/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/10/10/CS:%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
+           data-tag="设计模式"
+           data-author="" >
+            <span class="post-title" title="设计模式">设计模式</span>
+            <span class="post-date" title="2023-10-10 00:00:00">2023/10/10</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/10/09/CS:Redis/"
+           data-tag="Redis"
+           data-author="" >
+            <span class="post-title" title="Redis">Redis</span>
+            <span class="post-date" title="2023-10-09 00:00:00">2023/10/09</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
+           data-tag="Java基础知识"
+           data-author="" >
+            <span class="post-title" title="Java基础知识">Java基础知识</span>
+            <span class="post-date" title="2023-08-07 00:00:00">2023/08/07</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C3/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="计算机网络3">计算机网络3</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="计算机网络2">计算机网络2</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C1/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="计算机网络1">计算机网络1</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/07/08/CS:%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="输入网络，期间发生了什么？">输入网络，期间发生了什么？</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/07/08/CS:Kafka/"
+           data-tag="Kafka"
+           data-author="" >
+            <span class="post-title" title="Kafka知识">Kafka知识</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="mybatis组件的整合理解2">mybatis组件的整合理解2</span>
+            <span class="post-date" title="2023-04-27 00:00:00">2023/04/27</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="mybatis组件的整合理解3">mybatis组件的整合理解3</span>
+            <span class="post-date" title="2023-04-27 00:00:00">2023/04/27</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="mybatis组件的整合理解1">mybatis组件的整合理解1</span>
+            <span class="post-date" title="2023-04-26 00:00:00">2023/04/26</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/22/CS:DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+           data-tag="DBRouter-starter"
+           data-author="" >
+            <span class="post-title" title="DBRouter组件的整合理解">DBRouter组件的整合理解</span>
+            <span class="post-date" title="2023-04-22 00:00:00">2023/04/22</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="Spring整合mybatis">Spring整合mybatis</span>
+            <span class="post-date" title="2023-04-11 00:00:00">2023/04/11</span>
+        </a>
+        
+        
+        <a  class="All 学习资料 "
+           href="/2023/04/11/%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99/"
+           data-tag="测试"
+           data-author="" >
+            <span class="post-title" title="参考资料">参考资料</span>
+            <span class="post-date" title="2023-04-11 00:00:00">2023/04/11</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
+           data-tag="spring勇攀高峰"
+           data-author="" >
+            <span class="post-title" title="Spring ioc加载流程">Spring ioc加载流程</span>
+            <span class="post-date" title="2023-04-11 00:00:00">2023/04/11</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：10">章节：10</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：7-10，同时回顾一下4-6的内容">章节：7-10，同时回顾一下4-6的内容</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="All new "
+           href="/2023/04/04/New%20page/"
+           data-tag="new"
+           data-author="" >
+            <span class="post-title" title="待定">待定</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"
+           data-tag="场景题"
+           data-author="" >
+            <span class="post-title" title="待定">待定</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A11-13/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：11-13">章节：11-13</span>
+            <span class="post-date" title="2023-04-03 00:00:00">2023/04/03</span>
+        </a>
+        
+        
+        <a  class="All 项目实践 "
+           href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：小知识">章节：小知识</span>
+            <span class="post-date" title="2023-04-03 00:00:00">2023/04/03</span>
+        </a>
+        
+        
+        <a  class="All 去雾算法 "
+           href="/2022/10/23/%E6%9A%97%E9%80%9A%E9%81%93%E5%8E%BB%E9%9B%BE%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93/"
+           data-tag="暗通道"
+           data-author="" >
+            <span class="post-title" title="暗通道去雾算法总结">暗通道去雾算法总结</span>
+            <span class="post-date" title="2022-10-23 13:03:43">2022/10/23</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/20/%E5%AF%B9%E6%9D%83%E9%99%90%E6%A0%A1%E9%AA%8C%E7%9A%84%E6%96%B0%E7%90%86%E8%A7%A3/"
+           data-tag="Oauth2"
+           data-author="" >
+            <span class="post-title" title="对权限校验和token的新理解">对权限校验和token的新理解</span>
+            <span class="post-date" title="2022-10-20 14:43:00">2022/10/20</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/spring%E6%95%B4%E5%90%88docker-compose/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot/cloud整合docker-compose">springboot/cloud整合docker-compose</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94%E2%80%94nacos2.1.0/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="docker整合springboot/cloud——nacos2.1.0">docker整合springboot/cloud——nacos2.1.0</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94%E2%80%94kibana8.2.0/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="docker整合springboot/cloud——kibana8.2.0">docker整合springboot/cloud——kibana8.2.0</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springboot%E6%95%B4%E5%90%88kafka3.1%EF%BC%8C%E5%AE%9E%E7%8E%B0%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合kafka3.1，实现基本配置和操作">springboot整合kafka3.1，实现基本配置和操作</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="整合docker和中间件记录">整合docker和中间件记录</span>
+            <span class="post-date" title="2022-10-04 21:23:41">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合elasticsearch8.2.0">springboot整合elasticsearch8.2.0</span>
+            <span class="post-date" title="2022-10-04 13:40:04">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合kafka3.1-基本配置和操作">springboot整合kafka3.1-基本配置和操作</span>
+            <span class="post-date" title="2022-10-04 13:38:01">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合OAuth2认证服务">springboot整合OAuth2认证服务</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springboot%E6%95%B4%E5%90%88elasticsearch8.2%E6%8A%A5%E9%94%99unable%20to%20parse%20response%20body%20for%20Response%7BrequestLine/"
+           data-tag="整合中间件,BUG"
+           data-author="" >
+            <span class="post-title" title="springboot整合elasticsearch8.2报错unable to parse response body for Response{requestLine">springboot整合elasticsearch8.2报错unable to parse response body for Response{requestLine</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----令牌配置">springcloud整合oauth2-----令牌配置</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----鉴权服务篇">springcloud整合oauth2-----鉴权服务篇</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86springsecurity/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----前置知识springsecurity">springcloud整合oauth2-----前置知识springsecurity</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----异常配置总结">springcloud整合oauth2-----异常配置总结</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All 微信小程序 "
+           href="/2022/10/04/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+           data-tag="微信小程序"
+           data-author="" >
+            <span class="post-title" title="养生打卡健康小程序（云开发）">养生打卡健康小程序（云开发）</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All 微信小程序 "
+           href="/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+           data-tag="微信小程序"
+           data-author="" >
+            <span class="post-title" title="日常打卡积分制自律小程序（云开发）">日常打卡积分制自律小程序（云开发）</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1_%E5%89%AF%E6%9C%AC/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合OAuth2认证服务">springboot整合OAuth2认证服务</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2------认证服务篇">springcloud整合oauth2------认证服务篇</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2------认证服务篇">springcloud整合oauth2------认证服务篇</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94mysql8.0.26/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="docker整合springboot/cloud—mysql8.0.26">docker整合springboot/cloud—mysql8.0.26</span>
+            <span class="post-date" title="2022-10-04 00:00:00">2022/10/04</span>
+        </a>
+        
+        <div id="no-item-tips">
+
+        </div>
+    </nav>
+    <div id="outline-list">
+    </div>
+</div>
+
+    </div>
+    <div class="hide-list">
+        <div class="semicircle" data-title="切换全屏 快捷键 s">
+            <div class="brackets first"><</div>
+            <div class="brackets">&gt;</div>
+        </div>
+    </div>
+</aside>
+<div id="post">
+    <div class="pjax">
+        <article id="post-springcloud整合oauth2-----异常配置总结" class="article article-type-post" itemscope itemprop="blogPost">
+    
+        <h1 class="article-title">springcloud整合oauth2-----异常配置总结</h1>
+    
+    <div class="article-meta">
+        
+        
+        
+        <span class="book">
+            <i class="iconfont icon-category"></i>
+            
+            
+            <a  data-rel="Java">Java</a>
+            
+        </span>
+        
+        
+        <span class="tag">
+            <i class="iconfont icon-tag"></i>
+            
+            <a class="color2">Oauth2</a>
+            
+            <a class="color1">整合中间件</a>
+            
+        </span>
+        
+    </div>
+    <div class="article-meta">
+        
+            Created At : <time class="date" title='Updated At: 2023-12-27 16:04:51'>2022-10-04 13:35</time>
+        
+    </div>
+    <div class="article-meta">
+        
+        
+        <span id="busuanzi_container_page_pv">
+            Views 👀 :<span id="busuanzi_value_page_pv">
+                <span class="count-comment">
+                    <span class="spinner">
+                      <div class="cube1"></div>
+                      <div class="cube2"></div>
+                    </span>
+                </span>
+            </span>
+        </span>
+        
+        
+    </div>
+    
+    <div class="toc-ref">
+    
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE"><span class="toc-text">异常配置</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%901%E3%80%91%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%BC%82%E5%B8%B8"><span class="toc-text">【1】认证服务的异常</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81%E7%94%A8%E6%88%B7%E5%90%8D%EF%BC%8C%E5%AF%86%E7%A0%81%E9%94%99%E8%AF%AF%E5%BC%82%E5%B8%B8%E3%80%81%E6%8E%88%E6%9D%83%E7%B1%BB%E5%9E%8B%E5%BC%82%E5%B8%B8"><span class="toc-text">1、用户名，密码错误异常、授权类型异常</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%AE%9A%E5%88%B6%E6%8F%90%E7%A4%BA%E4%BF%A1%E6%81%AF%E3%80%81%E5%93%8D%E5%BA%94%E7%A0%81"><span class="toc-text">一、定制提示信息、响应码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89WebResponseExceptionTranslator"><span class="toc-text">二、自定义WebResponseExceptionTranslator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%94%B9%E9%80%A0ClientCredentialsTokenEndpointFilter"><span class="toc-text">三、改造ClientCredentialsTokenEndpointFilter</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9B%9B%E3%80%81OAuth%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E4%B8%AD%E6%8C%87%E5%AE%9A%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-text">四、OAuth配置文件中指定过滤器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%BA%90%E7%A0%81%E8%BF%BD%E8%B8%AA"><span class="toc-text">五、源码追踪</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#I%E3%80%81OAuthServerAuthenticationEntryPoint%E5%9C%A8%E4%BD%95%E6%97%B6%E8%B0%83%E7%94%A8%EF%BC%9F"><span class="toc-text">I、OAuthServerAuthenticationEntryPoint在何时调用？</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#II%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E7%9A%84%E8%BF%87%E6%BB%A4%E5%99%A8%E5%A6%82%E4%BD%95%E7%94%9F%E6%95%88%E7%9A%84%EF%BC%9F"><span class="toc-text">II、自定义的过滤器如何生效的？</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#III%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E5%8A%A0-allowFormAuthenticationForClients-%EF%BC%9F"><span class="toc-text">III、为什么不能加.allowFormAuthenticationForClients()？</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E3%80%902%E3%80%91%E8%B5%84%E6%BA%90%E6%9C%8D%E5%8A%A1%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BC%82%E5%B8%B8%E4%BF%A1%E6%81%AF"><span class="toc-text">【2】资源服务自定义异常信息</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C%EF%BC%9A%E6%B2%A1%E6%9C%89%E6%9D%83%E9%99%90%E8%AE%BF%E9%97%AE%E6%97%B6"><span class="toc-text">1、自定义返回结果：没有权限访问时</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81%E7%94%A8%E4%BA%8E%E5%A4%84%E7%90%86%E6%B2%A1%E6%9C%89%E7%99%BB%E5%BD%95%E6%88%96token%E8%BF%87%E6%9C%9F%E6%97%B6%E7%9A%84%E8%87%AA%E5%AE%9A%E4%B9%89%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C"><span class="toc-text">2、用于处理没有登录或token过期时的自定义返回结果</span></a></li></ol></li></ol></li></ol>
+    
+<style>
+    .left-col .switch-btn,
+    .left-col .switch-area {
+        display: none;
+    }
+    .toc-level-3 i,
+    .toc-level-3 ol {
+        display: none !important;
+    }
+</style>
+</div>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="异常配置"><a href="#异常配置" class="headerlink" title="异常配置"></a>异常配置</h1><h2 id="【1】认证服务的异常"><a href="#【1】认证服务的异常" class="headerlink" title="【1】认证服务的异常"></a>【1】认证服务的异常</h2><ul>
+<li>用户名，密码错误异常、授权类型异常</li>
+<li>客户端ID、秘钥异常</li>
+</ul>
+<h3 id="1、用户名，密码错误异常、授权类型异常"><a href="#1、用户名，密码错误异常、授权类型异常" class="headerlink" title="1、用户名，密码错误异常、授权类型异常"></a><strong>1、用户名，密码错误异常、授权类型异常</strong></h3><p>针对用户名、密码、授权类型错误的异常解决方式比较复杂，需要定制的比较多。</p>
+<h4 id="一、定制提示信息、响应码"><a href="#一、定制提示信息、响应码" class="headerlink" title="一、定制提示信息、响应码"></a><strong>一、定制提示信息、响应码</strong></h4><p>这部分根据自己业务需要定制，举个例子，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">ResultCode</span> &#123;</span><br><span class="line"></span><br><span class="line">    CLIENT_AUTHENTICATION_FAILED(<span class="number">1001</span>,<span class="string">&quot;客户端认证失败&quot;</span>),</span><br><span class="line"></span><br><span class="line">    USERNAME_OR_PASSWORD_ERROR(<span class="number">1002</span>,<span class="string">&quot;用户名或密码错误&quot;</span>),</span><br><span class="line"></span><br><span class="line">    UNSUPPORTED_GRANT_TYPE(<span class="number">1003</span>, <span class="string">&quot;不支持的认证模式&quot;</span>),</span><br><span class="line"></span><br><span class="line">    NO_PERMISSION(<span class="number">1005</span>,<span class="string">&quot;无权限访问！&quot;</span>),</span><br><span class="line">    UNAUTHORIZED(<span class="number">401</span>, <span class="string">&quot;系统错误&quot;</span>),</span><br><span class="line"></span><br><span class="line">    INVALID_TOKEN(<span class="number">1004</span>,<span class="string">&quot;无效的token&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="二、自定义WebResponseExceptionTranslator"><a href="#二、自定义WebResponseExceptionTranslator" class="headerlink" title="二、自定义WebResponseExceptionTranslator"></a><strong>二、自定义WebResponseExceptionTranslator</strong></h4><ul>
+<li><p>需要自定义一个异常翻译器，默认的是<strong>DefaultWebResponseExceptionTranslator</strong>，此处必须重写，其中有一个需要实现的方法，如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ResponseEntity&lt;T&gt; <span class="title function_">translate</span><span class="params">(Exception e)</span> <span class="keyword">throws</span> Exception;</span><br></pre></td></tr></table></figure>
+
+<p>这个方法就是根据传递过来的<strong>Exception</strong>判断不同的异常返回特定的信息，这里需要判断的异常的如下：</p>
+<ul>
+<li><strong>UnsupportedGrantTypeException</strong>：不支持的授权类型异常</li>
+<li><strong>InvalidGrantException</strong>：用户名或者密码错误的异常</li>
+</ul>
+</li>
+<li><p>创建一个<strong>OAuthServerWebResponseExceptionTranslator</strong>实现<strong>WebResponseExceptionTranslator</strong>，代码如下：</p>
+</li>
+<li><p>&#96;&#96;&#96;java<br>public class OAuthServerWebResponseExceptionTranslator implements WebResponseExceptionTranslator{<br>&#x2F;**<br> * 业务处理方法，重写这个方法返回客户端信息<br> <em>&#x2F;<br>@Override<br>public ResponseEntity<ResultMsg> translate(Exception e){<br>    ResultMsg resultMsg &#x3D; doTranslateHandler(e);<br>    return new ResponseEntity&lt;&gt;(resultMsg, HttpStatus.UNAUTHORIZED);<br>}<br><br>&#x2F;</em>*<br> * 根据异常定制返回信息<br> * TODO 自己根据业务封装<br> *&#x2F;<br>private ResultMsg doTranslateHandler(Exception e) {<br>    &#x2F;&#x2F;初始值，系统错误，<br>    ResultCode resultCode &#x3D; ResultCode.UNAUTHORIZED;<br>    &#x2F;&#x2F;判断异常，不支持的认证方式<br>    if(e instanceof UnsupportedGrantTypeException){<br>        resultCode &#x3D; ResultCode.UNSUPPORTED_GRANT_TYPE;<br>        &#x2F;&#x2F;用户名或密码异常<br>    }else if(e instanceof InvalidGrantException){<br>        resultCode &#x3D; ResultCode.USERNAME_OR_PASSWORD_ERROR;<br>    }<br>    return new ResultMsg(resultCode.getCode(),resultCode.getMsg(),null);<br>}<br>}</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">#### **三、认证服务配置文件中配置**</span><br><span class="line"></span><br><span class="line">需要将自定义的异常翻译器**OAuthServerWebResponseExceptionTranslator**在配置文件中配置，很简单，一行代码的事。</span><br><span class="line"></span><br><span class="line">在**AuthorizationServerConfig**配置文件指定，代码如下：</span><br><span class="line"></span><br><span class="line">[外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-x0dh3IeZ-1662780344834)(C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220906203102659.png)]</span><br><span class="line"></span><br><span class="line">#### **四、这么配置的原因**</span><br><span class="line"></span><br><span class="line">* 我们知道获取令牌的接口为 **/oauth/token**，这个接口定义在**TokenEndpoint#postAccessToken()**（POST请求）方法中，如下图</span><br><span class="line">* [外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-AiZNlL02-1662780344835)(C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220906203752062.png)]</span><br><span class="line">* 是不是都继承了**OAuth2Exception**，那么尝试在**TokenEndpoint**这个类中找找有没有处理**OAuth2Exception**这个异常的处理器，果然找到了一个 **handleException()** 方法，如下：</span><br><span class="line">* [外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-eHeizoig-1662780344836)(C:\Users\CSEN\AppData\Roaming\Typora\typora-user-images\image-20220906203840232.png)]</span><br><span class="line">* 可以看到，这里的异常翻译器已经使用了我们自定义的**OAuthServerWebResponseExceptionTranslator**。可以看下默认的异常翻译器是啥，代码如下：</span><br><span class="line"></span><br><span class="line">### **2、客户端ID、秘钥异常**</span><br><span class="line"></span><br><span class="line">这部分比较复杂，想要理解还是需要些基础的，解决这个异常的方案很多，陈某只是介绍其中一种，下面详细介绍。</span><br><span class="line"></span><br><span class="line">#### **一、定制提示信息、响应码**</span><br><span class="line"></span><br><span class="line">这部分根据自己业务需要定制，和第一步一样。</span><br><span class="line"></span><br><span class="line">#### **二、自定义AuthenticationEntryPoint**</span><br><span class="line"></span><br><span class="line">这个**AuthenticationEntryPoint**是不是很熟悉，前面的文章已经介绍过了，此处需要自定义来返回定制的提示信息。</span><br><span class="line"></span><br><span class="line">创建**OAuthServerAuthenticationEntryPoint**，实现AuthenticationEntryPoint，重写其中的方法，代码如下：</span><br><span class="line"></span><br><span class="line">* ```java</span><br><span class="line">  public class OAuthServerAuthenticationEntryPoint implements AuthenticationEntryPoint &#123;</span><br><span class="line">  </span><br><span class="line">      /**</span><br><span class="line">       * 认证失败处理器会调用这个方法返回提示信息</span><br><span class="line">       * TODO 实际开发中可以自己定义，此处直接返回JSON数据：客户端认证失败错误提示</span><br><span class="line">       */</span><br><span class="line">      @Override</span><br><span class="line">      public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException &#123;</span><br><span class="line">          ResponseUtils.result(response,new ResultMsg(ResultCode.CLIENT_AUTHENTICATION_FAILED.getCode(),ResultCode.CLIENT_AUTHENTICATION_FAILED.getMsg(),null));</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="三、改造ClientCredentialsTokenEndpointFilter"><a href="#三、改造ClientCredentialsTokenEndpointFilter" class="headerlink" title="三、改造ClientCredentialsTokenEndpointFilter"></a><strong>三、改造ClientCredentialsTokenEndpointFilter</strong></h4><p><strong>ClientCredentialsTokenEndpointFilter</strong>这个过滤器的主要作用就是校验客户端的ID、秘钥，代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public class OAuthServerClientCredentialsTokenEndpointFilter extends ClientCredentialsTokenEndpointFilter &#123;</span><br><span class="line"></span><br><span class="line">    private final AuthorizationServerSecurityConfigurer configurer;</span><br><span class="line"></span><br><span class="line">    private AuthenticationEntryPoint authenticationEntryPoint;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 构造方法</span><br><span class="line">     * @param configurer AuthorizationServerSecurityConfigurer对昂</span><br><span class="line">     * @param authenticationEntryPoint 自定义的AuthenticationEntryPoint</span><br><span class="line">     */</span><br><span class="line">    public OAuthServerClientCredentialsTokenEndpointFilter(AuthorizationServerSecurityConfigurer configurer, AuthenticationEntryPoint authenticationEntryPoint) &#123;</span><br><span class="line">        System.out.println(&quot;自定义的客户端认证的过滤器的构造方法&quot;);</span><br><span class="line">        this.configurer = configurer;</span><br><span class="line">        this.authenticationEntryPoint=authenticationEntryPoint;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void setAuthenticationEntryPoint(AuthenticationEntryPoint authenticationEntryPoint) &#123;</span><br><span class="line">        System.out.println(&quot;setAuthenticationEntryPoint&quot;);</span><br><span class="line">        this.authenticationEntryPoint = authenticationEntryPoint;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 需要重写这个方法，返回AuthenticationManager</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    protected AuthenticationManager getAuthenticationManager() &#123;</span><br><span class="line">        System.out.println(&quot;getAuthenticationManager&quot;);</span><br><span class="line">        return configurer.and().getSharedObject(AuthenticationManager.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 设置AuthenticationEntryPoint主要逻辑</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public void afterPropertiesSet() &#123;</span><br><span class="line">        System.out.println(&quot;设置AuthenticationEntryPoint主要逻辑&quot;);</span><br><span class="line">        //TODO 定制认证失败处理器，开发中可以自己修改</span><br><span class="line">        setAuthenticationFailureHandler((request, response, exception) -&gt; &#123;</span><br><span class="line">            if (exception instanceof BadCredentialsException) &#123;</span><br><span class="line">                exception = new BadCredentialsException(exception.getMessage(), new BadClientCredentialsException());</span><br><span class="line">            &#125;</span><br><span class="line">            authenticationEntryPoint.commence(request, response, exception);</span><br><span class="line">        &#125;);</span><br><span class="line">        //成功处理器，和父类相同，为空即可。</span><br><span class="line">        setAuthenticationSuccessHandler((request, response, authentication) -&gt; &#123;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>有几个重要的部分需要讲一下，如下：</p>
+<ul>
+<li>构造方法中需要传入第2步自定义的 <strong>OAuthServerAuthenticationEntryPoint</strong></li>
+<li>重写 <strong>getAuthenticationManager()</strong> 方法返回IOC中的AuthenticationManager</li>
+<li>重写<strong>afterPropertiesSet()</strong> 方法，用于自定义认证失败、成功处理器，失败处理器中调用<strong>OAuthServerAuthenticationEntryPoint</strong>进行异常提示信息返回</li>
+</ul>
+<h4 id="四、OAuth配置文件中指定过滤器"><a href="#四、OAuth配置文件中指定过滤器" class="headerlink" title="四、OAuth配置文件中指定过滤器"></a><strong>四、OAuth配置文件中指定过滤器</strong></h4><p>只需要将自定义的过滤器添加到<strong>AuthorizationServerSecurityConfigurer</strong>中，代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">@Override</span><br><span class="line">    public void configure(AuthorizationServerSecurityConfigurer security) &#123;</span><br><span class="line">        System.out.println(&quot;配置令牌访问的安全约束&quot;);</span><br><span class="line">        //自定义ClientCredentialsTokenEndpointFilter，用于处理客户端id，密码错误的异常</span><br><span class="line">        ①OAuthServerClientCredentialsTokenEndpointFilter endpointFilter = new OAuthServerClientCredentialsTokenEndpointFilter(security,authenticationEntryPoint);</span><br><span class="line">       ① endpointFilter.afterPropertiesSet();</span><br><span class="line">        ①security.addTokenEndpointAuthenticationFilter(endpointFilter);</span><br><span class="line"></span><br><span class="line">        security</span><br><span class="line">                .authenticationEntryPoint(authenticationEntryPoint)</span><br><span class="line">                //开启/oauth/token_key验证端口权限访问</span><br><span class="line">                .tokenKeyAccess(&quot;permitAll()&quot;)</span><br><span class="line">                //开启/oauth/check_token验证端口认证权限访问</span><br><span class="line">                .checkTokenAccess(&quot;permitAll()&quot;);</span><br><span class="line">               ② //一定不要添加allowFormAuthenticationForClients，否则自定义的OAuthServerClientCredentialsTokenEndpointFilter不生效</span><br><span class="line">//                .allowFormAuthenticationForClients();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>第<strong>①</strong>部分是添加过滤器，其中<strong>authenticationEntryPoint</strong>使用的是第2步自定义的<strong>OAuthServerAuthenticationEntryPoint</strong></p>
+<p>第<strong>②</strong>部分一定要注意：一定要去掉这行代码，具体原因源码解释。</p>
+<h4 id="五、源码追踪"><a href="#五、源码追踪" class="headerlink" title="五、源码追踪"></a><strong>五、源码追踪</strong></h4><h6 id="I、OAuthServerAuthenticationEntryPoint在何时调用？"><a href="#I、OAuthServerAuthenticationEntryPoint在何时调用？" class="headerlink" title="I、OAuthServerAuthenticationEntryPoint在何时调用？"></a><strong>I、OAuthServerAuthenticationEntryPoint在何时调用？</strong></h6><p>OAuthServerAuthenticationEntryPoint这个过滤器继承了 <strong>AbstractAuthenticationProcessingFilter</strong> 这个抽象类，一切的逻辑都在 <strong>doFilter()</strong> 中，陈某简化了其中的关键代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)</span><br><span class="line">			throws IOException, ServletException &#123;</span><br><span class="line">    try &#123;</span><br><span class="line">        	//调用子类的attemptAuthentication方法，获取参数并且认证</span><br><span class="line">			authResult = attemptAuthentication(request, response);</span><br><span class="line">		&#125;</span><br><span class="line">		catch (InternalAuthenticationServiceException failed) &#123;</span><br><span class="line">            //一旦认证异常，则调用unsuccessfulAuthentication方法，通过failureHandler处理</span><br><span class="line">			unsuccessfulAuthentication(request, response, failed);</span><br><span class="line">			return;</span><br><span class="line">		&#125;</span><br><span class="line">		catch (AuthenticationException failed) &#123;</span><br><span class="line">            //一旦认证异常，则调用unsuccessfulAuthentication方法，通过failureHandler处理</span><br><span class="line">			unsuccessfulAuthentication(request, response, failed);</span><br><span class="line">			return;</span><br><span class="line">		&#125;</span><br><span class="line">		//认证成功，则调用successHandler处理</span><br><span class="line">		successfulAuthentication(request, response, chain, authResult);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>关键代码在 <strong>unsuccessfulAuthentication()</strong> 这个方法中，代码如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException &#123;</span><br><span class="line">    SecurityContextHolder.clearContext();</span><br><span class="line">    if (this.logger.isDebugEnabled()) &#123;</span><br><span class="line">        this.logger.debug(&quot;Authentication request failed: &quot; + failed.toString(), failed);</span><br><span class="line">        this.logger.debug(&quot;Updated SecurityContextHolder to contain null Authentication&quot;);</span><br><span class="line">        this.logger.debug(&quot;Delegating to authentication failure handler &quot; + this.failureHandler);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    this.rememberMeServices.loginFail(request, response);</span><br><span class="line">    this.failureHandler.onAuthenticationFailure(request, response, failed);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="II、自定义的过滤器如何生效的？"><a href="#II、自定义的过滤器如何生效的？" class="headerlink" title="II、自定义的过滤器如何生效的？"></a><strong>II、自定义的过滤器如何生效的？</strong></h6><p>这个就要看 <strong>AuthorizationServerSecurityConfigurer#configure()</strong> 这个方法了，其中有一段代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">while(var2.hasNext()) &#123;</span><br><span class="line">    Filter filter = (Filter)var2.next();</span><br><span class="line">    http.addFilterBefore(filter, BasicAuthenticationFilter.class);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>也就是说，我们自定义的过滤链被加到了BasicAuthenticationFilter里面</p>
+<h6 id="III、为什么不能加-allowFormAuthenticationForClients-？"><a href="#III、为什么不能加-allowFormAuthenticationForClients-？" class="headerlink" title="III、为什么不能加.allowFormAuthenticationForClients()？"></a><strong>III、为什么不能加.allowFormAuthenticationForClients()？</strong></h6><p>还是在 <strong>AuthorizationServerSecurityConfigurer#configure()</strong> 这个方法中，一旦设置了 <strong>allowFormAuthenticationForClients</strong> 为true，则会创建 <strong>ClientCredentialsTokenEndpointFilter</strong>，此时自定义的自然失效了。</p>
+<h2 id="【2】资源服务自定义异常信息"><a href="#【2】资源服务自定义异常信息" class="headerlink" title="【2】资源服务自定义异常信息"></a><strong>【2】资源服务自定义异常信息</strong></h2><p>下面针对上述两种异常分别定制异常提示信息，这个比认证服务定制简单。</p>
+<h3 id="1、自定义返回结果：没有权限访问时"><a href="#1、自定义返回结果：没有权限访问时" class="headerlink" title="1、自定义返回结果：没有权限访问时"></a><strong>1、自定义返回结果：没有权限访问时</strong></h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RequestAccessDeniedHandler</span> <span class="keyword">implements</span> <span class="title class_">ServerAccessDeniedHandler</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Mono&lt;Void&gt; <span class="title function_">handle</span><span class="params">(ServerWebExchange exchange, AccessDeniedException denied)</span> &#123;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;RequestAccessDeniedHandler&quot;</span>);</span><br><span class="line">        <span class="type">ServerHttpResponse</span> <span class="variable">response</span> <span class="operator">=</span> exchange.getResponse();</span><br><span class="line">        response.setStatusCode(HttpStatus.OK);</span><br><span class="line">        response.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);</span><br><span class="line">        System.out.println(<span class="string">&quot;wuquan2&quot;</span>);</span><br><span class="line"></span><br><span class="line">        String body= JSONUtil.toJsonStr(<span class="keyword">new</span> <span class="title class_">ResultMsg</span>(ResultCode.NO_PERMISSION.getCode(),ResultCode.NO_PERMISSION.getMsg(),<span class="literal">null</span>));</span><br><span class="line">        <span class="type">DataBuffer</span> <span class="variable">buffer</span> <span class="operator">=</span>  response.bufferFactory().wrap(body.getBytes(Charset.forName(<span class="string">&quot;UTF-8&quot;</span>)));</span><br><span class="line">        <span class="keyword">return</span> response.writeWith(Mono.just(buffer));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2、用于处理没有登录或token过期时的自定义返回结果"><a href="#2、用于处理没有登录或token过期时的自定义返回结果" class="headerlink" title="2、用于处理没有登录或token过期时的自定义返回结果"></a><strong>2、用于处理没有登录或token过期时的自定义返回结果</strong></h3>
+      
+       <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 caosen0819@163.com </span>
+    </div>
+</article>
+
+
+
+
+
+
+
+    
+
+
+
+
+    </div>
+    <div class="copyright">
+        <p class="footer-entry">
+    ©2017 CSEN
+</p>
+<p class="footer-entry">Built with <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/yelog/hexo-theme-3-hexo" target="_blank">3-hexo</a> theme</p>
+
+    </div>
+    <div class="full-toc">
+        <button class="full" data-title="切换全屏 快捷键 s"><span class="min "></span></button>
+<a class="" id="rocket" ></a>
+
+    </div>
+</div>
+
+</body>
+<script src="/js/jquery.pjax.js?v=1.1.0" ></script>
+
+<script src="/js/script.js?v=1.1.0" ></script>
+<script>
+    var img_resize = 'default';
+    function initArticle() {
+        /*渲染对应的表格样式*/
+        
+            $("#post .pjax table").addClass("green_title");
+        
+
+        /*渲染打赏样式*/
+        
+
+        /*高亮代码块行号*/
+        
+
+        /*访问数量*/
+        
+        $.getScript("//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js");
+        
+
+        /*代码高亮，行号对齐*/
+        $('.pre-numbering').css('line-height',$('.has-numbering').css('line-height'));
+
+        
+        
+    }
+
+    /*打赏页面隐藏与展示*/
+    
+
+</script>
+
+<!--加入行号的高亮代码块样式-->
+
+<!--自定义样式设置-->
+<style>
+    
+    
+    .nav {
+        width: 542px;
+    }
+    .nav.fullscreen {
+        margin-left: -542px;
+    }
+    .nav-left {
+        width: 120px;
+    }
+    
+    
+    @media screen and (max-width: 1468px) {
+        .nav {
+            width: 492px;
+        }
+        .nav.fullscreen {
+            margin-left: -492px;
+        }
+        .nav-left {
+            width: 100px;
+        }
+    }
+    
+    
+    @media screen and (max-width: 1024px) {
+        .nav {
+            width: 492px;
+            margin-left: -492px
+        }
+        .nav.fullscreen {
+            margin-left: 0;
+        }
+    }
+    
+    @media screen and (max-width: 426px) {
+        .nav {
+            width: 100%;
+        }
+        .nav-left {
+            width: 100%;
+        }
+    }
+    
+    
+    .nav-right .title-list nav a .post-title, .nav-right .title-list #local-search-result a .post-title {
+        color: #383636;
+    }
+    
+    
+    .nav-right .title-list nav a .post-date, .nav-right .title-list #local-search-result a .post-date {
+        color: #5e5e5f;
+    }
+    
+    
+    .nav-right nav a.hover, #local-search-result a.hover{
+        background-color: #e2e0e0;
+    }
+    
+    
+
+    /*列表样式*/
+    
+
+    /* 背景图样式 */
+    
+    
+
+
+    /*引用块样式*/
+    
+
+    /*文章列表背景图*/
+    
+
+    
+</style>
+
+
+
+
+
+
+
+</html>
