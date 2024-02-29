@@ -1,270 +1,998 @@
-
 <!DOCTYPE html>
-<html lang="zh-CH">
-    
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="generator" content="森">
-    <title>Java基础知识 - 森</title>
-    <meta name="author" content="CSEN">
-    
-    
-    
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"反射\n\n*** Java的反射机制是在运行状态中，对于任意一个类，都能够获得这个类的所有属性和方法。***\n 获得Class对象的三种方式：\n(1)使用Class.forName方法(“类的全路径名”)；\n(2)使用需要反射的类名调用class方法；\n(3)使用需要反射的类的对象调用getClass方法\n缺点：\n耗时\n\nException\n\n检查异常：编译的时候就出问题\n非检查：运行的时候出问题\nThrowable为基类，Error和Exception继承Throwable。Error和RuntimeException及其子类称为未检查异常（unchecked），其它异常称为已检查异常（checked）。\n\n\n\n\nBIO NIO AIO\n\nBIO :同步并阻塞,一个线程处理一个请求，一个请求过来我就为他创建一个线程。\nNIO :同步非阻塞,一个线程处理多个请求。Channel(通道，构件连接) ，Buffer( 缓冲区，存取数据), Selector( 选择器，用来监听多个channel的，select，poll链表，epoll红黑树)\nAIO(NIO.2) :异步非阻塞，服务器实现模式为一 个有效请求一个线程，关键就是异步，不回去等待，你空闲的时候做自己的事情就好，等socket就绪了，你再来读就可以。\n\nString StringBuffer 和 StringBuilder 的区别是什么？String 为什么是不可变的？\n\nString是字符串常量，而StringBuffer和StringBuilder是字符串变量。由String创建的字符内容是不可改变的，而由StringBuffer和StringBuidler创建的字符内容是可以改变的。\nStringBuffer是线程安全的，而StringBuilder是非线程安全的\nString类中定义的char数组是final的\n\nequals与&#x3D;&#x3D;的区别\n\nequals是object的方法，在object类里面其实用的还是&#x3D;&#x3D;，如果对象类重写了equals，那就走重写的规则。\n&#x3D;&#x3D; 引用类型比地址。基本类型比较值\n\n深拷贝和浅拷贝\n\n浅拷贝：基本类型拷贝成员变量，引用类型拷贝引用地址\n深拷贝：基本类型拷贝成员变量，引用类型是创建新的对象保存成员变量\n\n字符型常量和字符串常量的区别\n\n1.形式上: 单引号，双引号2.含义上:字符常量相当于一个整形值( ASCII 值),可以参加表达式运算；字符串常量代表一个地址值(该字符串在内存中存放位置，相当于对象)\n3.占内存大小：字符常量只占2个字节；字符串常量占若干个字节2N\n\n自动装箱和自动拆箱\n\n装箱过程是通过调用包装器的valueOf方法实现的，而拆箱过程是通过调用包装器的 xxxValue方法实现的。（xxx代表对应的基本数据类型）。\n\n请说出作用域public，private，protected，以及不写时的区别。\n\n\n\n创建几个对象？\n\n1、String a&#x3D;”123”;\n创建了1个对象\njvm在编译阶段会判断常量池中是否有 “123” 这个常量对象如果有，a直接指向这个常量的引用，如果没有会在常量池里创建这个常量对象。\n2、String a=new String(&quot;123&quot;);\n\n创建了2个对象\n同情况1，jvm编译阶段判断常量池中 “123”存在与否，进而来判断是否创建常量对象，然后运行阶段通过new关键字在java heap创建String对象。\n3、String a=&quot;123&quot;+&quot;456&quot;;\n\n创建了1个对象\njvm编译阶段过编译器优化后会把字符串常量直接合并成”123456”，所有创建对象时最多会在常量池中创建1个对象。\n&gt;4、String a=&quot;123&quot;+new String(&quot;456&quot;);\n\n创建了4个对象\n\n讲讲Java的代理代理分成静态代理和动态代理，静态代理需要自己实现对每一个方法对代理，那么如果新增一个方法，那就要手动修改目标对象代理对象的代码，非常繁琐。动态代理更加灵活，不需要你一个一个的对方法进行代理。\n动态代理就是运行的时候生成class。这个DynamicProxy其实就是一个Proxy，\n动态代理有两种方式一种是jdk方法，一种是cglib方法\n我们先来讲jdk代理：\n\nJDK代理依赖于Proxy类和InvocationHandler接口，InvocationHandler接口他只有一个invoke方法，三个参数是代理类，被代理方法，方法参数组。代理方法和参数组其实我们可以利用反射得到，所以参数其实是可以变化的，那这样就成功的实现了动态的代理。\n那我们怎么去调用这个方法呢？依赖于Proxy类和他的方法newproxyInstance，得到的代理类，调用方法其实会直接调用我们实现InvocationHandler接口的invoke方法\n\n下面来讲CGLIB代理\n在 CGLIB 动态代理机制中 MethodInterceptor 接口和 Enhancer 类是核心。你可以通过 Enhancer类来动态获取被代理类，\n  CGLIB 通过动态生成一个需要被代理类的子类（即被代理类作为父类），该子类重写被代理类的所有不是 final 修饰的方法，每次调用代理类的方法都会被方法拦截器拦截，在拦截器中才是调用目标类的该方法的逻辑。所以我们说，当代理类调用方法的时候，实际调用的是 MethodInterceptor 中的 intercept 方法。\n二者区别总结一下两者的区别吧：\nJDK 动态代理基于接口，CGLIB 动态代理基于类。因为 JDK 动态代理生成的代理类需要继承Proxy，所以，只能基于接口；CGLIB 动态代理是根据类创建此类的子类，所以，此类不能被 final 修饰JDK 是自带的、CGLIB需要加载包\nJDK是反射机制，CGLIB是使用ASM框架。\n为什么Java不能多继承？\n会出现方法冲突和变量冲突\n集合\nArraylist底层原理可以从底层数据结构，构造函数和关键方法理解。\n\nArraylist的底层数据结构是object[]数组，构造函数分有参无参，如果是无参就是空数组，如果是有参，就用你定义的那个初始大小。如果参数是容器，那就是把容器转成数组copy给object。关键方法就是add方法，需要保证容量够用才能添加元素，所以会在添加之前进行一个ensurecapacity的过程。他会先计算mincapacity的值，他会拿mincapacity去和现在的数组长度比较，如果大了说明要扩容，扩容的过程是先×1.5看看够不够，够的话就1.5，不够就用新的这个mincapacity。如果minCapacity大于最大容量，则新容量则为Integer.MAX_VALUE，否则，新容量大小则为 MAX_ARRAY_SIZE 即为 Integer.MAX_VALUE - 8\n\n对于插入：如果不需要扩容，头插和指定位置插入都是O(n)，尾插是O(1)。如果需要扩容，就得再做一次扩容，O(n)，然后在插入，就是刚才讲的时间复杂度。\n对于删除：头删和指定位置删除是O(n)，尾部删除是O(1)\n\n\nLinkedlist\nLinkedlist 是双向链表，因为是链表，所以没什么扩容的问题，基本的方法都是围绕前节点、后节点、节点值展开的。\n\n头部插入&#x2F;删除： O(1)。\n尾部插入&#x2F;删除： O(1)。\n指定位置插入&#x2F;删除：需要先移动到指定位置，再修改指定节点的指针完成插入&#x2F;删除，因此需要移动平均 n&#x2F;2 个元素，时间复杂度为 O(n)。\n\n\nArrayList 与 LinkedList区别?\n底层数据结构： ArrayList 底层使用的是 Object 数组；LinkedList 底层使用的是 双向链表 数据结构，内存一个是连续一个不是连续\n插入和删除的时间复杂度：arraylist，头插、指定插、头删、指定删除都是On，尾插和尾删除是O1。linkedlist 头插和尾插、头删除、尾删除都是O1，指定位置是On\n内存空间占用：linkedlist每个节点要存前后指针，所以内存占用大。\n使用场景：\n如果需要频繁进行随机访问和查询操作的场景，例如按索引读取数据或搜索特定元素，应该选择ArrayList。\n如果需要频繁进行插入、删除或位置变动较多的场景，特别是在链表的首尾位置进行操作，那么LinkedList是更合适的选择。\n\n其他\n如何实现数组和arraylist之间的转换\nList.toarray  (修改原先list，array不受影响)\nArrays.aslist （受影响）\n\n&lt;?&gt;\n主要用于类或方法上，对这个类或者方法里面的泛型全是一样的。\n一般用在变量上，有界通配符，对类型做一定的限制。\n\nhashmap和hashset\nhashset还是比较适合去重和集合运算\nhashmap比较适合键值对这类数据\n\n比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同\nHashSet、LinkedHashSet 和 TreeSet 的主要区别在于底层数据结构不同。HashSet 的底层数据结构是哈希表（基于 HashMap 实现）。LinkedHashSet 的底层数据结构是链表和哈希表。TreeSet 底层数据结构是红黑树，元素是有序的，排序的方式有自然排序和定制排序。\n底层数据结构不同又导致这三者的应用场景不同。HashSet 用于不需要保证元素插入和取出顺序的场景，LinkedHashSet 用于保证元素的插入和取出顺序满足 FIFO 的场景，TreeSet 用于支持对元素自定义排序规则的场景。\n\nQueue 与 Deque 的区别\nQueue 是单端队列，只能从一端插入元素，另一端删除元素，实现上一般遵循 先进先出（FIFO） 规则。\nDeque 是双端队列，在队列的两端均可以插入或删除元素。\n\nArrayDeque 与 LinkedList 的区别\nArrayDeque 和 LinkedList 都实现了 Deque 接口，两者都具有队列的功能\nArrayDeque 是基于可变长的数组和双指针来实现，而 LinkedList 则通过链表来实现。\nArrayDeque 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 LinkedList 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。\n\n\nHashMap：hashmap最关键的是他的底层数据结构、put 扩容 和 线程安全方面的知识。\n\nHashMap 的底层实现JDK1.8 之前 HashMap 底层是 数组和链表。1.8之后是数组+链表+红黑树\n构造函数是懒加载，没有初始化数据，就是把负载因子赋为0.75。\nput的时候，先判断数组是否为空，如果为空，就初始化为16大小。通过 key 的 hashcode 经过扰动函数（右移16位再异或），然后通过   hash &amp; (n - 1) 判断当前元素存放的位置（这里的 n 指的是数组的长度），如果定位到的数组位置没有元素 就直接插入。如果有数据，就判断key是不是相同，相同就覆盖，不相同就判断是不是红黑树，如果是就调用putTree，如果是链表就遍历链表，看看key有没有，有就覆盖，没有就在尾部插入新的节点，然后判断长度是否大于8，大于8就去尝试转红黑树，插入结束后，最后要判断一下是否需要扩容。\n\n\nhashmap扩容过程扩容简单来说就是做了两件事。1：创建一个新数组，原来的两倍大。2：遍历旧数组每个槽如果槽位中是一个普通节点，则将节点放在新数组中，所在新数组中的下标计算方式为：e.hash &amp; (newCap - 1);如果槽位中是一个树节点，则进行红黑树的迁移操作，新数组中下标计算方式同普通节点；如果槽位中是一个链表节点，则将链表拆为高位链表和低位链表，就是拿hash值和旧容量做与操作，等于0就放入放入新数组的旧数组的下标位置和，不等于0会放到（旧数组下标 + 旧数组容量）下标位置；最后返回新数组。\nHashMap 多线程操作导致死循环问题（1.7会，1.8是在树操作）扩容问题和头插法问题\n假设两个线程同时对hashmap进行扩容，这时候两个都指向首节点A，后面的节点分别是bcd。\n那么这时候线程1正常执行，线程2卡住了。但是A执行完后因为是头插法所以abc变成了cba。线程2唤醒启动，线程2第一个e还是指向a，a的next指向b，这样子就出现了问题，但是还没出现环状。那我们继续执行。把e也就是a赋放到新链表，a &#x3D;\na的next其实就是b，b拿过来，然后b&#x3D;b的next，b的next是谁呢，就是a，然后a指向链表头，这个头节点就是b呀！这里就出问题了。\n解决的方法：concurrenthashmap，推荐；hashtable安全，不建议；或者直接加锁，也不建议。或者头插法改成尾插法。\nHashMap 为什么线程不安全？一方面就是多线程操作导致的死循环问题。\n另一方面就是两个线程 1,2 进行 put 操作，线程1 执行的时候通过判断发现没有出发hash碰撞，但是时间片用完了挂起，这时候线程2也判断有没有hash碰撞发现没有，因为线程1还没来得及插入。这时候线程2插入一个b值结束了，线程1重新获得时间片，因为之前已经成功判断过了，所以直接插入一个a值，那么这样b值就被a值覆盖了。\nHashMap 的长度为什么是 2 的幂次方散列采用%取余的操作来实现。但是，重点来了：“取余(%)操作中如果除数是 2 的幂次则等价于与其除数减一的与(&amp;)操作（也就是说 hash%length&#x3D;&#x3D;hash&amp;(length-1)的前提是 length 是 2 的 n 次方；）。” 并且 **采用二进制位操作 &amp;，相对于%能够提高运算效率）\nloadFactor 负载因子\nloadFactor 负载因子是控制数组存放数据多少的参数和扩容的界限。默认0.75\n给定的默认容量为 16，负载因子为 0.75。Map 在使用过程中不断的往里面存放数据，当数量超过了 16 * 0.75 &#x3D; 12 就需要将当前 16 的容量进行扩容，而扩容这个过程涉及到 rehash、复制数据等操作，所以非常消耗性能。\nHashMap 和 Hashtable 的区别\n线程是否安全：HashMap 是非线程安全的，Hashtable 是线程安全的,因为 Hashtable 内部的方法基本都经过synchronized 修饰。（如果你要保证线程安全的话就使用 ConcurrentHashMap 吧！）\n\n效率： 因为线程安全的问题，HashMap 要比 Hashtable 效率高一点。另外，Hashtable 基本被淘汰，不要在代码中使用它；\n\n初始容量大小和每次扩充容量大小的不同： ① 创建时如果不指定容量初始值，Hashtable 默认的初始大小为 11，之后每次扩充，容量变为原来的 2n+1。HashMap 默认的初始化大小为 16。之后每次扩充，容量变为原来的 2 倍。② 创建时如果给定了容量初始值，那么 Hashtable 会直接使用你给定的大小，而 HashMap 会将其扩充为 2 的幂次方大小（HashMap 中的tableSizeFor()方法保证，下面给出了源代码）。也就是说 HashMap 总是使用 2 的幂作为哈希表的大小,后面会介绍到为什么是 2 的幂次方。\n\n底层数据结构： hashmap 数组+链表+红黑树，hashtable 数组+链表\n\n\nhashmap的key规范用自定义类作为key，必须重写equals()和hashCode()方法。\n\n线程安全容器\n1、ConcurrentHashMapConcurrentHashMap1.8的底层数据结构采用数组+链表+红黑树的形式。是线程安全的，而是通过CAS+Synchronized的方法保证了多线程的线程安全。1.8以前是用16个Segment 分段锁加的Reentranlock。添加元素的时候，1，先判断key和value是不是空，如果空就抛异常。2，然后hashcode扰动函数模运算得到下标索引。3、先判断是不是初始化。4、节点为空就cas添加。5、如果正在扩容，就帮助扩容；6、如果冲突就加synchronized后再插入。7、看看能不能转成红黑树\nJava 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。\n1.7 size（）返回各个segment的size和，如果写入频繁，就加锁，全局锁\n1.8\n2、CopyOnWriteArrayList（读多写少）原理：读的时候不加锁，对数组进行改变的时候，通过锁 + 数组拷贝 + volatile 关键字保证了线程安全；\n\n加锁；ReentrantLock\n从原数组中拷贝出新数组；\n在新数组上进行操作，并把新数组赋值回去；\n解锁\n\n3、BlockingQueueBlockingQueue （阻塞队列）是一个接口，继承自 Queue。没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。\n阻塞队列有哪些\n\nArrayBlockingqueue：底层是数组、有界队列。一把锁，锁是不分离的\nLinkBlockingQueue：底层是链表、默认无界但是支持有界。头尾两把锁\nPriorityBlockingQueue 由优先级堆支持的无界优先级队列\nDelayedWorkQueue：DelayedWorkQueue是基于堆的数据结构，按照时间顺序将每个任务进行排序，将待执行时间越近的任务放在在队列的队头位置，以便于最先进行执行\nSynchronousQueue\n\n\n线程池\n1、ThreadPoolExecutor\n 线程池的类型\n\nFixedThreadPool，没有救济的线程，只有核心线程。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue\nSingleThreadPool，核心线程和最大线程就1个。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue\nCachedThreadPool：这个是没有核心线程数，全都是救济线程。阻塞队列是SynchronousQueue\n\n\n2、ScheduledThreadPoolExecutor\nScheduledThreadPool：这个是定时执行任务，阻塞队列是DelayedWorkQueue\n\n\nScheduledThreadPoolExecutor继承了ThreadPoolExecutor，也实现了一个ScheduledExecutorService接口，所以有一些特有的方法：比如schedule\n他有个类DelayedWorkQueue，见上面。还有一个**ScheduledFutureTask**\nScheduledThreadPoolExecutor相比Threadpoolexcutor，具备延时执行任务和可周期性执行任务的特性\n\n创建线程池的方式\n方式一：通过ThreadPoolExecutor构造方法来创建（推荐）。\n方式二： Executors的工厂方法：比如Executors.newCachedThreadPool()（不推荐）。\n两种方法都在concurrent包下面。\n\n为什么不推荐？我觉得就是Executors提供的创建的几个线程池都有点局限性，都有不足的地方。\n然后像Fixed和Single用的工作队列是无界队列，可能会堆积大量的请求,导致OOM\n还有cached和Schedule最大的线程数量是Integer.MAX_VALUE，可能堆积大量的线程，导致OOM\n\n3、CompletableFutureCompletableFuture是对Future的扩展和增强。CompletableFuture实现了Future接口，并在此基础上进行了丰富的扩展，完美弥补了Future的局限性，同时CompletableFuture实现了对任务编排的能力\n\n元素排序 Comparable 和 Comparator 有什么区别？\nComparable：实现 Comparable 接口并重写 compareTo 方法就可以实现某个类的排序了，它支持 Collections.sort 和 Arrays.sort 的排序。compareTo 方法接收的参数 p 是要对比的对象，排序规则是用当前对象和要对比的对象进行比较，然后返回一个 int 类型的值。正序从小到大的排序规则是：使用当前的对象值减去要对比对象的值；而倒序从大到小的排序规则刚好相反：是用对比对象的值减去当前对象的值。\nComparator 除了可以通过创建自定义比较器外，还可以通过匿名类的方式，更快速、便捷的完成自定义比较器的功能，具体的代码实现如下：\nComparable 必须由自定义类内部实现排序方法，而 Comparator 是外部定义并实现排序的\n\nLinuxLinux常用命令：cat, pwd, ls、TOP，mpstat，chattr，lsattr\n查日志的命令：cat tail head\n怎么排查项目故障：\n\n可以用top先看看是cpu还是内存的问题，cpu的话，可以拿到进程id，然后ps H -eo pid,tid,%cpu | grep进程id查看线程，最后jstack查看堆栈信息。内存泄漏的话就jmap -dump一个内存快照，然后加载到visualVMEclipse Memory Analyzer里面。或者jstat看看各个分区的情况和gc的压力。还有那个HeapDumpOnMemoryError这个JVM的配置\n\n标高的原因：\n\n死锁？死循环？频繁fullgc？一些复杂计算\n\n查看机器的负载情况linux\n\nTop htop mpstat vmstat\n\nSpirngspringboot和spring\n\nSpringBoot是Spring框架的扩展，是一个在spring基础上进行简化配置和开发流程的web整合的轻量级框架\n@SpringBootApplication\n@EnableAutoConfiguration\n@ComponentScan\n\n@Transcational\n\n用了@Transactional 时，Spring 会创建一个代理对象来包装该方法，并在方法执行前和后添加代码，以启动和提交&#x2F;回滚事务\n他可以用于接口、类、类方法。把注解放到类上，那所有的public方法都配置了相同的事务配置信息，作用于方法，那方法的事务会覆盖类的事务配置信息。\n使用Transcantional需要注意的点\n\n1、@Transactional 只能应用到 public 方法才有效\n\n这是因为在使用 Spring AOP 代理时，Spring 会调用一个叫做 computeTransactionAttribute 方法去获取 @Transactional 注解的事务配置信息，这个方法里面会判断你是不是为public，如果是才能往下走，\n\n2、异常类型不匹配：\n@Transactional 默认只在运行时异常（RuntimeException）发生时才回滚，对已检查异常（Checked Exception）不回滚。\n3、自调用失效：\n当一个标记为 @Transactional 的方法内部调用另一个 @Transactional 方法时，内部方法的事务设置可能不会生效。\n4、多线程\n\n我们说同一个事务，是指同一个数据库连接，你多线程获取到的数据库连接不是一个，所以是不同的事务。\n\n\nSpring事务基于Spring AOP，Spring AOP底层用的动态代理，动态代理有两种方式：\n\n基于接口代理(JDK代理)\n\n基于接口代理，凡是类的方法非public修饰，或者用了static关键字修饰，那这些方法都不能被Spring AOP增强\n\n基于CGLib代理(子类代理)\n\n基于子类代理，凡是类的方法使用了private、static、final修饰，那这些方法都不能被Spring AOP增强 由于是继承关系，无法代理final的类和方法(无法继承)，或是private的方法(对子类不可见)。\n\n\n————————————————\n这个注解有几个核心的字段，\n事务的隔离级别\nisolation ：事务的隔离级别，默认值为 Isolation.DEFAULT。\n\n\n\nIsolation.DEFAULT：使用底层数据库默认的隔离级别。\n\n\n\nIsolation.READ_UNCOMMITTED\n\n\nIsolation.READ_COMMITTED\n\n\nIsolation.REPEATABLE_READ\n\n\nIsolation.SERIALIZABLE\n\n\n传播机制\n\n\n\n\nPropagation.REQUIRED：如果当前存在事务，则加入该事务，如果当前不存在事务，则创建一个新的事务。**(** 也就是说如果A方法和B方法都添加了注解，在默认传播模式下，A方法内部调用B方法，会把两个方法的事务合并为一个事务 ）\n\n\n\nPropagation.SUPPORTS：如果当前存在事务，则加入该事务；如果当前不存在事务，则以非事务的方式继续运行\n\n\nPropagation.MANDATORY：如果当前存在事务，则加入该事务；如果当前不存在事务，则抛出异常。\n\n\nPropagation.REQUIRES_NEW：重新创建一个新的事务，如果当前存在事务，暂停当前的事务。**(** 当类A中的 a 方法用默认Propagation.REQUIRED模式，类B中的 b方法加上采用 Propagation.REQUIRES_NEW模式，然后在 a 方法中调用 b方法操作数据库，然而 a方法抛出异常后，b方法并没有进行回滚，因为Propagation.REQUIRES_NEW会暂停 a方法的事务 )\n\n\nPropagation.NOT_SUPPORTED：以非事务的方式运行，如果当前存在事务，暂停当前的事务。\n\n\nPropagation.NEVER：以非事务的方式运行，如果当前存在事务，则抛出异常。\n\n\n\n是否为只读\n\n默认情况下是false，如果你的事务确实只有查询的需求，那就可以这里设置为true；\n\n\n\n常用的注解？\nhttps://nageoffer.com/pages/7563ce/#%E9%97%AE%E9%A2%98%E8%AF%A6%E8%A7%A3\n\nspring常用的注解\n@Component(“foo”) &#x2F;&#x2F; 声明一个 Foo 类型的 Bean，其 beanName 为 “foo”@Named(“a”) &#x2F;&#x2F; &#x3D;&#x3D; @Component(“a”)@ManagedBean &#x2F;&#x2F; &#x3D;&#x3D; @Component@Configuration &#x2F;&#x2F; 声明一个配置类，其本身也视为一个 Bean@Bean &#x2F;&#x2F;注解用于注解在工厂方法上，标明该方法返回的对象需要作为一个 Bean 交由 Spring 管理。@Lazy 懒加载：延迟单例 Bean 的加载时机，在不被其他非懒加载 Bean 依赖的情况下，不在 AbstractApplicationContext.refresh 执行过程中随其他单例 Bean 提前实例化，而是等到被从 Spring 容器获取时再初始化\n@PostConstruct &#x2F;&#x2F;被 @PostConstruct 注解的方法会在 Bean 初始化后调用\n\nSpring Web常用的注解\n1、@Controller &amp; @Service &amp; @Repository2、@RequestMapping：@Controller@RequestMapping(“&#x2F;example”) &#x2F;&#x2F; 当放在类上时，等同于定义公共路径前缀 @RequestMapping(        path &#x3D; {“&#x2F;method1”, “&#x2F;method”}, &#x2F;&#x2F; 支持同时映射多个路径        method &#x3D; RequestMethod.GET    ) public String method1() {     &#x2F;&#x2F; 处理 &#x2F;example&#x2F;method1 或 &#x2F;example&#x2F;method 的 get 请求     return “view1”; }@RequestParam、@PathVariable、@RequestBody不同http://localhost:8080/find/1/china/2?id=100&amp;name=zhangSan。则 @RequestParam 可以用来获取 “?” 后面的 id、name 参数，而 @PathVariable 则是获取 url 中的参数，如里面的 “1”、”china”、”2”\n\n\n\n@ResponseBody 直接放回JSON数据，不需要渲染 7.@ControllerAdvice官方提供的仅针对控制器的切面注解 依赖注入的注解 1、@Autowired @Qualifier 等同与@Inject @Named 2、@Resource 3、@Value 注解可以使用 ${} 语法注入配置文件的某些配置，也可以使用 #{} 语法注入 Spring 容器中的 Bean\n\n\nSpring上下文注解\n\n@ComponentScan\n\n\nAOP是什么？\naop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop 底层是动态代理JDK和CGLIB\n有没有用过AOP\n有的，我之前在一个分库分表的组件项目里面用到过，就是分库分表要切换数据源，我就是用aop切面去计算出落到哪个库哪个表里面，切入点是一个注解。\naop的实现方式\n\n1、Spring API实现AOP，\n\n\n2、自定义切面类，用xml配置\n\n\n3、通过注解实现AOP，Aspect\n\naop失效的原因和解决方法\n\ncglib， 在bean中用this来调用被AOP注解标注的方法，this下注解是不生效的。一个类中有两个方法A和B，B被aop增强了，此时A调用的是当前类中的方法，而不是其子类加强后的方法，所以会失效\n\n\n解决方法：\n\n\n1、直接把this换成Autowared修饰的bean\n\n\n2、Spring上下文获取增强后的实例引用\n\naop用那种动态代理\n\n能用 JDK 做动态代理就用 JDK，不能用 JDK 做动态代理就用 Cglib，即首选 JDK 做动态代理。\n\nIOC\n\n控制反转的意思，以前我们创建的时候new，但是这种方法很麻烦，且很难处理对象直接的依赖关系。他是把对象创建和对象之间的调用过程，交给spring进行管理。\n\n\nSpring有几种容器\n\n\n\nBeanFactory: BeanFactory是Spring框架最基本的IOC容器。\nApplicationContext: ApplicationContext是BeanFactory的子接口，提供了更多的企业级功能，如国际化处理、事件传播、应用层面的异常处理等。它对BeanFactory进行了扩展，是Spring中最常用的IOC容器。\nClassPathXmlApplicationContext: ClassPathXmlApplicationContext是从类路径下加载配置文件的容器，通过XML文件配置来管理Bean。\nFileSystemXmlApplicationContext: FileSystemXmlApplicationContext从文件系统中加载配置文件的容器，同样也是通过XML文件配置来管理Bean。\nAnnotationConfigApplicationContext: AnnotationConfigApplicationContext是通过Java类配置来管理Bean的容器，不需要XML配置文件，而是通过注解来完成Bean的定义和依赖注入。\n\n\n**BeanFactory和FactoryBean，ApplicationContext的区别？ **\n\n答：①BeanFactory是⼀个Factory接⼝，是⽤来管理bean的IOC容器或对象⼯⼚。 ②FactoryBean是⼀个Bean接⼝，是⼀个可以⽣产或者装饰对象的⼯⼚Bean，可以通过 实现该接⼝⾃定义的实例化Bean的逻辑。③ApplicationConext是BeanFactory的⼦接 ⼝，扩展了其功能，ApplicationContext是⽴即加载\n\n创建Bean的方式\n\n\n1.使用默认的构造函数创建bean对象\n2.通过静态工厂方法创建bean\n3.通过实例工厂方法创建bean\n4.实现FactoryBean接口\n\n\nBean的生命周期？\n\n1 通过XML、注解和配置类等方式加载Spring Bean\n\n\n2、用BeanDefinitionReader把Bean解析成BeanDefinition结构，放到beanDefinitionMap，扫描这个\n\n\n4、从Bean定义里面拿BeanClass的构造函数，通过反射创建Bean，这里构造函数的选用，一般先选有autowire修饰和无参构造函数。\n\n\n5、依赖注入\n\n\n6、处理三个Aware接口，\n\n\n7、BeanPostProcessor：自定义的逻辑\n\n\n8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）\n\n\n9、BeanPostProcessor：自定义的逻辑 aop核心底层动态代理\n\nBean的循环依赖？\n\nSpring解决这个是用三级缓存或者懒加载（构造函数的循环依赖问题），三次缓存中：一级缓存存放完整的bean，二级缓存存放半成品Bean、三级缓存放ObjectFactory。\n\n\n为什么三层？\n\n\n所以如果没有AOP的话确实可以两级缓存就可以解决循环依赖的问题，如果加上AOP，两级缓存是无法解决的。如果对象被AOP代理了，我每次从三级缓存中拿到singleFactory对象，执行getObject()方法会产生新的代理对象，所以还要借助另外一个缓存来保存产生的代理对象\n\n\n依赖注入有哪些方法\n\n1、构造器\n\n\n2、setter\n\n\n3、字段注解\n\n@Transactional 这个注解仅仅是一些（和事务相关的）元数据，在运行时被事务基础设施读取消 费，并使用这些元数据来配置bean的事务行为。 大致来说具有两方面功能，一是表明该方法要参 与事务，二是配置相关属性来定制事务的参与方式和运行行为 声明式事务主要是得益于Spring AOP。使用一个事务拦截器，在方法调用的前后&#x2F;周围进行事务性 增强（advice），来驱动事务完成。 @Transactional注解既可以标注在类上，也可以标注在方法上。当在类上时，默认应用到类里的所 有方法。如果此时方法上也标注了，则方法上的优先级高。 另外注意方法一定要是public的。\n可以直接调用bean.init的进行初始化吗？\n\n最好不要，如果你在new之后直接调用init方法，那会出现一种情况，假设这个bean里面有个Car类，然后我做初始化setName结果人家刚刚实例化，就会报空指针异常。\n\nprivate Car car; 这行代码在栈内存中为 car 引用变量分配空间。这个空间只是用来存储引用的\ncar = new Car(); 这行代码在堆内存中为 Car 对象分配空间，并将堆内存中的对象地址赋值给 car 引用变量。\n\n\nSpringboot启动流程\n\n主要分为4步：服务构建、环境准备、容器创建、填充容器。\n\n\n1、服务构建就是构造springapplication，包括确认web服务器、加载spring.factories下的所有初始化类监听器，找到主导方法。\n\n\n2、然后调用run方法进入环境准备，通过配置类、和配置文件构造出一个environment，用于后面的容器创建。\n\n\n3、容器创建的话，其实就是创建一个BeanFactory，然后加载bean信息，通过beanDefinitionReader把bean信息读成BeanDefinition并且把他放到beanDefinitionMap里面\n\n\n4、填充容器。就是我们的refresh（）方法，一个12步，但是可以分成四块，预处理，后置处理器，国际化分派器，实例化剩下的所有bean。\n\n容器初始化流程\n\n1、prepareRefresh()刷新前的预处理：2、obtainFreshBeanFactory()：创建容器对象，实际就是获取一个DefaultListenableBeanFactory：3、prepareBeanFactory(beanFactory)：BeanFactory的预处理工作，向容器中添加一些组件：4、postProcessBeanFactory(beanFactory)：\n\n\n5、invokeBeanFactoryPostProcessors(beanFactory)：即BeanFactory的后置处理器：6、registerBeanPostProcessors(beanFactory)：向容器中注册Bean的后置处理器BeanPostProcessor，它的主要作用是干预Spring初始化bean的流程，从而完成代理、自动注入、循环依赖等功能\n\n\n7、initMessageSource()：初始化MessageSource组件，主要用于做国际化功能，消息绑定与消息解析：8、initApplicationEventMulticaster()：初始化事件派发器，在注册监听器时会用到：\n\n\n9、onRefresh()：留给子容器、子类重写这个方法，在容器刷新的时候可以自定义逻辑\n\n\n10、registerListeners()：注册监听器：将容器中所有的ApplicationListener注册到事件派发器中，并派发之前步骤产生的事件：11、finishBeanFactoryInitialization(beanFactory)：初始化所有剩下的单实例bean，核心方法是preInstantiateSingletons()，会调用getBean()方法创建对象；12、finishRefresh()：发布BeanFactory容器刷新完成事件：\n\n\n\n其实我觉得Spring的IOC容器，主要做三步：\n\n\n\n\n1、初始化Spring容器，创建一个DefaultListableBeanFactory\n\n\n\n\n2、将配置类的BeanDefinition注册到容器。\n\n\n\n\n3、Refresh，Refresh又分12步。这12步，可以分成几块。\n\n\n\n\n第一块：预处理，包括刷新的预处理，然后获取我们刚刚创建的BeanFactory再做预处理。\n\n\n\n\n第二块：后置处理器，执行BeanFactory的后置处理器，然后在容器里面注册一个Bean的后置处理器。\n\n\n\n\n第三块：就是一些国际化，事件分派器的东西。\n\n\n\n\n第四块：非常重要了，finishBeanFactoryInitailization，初始化所有剩下的单实例bean，bean的生命周期也从这里开始。\n\n\nSpring用到的设计模式\n\n单例模式：这个在创建Bean的时候用到，创建单例Bean的时候会先去缓存里面找，如果找不到，在触发createBean方法。\n\n\n工厂模式：就是BeanFactory接口了\n\n\n代理模式：就是aop。jdk和cglib\n\n\n模版模式：jdbcTemplate\n\nSpringboot自动装配？\n\nspringboot的自动装配是依赖于springbootapplication这个注解，这个注解是一个复合注解，真正实现自动装配的是一个enableautoConfiguration这个注解。 我们引入的starter里面会有@Configuration配置类，然后这个配置类的路径放在spirng.factories下，我们用springfactoryloader找到配置类，最后我们spring会通过ImportSelector接口去实现动态的加载，@ConditionalOnBean和@ConditionalOnMissingBean 定义的条件进行选择加载。\n\nAutowire和Resourse\n\nspring推荐setter和构造器，但是我们用字段注入比较简单，idea明确不推荐Autowire，我觉得原因是和框架的强耦合。\n\n\nAutowire默认按类型，如果想要实现按名字注入，主要配置@Primary 或者@Qualifier，\n\n\nResource默认按名字然后类型。\n\nBean是线程安全的吗？\n\n默认单例（可以多例），但是不是线程安全。因为Bean内部的成员变量是共享可修改的。\n\nSpring事务失效的场景?\n\n\n自己捕获异常。如果没有抛出会失效，解决方法：手动抛出异常\n\n\n\n\n没有抛出检查异常，因为spring默认只回滚非检查异常。解决方法就是transcantional加rollbackfor &#x3D; exception.class\n没有用public修饰，\n\n\nBeanFactory和FactoryBean的区别！\n\nBeanFactory是管理Bean的容器，FactoryBean是一个生产Bean的工厂。\n\n\nMVC的执行流程\n请求发到前端控制器上，然后用处理器映射器找到具体的处理器，使用处理器适配器调用真正的处理器，然后结果转化成JSON响应。\n\n\n\nMyBatis\nMybatis怎么传多个参数：\n\n顺序传参\nmap传参\n用mybatis的注解，Param\n\nMyBatis中${} 和 #{} 有什么区别\n\n1、功能不同： #{} 是占位符，${} 是直接替换，；2、使用场景不同：普通参数使用 #{}，如果传递的是 SQL 命令或 SQL 关键字，需要使用 ${}，但在使用前一定要做好安全验证；3、安全性不同：使用 ${} 存在安全问题，而 #{} 则不存在安全问题。\n\n\nGITgit rebase 和 git merge\n\ngit merge是保留历史的提交，然后new一个新的提交记录\nrebase是一般在非公共分支上rebase，然后合并到main分支，原来的那个分支会被清除。\n\nsetNX有什么缺陷？redison锁过期的问题\n\n有单点风险\n可能会导致同一把锁被多人使用\nredlock\n\n操作系统1、进程和线程的区别\n\n1、进程是资源分配和调度的单位，把磁盘的代码加载到内存，分配数据空间。\n2、线程是进程的一个实体，cpu运行和独立调度的基本单位，cpu上面真正运行的其实是线程\n3、一个进程可以拥有多个线程。\n4、线程的切换消耗要比进程小。共享代码区、数据区，堆区\n\n2、死锁\n\n多个进程，互相请求对方已经持有的资源。\n互斥条件\n请求和保持\n不可被剥夺\n循环等待\n死锁的检测：\n\n可以依赖JPS和JSTACK。用jps拿到java进程的id，然后jstack分析堆栈信息。\n也可以用可视化工具virtualVM\n\n预防死锁：破坏这四个条件\n解除死锁：资源剥夺、撤销进程、进程回退。\n\n","dateCreated":"2023-08-07T00:00:00+08:00","dateModified":"2024-02-27T20:36:09+08:00","datePublished":"2023-08-07T00:00:00+08:00","description":"","headline":"Java基础知识","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/","keywords":"Java基础知识"}</script>
-    <meta name="description" content="反射  *** Java的反射机制是在运行状态中，对于任意一个类，都能够获得这个类的所有属性和方法。***  获得Class对象的三种方式： (1)使用Class.forName方法(“类的全路径名”)； (2)使用需要反射的类名调用class方法； (3)使用需要反射的类的对象调用getClass方法 缺点： 耗时  Exception  检查异常：编译的时候就出问题 非检查：运行的时候出问题">
-<meta property="og:type" content="blog">
-<meta property="og:title" content="Java基础知识">
-<meta property="og:url" content="http://example.com/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/index.html">
+  <meta charset="utf-8">
+  <title>Java基础知识 | 森</title>
+  <meta name="keywords" content=" Java基础知识 ">
+  <meta name="description" content="Java基础知识 | 森">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="description" content="潮起潮落，云卷云舒">
+<meta property="og:type" content="website">
+<meta property="og:title" content="all-tags">
+<meta property="og:url" content="http://example.com/all-tags/index.html">
 <meta property="og:site_name" content="森">
-<meta property="og:description" content="反射  *** Java的反射机制是在运行状态中，对于任意一个类，都能够获得这个类的所有属性和方法。***  获得Class对象的三种方式： (1)使用Class.forName方法(“类的全路径名”)； (2)使用需要反射的类名调用class方法； (3)使用需要反射的类的对象调用getClass方法 缺点： 耗时  Exception  检查异常：编译的时候就出问题 非检查：运行的时候出问题">
+<meta property="og:description" content="潮起潮落，云卷云舒">
 <meta property="og:locale" content="zh_CH">
-<meta property="og:image" content="http://example.com/images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20240214002243390.png">
-<meta property="og:image" content="http://example.com/images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20240213231737281.png">
-<meta property="og:image" content="http://example.com/images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231116121230926.png">
-<meta property="og:image" content="http://example.com/images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231222001434059.png">
-<meta property="og:image" content="http://example.com/images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231118193113289.png">
-<meta property="article:published_time" content="2023-08-06T16:00:00.000Z">
-<meta property="article:modified_time" content="2024-02-27T12:36:09.268Z">
+<meta property="article:published_time" content="2023-04-12T03:28:50.336Z">
+<meta property="article:modified_time" content="2023-04-12T03:28:48.541Z">
 <meta property="article:author" content="CSEN">
-<meta property="article:tag" content="Java基础知识">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20240214002243390.png">
-    
+
+
+<link rel="icon" href="/img/avatar.jpg">
+
+<link href="/css/style.css?v=1.1.0" rel="stylesheet">
+
+<link href="/css/hl_theme/atom-light.css?v=1.1.0" rel="stylesheet">
+
+<link href="//cdn.jsdelivr.net/npm/animate.css@4.1.0/animate.min.css" rel="stylesheet">
+
+<script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="/js/titleTip.js?v=1.1.0" ></script>
+
+<script src="//cdn.jsdelivr.net/npm/highlightjs@9.16.2/highlight.pack.min.js"></script>
+<script>
+    hljs.initHighlightingOnLoad();
+</script>
+
+<script src="//cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
+
+
+
+<script src="//cdn.jsdelivr.net/npm/jquery.cookie@1.4.1/jquery.cookie.min.js" ></script>
+
+<script src="/js/iconfont.js?v=1.1.0" ></script>
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+<div style="display: none">
+  <input class="theme_disqus_on" value="false">
+  <input class="theme_preload_comment" value="">
+  <input class="theme_blog_path" value="">
+  <input id="theme_shortcut" value="true" />
+  <input id="theme_highlight_on" value="true" />
+  <input id="theme_code_copy" value="true" />
+</div>
+
+
+
+<body>
+<aside class="nav">
+    <div class="nav-left">
+        <a href="/"
+   class="avatar_target">
+    <img class="avatar"
+         src="/img/avatar.jpg"/>
+</a>
+<div class="author">
+    <span>CSEN</span>
+</div>
+
+<div class="icon">
     
         
-    
-    
-        <meta property="og:image" content="http://example.com/assets/images/head.jpg"/>
-    
-    
-    
-    
-    <!--STYLES-->
-    
-<link rel="stylesheet" href="/assets/css/style-w816scvuzwavitjylabixcb3ofuoklqul47j3rgwu1r0mxrxvbdehvp2jk5s.min.css">
-
-    <!--STYLES END-->
-    
-
-    
-
-    
-        
-    
-</head>
-
-    <body>
-        <div id="blog">
-            <!-- Define author's picture -->
-
-
-    
-        
-            
-        
-    
-
-<header id="header" data-behavior="4">
-    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
-    <div class="header-title">
-        <a
-            class="header-title-link"
-            href="/"
-            aria-label=""
-        >
-            森
-        </a>
-    </div>
-    
-        
-            <a
-                class="header-right-picture "
-                href="#about"
-                aria-label="Öffne den Link: /#about"
-            >
-        
-        
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
-        
-        </a>
-    
-</header>
-
-            <!-- Define author's picture -->
-
-
-
-        
-    
-
-<nav id="sidebar" data-behavior="4">
-    <div class="sidebar-container">
-        
-            <div class="sidebar-profile">
-                <a
-                    href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
-                >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
-                </a>
-                <h4 class="sidebar-profile-name">CSEN</h4>
+            <a title="rss"
+               href="/atom.xml"
+               target="_blank">
                 
-                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
-</h5>
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-rss"></use>
+                    </svg>
                 
-            </div>
+            </a>
         
+    
         
-            <ul class="sidebar-buttons">
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="/"
-                            
-                            rel="noopener"
-                            title="首页"
-                        >
-                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">首页</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="/all-categories"
-                            
-                            rel="noopener"
-                            title="分类"
-                        >
-                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">分类</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="/all-tags"
-                            
-                            rel="noopener"
-                            title="标签"
-                        >
-                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">标签</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="/all-archives"
-                            
-                            rel="noopener"
-                            title="档案"
-                        >
-                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">档案</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link open-algolia-search"
-                            href="#search"
-                            
-                            rel="noopener"
-                            title="搜索"
-                        >
-                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">搜索</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="#about"
-                            
-                            rel="noopener"
-                            title="关于"
-                        >
-                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">关于</span>
-                    </a>
-            </li>
-            
-        </ul>
-        
-            <ul class="sidebar-buttons">
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="https://github.com/Caosen0819"
-                            
-                                target="_blank"
-                            
-                            rel="noopener"
-                            title=".github"
-                        >
-                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">.github</span>
-                    </a>
-            </li>
-            
-        </ul>
-        
-    </div>
-</nav>
-
-            
-            <div id="main" data-behavior="4"
-                 class="
-                        hasCoverMetaIn
-                        ">
+            <a title="github"
+               href="https://github.com/yelog"
+               target="_blank">
                 
-<article class="post">
-    
-    
-        <div class="post-header main-content-wrap text-left">
-    
-        <h1 class="post-title">
-            Java基础知识
-        </h1>
-    
-    
-        <div class="post-meta">
-    <time datetime="2023-08-07T00:00:00+08:00">
-	
-		    07 Aug 2023
-    	
-    </time>
-    
-        <span>in </span>
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-github"></use>
+                    </svg>
+                
+            </a>
         
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
+    
+        
+            <a title="facebook"
+               href="https://www.facebook.com/faker.tops"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-facebook"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+    
+        
+    
+        
+            <a title="instagram"
+               href="https://www.facebook.com/faker.tops"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-instagram"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="reddit"
+               href="https://www.reddit.com/user/yelog/"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-reddit"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="weibo"
+               href="http://weibo.com/u/2307534817"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-weibo"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="jianshu"
+               href="https://www.jianshu.com/u/ff56736de7cf"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-jianshu"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="zhihu"
+               href="https://www.zhihu.com/people/jaytp/activities"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-zhihu"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+    
+        
+            <a title="oschina"
+               href="https://my.oschina.net/yelog"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-oschina"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+    
+        
+            <a title="email"
+               href="mailto:jaytp@qq.com"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-email"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="qq"
+               href="http://wpa.qq.com/msgrd?v=3&uin=872336115&site=qq&menu=yes"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-qq"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="kugou"
+               href="https://www.kugou.com/"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-kugou"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="neteasemusic"
+               href="https://music.163.com/#/user/home?id=88151013"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-neteasemusic"></use>
+                    </svg>
+                
+            </a>
+        
     
 </div>
 
+
+
+
+
+<ul>
+    <li>
+        <div class="all active" data-rel="全部文章">全部文章
+            
+                <small>(46)</small>
+            
+        </div>
+    </li>
     
+        
+            
+                
+    <li>
+        <div data-rel="Java">
+            
+            Java
+            <small>(32)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="new">
+            
+            new
+            <small>(1)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="去雾算法">
+            
+            去雾算法
+            <small>(1)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="学习资料">
+            
+            学习资料
+            <small>(1)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="微信小程序">
+            
+            微信小程序
+            <small>(2)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="项目实践">
+            
+            项目实践
+            <small>(9)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+</ul>
+<div class="left-bottom">
+    <div class="menus">
+        
+            
+            
+            
+    </div>
+    <div>
+        
+            <a class="about  hasFriend  site_url"
+               
+               href="/about">关于</a>
+        
+        <a style="width: 50%"
+                
+                                           class="friends">友链</a>
+        
+    </div>
+</div>
+<input type="hidden" id="yelog_site_posts_number" value="46">
+
+<div style="display: none">
+    <span id="busuanzi_value_site_uv"></span>
+    <span id="busuanzi_value_site_pv"></span>
+</div>
+
+    </div>
+    <div class="nav-right">
+        <div class="friends-area">
+    <div class="friends-title">
+        友情链接
+        <i class="iconfont icon-left"></i>
+    </div>
+    <div class="friends-content">
+        <ul>
+            
+            <li><a target="_blank" href="http://yelog.org/">叶落阁</a></li>
+            
+        </ul>
+    </div>
+</div>
+        <div class="title-list">
+    <div class="right-top">
+        <div id="default-panel">
+            <i class="iconfont icon-search" data-title="搜索 快捷键 i"></i>
+            <div class="right-title">全部文章</div>
+            <i class="iconfont icon-file-tree" data-title="切换到大纲视图 快捷键 w"></i>
+        </div>
+        <div id="search-panel">
+            <i class="iconfont icon-left" data-title="返回"></i>
+            <input id="local-search-input" autocomplete="off"/>
+            <label class="border-line" for="input"></label>
+            <i class="iconfont icon-case-sensitive" data-title="大小写敏感"></i>
+            <i class="iconfont icon-tag" data-title="标签"></i>
+        </div>
+        <div id="outline-panel" style="display: none">
+            <div class="right-title">大纲</div>
+            <i class="iconfont icon-list" data-title="切换到文章列表"></i>
+        </div>
+    </div>
+
+    <div class="tags-list">
+    <input id="tag-search" />
+    <div class="tag-wrapper">
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>BUG</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>DBRouter-starter</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>docker</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Java基础知识</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Java并发</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>JVM</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Kafka</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>lucky项目</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>mybatis-starter</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Mysql</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>new</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Oauth2</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Redis</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>spring勇攀高峰</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>场景题</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>微信小程序</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>整合中间件</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>暗通道</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>测试</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>计算机网络</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>设计模式</a>
+            </li>
+        
+    </div>
+
 </div>
 
     
-    <div class="post-content markdown">
-        <div class="main-content-wrap">
-            <p><strong>反射</strong></p>
+    <nav id="title-list-nav">
+        
+        
+        <a  class="全部文章 Java "
+           href="/2024/02/02/CS:MySQL45-1/"
+           data-tag="Mysql"
+           data-author="" >
+            <span class="post-title" title="MySQL45">MySQL45</span>
+            <span class="post-date" title="2024-02-02 21:29:04">2024/02/02</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/11/08/CS:JUC/"
+           data-tag="Java并发"
+           data-author="" >
+            <span class="post-title" title="JUC">JUC</span>
+            <span class="post-date" title="2023-11-08 00:00:00">2023/11/08</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/11/08/CS:mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/"
+           data-tag="Mysql"
+           data-author="" >
+            <span class="post-title" title="mysql技术内幕">mysql技术内幕</span>
+            <span class="post-date" title="2023-11-08 00:00:00">2023/11/08</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/11/04/CS:JVM/"
+           data-tag="JVM"
+           data-author="" >
+            <span class="post-title" title="JVM">JVM</span>
+            <span class="post-date" title="2023-11-04 00:00:00">2023/11/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/10/10/CS:%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
+           data-tag="设计模式"
+           data-author="" >
+            <span class="post-title" title="设计模式">设计模式</span>
+            <span class="post-date" title="2023-10-10 00:00:00">2023/10/10</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/10/09/CS:Redis/"
+           data-tag="Redis"
+           data-author="" >
+            <span class="post-title" title="Redis">Redis</span>
+            <span class="post-date" title="2023-10-09 00:00:00">2023/10/09</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
+           data-tag="Java基础知识"
+           data-author="" >
+            <span class="post-title" title="Java基础知识">Java基础知识</span>
+            <span class="post-date" title="2023-08-07 00:00:00">2023/08/07</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C3/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="计算机网络3">计算机网络3</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="计算机网络2">计算机网络2</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C1/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="计算机网络1">计算机网络1</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/07/08/CS:%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="输入网络，期间发生了什么？">输入网络，期间发生了什么？</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/07/08/CS:Kafka/"
+           data-tag="Kafka"
+           data-author="" >
+            <span class="post-title" title="Kafka知识">Kafka知识</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="mybatis组件的整合理解2">mybatis组件的整合理解2</span>
+            <span class="post-date" title="2023-04-27 00:00:00">2023/04/27</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="mybatis组件的整合理解3">mybatis组件的整合理解3</span>
+            <span class="post-date" title="2023-04-27 00:00:00">2023/04/27</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="mybatis组件的整合理解1">mybatis组件的整合理解1</span>
+            <span class="post-date" title="2023-04-26 00:00:00">2023/04/26</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/22/CS:DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+           data-tag="DBRouter-starter"
+           data-author="" >
+            <span class="post-title" title="DBRouter组件的整合理解">DBRouter组件的整合理解</span>
+            <span class="post-date" title="2023-04-22 00:00:00">2023/04/22</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="Spring整合mybatis">Spring整合mybatis</span>
+            <span class="post-date" title="2023-04-11 00:00:00">2023/04/11</span>
+        </a>
+        
+        
+        <a  class="全部文章 学习资料 "
+           href="/2023/04/11/%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99/"
+           data-tag="测试"
+           data-author="" >
+            <span class="post-title" title="参考资料">参考资料</span>
+            <span class="post-date" title="2023-04-11 00:00:00">2023/04/11</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
+           data-tag="spring勇攀高峰"
+           data-author="" >
+            <span class="post-title" title="Spring ioc加载流程">Spring ioc加载流程</span>
+            <span class="post-date" title="2023-04-11 00:00:00">2023/04/11</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：10">章节：10</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：7-10，同时回顾一下4-6的内容">章节：7-10，同时回顾一下4-6的内容</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 new "
+           href="/2023/04/04/New%20page/"
+           data-tag="new"
+           data-author="" >
+            <span class="post-title" title="待定">待定</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"
+           data-tag="场景题"
+           data-author="" >
+            <span class="post-title" title="待定">待定</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A11-13/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：11-13">章节：11-13</span>
+            <span class="post-date" title="2023-04-03 00:00:00">2023/04/03</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：小知识">章节：小知识</span>
+            <span class="post-date" title="2023-04-03 00:00:00">2023/04/03</span>
+        </a>
+        
+        
+        <a  class="全部文章 去雾算法 "
+           href="/2022/10/23/%E6%9A%97%E9%80%9A%E9%81%93%E5%8E%BB%E9%9B%BE%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93/"
+           data-tag="暗通道"
+           data-author="" >
+            <span class="post-title" title="暗通道去雾算法总结">暗通道去雾算法总结</span>
+            <span class="post-date" title="2022-10-23 13:03:43">2022/10/23</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/20/%E5%AF%B9%E6%9D%83%E9%99%90%E6%A0%A1%E9%AA%8C%E7%9A%84%E6%96%B0%E7%90%86%E8%A7%A3/"
+           data-tag="Oauth2"
+           data-author="" >
+            <span class="post-title" title="对权限校验和token的新理解">对权限校验和token的新理解</span>
+            <span class="post-date" title="2022-10-20 14:43:00">2022/10/20</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/spring%E6%95%B4%E5%90%88docker-compose/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot/cloud整合docker-compose">springboot/cloud整合docker-compose</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94%E2%80%94nacos2.1.0/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="docker整合springboot/cloud——nacos2.1.0">docker整合springboot/cloud——nacos2.1.0</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94%E2%80%94kibana8.2.0/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="docker整合springboot/cloud——kibana8.2.0">docker整合springboot/cloud——kibana8.2.0</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springboot%E6%95%B4%E5%90%88kafka3.1%EF%BC%8C%E5%AE%9E%E7%8E%B0%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合kafka3.1，实现基本配置和操作">springboot整合kafka3.1，实现基本配置和操作</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="整合docker和中间件记录">整合docker和中间件记录</span>
+            <span class="post-date" title="2022-10-04 21:23:41">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合elasticsearch8.2.0">springboot整合elasticsearch8.2.0</span>
+            <span class="post-date" title="2022-10-04 13:40:04">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合kafka3.1-基本配置和操作">springboot整合kafka3.1-基本配置和操作</span>
+            <span class="post-date" title="2022-10-04 13:38:01">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合OAuth2认证服务">springboot整合OAuth2认证服务</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springboot%E6%95%B4%E5%90%88elasticsearch8.2%E6%8A%A5%E9%94%99unable%20to%20parse%20response%20body%20for%20Response%7BrequestLine/"
+           data-tag="整合中间件,BUG"
+           data-author="" >
+            <span class="post-title" title="springboot整合elasticsearch8.2报错unable to parse response body for Response{requestLine">springboot整合elasticsearch8.2报错unable to parse response body for Response{requestLine</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----令牌配置">springcloud整合oauth2-----令牌配置</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----鉴权服务篇">springcloud整合oauth2-----鉴权服务篇</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86springsecurity/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----前置知识springsecurity">springcloud整合oauth2-----前置知识springsecurity</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----异常配置总结">springcloud整合oauth2-----异常配置总结</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 微信小程序 "
+           href="/2022/10/04/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+           data-tag="微信小程序"
+           data-author="" >
+            <span class="post-title" title="养生打卡健康小程序（云开发）">养生打卡健康小程序（云开发）</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 微信小程序 "
+           href="/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+           data-tag="微信小程序"
+           data-author="" >
+            <span class="post-title" title="日常打卡积分制自律小程序（云开发）">日常打卡积分制自律小程序（云开发）</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1_%E5%89%AF%E6%9C%AC/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合OAuth2认证服务">springboot整合OAuth2认证服务</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2------认证服务篇">springcloud整合oauth2------认证服务篇</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2------认证服务篇">springcloud整合oauth2------认证服务篇</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94mysql8.0.26/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="docker整合springboot/cloud—mysql8.0.26">docker整合springboot/cloud—mysql8.0.26</span>
+            <span class="post-date" title="2022-10-04 00:00:00">2022/10/04</span>
+        </a>
+        
+        <div id="no-item-tips">
+
+        </div>
+    </nav>
+    <div id="outline-list">
+    </div>
+</div>
+
+    </div>
+    <div class="hide-list">
+        <div class="semicircle" data-title="切换全屏 快捷键 s">
+            <div class="brackets first"><</div>
+            <div class="brackets">&gt;</div>
+        </div>
+    </div>
+</aside>
+<div id="post">
+    <div class="pjax">
+        <article id="post-CS:Java基础知识" class="article article-type-post" itemscope itemprop="blogPost">
+    
+        <h1 class="article-title">Java基础知识</h1>
+    
+    <div class="article-meta">
+        
+        
+        
+        <span class="book">
+            <i class="iconfont icon-category"></i>
+            
+            
+            <a  data-rel="Java">Java</a>
+            
+        </span>
+        
+        
+        <span class="tag">
+            <i class="iconfont icon-tag"></i>
+            
+            <a class="color4">Java基础知识</a>
+            
+        </span>
+        
+    </div>
+    <div class="article-meta">
+        
+            发布时间 : <time class="date" title='最后更新: 2024-02-27 20:36:09'>2023-08-07 00:00</time>
+        
+    </div>
+    <div class="article-meta">
+        
+        
+        <span id="busuanzi_container_page_pv">
+            阅读 :<span id="busuanzi_value_page_pv">
+                <span class="count-comment">
+                    <span class="spinner">
+                      <div class="cube1"></div>
+                      <div class="cube2"></div>
+                    </span>
+                </span>
+            </span>
+        </span>
+        
+        
+    </div>
+    
+    <div class="toc-ref">
+    
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B2%E8%AE%B2Java%E7%9A%84%E4%BB%A3%E7%90%86"><span class="toc-text">讲讲Java的代理</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9B%86%E5%90%88"><span class="toc-text">集合</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Arraylist%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86"><span class="toc-text">Arraylist底层原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linkedlist"><span class="toc-text">Linkedlist</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ArrayList-%E4%B8%8E-LinkedList%E5%8C%BA%E5%88%AB"><span class="toc-text">ArrayList 与 LinkedList区别?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-text">其他</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hashmap%E5%92%8Chashset"><span class="toc-text">hashmap和hashset</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AF%94%E8%BE%83-HashSet%E3%80%81LinkedHashSet-%E5%92%8C-TreeSet-%E4%B8%89%E8%80%85%E7%9A%84%E5%BC%82%E5%90%8C"><span class="toc-text">比较 HashSet、LinkedHashSet 和 TreeSet 三者的异同</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Queue-%E4%B8%8E-Deque-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">Queue 与 Deque 的区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ArrayDeque-%E4%B8%8E-LinkedList-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">ArrayDeque 与 LinkedList 的区别</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HashMap%EF%BC%9A"><span class="toc-text">HashMap：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#HashMap-%E7%9A%84%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0"><span class="toc-text">HashMap 的底层实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hashmap%E6%89%A9%E5%AE%B9%E8%BF%87%E7%A8%8B"><span class="toc-text">hashmap扩容过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HashMap-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%93%8D%E4%BD%9C%E5%AF%BC%E8%87%B4%E6%AD%BB%E5%BE%AA%E7%8E%AF%E9%97%AE%E9%A2%98%EF%BC%881-7%E4%BC%9A%EF%BC%8C1-8%E6%98%AF%E5%9C%A8%E6%A0%91%E6%93%8D%E4%BD%9C%EF%BC%89"><span class="toc-text">HashMap 多线程操作导致死循环问题（1.7会，1.8是在树操作）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HashMap-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%BA%BF%E7%A8%8B%E4%B8%8D%E5%AE%89%E5%85%A8%EF%BC%9F"><span class="toc-text">HashMap 为什么线程不安全？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HashMap-%E7%9A%84%E9%95%BF%E5%BA%A6%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF-2-%E7%9A%84%E5%B9%82%E6%AC%A1%E6%96%B9"><span class="toc-text">HashMap 的长度为什么是 2 的幂次方</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HashMap-%E5%92%8C-Hashtable-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">HashMap 和 Hashtable 的区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hashmap%E7%9A%84key%E8%A7%84%E8%8C%83"><span class="toc-text">hashmap的key规范</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E5%AE%B9%E5%99%A8"><span class="toc-text">线程安全容器</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1%E3%80%81ConcurrentHashMap"><span class="toc-text">1、ConcurrentHashMap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81CopyOnWriteArrayList%EF%BC%88%E8%AF%BB%E5%A4%9A%E5%86%99%E5%B0%91%EF%BC%89"><span class="toc-text">2、CopyOnWriteArrayList（读多写少）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3%E3%80%81BlockingQueue"><span class="toc-text">3、BlockingQueue</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="toc-text">线程池</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1%E3%80%81ThreadPoolExecutor"><span class="toc-text">1、ThreadPoolExecutor</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81ScheduledThreadPoolExecutor"><span class="toc-text">2、ScheduledThreadPoolExecutor</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3%E3%80%81CompletableFuture"><span class="toc-text">3、CompletableFuture</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%83%E7%B4%A0%E6%8E%92%E5%BA%8F-Comparable-%E5%92%8C-Comparator-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-text">元素排序 Comparable 和 Comparator 有什么区别？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Linux"><span class="toc-text">Linux</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Spirng"><span class="toc-text">Spirng</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#MyBatis"><span class="toc-text">MyBatis</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#GIT"><span class="toc-text">GIT</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F"><span class="toc-text">操作系统</span></a></li></ol></li></ol>
+    
+<style>
+    .left-col .switch-btn,
+    .left-col .switch-area {
+        display: none;
+    }
+    .toc-level-3 i,
+    .toc-level-3 ol {
+        display: none !important;
+    }
+</style>
+</div>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>反射</strong></p>
 <blockquote>
 <p><font color='red'><u>*** Java的反射机制是在运行状态中，对于任意一个类，都能够获得这个类的所有属性和方法。***</u></font></p>
 <p> 获得Class对象的三种方式：</p>
@@ -900,336 +1628,194 @@
 <p>解除死锁：资源剥夺、撤销进程、进程回退。</p>
 </blockquote>
 
-            
-
-
-        </div>
-    </div>
-    <div id="post-footer" class="post-footer main-content-wrap">
-        
-            <div class="post-footer-tags">
-                <span class="text-color-light text-small">GETAGGT IN</span><br/>
-                
-    <a class="tag tag--primary tag--small t-none-link" href="/tags/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" rel="tag">Java基础知识</a>
-
-            </div>
-        
-        
-            <div class="post-actions-wrap">
-    <nav>
-        <ul class="post-actions post-action-nav">
-            <li class="post-action">
-                
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/10/09/CS:Redis/"
-                    data-tooltip="Redis"
-                    aria-label="FRÜHER: Redis"
-                >
-                    
-                        <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
-                    </a>
-            </li>
-            <li class="post-action">
-                
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C3/"
-                    data-tooltip="计算机网络3"
-                    aria-label="NÄCHSTER: 计算机网络3"
-                >
-                    
-                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
-                        <i class="fa fa-angle-right" aria-hidden="true"></i>
-                    </a>
-            </li>
-        </ul>
-    </nav>
-    <ul class="post-actions post-action-share">
-        <li class="post-action hide-lg hide-md hide-sm">
-            <a
-                class="post-action-btn btn btn--default btn-open-shareoptions"
-                href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
-            >
-                <i class="fa fa-share-alt" aria-hidden="true"></i>
-            </a>
-        </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Teilen auf Facebook"
-                    aria-label="Teilen auf Facebook"
-                >
-                    <i class="fab fa-facebook" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Teilen auf Twitter"
-                    aria-label="Teilen auf Twitter"
-                >
-                    <i class="fab fa-twitter" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Teilen auf Google Plus"
-                    aria-label="Teilen auf Google Plus"
-                >
-                    <i class="fab fa-google-plus" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-        
-            
-        
-        <li class="post-action">
-            
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
-            
-                <i class="fa fa-list" aria-hidden="true"></i>
-            </a>
-        </li>
-    </ul>
-</div>
-
-
-        
-        
-            
-        
+      
+       <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 jaytp@qq.com </span>
     </div>
 </article>
 
 
-
-                <footer id="footer" class="main-content-wrap">
-    <span class="copyrights">
-        Copyrights &copy; 2024 CSEN. All Rights Reserved.
-    </span>
-</footer>
-
-            </div>
-            
-                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
-                    <div class="post-actions-wrap">
-    <nav>
-        <ul class="post-actions post-action-nav">
-            <li class="post-action">
-                
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/10/09/CS:Redis/"
-                    data-tooltip="Redis"
-                    aria-label="FRÜHER: Redis"
-                >
-                    
-                        <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
-                    </a>
-            </li>
-            <li class="post-action">
-                
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C3/"
-                    data-tooltip="计算机网络3"
-                    aria-label="NÄCHSTER: 计算机网络3"
-                >
-                    
-                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
-                        <i class="fa fa-angle-right" aria-hidden="true"></i>
-                    </a>
-            </li>
-        </ul>
-    </nav>
-    <ul class="post-actions post-action-share">
-        <li class="post-action hide-lg hide-md hide-sm">
-            <a
-                class="post-action-btn btn btn--default btn-open-shareoptions"
-                href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
-            >
-                <i class="fa fa-share-alt" aria-hidden="true"></i>
-            </a>
-        </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Teilen auf Facebook"
-                    aria-label="Teilen auf Facebook"
-                >
-                    <i class="fab fa-facebook" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Teilen auf Twitter"
-                    aria-label="Teilen auf Twitter"
-                >
-                    <i class="fab fa-twitter" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                    title="Teilen auf Google Plus"
-                    aria-label="Teilen auf Google Plus"
-                >
-                    <i class="fab fa-google-plus" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-        
-            
-        
-        <li class="post-action">
-            
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
-            
-                <i class="fa fa-list" aria-hidden="true"></i>
-            </a>
-        </li>
-    </ul>
-</div>
+<p>
+    <a  class="dashang" onclick="dashangToggle()">赏</a>
+</p>
 
 
-                </div>
-                
-    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
-        <i id="btn-close-shareoptions" class="fa fa-times"></i>
-        <ul class="share-options">
-            
-                
-                
-                <li class="share-option">
-                    <a
-                        class="share-option-btn"
-                        target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                        aria-label="Teilen auf Facebook"
-                    >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
-                    </a>
-                </li>
-            
-                
-                
-                <li class="share-option">
-                    <a
-                        class="share-option-btn"
-                        target="new"
-                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                        aria-label="Teilen auf Twitter"
-                    >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
-                    </a>
-                </li>
-            
-                
-                
-                <li class="share-option">
-                    <a
-                        class="share-option-btn"
-                        target="new"
-                        href="https://plus.google.com/share?url=http://example.com/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
-                        aria-label="Teilen auf Google Plus"
-                    >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
-                    </a>
-                </li>
-            
-        </ul>
+
+
+
+
+    
+
+
+
+
     </div>
+    <div class="copyright">
+        <p class="footer-entry">
+    ©2016-2020 Yelog
+</p>
+<p class="footer-entry">Built with <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/yelog/hexo-theme-3-hexo" target="_blank">3-hexo</a> theme</p>
 
+    </div>
+    <div class="full-toc">
+        <button class="full" data-title="切换全屏 快捷键 s"><span class="min "></span></button>
+<a class="" id="rocket" ></a>
 
-            
-        </div>
-        
-
-
-    
-        
-    
-
-<div id="about">
-    <div id="about-card">
-        <div id="about-btn-close">
-            <i class="fa fa-times"></i>
-        </div>
-        
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
-        
-            <h4 id="about-card-name">CSEN</h4>
-        
-            <div id="about-card-bio"><p>author.bio</p>
-</div>
-        
-        
-            <div id="about-card-job">
-                <i class="fa fa-briefcase"></i>
-                <br/>
-                <p>author.job</p>
-
-            </div>
-        
-        
-            <div id="about-card-location">
-                <i class="fa fa-map-marker-alt"></i>
-                <br/>
-                浙江温州
-            </div>
-        
     </div>
 </div>
 
+<div class="hide_box" onclick="dashangToggle()"></div>
+<div class="shang_box">
+    <a class="shang_close"  onclick="dashangToggle()">×</a>
+    <div class="shang_tit">
+        <p>喜欢就点赞,疼爱就打赏</p>
+    </div>
+    <div class="shang_payimg">
+        <div class="pay_img">
+            <img src="/img/alipay.jpg" class="alipay" title="扫码支持">
+            <img src="/img/weixin.jpg" class="weixin" title="扫码支持">
+        </div>
+    </div>
+    <div class="shang_payselect">
+        <span><label><input type="radio" name="pay" checked value="alipay">支付宝</label></span><span><label><input type="radio" name="pay" value="weixin">微信</label></span>
+    </div>
+</div>
+
+
+</body>
+<script src="/js/jquery.pjax.js?v=1.1.0" ></script>
+
+<script src="/js/script.js?v=1.1.0" ></script>
+<script>
+    var img_resize = 'default';
+    function initArticle() {
+        /*渲染对应的表格样式*/
+        
+            $("#post .pjax table").addClass("green_title");
+        
+
+        /*渲染打赏样式*/
+        
+        $("input[name=pay]").on("click", function () {
+            if($("input[name=pay]:checked").val()=="weixin"){
+                $(".shang_box .shang_payimg .pay_img").addClass("weixin_img");
+            } else {
+                $(".shang_box .shang_payimg .pay_img").removeClass("weixin_img");
+            }
+        })
+        
+
+        /*高亮代码块行号*/
+        
+
+        /*访问数量*/
+        
+        $.getScript("//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js");
+        
+
+        /*代码高亮，行号对齐*/
+        $('.pre-numbering').css('line-height',$('.has-numbering').css('line-height'));
+
         
         
-<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
-        <!--SCRIPTS-->
+    }
 
-<script src="/assets/js/script-39paoi2hupf5wmw7ojejrxpco6edftjriz5ezbtp4grymrdceksftgan2adp.min.js"></script>
+    /*打赏页面隐藏与展示*/
+    
+    function dashangToggle() {
+        $(".shang_box").fadeToggle();
+        $(".hide_box").fadeToggle();
+    }
+    
 
-<!--SCRIPTS END-->
+</script>
 
+<!--加入行号的高亮代码块样式-->
 
+<!--自定义样式设置-->
+<style>
+    
+    
+    .nav {
+        width: 542px;
+    }
+    .nav.fullscreen {
+        margin-left: -542px;
+    }
+    .nav-left {
+        width: 120px;
+    }
+    
+    
+    @media screen and (max-width: 1468px) {
+        .nav {
+            width: 492px;
+        }
+        .nav.fullscreen {
+            margin-left: -492px;
+        }
+        .nav-left {
+            width: 100px;
+        }
+    }
+    
+    
+    @media screen and (max-width: 1024px) {
+        .nav {
+            width: 492px;
+            margin-left: -492px
+        }
+        .nav.fullscreen {
+            margin-left: 0;
+        }
+    }
+    
+    @media screen and (max-width: 426px) {
+        .nav {
+            width: 100%;
+        }
+        .nav-left {
+            width: 100%;
+        }
+    }
+    
+    
+    .nav-right .title-list nav a .post-title, .nav-right .title-list #local-search-result a .post-title {
+        color: #383636;
+    }
+    
+    
+    .nav-right .title-list nav a .post-date, .nav-right .title-list #local-search-result a .post-date {
+        color: #5e5e5f;
+    }
+    
+    
+    .nav-right nav a.hover, #local-search-result a.hover{
+        background-color: #e2e0e0;
+    }
+    
+    
+
+    /*列表样式*/
+    
+
+    /* 背景图样式 */
+    
     
 
 
+    /*引用块样式*/
+    
+
+    /*文章列表背景图*/
+    
+
+    
+</style>
 
 
-    </body>
+
+
+
+
+
 </html>

@@ -1,266 +1,998 @@
-
 <!DOCTYPE html>
-<html lang="zh-CH">
-    
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="generator" content="森">
-    <title>Spring ioc加载流程 - 森</title>
-    <meta name="author" content="CSEN">
-    
-    
-    
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"在功能上，SpringBoot的容器启动过程基本遵循了Spring的标准启动过程，但是在具体实现上，SpringBoot提供了一些特殊的机制来简化Spring容器的配置和启动。\n首先，SpringBoot自动配置了很多常用的第三方库和框架，使得在大多数情况下，开发者不需要手动配置就能够使用这些库和框架。其次，SpringBoot提供了一些基础设施和约定来简化Spring的配置，例如默认的目录结构、默认的配置文件名、默认的属性配置等，这些都能够减少开发者的配置工作。最后，SpringBoot提供了一些自定义扩展机制，例如通过@ConfigurationProperties注解来绑定配置文件属性到Java对象，通过SpringApplication类的addListeners()方法来添加自定义的启动监听器等等，这些扩展机制能够让开发者更加方便地自定义和扩展SpringBoot的功能。\n总的来说，SpringBoot并没有改变Spring的核心机制和启动过程，但是它在具体实现上提供了很多便利和简化，让开发者能够更加快速地开发和部署应用程序\n总体分成两个阶段；\n\n一、refresh之前\n二、调用refresh()方法刷新容器\n\n一、初始化流程\n创建并实例化一个 ApplicationContextInitializer 列表，用于对 Spring 应用上下文进行初始化。ApplicationContextInitializer 是 Spring 4.1 引入的一个新特性，允许用户在容器启动之前，对 Spring 应用上下文进行一些额外的初始化工作。\n创建并实例化一个 ResourceLoader 对象，用于加载配置文件。ResourceLoader 是一个接口，它定义了资源加载的基本方法。Spring 容器默认使用 DefaultResourceLoader 作为 ResourceLoader 实现类。\n创建并实例化一个 PropertyResolver 对象，用于解析配置文件中的属性。PropertyResolver 也是一个接口，它定义了属性解析的基本方法。Spring 容器默认使用 PropertySourcesPlaceholderConfigurer 作为 PropertyResolver 实现类。\n加载和解析配置文件，将解析后的配置信息封装成一个 Environment 对象。Environment 是 Spring 中用于描述应用环境的一个抽象概念，它包含了各种配置属性和属性值。\n将解析后的配置信息封装成一个 ConfigurableEnvironment 对象，并将其设置到容器中。ConfigurableEnvironment 是 Environment 的一个子接口，它定义了一些额外的操作，如添加属性、激活配置文件等。\n创建并实例化一个 BeanFactoryPostProcessor 列表，用于在 BeanFactory 加载 Bean 定义之后，对 Bean 定义进行进一步的处理。BeanFactoryPostProcessor 是一个接口，它提供了在 BeanFactory 加载 Bean 定义之后，修改 Bean 定义的机会。\n创建并实例化一个 BeanPostProcessor 列表，用于在 Bean 实例化之后，对 Bean 进行进一步的处理。BeanPostProcessor 是一个接口，它提供了在 Bean 实例化之后，修改 Bean 实例的机会。\n注册并加载 BeanFactory 中的 Bean 定义。在这个阶段，Spring 容器会扫描指定的包，查找标注了 @Component、@Service、@Repository、@Controller 等注解的 Bean，将其封装成 BeanDefinition 对象，注册到 BeanFactory 中。\n调用 BeanFactoryPostProcessor 的 postProcessBeanFactory() 方法，对 BeanFactory 中的 Bean 定义进行进一步的处理。\n注册并加载 BeanFactoryPostProcessor 中的 Bean 定义。BeanFactoryPostProcessor 可以通过实现 BeanDefinitionRegistryPostProcessor 接口，向 BeanFactory 中注册新的 Bean 定义。\n初始化并注册 ConversionService。ConversionService 是 Spring 中用于类型转换的一个组件，它可以将一个对象转换成另一个类型的对象。在这个阶段，Spring 容器会注册一些默认的转换器。\n初始化并注册 LoadTimeWeaver。LoadTimeWeaver 是 Spring 中用于支持动态类加载和增强的一个组件。它可以将类的字节码在运行时进行增强，从而实现 AOP 等功能。\n初始化并注册 Resource\n\n中间第8步解析过程如下：\n这个步骤主要是用来解析用户传入的 Spring 配置类，解析成一个 BeanDefinition 然后注册到容器中，主要源码如下：\n&lt;T&gt; void doRegisterBean(Class&lt;T&gt; annotatedClass, @Nullable Supplier&lt;T&gt; instanceSupplier, @Nullable String name,\t\t@Nullable Class&lt;? extends Annotation&gt;[] qualifiers, BeanDefinitionCustomizer... definitionCustomizers) &#123;\t// 解析传入的配置类，实际上这个方法既可以解析配置类，也可以解析 Spring bean 对象\tAnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(annotatedClass);\t// 判断是否需要跳过，判断依据是此类上有没有 @Conditional 注解\tif (this.conditionEvaluator.shouldSkip(abd.getMetadata())) &#123;\t\treturn;\t&#125; \tabd.setInstanceSupplier(instanceSupplier);\tScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd);\tabd.setScope(scopeMetadata.getScopeName());\tString beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));\t// 处理类上的通用注解\tAnnotationConfigUtils.processCommonDefinitionAnnotations(abd);\tif (qualifiers != null) &#123;\t\tfor (Class&lt;? extends Annotation&gt; qualifier : qualifiers) &#123;\t\t\tif (Primary.class == qualifier) &#123;\t\t\t\tabd.setPrimary(true);\t\t\t&#125;\t\t\telse if (Lazy.class == qualifier) &#123;\t\t\t\tabd.setLazyInit(true);\t\t\t&#125;\t\t\telse &#123;\t\t\t\tabd.addQualifier(new AutowireCandidateQualifier(qualifier));\t\t\t&#125;\t\t&#125;\t&#125;\t// 封装成一个 BeanDefinitionHolder\tfor (BeanDefinitionCustomizer customizer : definitionCustomizers) &#123;\t\tcustomizer.customize(abd);\t&#125;\tBeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);\t// 处理 scopedProxyMode\tdefinitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry); \t// 把 BeanDefinitionHolder 注册到 registry\tBeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry);&#125;\n\n\n\n「扫描」在XML/注解/JavaConfig 中需要被Spring管理的Bean信息随后，会将这些信息封装成BeanDefinition，最后会把这些信息放到一个beanDefinitionMap中那么BeanDefintiions是什么勒？BeanDefintiions其实就是对Bean的一些元数据定义包括parenName 父类名称 baenClassName：类名，scope bean的作用域。Abstract是否是抽象的等信息。通过 BeanDefinitionReader获取到BeanDefinition之后 。我们在通过BeanDefinitionRegistry将beanDefinition注册到BeanFacory中。存储在BeanFactory的一个conCurrentHashMap中。key为beanName,Value就是BeanDefinition元数据。Spring通过BeanDefinationReader将配置元信息加载到内存生成相应的BeanDefination之后，就将其注册到BeanDefinationRegistry中，BeanDefinationRegistry就是一个存放BeanDefination的大篮子，它也是一种键值对的形式，通过特定的Bean定义的id，映射到相应的BeanDefination\n\n\n\n接着会遍历这个beanDefinitionMap，执行BeanFactoryPostProcessor这个Bean工厂后置处理器的逻辑，比如替换$占位符\n\n三、refresh()容器刷新流程(最重要)1、prepareRefresh()刷新前的预处理：（1）initPropertySources()：初始化一些属性设置，子类自定义个性化的属性设置方法；（2）getEnvironment().validateRequiredProperties()：检验属性的合法性（3）earlyApplicationEvents = new LinkedHashSet&lt;ApplicationEvent&gt;()：保存容器中的一些早期的事件；2、obtainFreshBeanFactory()：获取在容器初始化时创建的BeanFactory：（1）refreshBeanFactory()：刷新BeanFactory，设置序列化ID；（2）getBeanFactory()：返回初始化中的GenericApplicationContext创建的BeanFactory对象，即【DefaultListableBeanFactory】类型3、prepareBeanFactory(beanFactory)：BeanFactory的预处理工作，向容器中添加一些组件：（1）设置BeanFactory的类加载器、设置表达式解析器等等（2）添加BeanPostProcessor【ApplicationContextAwareProcessor】（3）设置忽略自动装配的接口：EnvironmentAware、EmbeddedValueResolverAware、ResourceLoaderAware、ApplicationEventPublisherAware、MessageSourceAware、ApplicationContextAware；（4）注册可以解析的自动装配类，即可以在任意组件中通过注解自动注入：BeanFactory、ResourceLoader、ApplicationEventPublisher、ApplicationContext（5）添加BeanPostProcessor【ApplicationListenerDetector】（6）添加编译时的AspectJ；（7）给BeanFactory中注册的3个组件：environment【ConfigurableEnvironment】、systemProperties【Map&lt;String, Object&gt;】、systemEnvironment【Map&lt;String, Object&gt;】4、postProcessBeanFactory(beanFactory)：子类重写该方法，可以实现在BeanFactory创建并预处理完成以后做进一步的设置5、invokeBeanFactoryPostProcessors(beanFactory)：在BeanFactory标准初始化之后执行BeanFactoryPostProcessor的方法，即BeanFactory的后置处理器：（1）先执行BeanDefinitionRegistryPostProcessor： postProcessor.postProcessBeanDefinitionRegistry(registry)① 获取所有的实现了BeanDefinitionRegistryPostProcessor接口类型的集合② 先执行实现了PriorityOrdered优先级接口的BeanDefinitionRegistryPostProcessor③ 再执行实现了Ordered顺序接口的BeanDefinitionRegistryPostProcessor④ 最后执行没有实现任何优先级或者是顺序接口的BeanDefinitionRegistryPostProcessors        （2）再执行BeanFactoryPostProcessor的方法：postProcessor.postProcessBeanFactory(beanFactory)① 获取所有的实现了BeanFactoryPostProcessor接口类型的集合② 先执行实现了PriorityOrdered优先级接口的BeanFactoryPostProcessor③ 再执行实现了Ordered顺序接口的BeanFactoryPostProcessor④ 最后执行没有实现任何优先级或者是顺序接口的BeanFactoryPostProcessor6、registerBeanPostProcessors(beanFactory)：向容器中注册Bean的后置处理器BeanPostProcessor，它的主要作用是干预Spring初始化bean的流程，从而完成代理、自动注入、循环依赖等功能（1）获取所有实现了BeanPostProcessor接口类型的集合：（2）先注册实现了PriorityOrdered优先级接口的BeanPostProcessor；（3）再注册实现了Ordered优先级接口的BeanPostProcessor；（4）最后注册没有实现任何优先级接口的BeanPostProcessor；（5）最r终注册MergedBeanDefinitionPostProcessor类型的BeanPostProcessor：beanFactory.addBeanPostProcessor(postProcessor);（6）给容器注册一个ApplicationListenerDetector：用于在Bean创建完成后检查是否是ApplicationListener，如果是，就把Bean放到容器中保存起来：applicationContext.addApplicationListener((ApplicationListener&lt;?&gt;) bean);此时容器中默认有6个默认的BeanProcessor(无任何代理模式下)：【ApplicationContextAwareProcessor】、【ConfigurationClassPostProcessorsAwareBeanPostProcessor】、【PostProcessorRegistrationDelegate】、【CommonAnnotationBeanPostProcessor】、【AutowiredAnnotationBeanPostProcessor】、【ApplicationListenerDetector】7、initMessageSource()：初始化MessageSource组件，主要用于做国际化功能，消息绑定与消息解析：（1）看BeanFactory容器中是否有id为messageSource 并且类型是MessageSource的组件：如果有，直接赋值给messageSource；如果没有，则创建一个DelegatingMessageSource；（2）把创建好的MessageSource注册在容器中，以后获取国际化配置文件的值的时候，可以自动注入MessageSource；8、initApplicationEventMulticaster()：初始化事件派发器，在注册监听器时会用到：（1）看BeanFactory容器中是否存在自定义的ApplicationEventMulticaster：如果有，直接从容器中获取；如果没有，则创建一个SimpleApplicationEventMulticaster（2）将创建的ApplicationEventMulticaster添加到BeanFactory中，以后其他组件就可以直接自动注入9、onRefresh()：留给子容器、子类重写这个方法，在容器刷新的时候可以自定义逻辑10、registerListeners()：注册监听器：将容器中所有的ApplicationListener注册到事件派发器中，并派发之前步骤产生的事件： （1）从容器中拿到所有的ApplicationListener（2）将每个监听器添加到事件派发器中：getApplicationEventMulticaster().addApplicationListenerBean(listenerBeanName);（3）派发之前步骤产生的事件applicationEvents：getApplicationEventMulticaster().multicastEvent(earlyEvent);11、finishBeanFactoryInitialization(beanFactory)：初始化所有剩下的单实例bean，核心方法是preInstantiateSingletons()，会调用getBean()方法创建对象；（1）获取容器中的所有beanDefinitionName，依次进行初始化和创建对象（2）获取Bean的定义信息RootBeanDefinition，它表示自己的BeanDefinition和可能存在父类的BeanDefinition合并后的对象（3）如果Bean满足这三个条件：非抽象的，单实例，非懒加载，则执行单例Bean创建流程：    （4）所有Bean都利用getBean()创建完成以后，检查所有的Bean是否为SmartInitializingSingleton接口的，如果是；就执行afterSingletonsInstantiated()；12、finishRefresh()：发布BeanFactory容器刷新完成事件：（1）initLifecycleProcessor()：初始化和生命周期有关的后置处理器：默认从容器中找是否有lifecycleProcessor的组件【LifecycleProcessor】，如果没有，则创建一个DefaultLifecycleProcessor()加入到容器；（2）getLifecycleProcessor().onRefresh()：拿到前面定义的生命周期处理器（LifecycleProcessor）回调onRefresh()方法（3）publishEvent(new ContextRefreshedEvent(this))：发布容器刷新完成事件；（4）liveBeansView.registerApplicationContext(this);\n\n可以看到这个方法里面调用了很多的方法，我们从开始说起：\n\n首先是一个synchronized加锁，当然要加锁，不然你先调一次refresh()然后这次还没处理完又调一次，就会乱套了；\n\n接着往下看prepareRefresh();这个方法是做准备工作的，记录容器的启动时间、标记“已启动”状态、处理配置文件中的占位符，可以点进去看看，这里就不多说了。\n\n下一步ConfigurableListableBeanFactory beanFactory &#x3D; obtainFreshBeanFactory();这个就很重要了，这一步是把配置文件解析成一个个BeanDefinition，并且注册到BeanFactory中，注意**这里只是注册进去，并没有实例化**。先继续往下看，等会展开这个方法详细解读\n\n然后是prepareBeanFactory(beanFactory);这个方法的作用是：设置 BeanFactory 的类加载器，添加几个 BeanPostProcessor，手动注册几个特殊的 bean，这里都是spring里面的特殊处理，然后继续往下看\n\npostProcessBeanFactory(beanFactory);方法是提供给子类的扩展点，到这里的时候，所有的 Bean 都加载、注册完成了，但是都还没有初始化，具体的子类可以在这步的时候添加一些特殊的 BeanFactoryPostProcessor 的实现类，来完成一些其他的操作。\n\n接下来是invokeBeanFactoryPostProcessors(beanFactory);这个方法是调用 BeanFactoryPostProcessor 各个实现类的 postProcessBeanFactory(factory) 方法；\n\n然后是registerBeanPostProcessors(beanFactory);这个方法注册 BeanPostProcessor 的实现类，和上面的BeanFactoryPostProcessor 是有区别的，这个方法调用的其实是PostProcessorRegistrationDelegate类的registerBeanPostProcessors方法；这个类里面有个内部类BeanPostProcessorChecker，BeanPostProcessorChecker里面有两个方法postProcessBeforeInitialization和postProcessAfterInitialization，这两个方法分别在 Bean 初始化之前和初始化之后得到执行。然后回到refresh()方法中继续往下看\n\ninitMessageSource();方法是初始化当前 ApplicationContext 的 MessageSource，国际化处理，继续往下\n\ninitApplicationEventMulticaster();方法初始化当前 ApplicationContext 的事件广播器继续往下\n\nonRefresh();方法初始化一些特殊的 Bean（在初始化 singleton beans 之前）；继续往下\n\nregisterListeners();方法注册事件监听器，监听器需要实现 ApplicationListener 接口；继续往下\n\n重点到了：finishBeanFactoryInitialization(beanFactory);初始化所有的 singleton beans（单例bean），懒加载（non-lazy-init）的除外，这个方法也是等会细说\nfinishRefresh();方法是最后一步，广播事件，ApplicationContext 初始化完成\n\n\n我们重点来看ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();和finishBeanFactoryInitialization(beanFactory);这两个方法先说ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory(); 这一步上面简单介绍过了，作用是把配置文件解析成一个个BeanBeanDefinition，并且注册到BeanFactory中，点进去源码：\nprotected ConfigurableListableBeanFactory obtainFreshBeanFactory() &#123;\trefreshBeanFactory();\tConfigurableListableBeanFactory beanFactory = getBeanFactory();\tif (logger.isDebugEnabled()) &#123;\t\tlogger.debug(&quot;Bean factory for &quot; + getDisplayName() + &quot;: &quot; + beanFactory);\t&#125;\treturn beanFactory;&#125;\n\n这个方法中第一步refreshBeanFactory();方法的作用是关闭旧的 BeanFactory (如果有)，创建新的 BeanFactory，加载 Bean 定义、注册 Bean 等，然后getBeanFactory();就是返回刚刚创建的 BeanFactory(其实就是DefaultListableBeanFactory)，我们进入refreshBeanFactory();方法，在AbstractRefreshableApplicationContext类中：\n@Overrideprotected final void refreshBeanFactory() throws BeansException &#123;\tif (hasBeanFactory()) &#123;\t\tdestroyBeans();\t\tcloseBeanFactory();\t&#125;\ttry &#123;\t\tDefaultListableBeanFactory beanFactory = createBeanFactory();\t\tbeanFactory.setSerializationId(getId());\t\tcustomizeBeanFactory(beanFactory);\t\tloadBeanDefinitions(beanFactory);\t\tsynchronized (this.beanFactoryMonitor) &#123;\t\t\tthis.beanFactory = beanFactory;\t\t&#125;\t&#125;\tcatch (IOException ex) &#123;\t\tthrow new ApplicationContextException(&quot;I/O error parsing bean definition source for &quot; + getDisplayName(), ex);\t&#125;&#125;\n\n\n这个refreshBeanFactory()方法首先如果 ApplicationContext 中已经加载过 BeanFactory了，销毁所有 Bean，关闭 BeanFactory；这里指的是当前ApplicationContext 是否有 BeanFactory。然后createBeanFactory();初始化一个DefaultListableBeanFactory，这个DefaultListableBeanFactory是很重的一个类，为什么重要呢？可以看文章开头的BeanFactory继承图，DefaultListableBeanFactory是位于最下面的，他往上能走完BeanFactory继承图所有，所以他可以说是功能最大的BeanFactory。beanFactory.setSerializationId(getId());方法用于 BeanFactory 的序列化customizeBeanFactory(beanFactory);方法设置 BeanFactory 的两个配置属性：是否允许 Bean 覆盖、是否允许循环引用，这个等会细说loadBeanDefinitions(beanFactory);这个方法很重要：加载 Bean定义 到 BeanFactory 中，也是等会细说下面看customizeBeanFactory(beanFactory);方法，这个方法作用：是否允许 Bean 覆盖、是否允许循环引用，这是什么意思呢？这就要说到BeanDefinition了，这里的 BeanDefinition 就是我们所说的 Spring 的 Bean，我们自己定义的各个 Bean 其实会转换成一个个 BeanDefinition 存在于 Spring 的 BeanFactory 中，下面贴出来开头我说的大神的关于BeanDefinition接口的代码注释：\npublic interface BeanDefinition extends AttributeAccessor, BeanMetadataElement &#123;   // 我们可以看到，默认只提供 sington 和 prototype 两种，   // 很多读者可能知道还有 request, session, globalSession, application, websocket 这几种，   // 不过，它们属于基于 web 的扩展。   String SCOPE_SINGLETON = ConfigurableBeanFactory.SCOPE_SINGLETON;   String SCOPE_PROTOTYPE = ConfigurableBeanFactory.SCOPE_PROTOTYPE;   // 比较不重要，直接跳过吧   int ROLE_APPLICATION = 0;   int ROLE_SUPPORT = 1;   int ROLE_INFRASTRUCTURE = 2;   // 设置父 Bean，这里涉及到 bean 继承，不是 java 继承。请参见附录的详细介绍   // 一句话就是：继承父 Bean 的配置信息而已   void setParentName(String parentName);   // 获取父 Bean   String getParentName();   // 设置 Bean 的类名称，将来是要通过反射来生成实例的   void setBeanClassName(String beanClassName);   // 获取 Bean 的类名称   String getBeanClassName();   // 设置 bean 的 scope   void setScope(String scope);   String getScope();   // 设置是否懒加载   void setLazyInit(boolean lazyInit);   boolean isLazyInit();   // 设置该 Bean 依赖的所有的 Bean，注意，这里的依赖不是指属性依赖(如 @Autowire 标记的)，   // 是 depends-on=&quot;&quot; 属性设置的值。   void setDependsOn(String... dependsOn);   // 返回该 Bean 的所有依赖   String[] getDependsOn();   // 设置该 Bean 是否可以注入到其他 Bean 中，只对根据类型注入有效，   // 如果根据名称注入，即使这边设置了 false，也是可以的   void setAutowireCandidate(boolean autowireCandidate);   // 该 Bean 是否可以注入到其他 Bean 中   boolean isAutowireCandidate();   // 主要的。同一接口的多个实现，如果不指定名字的话，Spring 会优先选择设置 primary 为 true 的 bean   void setPrimary(boolean primary);   // 是否是 primary 的   boolean isPrimary();   // 如果该 Bean 采用工厂方法生成，指定工厂名称。对工厂不熟悉的读者，请参加附录   // 一句话就是：有些实例不是用反射生成的，而是用工厂模式生成的   void setFactoryBeanName(String factoryBeanName);   // 获取工厂名称   String getFactoryBeanName();   // 指定工厂类中的 工厂方法名称   void setFactoryMethodName(String factoryMethodName);   // 获取工厂类中的 工厂方法名称   String getFactoryMethodName();   // 构造器参数   ConstructorArgumentValues getConstructorArgumentValues();   // Bean 中的属性值，后面给 bean 注入属性值的时候会说到   MutablePropertyValues getPropertyValues();   // 是否 singleton   boolean isSingleton();   // 是否 prototype   boolean isPrototype();   // 如果这个 Bean 是被设置为 abstract，那么不能实例化，   // 常用于作为 父bean 用于继承，其实也很少用......   boolean isAbstract();   int getRole();   String getDescription();   String getResourceDescription();   BeanDefinition getOriginatingBeanDefinition();&#125;BeanDefinition 的覆盖问题就是在配置文件中定义 bean 时使用了相同的 id 或 name，默认情况下，allowBeanDefinitionOverriding 属性为 null，如果在同一配置文件中重复了，会抛错，但是如果不是同一配置文件中，会发生覆盖。循环引用：A 依赖 B，而 B 依赖 A。或 A 依赖 B，B 依赖 C，而 C 依赖 A。默认情况下，Spring 允许循环依赖，当然如果你在 A 的构造方法中依赖 B，在 B 的构造方法中依赖 A 是不行的。\n\n再看loadBeanDefinitions(beanFactory) 方法，这个方法将根据配置，加载各个 Bean，然后放到 BeanFactory 中。先贴上源码：AbstractXmlApplicationContext类中\n@Override\nprotected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException &#123;\n    // Create a new XmlBeanDefinitionReader for the given BeanFactory.\n    XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);\n  // Configure the bean definition reader with this context&#39;s\n  // resource loading environment.\n  beanDefinitionReader.setEnvironment(this.getEnvironment());\n  beanDefinitionReader.setResourceLoader(this);\n  beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));\n\n  // Allow a subclass to provide custom initialization of the reader,\n  // then proceed with actually loading the bean definitions.\n  initBeanDefinitionReader(beanDefinitionReader);\n  loadBeanDefinitions(beanDefinitionReader);\n\n}这个源码中我们重点看loadBeanDefinitions(beanDefinitionReader);，再点进去源码：\nprotected void loadBeanDefinitions(XmlBeanDefinitionReader reader) throws BeansException, IOException &#123;\tResource[] configResources = getConfigResources();\tif (configResources != null) &#123;\t\treader.loadBeanDefinitions(configResources);\t&#125;\tString[] configLocations = getConfigLocations();\tif (configLocations != null) &#123;\t\treader.loadBeanDefinitions(configLocations);\t&#125;&#125;\n\n\n在这段源码中我么可以看到2个reader.loadBeanDefinitions()方法，其实两个最终都到了：AbstractBeanDefinitionReader类中：\n@Overridepublic int loadBeanDefinitions(Resource... resources) throws BeanDefinitionStoreException &#123;\tAssert.notNull(resources, &quot;Resource array must not be null&quot;);\tint counter = 0;\tfor (Resource resource : resources) &#123;\t\tcounter += loadBeanDefinitions(resource);\t&#125;\treturn counter;&#125;\n\n这个方法里面，for循环每一个文件是一个resource，最终返回 counter，表示总共加载了多少的 BeanDefinition。进入loadBeanDefinitions(resource);方法，看源码：XmlBeanDefinitionReader类中的：\npublic int loadBeanDefinitions(EncodedResource encodedResource) throws BeanDefinitionStoreException &#123;\tAssert.notNull(encodedResource, &quot;EncodedResource must not be null&quot;);\tif (logger.isInfoEnabled()) &#123;\t\tlogger.info(&quot;Loading XML bean definitions from &quot; + encodedResource);\t&#125;  Set&lt;EncodedResource&gt; currentResources = this.resourcesCurrentlyBeingLoaded.get();  if (currentResources == null) &#123;    currentResources = new HashSet&lt;&gt;(4);    this.resourcesCurrentlyBeingLoaded.set(currentResources);  &#125;  if (!currentResources.add(encodedResource)) &#123;    throw new BeanDefinitionStoreException(        &quot;Detected cyclic loading of &quot; + encodedResource + &quot; - check your import definitions!&quot;);  &#125;  try &#123;    InputStream inputStream = encodedResource.getResource().getInputStream();    try &#123;      InputSource inputSource = new InputSource(inputStream);      if (encodedResource.getEncoding() != null) &#123;        inputSource.setEncoding(encodedResource.getEncoding());      &#125;      return doLoadBeanDefinitions(inputSource, encodedResource.getResource());    &#125;    finally &#123;      inputStream.close();    &#125;  &#125;  catch (IOException ex) &#123;    throw new BeanDefinitionStoreException(        &quot;IOException parsing XML document from &quot; + encodedResource.getResource(), ex);  &#125;  finally &#123;    currentResources.remove(encodedResource);    if (currentResources.isEmpty()) &#123;      this.resourcesCurrentlyBeingLoaded.remove();    &#125;  &#125;&#125;\n在这段代码中可以看到try代码块中一开始是根据外层循环调用的每一个Resource解析成一个InputStream 然后根据这个输入流解析；这段源码的核心在doLoadBeanDefinitions(inputSource, encodedResource.getResource());继续进源码：\nprotected int doLoadBeanDefinitions(InputSource inputSource, Resource resource)\t\tthrows BeanDefinitionStoreException &#123;\ttry &#123;\t\tDocument doc = doLoadDocument(inputSource, resource);\t\treturn registerBeanDefinitions(doc, resource);\t&#125;\tcatch (BeanDefinitionStoreException ex) &#123;\t\tthrow ex;\t&#125;\tcatch (SAXParseException ex) &#123;\t\tthrow new XmlBeanDefinitionStoreException(resource.getDescription(),\t\t\t\t&quot;Line &quot; + ex.getLineNumber() + &quot; in XML document from &quot; + resource + &quot; is invalid&quot;, ex);\t&#125;\tcatch (SAXException ex) &#123;\t\tthrow new XmlBeanDefinitionStoreException(resource.getDescription(),\t\t\t\t&quot;XML document from &quot; + resource + &quot; is invalid&quot;, ex);\t&#125;\tcatch (ParserConfigurationException ex) &#123;\t\tthrow new BeanDefinitionStoreException(resource.getDescription(),\t\t\t\t&quot;Parser configuration exception parsing XML from &quot; + resource, ex);\t&#125;\tcatch (IOException ex) &#123;\t\tthrow new BeanDefinitionStoreException(resource.getDescription(),\t\t\t\t&quot;IOException parsing XML document from &quot; + resource, ex);\t&#125;\tcatch (Throwable ex) &#123;\t\tthrow new BeanDefinitionStoreException(resource.getDescription(),\t\t\t\t&quot;Unexpected exception parsing XML document from &quot; + resource, ex);\t&#125;&#125;\n\n\n在这个方法里面可以看到doLoadDocument(inputSource, resource);方法是将 xml 文件(输入流和Resource)转换为 Document 对象，然后继续进源码：\npublic int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException &#123;\tBeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();\tint countBefore = getRegistry().getBeanDefinitionCount();\tdocumentReader.registerBeanDefinitions(doc, createReaderContext(resource));\treturn getRegistry().getBeanDefinitionCount() - countBefore;&#125;\n\n\n这里创建了一个BeanDefinitionDocumentReader，然后spring通过BeanDefinitionDocumentReader 会进行委托bean定义的创建；继续这个方法里面看：documentReader.registerBeanDefinitions(doc, createReaderContext(resource));点进去：\n@Overridepublic void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) &#123;\tthis.readerContext = readerContext;\tlogger.debug(&quot;Loading bean definitions&quot;);\tElement root = doc.getDocumentElement();\tdoRegisterBeanDefinitions(root);&#125;\n\n\n\n里面的doRegisterBeanDefinitions(root);方法就是从 xml 根节点开始解析文件，经过很多的步骤，一个配置文件终于转换为一颗 DOM 树了，注意，这里指的是其中一个配置文件，不是所有的，可以看到上面有个 for 循环的(loadBeanDefinitions(resource);是在for循环里面的)，进入doRegisterBeanDefinitions(root);方法，\nprotected void doRegisterBeanDefinitions(Element root) &#123;\t// Any nested &lt;beans&gt; elements will cause recursion in this method. In\t// order to propagate and preserve &lt;beans&gt; default-* attributes correctly,\t// keep track of the current (parent) delegate, which may be null. Create\t// the new (child) delegate with a reference to the parent for fallback purposes,\t// then ultimately reset this.delegate back to its original (parent) reference.\t// this behavior emulates a stack of delegates without actually necessitating one.\tBeanDefinitionParserDelegate parent = this.delegate;\tthis.delegate = createDelegate(getReaderContext(), root, parent);  if (this.delegate.isDefaultNamespace(root)) &#123;    String profileSpec = root.getAttribute(PROFILE_ATTRIBUTE);    if (StringUtils.hasText(profileSpec)) &#123;      String[] specifiedProfiles = StringUtils.tokenizeToStringArray(          profileSpec, BeanDefinitionParserDelegate.MULTI_VALUE_ATTRIBUTE_DELIMITERS);      if (!getReaderContext().getEnvironment().acceptsProfiles(specifiedProfiles)) &#123;        if (logger.isInfoEnabled()) &#123;          logger.info(&quot;Skipped XML bean definition file due to specified profiles [&quot; + profileSpec +              &quot;] not matching: &quot; + getReaderContext().getResource());        &#125;        return;      &#125;    &#125;  &#125;  preProcessXml(root);  parseBeanDefinitions(root, this.delegate);  postProcessXml(root);  this.delegate = parent;&#125;\n\n从这段代码中可以看到BeanDefinitionDocumentReader最终是创建了一个BeanDefinitionParserDelegate ，把bean定义的创建委托给了BeanDefinitionParserDelegate 进行创建，这就是委托模式的提现。同时也可以看到这段代码中先把this.delegate给了一个parent，然后又创建了一个Delegate，然后执行最后又把这个parent给回去了this.delegate，这是为了处理标签嵌套的问题，其实是个类似递归的操作。这里大家可以debugger试试嵌套的情况就明白了。\n再看preProcessXml(root)，点进去一看是空实现，并且是protected的，那么很明显这就是一个模板方法模式(模板方法模式不了解的可以看我的这篇文章)，同理postProcessXml(root)也一样，就是在Bean定义创建前后提供扩展点。那继续进入parseBeanDefinitions(root, this.delegate);看重点\nprotected void parseBeanDefinitions(Element root, BeanDefinitionParserDelegate delegate) &#123;\t\tif (delegate.isDefaultNamespace(root)) &#123;\t\t\tNodeList nl = root.getChildNodes();\t\t\tfor (int i = 0; i &lt; nl.getLength(); i++) &#123;\t\t\t\tNode node = nl.item(i);\t\t\t\tif (node instanceof Element) &#123;\t\t\t\t\tElement ele = (Element) node;\t\t\t\t\tif (delegate.isDefaultNamespace(ele)) &#123;\t\t\t\t\t\tparseDefaultElement(ele, delegate);\t\t\t\t\t&#125;\t\t\t\t\telse &#123;\t\t\t\t\t\tdelegate.parseCustomElement(ele);\t\t\t\t\t&#125;\t\t\t\t&#125;\t\t\t&#125;\t\t&#125;\t\telse &#123;\t\t\tdelegate.parseCustomElement(root);\t\t&#125;\t&#125;\n\n\n这段代码是循环解析Element 的每一个节点，一般我们的普通bean都是走parseDefaultElement(ele, delegate);默认的解析流程。但是这里有个else的自定义解析，这个很多人都忽略了，其实如果我们xml的配置文件中定义了aop:config 标签，他就会走这个自定义解析，然后解析aop内容，后续会在分析AOP源码，可以看这篇文章)说aop:config的时候讲这里。这里我们还是走普通的beand解析逻辑parseDefaultElement(ele, delegate)，跟进去看：\nprivate void parseDefaultElement(Element ele, BeanDefinitionParserDelegate delegate) &#123;\t\tif (delegate.nodeNameEquals(ele, IMPORT_ELEMENT)) &#123;\t\t\timportBeanDefinitionResource(ele);\t\t&#125;\t\telse if (delegate.nodeNameEquals(ele, ALIAS_ELEMENT)) &#123;\t\t\tprocessAliasRegistration(ele);\t\t&#125;\t\telse if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) &#123;\t\t\tprocessBeanDefinition(ele, delegate);\t\t&#125;\t\telse if (delegate.nodeNameEquals(ele, NESTED_BEANS_ELEMENT)) &#123;\t\t\t// recurse\t\t\tdoRegisterBeanDefinitions(ele);\t\t&#125;\t&#125;\n\n\n这个方法见名知意，解析默认的Element，是4个if分支，第一个是解析import类型的，第二个是alias的，第三个是bean的(也就是我们普通bean默认的)，第四个是beans，也就是嵌套的(这里这个嵌套的就回到上面doRegisterBeanDefinitions方法了，也就是为什么说上面其实类似递归的原因)这里我们只分析普通bean的解析处理，进入processBeanDefinition(ele, delegate);\nprotected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) &#123;\tBeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);\tif (bdHolder != null) &#123;\t\tbdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);\t\ttry &#123;\t\t\t// Register the final decorated instance.\t\t\tBeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());\t\t&#125;\t\tcatch (BeanDefinitionStoreException ex) &#123;\t\t\tgetReaderContext().error(&quot;Failed to register bean definition with name &#x27;&quot; +\t\t\t\t\tbdHolder.getBeanName() + &quot;&#x27;&quot;, ele, ex);\t\t&#125;\t\t// Send registration event.\t\tgetReaderContext().fireComponentRegistered(new BeanComponentDefinition(bdHolder));\t&#125;&#125;\n\n\n\n这段代码首先通过delegate创建一个bean定义的持有者BeanDefinitionHolder，这一步其实BeanDefinition也在里面已经创建出来了。进入delegate.parseBeanDefinitionElement(ele)看\npublic BeanDefinitionHolder parseBeanDefinitionElement(Element ele, @Nullable BeanDefinition containingBean) &#123;\t\tString id = ele.getAttribute(ID_ATTRIBUTE);\t\tString nameAttr = ele.getAttribute(NAME_ATTRIBUTE);\tList&lt;String&gt; aliases = new ArrayList&lt;&gt;();\tif (StringUtils.hasLength(nameAttr)) &#123;\t\tString[] nameArr = StringUtils.tokenizeToStringArray(nameAttr, MULTI_VALUE_ATTRIBUTE_DELIMITERS);\t\taliases.addAll(Arrays.asList(nameArr));\t&#125;\tString beanName = id;\tif (!StringUtils.hasText(beanName) &amp;&amp; !aliases.isEmpty()) &#123;\t\tbeanName = aliases.remove(0);\t\tif (logger.isTraceEnabled()) &#123;\t\t\tlogger.trace(&quot;No XML &#x27;id&#x27; specified - using &#x27;&quot; + beanName +\t\t\t\t\t&quot;&#x27; as bean name and &quot; + aliases + &quot; as aliases&quot;);\t\t&#125;\t&#125;\tif (containingBean == null) &#123;\t\tcheckNameUniqueness(beanName, aliases, ele);\t&#125;\tAbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);\tif (beanDefinition != null) &#123;\t\tif (!StringUtils.hasText(beanName)) &#123;\t\t\ttry &#123;\t\t\t\tif (containingBean != null) &#123;\t\t\t\t\tbeanName = BeanDefinitionReaderUtils.generateBeanName(\t\t\t\t\t\t\tbeanDefinition, this.readerContext.getRegistry(), true);\t\t\t\t&#125;\t\t\t\telse &#123;\t\t\t\t\tbeanName = this.readerContext.generateBeanName(beanDefinition);\t\t\t\t\t// Register an alias for the plain bean class name, if still possible,\t\t\t\t\t// if the generator returned the class name plus a suffix.\t\t\t\t\t// This is expected for Spring 1.2/2.0 backwards compatibility.\t\t\t\t\tString beanClassName = beanDefinition.getBeanClassName();\t\t\t\t\tif (beanClassName != null &amp;&amp;\t\t\t\t\t\t\tbeanName.startsWith(beanClassName) &amp;&amp; beanName.length() &gt; beanClassName.length() &amp;&amp;\t\t\t\t\t\t\t!this.readerContext.getRegistry().isBeanNameInUse(beanClassName)) &#123;\t\t\t\t\t\taliases.add(beanClassName);\t\t\t\t\t&#125;\t\t\t\t&#125;\t\t\t\tif (logger.isTraceEnabled()) &#123;\t\t\t\t\tlogger.trace(&quot;Neither XML &#x27;id&#x27; nor &#x27;name&#x27; specified - &quot; +\t\t\t\t\t\t\t&quot;using generated bean name [&quot; + beanName + &quot;]&quot;);\t\t\t\t&#125;\t\t\t&#125;\t\t\tcatch (Exception ex) &#123;\t\t\t\terror(ex.getMessage(), ele);\t\t\t\treturn null;\t\t\t&#125;\t\t&#125;\t\tString[] aliasesArray = StringUtils.toStringArray(aliases);\t\treturn new BeanDefinitionHolder(beanDefinition, beanName, aliasesArray);\t&#125;\treturn null;&#125;\n\n可以看到这段代码中有一个parseBeanDefinitionElement(ele, beanName, containingBean)，返回了一个AbstractBeanDefinition，这个方法里面实际是创建了一个GenericBeanDefinition，这里就不跟进去看了，代码篇幅太长了，这个里面很简单没啥绕的逻辑，大家跟着点点就能看到了。创建完GenericBeanDefinition之后设置了Class属性、构造器等等一些创建Bean实例需要的东西之后就返回了。\n然后回到processBeanDefinition(ele, delegate);看BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());，由于这个时候已经创建了BeanDefinition并且有持有者BeanDefinitionHolder进行注册，所以继续跟进\npublic static void registerBeanDefinition(\t\t\tBeanDefinitionHolder definitionHolder, BeanDefinitionRegistry registry)\t\t\tthrows BeanDefinitionStoreException &#123;      // Register bean definition under primary name.\tString beanName = definitionHolder.getBeanName();\tregistry.registerBeanDefinition(beanName, definitionHolder.getBeanDefinition());\t// Register aliases for bean name, if any.\tString[] aliases = definitionHolder.getAliases();\tif (aliases != null) &#123;\t\tfor (String alias : aliases) &#123;\t\t\tregistry.registerAlias(beanName, alias);\t\t&#125;\t&#125;&#125;\n\n很明显继续跟进到registry.registerBeanDefinition(beanName, definitionHolder.getBeanDefinition());，这里是一个接口调用，肯定是到了DefaultListableBeanFactory，但是在这个接口调用时我们需要注意的是第二个参数，从BeanDefinitionHolder中获取到了BeanDefinition对象，这个就是创建Bean定义持有者的时候顺带获取的BeanDefinition，通过上面的解析我们知道这个时候BeanDefinition已经创建好了，然后跟进这个方法进去：\npublic void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)\t\t\tthrows BeanDefinitionStoreException &#123;\tAssert.hasText(beanName, &quot;Bean name must not be empty&quot;);\tAssert.notNull(beanDefinition, &quot;BeanDefinition must not be null&quot;);\tif (beanDefinition instanceof AbstractBeanDefinition) &#123;\t\ttry &#123;\t\t\t((AbstractBeanDefinition) beanDefinition).validate();\t\t&#125;\t\tcatch (BeanDefinitionValidationException ex) &#123;\t\t\tthrow new BeanDefinitionStoreException(beanDefinition.getResourceDescription(), beanName,\t\t\t\t\t&quot;Validation of bean definition failed&quot;, ex);\t\t&#125;\t&#125;\tBeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);\tif (existingDefinition != null) &#123;\t\tif (!isAllowBeanDefinitionOverriding()) &#123;\t\t\tthrow new BeanDefinitionOverrideException(beanName, beanDefinition, existingDefinition);\t\t&#125;\t\telse if (existingDefinition.getRole() &lt; beanDefinition.getRole()) &#123;\t\t\t// e.g. was ROLE_APPLICATION, now overriding with ROLE_SUPPORT or ROLE_INFRASTRUCTURE\t\t\tif (logger.isInfoEnabled()) &#123;\t\t\t\tlogger.info(&quot;Overriding user-defined bean definition for bean &#x27;&quot; + beanName +\t\t\t\t\t\t&quot;&#x27; with a framework-generated bean definition: replacing [&quot; +\t\t\t\t\t\texistingDefinition + &quot;] with [&quot; + beanDefinition + &quot;]&quot;);\t\t\t&#125;\t\t&#125;\t\telse if (!beanDefinition.equals(existingDefinition)) &#123;\t\t\tif (logger.isDebugEnabled()) &#123;\t\t\t\tlogger.debug(&quot;Overriding bean definition for bean &#x27;&quot; + beanName +\t\t\t\t\t\t&quot;&#x27; with a different definition: replacing [&quot; + existingDefinition +\t\t\t\t\t\t&quot;] with [&quot; + beanDefinition + &quot;]&quot;);\t\t\t&#125;\t\t&#125;\t\telse &#123;\t\t\tif (logger.isTraceEnabled()) &#123;\t\t\t\tlogger.trace(&quot;Overriding bean definition for bean &#x27;&quot; + beanName +\t\t\t\t\t\t&quot;&#x27; with an equivalent definition: replacing [&quot; + existingDefinition +\t\t\t\t\t\t&quot;] with [&quot; + beanDefinition + &quot;]&quot;);\t\t\t&#125;\t\t&#125;\t\tthis.beanDefinitionMap.put(beanName, beanDefinition);\t&#125;\telse &#123;\t\tif (hasBeanCreationStarted()) &#123;\t\t\t// Cannot modify startup-time collection elements anymore (for stable iteration)\t\t\tsynchronized (this.beanDefinitionMap) &#123;\t\t\t\tthis.beanDefinitionMap.put(beanName, beanDefinition);\t\t\t\tList&lt;String&gt; updatedDefinitions = new ArrayList&lt;&gt;(this.beanDefinitionNames.size() + 1);\t\t\t\tupdatedDefinitions.addAll(this.beanDefinitionNames);\t\t\t\tupdatedDefinitions.add(beanName);\t\t\t\tthis.beanDefinitionNames = updatedDefinitions;\t\t\t\tremoveManualSingletonName(beanName);\t\t\t&#125;\t\t&#125;\t\telse &#123;\t\t\t// Still in startup registration phase\t\t\tthis.beanDefinitionMap.put(beanName, beanDefinition);\t\t\tthis.beanDefinitionNames.add(beanName);\t\t\tremoveManualSingletonName(beanName);\t\t&#125;\t\tthis.frozenBeanDefinitionNames = null;\t&#125;\tif (existingDefinition != null || containsSingleton(beanName)) &#123;\t\tresetBeanDefinition(beanName);\t&#125;\telse if (isConfigurationFrozen()) &#123;\t\tclearByTypeCache();\t&#125;&#125;\n\n在这个方法里面就可以看到经过一系列验证等等操作，最后把BeanDefinition放入了beanDefinitionMap，到这里bean定义就完成并注册到org.springframework.beans.factory.support.DefaultListableBeanFactory#beanDefinitionMap里面了\n然后我们回到refresh() 方法，就是文章前部分的那个refresh() 方法…TvT再贴一下refresh() 方法的源码吧，方便阅读：我直接贴大神带注释的代码吧，看起来更方便一点\n@Overridepublic void refresh() throws BeansException, IllegalStateException &#123;   // 来个锁，不然 refresh() 还没结束，你又来个启动或销毁容器的操作，那不就乱套了嘛   synchronized (this.startupShutdownMonitor) &#123;   // 准备工作，记录下容器的启动时间、标记“已启动”状态、处理配置文件中的占位符  prepareRefresh();  // 这步比较关键，这步完成后，配置文件就会解析成一个个 Bean 定义，注册到 BeanFactory 中，  // 当然，这里说的 Bean 还没有初始化，只是配置信息都提取出来了，  // 注册也只是将这些信息都保存到了注册中心(说到底核心是一个 beanName-&gt; beanDefinition 的 map)  ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();  // 设置 BeanFactory 的类加载器，添加几个 BeanPostProcessor，手动注册几个特殊的 bean  // 这块待会会展开说  prepareBeanFactory(beanFactory);  try &#123;     // 【这里需要知道 BeanFactoryPostProcessor 这个知识点，Bean 如果实现了此接口，     // 那么在容器初始化以后，Spring 会负责调用里面的 postProcessBeanFactory 方法。】     // 这里是提供给子类的扩展点，到这里的时候，所有的 Bean 都加载、注册完成了，但是都还没有初始化     // 具体的子类可以在这步的时候添加一些特殊的 BeanFactoryPostProcessor 的实现类或做点什么事     postProcessBeanFactory(beanFactory);     // 调用 BeanFactoryPostProcessor 各个实现类的 postProcessBeanFactory(factory) 回调方法     invokeBeanFactoryPostProcessors(beanFactory);      // 注册 BeanPostProcessor 的实现类，注意看和 BeanFactoryPostProcessor 的区别     // 此接口两个方法: postProcessBeforeInitialization 和 postProcessAfterInitialization     // 两个方法分别在 Bean 初始化之前和初始化之后得到执行。这里仅仅是注册，之后会看到回调这两方法的时机     registerBeanPostProcessors(beanFactory);     // 初始化当前 ApplicationContext 的 MessageSource，国际化这里就不展开说了，不然没完没了了     initMessageSource();     // 初始化当前 ApplicationContext 的事件广播器，这里也不展开了     initApplicationEventMulticaster();     // 从方法名就可以知道，典型的模板方法(钩子方法)，不展开说     // 具体的子类可以在这里初始化一些特殊的 Bean（在初始化 singleton beans 之前）     onRefresh();     // 注册事件监听器，监听器需要实现 ApplicationListener 接口。这也不是我们的重点，过     registerListeners();     // 重点，重点，重点     // 初始化所有的 singleton beans     //（lazy-init 的除外）     finishBeanFactoryInitialization(beanFactory);     // 最后，广播事件，ApplicationContext 初始化完成，不展开     finishRefresh();  &#125;  catch (BeansException ex) &#123;     if (logger.isWarnEnabled()) &#123;        logger.warn(&quot;Exception encountered during context initialization - &quot; +              &quot;cancelling refresh attempt: &quot; + ex);     &#125;     // Destroy already created singletons to avoid dangling resources.     // 销毁已经初始化的 singleton 的 Beans，以免有些 bean 会一直占用资源     destroyBeans();     // Reset &#x27;active&#x27; flag.     cancelRefresh(ex);     // 把异常往外抛     throw ex;  &#125;  finally &#123;     // Reset common introspection caches in Spring&#x27;s core, since we     // might not ever need metadata for singleton beans anymore...     resetCommonCaches();  &#125;\n\n\n\n到此为止，ConfigurableListableBeanFactory beanFactory &#x3D; obtainFreshBeanFactory();结束\n下面我们来看finishBeanFactoryInitialization(beanFactory)到这一步为止BeanFactory 已经创建完成，并且所有的实现了 BeanFactoryPostProcessor 接口的 Bean 都已经初始化并且其中的 postProcessBeanFactory(factory) 方法已经得到回调执行了。而且 Spring 已经“手动”注册了一些特殊的 Bean，如 ‘environment’、‘systemProperties’ 等。剩下的就是初始化 singleton beans 了，我们知道它们是单例的，如果没有设置懒加载，那么 Spring 会在接下来初始化所有的 singleton beans。点进去看源码：\nprotected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) &#123;\t// Initialize conversion service for this context.\tif (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &amp;&amp;\t\t\tbeanFactory.isTypeMatch(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class)) &#123;\t\tbeanFactory.setConversionService(\t\t\t\tbeanFactory.getBean(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class));\t&#125;  // Register a default embedded value resolver if no bean post-processor  // (such as a PropertyPlaceholderConfigurer bean) registered any before:  // at this point, primarily for resolution in annotation attribute values.  if (!beanFactory.hasEmbeddedValueResolver()) &#123;    beanFactory.addEmbeddedValueResolver(strVal -&gt; getEnvironment().resolvePlaceholders(strVal));  &#125;  // Initialize LoadTimeWeaverAware beans early to allow for registering their transformers early.  String[] weaverAwareNames = beanFactory.getBeanNamesForType(LoadTimeWeaverAware.class, false, false);  for (String weaverAwareName : weaverAwareNames) &#123;    getBean(weaverAwareName);  &#125;  // Stop using the temporary ClassLoader for type matching.  beanFactory.setTempClassLoader(null);  // Allow for caching all bean definition metadata, not expecting further changes.  beanFactory.freezeConfiguration();  // Instantiate all remaining (non-lazy-init) singletons.  beanFactory.preInstantiateSingletons();  &#125;\n\n\n在这段代码中：首先初始化名字为 “conversionService” 的 Bean，为什么是conversionService 呢？原因是注册这个bean之后，类似于前端传给后端的非基础类型和基础类型的包装类之外，其他的就可以考虑采用ConversionService来进行类型等的转换，初始化这个 “conversionService” 实在上面源码中的beanFactory.getBean(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class));进行的。然后直接跳过来到beanFactory.preInstantiateSingletons();这个方法，这里开始初始化。点进去：DefaultListableBeanFactory这个类中：\n@Overridepublic void preInstantiateSingletons() throws BeansException &#123;\tif (logger.isDebugEnabled()) &#123;\t\tlogger.debug(&quot;Pre-instantiating singletons in &quot; + this);\t&#125;    // Iterate over a copy to allow for init methods which in turn register new bean definitions.  // While this may not be part of the regular factory bootstrap, it does otherwise work fine.  List&lt;String&gt; beanNames = new ArrayList&lt;&gt;(this.beanDefinitionNames);  // Trigger initialization of all non-lazy singleton beans...  for (String beanName : beanNames) &#123;    RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);    if (!bd.isAbstract() &amp;&amp; bd.isSingleton() &amp;&amp; !bd.isLazyInit()) &#123;      if (isFactoryBean(beanName)) &#123;        Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);        if (bean instanceof FactoryBean) &#123;          final FactoryBean&lt;?&gt; factory = (FactoryBean&lt;?&gt;) bean;          boolean isEagerInit;          if (System.getSecurityManager() != null &amp;&amp; factory instanceof SmartFactoryBean) &#123;            isEagerInit = AccessController.doPrivileged((PrivilegedAction&lt;Boolean&gt;)                    ((SmartFactoryBean&lt;?&gt;) factory)::isEagerInit,                getAccessControlContext());          &#125;          else &#123;            isEagerInit = (factory instanceof SmartFactoryBean &amp;&amp;                ((SmartFactoryBean&lt;?&gt;) factory).isEagerInit());          &#125;          if (isEagerInit) &#123;            getBean(beanName);          &#125;        &#125;      &#125;      else &#123;        getBean(beanName);      &#125;    &#125;  &#125;  // Trigger post-initialization callback for all applicable beans...  for (String beanName : beanNames) &#123;    Object singletonInstance = getSingleton(beanName);    if (singletonInstance instanceof SmartInitializingSingleton) &#123;      final SmartInitializingSingleton smartSingleton = (SmartInitializingSingleton) singletonInstance;      if (System.getSecurityManager() != null) &#123;        AccessController.doPrivileged((PrivilegedAction&lt;Object&gt;) () -&gt; &#123;          smartSingleton.afterSingletonsInstantiated();          return null;        &#125;, getAccessControlContext());      &#125;      else &#123;        smartSingleton.afterSingletonsInstantiated();      &#125;    &#125;  &#125;\n\n\n\n迭代所有的BeanDefinitionNames集合，挨个初始化所有非懒加载的单例类。\n\nBeanDefinitionNames是在注册BeanDefinitionMap时同时注册的集合。该集合，主要用在这里进行迭代初始化Spring Bean，并且也方便一些类似获取BeanDefinitionName的方法使用。\n\n初始化的时候还对FactoryBean进行判断，因为默认FactoryBean默认是惰性初始化，如果实现SmartFactoryBean设置isEagerInit为true，则代表该类需要急切的进行初始化，会即刻开始初始化FactoryBean里getObject返回的类。\n\n关于getMergedLocalBeanDefinition和getBean：Spring通过getBean来完成类的初始化并添加到Spring容器内（即Spring的一级缓存：单例池里面），而在初始化时需要当前类的相关信息：即BeanDefinition，而BeanDefinition是可以存在父子关系（并非真的继承，而是BeanDefinition可以设置父BeanDefinition），所以Spring通过getMergedLocalBeanDefinition来获取当前类的完整信息。\n\n\ngetBean-》doGetBean\nprotected &lt;T&gt; T doGetBean(final String name, @Nullable final Class&lt;T&gt; requiredType,\t\t\t@Nullable final Object[] args, boolean typeCheckOnly) throws BeansException &#123;\t// 1.转换beanName，主要处理别名、以&amp;开头的name\tfinal String beanName = transformedBeanName(name);\tObject bean;\t// 2.尝试从单例缓存中获取bean实例\tObject sharedInstance = getSingleton(beanName);\t// 3. 获取bean实例\t// 3.1 缓存中已存在bean实例\tif (sharedInstance != null &amp;&amp; args == null) &#123;\t\t// 省略日志输出代码...\t\t// 从bean实例中获取对象（本章重点，获取实例中的对象）\t\tbean = getObjectForBeanInstance(sharedInstance, name, beanName, null);\t&#125;\telse &#123;\t\t// 省略父工厂处理相关代码...\t\ttry &#123;\t\t\t// 省略dependsOn相关代码...\t\t\t// 3.2 创建单例bean\t\t\tif (mbd.isSingleton()) &#123;\t\t\t\tsharedInstance = getSingleton(beanName, () -&gt; &#123;\t\t\t\t\ttry &#123;\t\t\t\t\t\treturn createBean(beanName, mbd, args);\t\t\t\t\t&#125;\t\t\t\t\tcatch (BeansException ex) &#123;\t\t\t\t\t\tdestroySingleton(beanName);\t\t\t\t\t\tthrow ex;\t\t\t\t\t&#125;\t\t\t\t&#125;);\t\t\t\t// 从bean实例中获取对象（本章重点，获取实例中的对象）\t\t\t\tbean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);\t\t\t&#125;\t\t\t// 3.3 创建原型bean实例\t\t\telse if (mbd.isPrototype()) &#123;\t\t\t\t// It&#x27;s a prototype -&gt; create a new instance.\t\t\t\tObject prototypeInstance = null;\t\t\t\ttry &#123;\t\t\t\t\tbeforePrototypeCreation(beanName);\t\t\t\t\tprototypeInstance = createBean(beanName, mbd, args);\t\t\t\t&#125;\t\t\t\tfinally &#123;\t\t\t\t\tafterPrototypeCreation(beanName);\t\t\t\t&#125;\t\t\t\t// 从bean实例中获取对象（本章重点，获取实例中的对象）\t\t\t\tbean = getObjectForBeanInstance(prototypeInstance, name, beanName, mbd);\t\t\t&#125;\t\t\t// 3.4 根据scope创建bean实例\t\t\telse &#123;\t\t\t\tString scopeName = mbd.getScope();\t\t\t\tfinal Scope scope = this.scopes.get(scopeName);\t\t\t\tif (scope == null) &#123;\t\t\t\t\tthrow new IllegalStateException(&quot;No Scope registered for scope name &#x27;&quot; + scopeName + &quot;&#x27;&quot;);\t\t\t\t&#125;\t\t\t\ttry &#123;\t\t\t\t\tObject scopedInstance = scope.get(beanName, () -&gt; &#123;\t\t\t\t\t\tbeforePrototypeCreation(beanName);\t\t\t\t\t\ttry &#123;\t\t\t\t\t\t\treturn createBean(beanName, mbd, args);\t\t\t\t\t\t&#125;\t\t\t\t\t\tfinally &#123;\t\t\t\t\t\t\tafterPrototypeCreation(beanName);\t\t\t\t\t\t&#125;\t\t\t\t\t&#125;);\t\t\t\t\t// 从bean实例中获取对象（本章重点，获取实例中的对象）\t\t\t\t\tbean = getObjectForBeanInstance(scopedInstance, name, beanName, mbd);\t\t\t\t&#125;\t\t\t\tcatch (IllegalStateException ex) &#123;\t\t\t\t\t// 省略异常处理代码...\t\t\t\t&#125;\t\t\t&#125;\t\t&#125;\t\tcatch (BeansException ex) &#123;\t\t\tcleanupAfterBeanCreationFailure(beanName);\t\t\tthrow ex;\t\t&#125;\t&#125;\t// 省略其他代码.\t...&#125;\n}\n在可以看到上面有四种情况：缓存中存在bean实例、创建单例bean、创建原型bean、根据scope创建bean，都调用了getObjectForBeanInstance()方法，接下来我们就点进去看看。\ngetObjectForBeanInstance是从bean实例中获取对象（本章重点，获取实例中的对象）\nprotected Object getObjectForBeanInstance(\t\tObject beanInstance, String name, String beanName, @Nullable RootBeanDefinition mbd) &#123;\t// 1. 如果是工厂引用(即name以&amp;开头)，但该实例又不是FactoryBean类型，则抛出异常\tif (BeanFactoryUtils.isFactoryDereference(name)) &#123;\t\tif (beanInstance instanceof NullBean) &#123;\t\t\treturn beanInstance;\t\t&#125;\t\tif (!(beanInstance instanceof FactoryBean)) &#123;\t\t\tthrow new BeanIsNotAFactoryException(transformedBeanName(name), beanInstance.getClass());\t\t&#125;\t&#125;\t// 2. 如果该实例不是FactoryBean类型，或者是工厂引用都直接返回该实例\tif (!(beanInstance instanceof FactoryBean) || BeanFactoryUtils.isFactoryDereference(name)) &#123;\t\treturn beanInstance;\t&#125;\tObject object = null;\tif (mbd == null) &#123;\t\t// 尝试从缓存中加载bean\t\tobject = getCachedObjectForFactoryBean(beanName);\t&#125;\tif (object == null) &#123;\t\t// 把初始bean实例强转为FactoryBean\t\tFactoryBean&lt;?&gt; factory = (FactoryBean&lt;?&gt;) beanInstance;\t\t// Caches object obtained from FactoryBean if it is a singleton.\t\tif (mbd == null &amp;&amp; containsBeanDefinition(beanName)) &#123;\t\t\tmbd = getMergedLocalBeanDefinition(beanName);\t\t&#125;\t\t// 是否是用户自定义的beanDefinition(默认是false)\t\tboolean synthetic = (mbd != null &amp;&amp; mbd.isSynthetic());\t\t// 重点方法，跟进去\t\tobject = getObjectFromFactoryBean(factory, beanName, !synthetic);\t&#125;\treturn object;&#125;\n\n从FactoryBean中获取对象：getObjectFromFactoryBean()\nprotected Object getObjectFromFactoryBean(FactoryBean&lt;?&gt; factory, String beanName, boolean shouldPostProcess) &#123;\t// 1. 单例模式\tif (factory.isSingleton() &amp;&amp; containsSingleton(beanName)) &#123;\t\tsynchronized (getSingletonMutex()) &#123;\t\t\tObject object = this.factoryBeanObjectCache.get(beanName);\t\t\tif (object == null) &#123;\t\t\t\t// 真正获取对象的方法(重点方法)\t\t\t\tobject = doGetObjectFromFactoryBean(factory, beanName);\t\t\t\t// Only post-process and store if not put there already during getObject() call above\t\t\t\t// (e.g. because of circular reference processing triggered by custom getBean calls)\t\t\t\tObject alreadyThere = this.factoryBeanObjectCache.get(beanName);\t\t\t\tif (alreadyThere != null) &#123;\t\t\t\t\tobject = alreadyThere;\t\t\t\t&#125;\t\t\t\telse &#123;\t\t\t\t\tif (shouldPostProcess) &#123;\t\t\t\t\t\tif (isSingletonCurrentlyInCreation(beanName)) &#123;\t\t\t\t\t\t\t// Temporarily return non-post-processed object, not storing it yet..\t\t\t\t\t\t\treturn object;\t\t\t\t\t\t&#125;\t\t\t\t\t\tbeforeSingletonCreation(beanName);\t\t\t\t\t\ttry &#123;\t\t\t\t\t\t\t// 调用bean的后置处理器(有兴趣的可以点进去看下，后面的章节会单独讲述)\t\t\t\t\t\t\tobject = postProcessObjectFromFactoryBean(object, beanName);\t\t\t\t\t\t&#125;\t\t\t\t\t\tcatch (Throwable ex) &#123;\t\t\t\t\t\t\tthrow new BeanCreationException(beanName,\t\t\t\t\t\t\t\t\t&quot;Post-processing of FactoryBean&#x27;s singleton object failed&quot;, ex);\t\t\t\t\t\t&#125;\t\t\t\t\t\tfinally &#123;\t\t\t\t\t\t\tafterSingletonCreation(beanName);\t\t\t\t\t\t&#125;\t\t\t\t\t&#125;\t\t\t\t\tif (containsSingleton(beanName)) &#123;\t\t\t\t\t\tthis.factoryBeanObjectCache.put(beanName, object);\t\t\t\t\t&#125;\t\t\t\t&#125;\t\t\t&#125;\t\t\treturn object;\t\t&#125;\t&#125;\telse &#123;\t\t// 2. 原型模式\t\t// 真正获取对象的方法(重点方法)\t\tObject object = doGetObjectFromFactoryBean(factory, beanName);\t\tif (shouldPostProcess) &#123;\t\t\ttry &#123;\t\t\t\tobject = postProcessObjectFromFactoryBean(object, beanName);\t\t\t&#125;\t\t\tcatch (Throwable ex) &#123;\t\t\t\tthrow new BeanCreationException(beanName, &quot;Post-processing of FactoryBean&#x27;s object failed&quot;, ex);\t\t\t&#125;\t\t&#125;\t\treturn object;\t&#125;&#125;\n\n真正从FactoryBean中获取对象的逻辑：doGetObjectFromFactoryBean()\nprivate Object doGetObjectFromFactoryBean(final FactoryBean&lt;?&gt; factory, final String beanName)\t\tthrows BeanCreationException &#123;\tObject object;\ttry &#123;\t\t// 权限验证\t\tif (System.getSecurityManager() != null) &#123;\t\t\tAccessControlContext acc = getAccessControlContext();\t\t\ttry &#123;\t\t\t\tobject = AccessController.doPrivileged((PrivilegedExceptionAction&lt;Object&gt;) factory::getObject, acc);\t\t\t&#125;\t\t\tcatch (PrivilegedActionException pae) &#123;\t\t\t\tthrow pae.getException();\t\t\t&#125;\t\t&#125;\t\telse &#123;\t\t\t// 终于看到你了！\t\t\tobject = factory.getObject();\t\t&#125;\t&#125;\tcatch (FactoryBeanNotInitializedException ex) &#123;\t\tthrow new BeanCurrentlyInCreationException(beanName, ex.toString());\t&#125;\tcatch (Throwable ex) &#123;\t\tthrow new BeanCreationException(beanName, &quot;FactoryBean threw exception on object creation&quot;, ex);\t&#125;\t// Do not accept a null value for a FactoryBean that&#x27;s not fully\t// initialized yet: Many FactoryBeans just return null then.\tif (object == null) &#123;\t\tif (isSingletonCurrentlyInCreation(beanName)) &#123;\t\t\tthrow new BeanCurrentlyInCreationException(\t\t\t\t\tbeanName, &quot;FactoryBean which is currently in creation returned null from getObject&quot;);\t\t&#125;\t\tobject = new NullBean();\t&#125;\treturn object;&#125;\n\n最终发现其实获取对象的方法，就是一行调用FactoryBean的getObject()方法。\n在上面的方法中有个bean的实例化过程我们必须知道protected Object createBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)      throws BeanCreationException &#123;   if (logger.isTraceEnabled()) &#123;      logger.trace(&quot;Creating instance of bean &#x27;&quot; + beanName + &quot;&#x27;&quot;);   &#125;   RootBeanDefinition mbdToUse = mbd;  //推断当前Beandefinition的beanClass   Class&lt;?&gt; resolvedClass = resolveBeanClass(mbd, beanName);   if (resolvedClass != null &amp;&amp; !mbd.hasBeanClass() &amp;&amp; mbd.getBeanClassName() != null) &#123;      mbdToUse = new RootBeanDefinition(mbd);      mbdToUse.setBeanClass(resolvedClass);   &#125;   // 准备方法重写 包括lookup-method和replaced-method的处理，本文暂不展开   try &#123;      mbdToUse.prepareMethodOverrides();   &#125;   catch (BeanDefinitionValidationException ex) &#123;      throw new BeanDefinitionStoreException(mbdToUse.getResourceDescription(),            beanName, &quot;Validation of method overrides failed&quot;, ex);   &#125;   try &#123;      // 第一次调用后置处理器：初始化Bean之前，InstantiationAwareBeanPostProcessor,      // 根据BeanDefinition获取到了对应的class类      Object bean = resolveBeforeInstantiation(beanName, mbdToUse);      if (bean != null) &#123;         return bean;      &#125;   &#125;   catch (Throwable ex) &#123;      throw new BeanCreationException(mbdToUse.getResourceDescription(), beanName,            &quot;BeanPostProcessor before instantiation of bean failed&quot;, ex);   &#125;   try &#123;      //创建Bean      Object beanInstance = doCreateBean(beanName, mbdToUse, args);      if (logger.isTraceEnabled()) &#123;         logger.trace(&quot;Finished creating instance of bean &#x27;&quot; + beanName + &quot;&#x27;&quot;);      &#125;      return beanInstance;   &#125;   catch (BeanCreationException | ImplicitlyAppearedSingletonException ex) &#123;      // A previously detected exception with proper bean creation context already,      // or illegal singleton state to be communicated up to DefaultSingletonBeanRegistry.      throw ex;   &#125;   catch (Throwable ex) &#123;      throw new BeanCreationException(            mbdToUse.getResourceDescription(), beanName, &quot;Unexpected exception during bean creation&quot;, ex);   &#125;&#125;\n}\ndocreatebean\nprotected Object doCreateBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)\t\t\tthrows BeanCreationException &#123;\t\tBeanWrapper instanceWrapper = null;\t\tif (mbd.isSingleton()) &#123;            //从未完成的 FactoryBean 实例中移除\t\t\tinstanceWrapper = this.factoryBeanInstanceCache.remove(beanName);\t\t&#125;\t\tif (instanceWrapper == null) &#123;\t\t\t//实例化对象(仅仅是生成对象，并非添加到spring单例池中，即目前并没有成为Spring Bean)，\t\t\t//并且第二次调用 后置处理器 determineConstructorsFromBeanPostProcessors \t\t\tinstanceWrapper = createBeanInstance(beanName, mbd, args);\t\t&#125;\t\tObject bean = instanceWrapper.getWrappedInstance();\t\tClass&lt;?&gt; beanType = instanceWrapper.getWrappedClass();\t\tif (beanType != NullBean.class) &#123;\t\t\tmbd.resolvedTargetType = beanType;\t\t&#125;     \t\t...      \t...       \t...   &#125;\n首先通过createBeanInstance方法调用后置处理器推断其构造函数，并反射创建BeanDefinition对应的实例。实例化 Bean\n注意此时只是创建了类对象，但还没有添加到Spring的单例池中，即还没有加入到Spring容器内部。可以理解为此时只是完成了类对象的声明：即类似于A a&#x3D;null\n添加到Spring的单例池是在getSingleton（）的addSingleton中。\nhttps://blog.csdn.net/qq_38289451/article/details/121965628\ncreateBeanInstance() 方法是 spring 实例化 bean 的核心代码，它根据不同的情况会调用四种实例化方法\n\nobtainFromSupplier() ：通过 Supplier 实例化\ninstantiateUsingFactoryMethod()：通过工厂方法实例化\nautowireConstructor()：用合适的构造函数实例化\ninstantiateBean()：用无参构造函数实例化\n\nprotected BeanWrapper createBeanInstance(String beanName, RootBeanDefinition mbd, @Nullable Object[] args) &#123;    \t// 确认需要创建的bean实例的类可以实例化\tClass&lt;?&gt; beanClass = resolveBeanClass(mbd, beanName);\t// 确保class不为空，并且访问权限是public\tif (beanClass != null &amp;&amp; !Modifier.isPublic(beanClass.getModifiers()) &amp;&amp; !mbd.isNonPublicAccessAllowed()) &#123;\t\tthrow new BeanCreationException(mbd.getResourceDescription(), beanName,\t\t\t\t&quot;Bean class isn&#x27;t public, and non-public access not allowed: &quot; + beanClass.getName());\t&#125;\t/**\t * ----------1，通过Supplier实例化------------\t */\tSupplier&lt;?&gt; instanceSupplier = mbd.getInstanceSupplier();\tif (instanceSupplier != null) &#123;\t\treturn obtainFromSupplier(instanceSupplier, beanName);\t&#125;    \t/**\t * ----------2，通过工厂方法实例化------------\t */\tif (mbd.getFactoryMethodName() != null) &#123;\t\treturn instantiateUsingFactoryMethod(beanName, mbd, args);\t&#125;    /**\t * ----------3，用合适的构造函数实例化------------\t *\t *  一个类可能有多个构造器，所以Spring得根据参数个数、类型确定需要调用的构造器。\t *  在使用构造器创建实例后，Spring会将解析过后确定下来的构造器或工厂方法保存在缓存中，\t *  避免再次创建相同bean时再次解析\t */\t// 标记下，防止重复创建同一个bean\tboolean resolved = false;\t// 是否需要自动装配，构造有参数的需要\tboolean autowireNecessary = false;\t// 如果没有参数\tif (args == null) &#123;\t\tsynchronized (mbd.constructorArgumentLock) &#123;\t\t\t// 一个类中有多个构造函数，每个构造函数都有不同的参数，所以调用前需要先根据参数锁定构造函数或对应的工厂方法\t\t\tif (mbd.resolvedConstructorOrFactoryMethod != null) &#123;\t\t\t\tresolved = true;\t\t\t\tautowireNecessary = mbd.constructorArgumentsResolved;\t\t\t&#125;\t\t&#125;\t&#125;\t// 有构造参数的或者工厂方法\tif (resolved) &#123;\t\t// 构造器有参数\t\tif (autowireNecessary) &#123;\t\t\t// 构造函数自动注入\t\t\treturn autowireConstructor(beanName, mbd, null, null);\t\t&#125;\t\telse &#123;\t\t\t// 使用默认构造函数构造\t\t\treturn instantiateBean(beanName, mbd);\t\t&#125;\t&#125;\t// 从bean后置处理器中为自动装配寻找构造方法\tConstructor&lt;?&gt;[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);\tif (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||\t\t\tmbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) &#123;\t\treturn autowireConstructor(beanName, mbd, ctors, args);\t&#125;\t// 找出最合适的默认构造方法\tctors = mbd.getPreferredConstructors();\tif (ctors != null) &#123;\t\t// 构造函数自动注入\t\treturn autowireConstructor(beanName, mbd, ctors, null);\t&#125;    /**\t * ----------4，使用默认构造函数构造------------\t */\treturn instantiateBean(beanName, mbd);&#125;\n\n\n\n\n\n新增ObjectFactory到第三级缓存protected Object doCreateBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)    \tthrows BeanCreationException &#123;        ...        ...        //允许后置处理器重新定义beanDefinition\t\tsynchronized (mbd.postProcessingLock) &#123;\t\t\tif (!mbd.postProcessed) &#123;\t\t\t\ttry &#123;\t\t\t\t\t//第三次调用后置处理器 MergedBeanDefinitionPostProcessors\t\t\t\t\tapplyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);\t\t\t\t&#125;\t\t\t\tcatch (Throwable ex) &#123;\t\t\t\t\tthrow new BeanCreationException(mbd.getResourceDescription(), beanName,\t\t\t\t\t\t\t&quot;Post-processing of merged bean definition failed&quot;, ex);\t\t\t\t&#125;\t\t\t\tmbd.postProcessed = true;\t\t\t&#125;\t\t&#125;\t\t//判断是否允许循环依赖，默认是允许的，可以通过代码修改的一般只有allowCircularReferences的值\t\tboolean earlySingletonExposure = (mbd.isSingleton() &amp;&amp; this.allowCircularReferences &amp;&amp;\t\t\t\tisSingletonCurrentlyInCreation(beanName));\t\tif (earlySingletonExposure) &#123;\t\t\tif (logger.isTraceEnabled()) &#123;\t\t\t\tlogger.trace(&quot;Eagerly caching bean &#x27;&quot; + beanName +\t\t\t\t\t\t&quot;&#x27; to allow for resolving potential circular references&quot;);\t\t\t&#125;\t\t\t// getEarlyBeanReference里面包含了又一次后置处理器的调用，SmartInstantiationAwareBeanPostProcessor \t\t\taddSingletonFactory(beanName, () -&gt; getEarlyBeanReference(beanName, mbd, bean));\t\t&#125;&#125;\n\n属性填充：populateBean然后做一些处理比如循环依赖等，直到看到populateBean(beanName, mbd, instanceWrapper);这个代码，这一步负责属性装配，很重要，因为前面的实例只是实例化了，并没有设值，这里就是设值\nprotected Object doCreateBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)    throws BeanCreationException &#123;    // Initialize the bean instance.    Object exposedObject = bean;    try &#123;        //填充属性（即自动注入） 完成第五次和第六次后置处理器的调用        // InstantiationAwareBeanPostProcessor.after        // hasInstantiationAwareBeanPostProcessors        populateBean(beanName, mbd, instanceWrapper);        //完成第七次和第八次后置处理器的调用，        //判断当前Bean，是否是BeanNameAware、BeanClassLoaderAware、BeanFactoryAware并分别设置相关内容        //applyBeanPostProcessorsAfterInitialization        //applyBeanPostProcessorsAfterInitialization        exposedObject = initializeBean(beanName, exposedObject, mbd);    &#125;    catch (Throwable ex) &#123;        if (ex instanceof BeanCreationException &amp;&amp; beanName.equals(((BeanCreationException) ex).getBeanName())) &#123;            throw (BeanCreationException) ex;        &#125;        else &#123;            throw new BeanCreationException(                mbd.getResourceDescription(), beanName, &quot;Initialization of bean failed&quot;, ex);        &#125;    &#125;&#125;populateBean方法完成属性填充，跟进    protected void populateBean(String beanName, RootBeanDefinition mbd, @Nullable BeanWrapper bw) &#123;   if (bw == null) &#123;      if (mbd.hasPropertyValues()) &#123;         throw new BeanCreationException(               mbd.getResourceDescription(), beanName, &quot;Cannot apply property values to null instance&quot;);      &#125;      else &#123;         // Skip property population phase for null instance.         return;      &#125;   &#125;  //在设置属性之前，让任何 InstantiationAwareBeanPostProcessors 有机会修改 bean 的状态。例如，这可用于支持字段注入样式。  //扩展点，又一次调用后置处理器，   boolean continueWithPropertyPopulation = true;   if (!mbd.isSynthetic() &amp;&amp; hasInstantiationAwareBeanPostProcessors()) &#123;      for (BeanPostProcessor bp : getBeanPostProcessors()) &#123;         if (bp instanceof InstantiationAwareBeanPostProcessor) &#123;            InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;            if (!ibp.postProcessAfterInstantiation(bw.getWrappedInstance(), beanName)) &#123;               continueWithPropertyPopulation = false;               break;            &#125;         &#125;      &#125;   &#125;   if (!continueWithPropertyPopulation) &#123;      return;   &#125;   //如果后置处理器修改了Beandefinition，则判断是否已经修改过了属性值的相关配置   //如果修改了，则按照器byName或byType的方式直接完成装载   PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);   if (mbd.getResolvedAutowireMode() == AUTOWIRE_BY_NAME || mbd.getResolvedAutowireMode() == AUTOWIRE_BY_TYPE) &#123;      MutablePropertyValues newPvs = new MutablePropertyValues(pvs);      // Add property values based on autowire by name if applicable.      if (mbd.getResolvedAutowireMode() == AUTOWIRE_BY_NAME) &#123;         autowireByName(beanName, mbd, bw, newPvs);      &#125;      // Add property values based on autowire by type if applicable.      if (mbd.getResolvedAutowireMode() == AUTOWIRE_BY_TYPE) &#123;         autowireByType(beanName, mbd, bw, newPvs);      &#125;      pvs = newPvs;   &#125;   boolean hasInstAwareBpps = hasInstantiationAwareBeanPostProcessors();   boolean needsDepCheck = (mbd.getDependencyCheck() != AbstractBeanDefinition.DEPENDENCY_CHECK_NONE);   [] filteredPds = null;   if (hasInstAwareBpps) &#123;      if (pvs == null) &#123;         pvs = mbd.getPropertyValues();      &#125;      for (BeanPostProcessor bp : getBeanPostProcessors()) &#123;         if (bp instanceof InstantiationAwareBeanPostProcessor) &#123;            InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;            //利用后置处理器，处理属性的获取            PropertyValues pvsToUse = ibp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);            if (pvsToUse == null) &#123;               if (filteredPds == null) &#123;                  filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);               &#125;               pvsToUse = ibp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);               if (pvsToUse == null) &#123;                  return;               &#125;            &#125;            pvs = pvsToUse;         &#125;      &#125;   &#125;   if (needsDepCheck) &#123;      if (filteredPds == null) &#123;         filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);      &#125;      checkDependencies(beanName, mbd, filteredPds, pvs);   &#125;   if (pvs != null) &#123;      //根据PropertyValues完成属性填充      applyPropertyValues(beanName, mbd, bw, pvs);   &#125;&#125;\n\npopulateBean里面再次调用后置处理器，spring在这里提供了一个扩展点，允许开发者在属性填充这个阶段修改Bean的状态（使用后置处理器的方式）。并且可能直接依据byName和byType装载属性值。\n我们知道，使用自动装载这一功能时，我们可以使用@Autowired和@Resource。这两个注解的功能也不一样。那么解析的方式也应当不一样。\nfactorybean和beanfactory在我们的开发工作中应该都见过或使用过FactoryBean这个类，也许你会看成了BeanFactory这个类。FactoryBean和BeanFactory虽然长的很像，但是他们的作用确实完全不像。这里你可以想象一下，你会在什么样的场景下使用FactoryBean这个接口？FactoryBean是一个工厂Bean，可以生成某一个类型Bean实例，它最大的一个作用是：可以让我们自定义Bean的创建过程。BeanFactory是Spring容器中的一个基本类也是很重要的一个类，在BeanFactory中可以创建和管理Spring容器中的Bean，它对于Bean的创建有一个统一的流程。下面我们先看一下FactoryBean中有什么东西：\n背景假设我们有这种需求，像Mybaits需要将这些接口注入到Spring容器中\npublic interface OneTestDao &#123;    @Select(&quot;SELECT name FROM user WHERE id = 1&quot;)    String query();&#125;public interface TwoTestDao &#123;    @Select(&quot;SELECT name FROM user WHERE id = 2&quot;)    String query();&#125;\n首先我们想将我们的自己的Bean(比如代理对象)注入到Spring容器中，有什么方式呢？\n一般都是通过Spring扫描Resouce资源然后解析为BeanDefinition，才能从getBean时解析BeanDefinition实例化对象放入此单例缓存中.但是我们这里的是接口，没法直接注入到Spring容器中。\n不过Spring提供了一些扩展接口来供我们在Bean加载、初始化、加载完提供了一些接口，供我们扩展。比如BeanFactoryPostProcessor\n从测试结果中得知，我们虽然配置的是MapperFactoryBean的实列，但是根据id拿到的是getObject方法创建的对象。其实在容器中创建的对象仍然是MapperFactoryBean的实列，只是在获取的时候会判断这个结果对象是不是派生于FactoryBean，如果是的话则返回getObject方法创建的对象，并且这个对象并不是容器初始化时创建的，而是使用context.getBean()方法时才创建。当然了，如果你确实想要获取FactoryBean实例，你需要这样写: MapperFactoryBean mapper = context.getBean(&quot;&amp;mapper&quot;, MapperFactoryBean.class); 只需要在bean的名字ID前加上&amp;符号。\n非常重要：想知道factory流程，请结合\nhttps://blog.csdn.net/weixin_30881367/article/details/98567729?ops_request_misc=&amp;request_id=&amp;biz_id=102&amp;utm_term=mapperfactorybean%E7%9A%84%E4%BD%9C%E7%94%A8&amp;utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-3-98567729.nonecase&amp;spm=1018.2226.3001.4187\nhttps://blog.csdn.net/Roger_CX/article/details/120739214?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522168111515116800192294702%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&amp;request_id=168111515116800192294702&amp;biz_id=0&amp;utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-3-120739214-null-null.142^v82^koosearch_v1,201^v4^add_ask,239^v2^insert_chatgpt&amp;utm_term=FactoryBean%E4%BD%9C%E7%94%A8&amp;spm=1018.2226.3001.4187\nFactoryBean是一个能生产或修饰对象生成的工厂Bean。一个Bean如果实现了FactoryBean接口，那么根据该Bean的名称获取到的实际上是getObject返回的对象，而不是这个Bean自身实例，如果要获取这个Bean自身实例，那么需要在名称前面加上’&amp;’符号。\n创建bean的两种方式：\n第一种，单例在Spring容器初始化之前， 就已经创建了bean，且整个应用只有一个。\n第二种，多例在用到对象的时候，才创建对象，当我们在A类中需要用到B类时，通过@Autowired注解注入用到时。\n","dateCreated":"2023-04-11T00:00:00+08:00","dateModified":"2023-09-25T15:33:48+08:00","datePublished":"2023-04-11T00:00:00+08:00","description":"","headline":"Spring ioc加载流程","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/","keywords":"spring勇攀高峰"}</script>
-    <meta name="description" content="在功能上，SpringBoot的容器启动过程基本遵循了Spring的标准启动过程，但是在具体实现上，SpringBoot提供了一些特殊的机制来简化Spring容器的配置和启动。 首先，SpringBoot自动配置了很多常用的第三方库和框架，使得在大多数情况下，开发者不需要手动配置就能够使用这些库和框架。其次，SpringBoot提供了一些基础设施和约定来简化Spring的配置，例如默认的目录结构、">
-<meta property="og:type" content="blog">
-<meta property="og:title" content="Spring ioc加载流程">
-<meta property="og:url" content="http://example.com/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/index.html">
+  <meta charset="utf-8">
+  <title>Spring ioc加载流程 | 森</title>
+  <meta name="keywords" content=" spring勇攀高峰 ">
+  <meta name="description" content="Spring ioc加载流程 | 森">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="description" content="潮起潮落，云卷云舒">
+<meta property="og:type" content="website">
+<meta property="og:title" content="all-tags">
+<meta property="og:url" content="http://example.com/all-tags/index.html">
 <meta property="og:site_name" content="森">
-<meta property="og:description" content="在功能上，SpringBoot的容器启动过程基本遵循了Spring的标准启动过程，但是在具体实现上，SpringBoot提供了一些特殊的机制来简化Spring容器的配置和启动。 首先，SpringBoot自动配置了很多常用的第三方库和框架，使得在大多数情况下，开发者不需要手动配置就能够使用这些库和框架。其次，SpringBoot提供了一些基础设施和约定来简化Spring的配置，例如默认的目录结构、">
+<meta property="og:description" content="潮起潮落，云卷云舒">
 <meta property="og:locale" content="zh_CH">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/690f5df98811421ab1dc6e1495375d71.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAQ0Nxd2Fz,size_20,color_FFFFFF,t_70,g_se,x_16">
-<meta property="article:published_time" content="2023-04-10T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-09-25T07:33:48.928Z">
+<meta property="article:published_time" content="2023-04-12T03:28:50.336Z">
+<meta property="article:modified_time" content="2023-04-12T03:28:48.541Z">
 <meta property="article:author" content="CSEN">
-<meta property="article:tag" content="spring勇攀高峰">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://img-blog.csdnimg.cn/690f5df98811421ab1dc6e1495375d71.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAQ0Nxd2Fz,size_20,color_FFFFFF,t_70,g_se,x_16">
-    
+
+
+<link rel="icon" href="/img/avatar.jpg">
+
+<link href="/css/style.css?v=1.1.0" rel="stylesheet">
+
+<link href="/css/hl_theme/atom-light.css?v=1.1.0" rel="stylesheet">
+
+<link href="//cdn.jsdelivr.net/npm/animate.css@4.1.0/animate.min.css" rel="stylesheet">
+
+<script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="/js/titleTip.js?v=1.1.0" ></script>
+
+<script src="//cdn.jsdelivr.net/npm/highlightjs@9.16.2/highlight.pack.min.js"></script>
+<script>
+    hljs.initHighlightingOnLoad();
+</script>
+
+<script src="//cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
+
+
+
+<script src="//cdn.jsdelivr.net/npm/jquery.cookie@1.4.1/jquery.cookie.min.js" ></script>
+
+<script src="/js/iconfont.js?v=1.1.0" ></script>
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+<div style="display: none">
+  <input class="theme_disqus_on" value="false">
+  <input class="theme_preload_comment" value="">
+  <input class="theme_blog_path" value="">
+  <input id="theme_shortcut" value="true" />
+  <input id="theme_highlight_on" value="true" />
+  <input id="theme_code_copy" value="true" />
+</div>
+
+
+
+<body>
+<aside class="nav">
+    <div class="nav-left">
+        <a href="/"
+   class="avatar_target">
+    <img class="avatar"
+         src="/img/avatar.jpg"/>
+</a>
+<div class="author">
+    <span>CSEN</span>
+</div>
+
+<div class="icon">
     
         
-    
-    
-        <meta property="og:image" content="http://example.com/assets/images/head.jpg"/>
-    
-    
-    
-    
-    <!--STYLES-->
-    
-<link rel="stylesheet" href="/assets/css/style-w816scvuzwavitjylabixcb3ofuoklqul47j3rgwu1r0mxrxvbdehvp2jk5s.min.css">
-
-    <!--STYLES END-->
-    
-
-    
-
-    
-        
-    
-</head>
-
-    <body>
-        <div id="blog">
-            <!-- Define author's picture -->
-
-
-    
-        
-            
-        
-    
-
-<header id="header" data-behavior="4">
-    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
-    <div class="header-title">
-        <a
-            class="header-title-link"
-            href="/"
-            aria-label=""
-        >
-            森
-        </a>
-    </div>
-    
-        
-            <a
-                class="header-right-picture "
-                href="#about"
-                aria-label="Öffne den Link: /#about"
-            >
-        
-        
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
-        
-        </a>
-    
-</header>
-
-            <!-- Define author's picture -->
-
-
-
-        
-    
-
-<nav id="sidebar" data-behavior="4">
-    <div class="sidebar-container">
-        
-            <div class="sidebar-profile">
-                <a
-                    href="/#about"
-                    aria-label="Lesen Sie mehr über den Autor"
-                >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
-                </a>
-                <h4 class="sidebar-profile-name">CSEN</h4>
+            <a title="rss"
+               href="/atom.xml"
+               target="_blank">
                 
-                    <h5 class="sidebar-profile-bio"><p>author.bio</p>
-</h5>
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-rss"></use>
+                    </svg>
                 
-            </div>
+            </a>
         
+    
         
-            <ul class="sidebar-buttons">
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="/"
-                            
-                            rel="noopener"
-                            title="首页"
-                        >
-                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">首页</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="/all-categories"
-                            
-                            rel="noopener"
-                            title="分类"
-                        >
-                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">分类</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="/all-tags"
-                            
-                            rel="noopener"
-                            title="标签"
-                        >
-                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">标签</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="/all-archives"
-                            
-                            rel="noopener"
-                            title="档案"
-                        >
-                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">档案</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link open-algolia-search"
-                            href="#search"
-                            
-                            rel="noopener"
-                            title="搜索"
-                        >
-                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">搜索</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="#about"
-                            
-                            rel="noopener"
-                            title="关于"
-                        >
-                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">关于</span>
-                    </a>
-            </li>
-            
-        </ul>
-        
-            <ul class="sidebar-buttons">
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="https://github.com/Caosen0819"
-                            
-                                target="_blank"
-                            
-                            rel="noopener"
-                            title=".github"
-                        >
-                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">.github</span>
-                    </a>
-            </li>
-            
-        </ul>
-        
-    </div>
-</nav>
-
-            
-            <div id="main" data-behavior="4"
-                 class="
-                        hasCoverMetaIn
-                        ">
+            <a title="github"
+               href="https://github.com/yelog"
+               target="_blank">
                 
-<article class="post">
-    
-    
-        <div class="post-header main-content-wrap text-left">
-    
-        <h1 class="post-title">
-            Spring ioc加载流程
-        </h1>
-    
-    
-        <div class="post-meta">
-    <time datetime="2023-04-11T00:00:00+08:00">
-	
-		    11 Apr 2023
-    	
-    </time>
-    
-        <span>in </span>
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-github"></use>
+                    </svg>
+                
+            </a>
         
-    <a class="category-link" href="/categories/Java/">Java</a>
-
-
+    
+        
+            <a title="facebook"
+               href="https://www.facebook.com/faker.tops"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-facebook"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+    
+        
+    
+        
+            <a title="instagram"
+               href="https://www.facebook.com/faker.tops"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-instagram"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="reddit"
+               href="https://www.reddit.com/user/yelog/"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-reddit"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="weibo"
+               href="http://weibo.com/u/2307534817"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-weibo"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="jianshu"
+               href="https://www.jianshu.com/u/ff56736de7cf"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-jianshu"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="zhihu"
+               href="https://www.zhihu.com/people/jaytp/activities"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-zhihu"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+    
+        
+            <a title="oschina"
+               href="https://my.oschina.net/yelog"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-oschina"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+    
+        
+            <a title="email"
+               href="mailto:jaytp@qq.com"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-email"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="qq"
+               href="http://wpa.qq.com/msgrd?v=3&uin=872336115&site=qq&menu=yes"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-qq"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="kugou"
+               href="https://www.kugou.com/"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-kugou"></use>
+                    </svg>
+                
+            </a>
+        
+    
+        
+            <a title="neteasemusic"
+               href="https://music.163.com/#/user/home?id=88151013"
+               target="_blank">
+                
+                    <svg class="iconfont-svg" aria-hidden="true">
+                        <use xlink:href="#icon-neteasemusic"></use>
+                    </svg>
+                
+            </a>
+        
     
 </div>
 
+
+
+
+
+<ul>
+    <li>
+        <div class="all active" data-rel="全部文章">全部文章
+            
+                <small>(46)</small>
+            
+        </div>
+    </li>
     
+        
+            
+                
+    <li>
+        <div data-rel="Java">
+            
+            Java
+            <small>(32)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="new">
+            
+            new
+            <small>(1)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="去雾算法">
+            
+            去雾算法
+            <small>(1)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="学习资料">
+            
+            学习资料
+            <small>(1)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="微信小程序">
+            
+            微信小程序
+            <small>(2)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+        
+            
+                
+    <li>
+        <div data-rel="项目实践">
+            
+            项目实践
+            <small>(9)</small>
+        </div>
+        
+    </li>
+
+            
+        
+    
+</ul>
+<div class="left-bottom">
+    <div class="menus">
+        
+            
+            
+            
+    </div>
+    <div>
+        
+            <a class="about  hasFriend  site_url"
+               
+               href="/about">关于</a>
+        
+        <a style="width: 50%"
+                
+                                           class="friends">友链</a>
+        
+    </div>
+</div>
+<input type="hidden" id="yelog_site_posts_number" value="46">
+
+<div style="display: none">
+    <span id="busuanzi_value_site_uv"></span>
+    <span id="busuanzi_value_site_pv"></span>
+</div>
+
+    </div>
+    <div class="nav-right">
+        <div class="friends-area">
+    <div class="friends-title">
+        友情链接
+        <i class="iconfont icon-left"></i>
+    </div>
+    <div class="friends-content">
+        <ul>
+            
+            <li><a target="_blank" href="http://yelog.org/">叶落阁</a></li>
+            
+        </ul>
+    </div>
+</div>
+        <div class="title-list">
+    <div class="right-top">
+        <div id="default-panel">
+            <i class="iconfont icon-search" data-title="搜索 快捷键 i"></i>
+            <div class="right-title">全部文章</div>
+            <i class="iconfont icon-file-tree" data-title="切换到大纲视图 快捷键 w"></i>
+        </div>
+        <div id="search-panel">
+            <i class="iconfont icon-left" data-title="返回"></i>
+            <input id="local-search-input" autocomplete="off"/>
+            <label class="border-line" for="input"></label>
+            <i class="iconfont icon-case-sensitive" data-title="大小写敏感"></i>
+            <i class="iconfont icon-tag" data-title="标签"></i>
+        </div>
+        <div id="outline-panel" style="display: none">
+            <div class="right-title">大纲</div>
+            <i class="iconfont icon-list" data-title="切换到文章列表"></i>
+        </div>
+    </div>
+
+    <div class="tags-list">
+    <input id="tag-search" />
+    <div class="tag-wrapper">
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>BUG</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>DBRouter-starter</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>docker</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Java基础知识</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Java并发</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>JVM</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Kafka</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>lucky项目</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>mybatis-starter</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Mysql</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>new</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Oauth2</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Redis</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>spring勇攀高峰</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>场景题</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>微信小程序</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>整合中间件</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>暗通道</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>测试</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>计算机网络</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>设计模式</a>
+            </li>
+        
+    </div>
+
 </div>
 
     
-    <div class="post-content markdown">
-        <div class="main-content-wrap">
-            <p><strong>在功能上，SpringBoot的容器启动过程基本遵循了Spring的标准启动过程，但是在具体实现上，SpringBoot提供了一些特殊的机制来简化Spring容器的配置和启动。</strong></p>
+    <nav id="title-list-nav">
+        
+        
+        <a  class="全部文章 Java "
+           href="/2024/02/02/CS:MySQL45-1/"
+           data-tag="Mysql"
+           data-author="" >
+            <span class="post-title" title="MySQL45">MySQL45</span>
+            <span class="post-date" title="2024-02-02 21:29:04">2024/02/02</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/11/08/CS:JUC/"
+           data-tag="Java并发"
+           data-author="" >
+            <span class="post-title" title="JUC">JUC</span>
+            <span class="post-date" title="2023-11-08 00:00:00">2023/11/08</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/11/08/CS:mysql%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95/"
+           data-tag="Mysql"
+           data-author="" >
+            <span class="post-title" title="mysql技术内幕">mysql技术内幕</span>
+            <span class="post-date" title="2023-11-08 00:00:00">2023/11/08</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/11/04/CS:JVM/"
+           data-tag="JVM"
+           data-author="" >
+            <span class="post-title" title="JVM">JVM</span>
+            <span class="post-date" title="2023-11-04 00:00:00">2023/11/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/10/10/CS:%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
+           data-tag="设计模式"
+           data-author="" >
+            <span class="post-title" title="设计模式">设计模式</span>
+            <span class="post-date" title="2023-10-10 00:00:00">2023/10/10</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/10/09/CS:Redis/"
+           data-tag="Redis"
+           data-author="" >
+            <span class="post-title" title="Redis">Redis</span>
+            <span class="post-date" title="2023-10-09 00:00:00">2023/10/09</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
+           data-tag="Java基础知识"
+           data-author="" >
+            <span class="post-title" title="Java基础知识">Java基础知识</span>
+            <span class="post-date" title="2023-08-07 00:00:00">2023/08/07</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C3/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="计算机网络3">计算机网络3</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="计算机网络2">计算机网络2</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/07/08/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C1/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="计算机网络1">计算机网络1</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/07/08/CS:%E8%BE%93%E5%85%A5%E7%BD%91%E7%BB%9C%EF%BC%8C%E6%9C%9F%E9%97%B4%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/"
+           data-tag="计算机网络"
+           data-author="" >
+            <span class="post-title" title="输入网络，期间发生了什么？">输入网络，期间发生了什么？</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/07/08/CS:Kafka/"
+           data-tag="Kafka"
+           data-author="" >
+            <span class="post-title" title="Kafka知识">Kafka知识</span>
+            <span class="post-date" title="2023-07-08 00:00:00">2023/07/08</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A32/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="mybatis组件的整合理解2">mybatis组件的整合理解2</span>
+            <span class="post-date" title="2023-04-27 00:00:00">2023/04/27</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/27/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A33/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="mybatis组件的整合理解3">mybatis组件的整合理解3</span>
+            <span class="post-date" title="2023-04-27 00:00:00">2023/04/27</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/26/mybatis%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="mybatis组件的整合理解1">mybatis组件的整合理解1</span>
+            <span class="post-date" title="2023-04-26 00:00:00">2023/04/26</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/22/CS:DBRouter%E7%BB%84%E4%BB%B6%E7%9A%84%E6%95%B4%E5%90%88%E7%90%86%E8%A7%A31/"
+           data-tag="DBRouter-starter"
+           data-author="" >
+            <span class="post-title" title="DBRouter组件的整合理解">DBRouter组件的整合理解</span>
+            <span class="post-date" title="2023-04-22 00:00:00">2023/04/22</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/11/spring%E6%95%B4%E5%90%88mybatis/"
+           data-tag="mybatis-starter"
+           data-author="" >
+            <span class="post-title" title="Spring整合mybatis">Spring整合mybatis</span>
+            <span class="post-date" title="2023-04-11 00:00:00">2023/04/11</span>
+        </a>
+        
+        
+        <a  class="全部文章 学习资料 "
+           href="/2023/04/11/%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99/"
+           data-tag="测试"
+           data-author="" >
+            <span class="post-title" title="参考资料">参考资料</span>
+            <span class="post-date" title="2023-04-11 00:00:00">2023/04/11</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
+           data-tag="spring勇攀高峰"
+           data-author="" >
+            <span class="post-title" title="Spring ioc加载流程">Spring ioc加载流程</span>
+            <span class="post-date" title="2023-04-11 00:00:00">2023/04/11</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：10">章节：10</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A7-10%EF%BC%8C%E5%90%8C%E6%97%B6%E5%9B%9E%E9%A1%BE%E4%B8%80%E4%B8%8B4-6%E7%9A%84%E5%86%85%E5%AE%B9/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：7-10，同时回顾一下4-6的内容">章节：7-10，同时回顾一下4-6的内容</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 new "
+           href="/2023/04/04/New%20page/"
+           data-tag="new"
+           data-author="" >
+            <span class="post-title" title="待定">待定</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"
+           data-tag="场景题"
+           data-author="" >
+            <span class="post-title" title="待定">待定</span>
+            <span class="post-date" title="2023-04-04 00:00:00">2023/04/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A11-13/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：11-13">章节：11-13</span>
+            <span class="post-date" title="2023-04-03 00:00:00">2023/04/03</span>
+        </a>
+        
+        
+        <a  class="全部文章 项目实践 "
+           href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A%E5%B0%8F%E7%9F%A5%E8%AF%86/"
+           data-tag="lucky项目"
+           data-author="" >
+            <span class="post-title" title="章节：小知识">章节：小知识</span>
+            <span class="post-date" title="2023-04-03 00:00:00">2023/04/03</span>
+        </a>
+        
+        
+        <a  class="全部文章 去雾算法 "
+           href="/2022/10/23/%E6%9A%97%E9%80%9A%E9%81%93%E5%8E%BB%E9%9B%BE%E7%AE%97%E6%B3%95%E6%80%BB%E7%BB%93/"
+           data-tag="暗通道"
+           data-author="" >
+            <span class="post-title" title="暗通道去雾算法总结">暗通道去雾算法总结</span>
+            <span class="post-date" title="2022-10-23 13:03:43">2022/10/23</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/20/%E5%AF%B9%E6%9D%83%E9%99%90%E6%A0%A1%E9%AA%8C%E7%9A%84%E6%96%B0%E7%90%86%E8%A7%A3/"
+           data-tag="Oauth2"
+           data-author="" >
+            <span class="post-title" title="对权限校验和token的新理解">对权限校验和token的新理解</span>
+            <span class="post-date" title="2022-10-20 14:43:00">2022/10/20</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/spring%E6%95%B4%E5%90%88docker-compose/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot/cloud整合docker-compose">springboot/cloud整合docker-compose</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94%E2%80%94nacos2.1.0/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="docker整合springboot/cloud——nacos2.1.0">docker整合springboot/cloud——nacos2.1.0</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94%E2%80%94kibana8.2.0/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="docker整合springboot/cloud——kibana8.2.0">docker整合springboot/cloud——kibana8.2.0</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springboot%E6%95%B4%E5%90%88kafka3.1%EF%BC%8C%E5%AE%9E%E7%8E%B0%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
+           data-tag="docker,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合kafka3.1，实现基本配置和操作">springboot整合kafka3.1，实现基本配置和操作</span>
+            <span class="post-date" title="2022-10-04 21:25:08">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88docker%E5%92%8C%E4%B8%AD%E9%97%B4%E4%BB%B6%E8%AE%B0%E5%BD%95/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="整合docker和中间件记录">整合docker和中间件记录</span>
+            <span class="post-date" title="2022-10-04 21:23:41">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88elasticsearch8-2-0/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合elasticsearch8.2.0">springboot整合elasticsearch8.2.0</span>
+            <span class="post-date" title="2022-10-04 13:40:04">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88kafka3-1-%E5%9F%BA%E6%9C%AC%E9%85%8D%E7%BD%AE%E5%92%8C%E6%93%8D%E4%BD%9C/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合kafka3.1-基本配置和操作">springboot整合kafka3.1-基本配置和操作</span>
+            <span class="post-date" title="2022-10-04 13:38:01">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合OAuth2认证服务">springboot整合OAuth2认证服务</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springboot%E6%95%B4%E5%90%88elasticsearch8.2%E6%8A%A5%E9%94%99unable%20to%20parse%20response%20body%20for%20Response%7BrequestLine/"
+           data-tag="整合中间件,BUG"
+           data-author="" >
+            <span class="post-title" title="springboot整合elasticsearch8.2报错unable to parse response body for Response{requestLine">springboot整合elasticsearch8.2报错unable to parse response body for Response{requestLine</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E4%BB%A4%E7%89%8C%E9%85%8D%E7%BD%AE/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----令牌配置">springcloud整合oauth2-----令牌配置</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E9%89%B4%E6%9D%83%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----鉴权服务篇">springcloud整合oauth2-----鉴权服务篇</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86springsecurity/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----前置知识springsecurity">springcloud整合oauth2-----前置知识springsecurity</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2-----%E5%BC%82%E5%B8%B8%E9%85%8D%E7%BD%AE%E6%80%BB%E7%BB%93/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2-----异常配置总结">springcloud整合oauth2-----异常配置总结</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 微信小程序 "
+           href="/2022/10/04/%E5%85%BB%E7%94%9F%E6%89%93%E5%8D%A1%E5%81%A5%E5%BA%B7%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+           data-tag="微信小程序"
+           data-author="" >
+            <span class="post-title" title="养生打卡健康小程序（云开发）">养生打卡健康小程序（云开发）</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 微信小程序 "
+           href="/2022/10/04/%E6%97%A5%E5%B8%B8%E6%89%93%E5%8D%A1%E7%A7%AF%E5%88%86%E5%88%B6%E8%87%AA%E5%BE%8B%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%88%E4%BA%91%E5%BC%80%E5%8F%91%EF%BC%89/"
+           data-tag="微信小程序"
+           data-author="" >
+            <span class="post-title" title="日常打卡积分制自律小程序（云开发）">日常打卡积分制自律小程序（云开发）</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/%E6%95%B4%E5%90%88OAuth2%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1_%E5%89%AF%E6%9C%AC/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springboot整合OAuth2认证服务">springboot整合OAuth2认证服务</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2------认证服务篇">springcloud整合oauth2------认证服务篇</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/springcloud%E6%95%B4%E5%90%88oauth2------%E8%AE%A4%E8%AF%81%E6%9C%8D%E5%8A%A1%E7%AF%87_%E5%89%AF%E6%9C%AC/"
+           data-tag="Oauth2,整合中间件"
+           data-author="" >
+            <span class="post-title" title="springcloud整合oauth2------认证服务篇">springcloud整合oauth2------认证服务篇</span>
+            <span class="post-date" title="2022-10-04 13:35:52">2022/10/04</span>
+        </a>
+        
+        
+        <a  class="全部文章 Java "
+           href="/2022/10/04/docker%E6%95%B4%E5%90%88springboot:cloud%E2%80%94mysql8.0.26/"
+           data-tag="整合中间件"
+           data-author="" >
+            <span class="post-title" title="docker整合springboot/cloud—mysql8.0.26">docker整合springboot/cloud—mysql8.0.26</span>
+            <span class="post-date" title="2022-10-04 00:00:00">2022/10/04</span>
+        </a>
+        
+        <div id="no-item-tips">
+
+        </div>
+    </nav>
+    <div id="outline-list">
+    </div>
+</div>
+
+    </div>
+    <div class="hide-list">
+        <div class="semicircle" data-title="切换全屏 快捷键 s">
+            <div class="brackets first"><</div>
+            <div class="brackets">&gt;</div>
+        </div>
+    </div>
+</aside>
+<div id="post">
+    <div class="pjax">
+        <article id="post-spring ioc的加载过程" class="article article-type-post" itemscope itemprop="blogPost">
+    
+        <h1 class="article-title">Spring ioc加载流程</h1>
+    
+    <div class="article-meta">
+        
+        
+        
+        <span class="book">
+            <i class="iconfont icon-category"></i>
+            
+            
+            <a  data-rel="Java">Java</a>
+            
+        </span>
+        
+        
+        <span class="tag">
+            <i class="iconfont icon-tag"></i>
+            
+            <a class="color1">spring勇攀高峰</a>
+            
+        </span>
+        
+    </div>
+    <div class="article-meta">
+        
+            发布时间 : <time class="date" title='最后更新: 2023-09-25 15:33:48'>2023-04-11 00:00</time>
+        
+    </div>
+    <div class="article-meta">
+        
+        
+        <span id="busuanzi_container_page_pv">
+            阅读 :<span id="busuanzi_value_page_pv">
+                <span class="count-comment">
+                    <span class="spinner">
+                      <div class="cube1"></div>
+                      <div class="cube2"></div>
+                    </span>
+                </span>
+            </span>
+        </span>
+        
+        
+    </div>
+    
+    <div class="toc-ref">
+    
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%88%9D%E5%A7%8B%E5%8C%96%E6%B5%81%E7%A8%8B"><span class="toc-text">一、初始化流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81refresh-%E5%AE%B9%E5%99%A8%E5%88%B7%E6%96%B0%E6%B5%81%E7%A8%8B-%E6%9C%80%E9%87%8D%E8%A6%81"><span class="toc-text">三、refresh()容器刷新流程(最重要)</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%87%8D%E7%82%B9%E5%88%B0%E4%BA%86%EF%BC%9AfinishBeanFactoryInitialization-beanFactory-%E5%88%9D%E5%A7%8B%E5%8C%96%E6%89%80%E6%9C%89%E7%9A%84-singleton-beans%EF%BC%88%E5%8D%95%E4%BE%8Bbean%EF%BC%89%EF%BC%8C%E6%87%92%E5%8A%A0%E8%BD%BD%EF%BC%88non-lazy-init%EF%BC%89%E7%9A%84%E9%99%A4%E5%A4%96%EF%BC%8C%E8%BF%99%E4%B8%AA%E6%96%B9%E6%B3%95%E4%B9%9F%E6%98%AF%E7%AD%89%E4%BC%9A%E7%BB%86%E8%AF%B4"><span class="toc-text">重点到了：finishBeanFactoryInitialization(beanFactory);初始化所有的 singleton beans（单例bean），懒加载（non-lazy-init）的除外，这个方法也是等会细说</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%88%91%E4%BB%AC%E9%87%8D%E7%82%B9%E6%9D%A5%E7%9C%8BConfigurableListableBeanFactory-beanFactory-obtainFreshBeanFactory-%E5%92%8CfinishBeanFactoryInitialization-beanFactory-%E8%BF%99%E4%B8%A4%E4%B8%AA%E6%96%B9%E6%B3%95"><span class="toc-text">我们重点来看ConfigurableListableBeanFactory beanFactory &#x3D; obtainFreshBeanFactory();和finishBeanFactoryInitialization(beanFactory);这两个方法</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%86%8D%E7%9C%8BpreProcessXml-root-%EF%BC%8C%E7%82%B9%E8%BF%9B%E5%8E%BB%E4%B8%80%E7%9C%8B%E6%98%AF%E7%A9%BA%E5%AE%9E%E7%8E%B0%EF%BC%8C%E5%B9%B6%E4%B8%94%E6%98%AFprotected%E7%9A%84%EF%BC%8C%E9%82%A3%E4%B9%88%E5%BE%88%E6%98%8E%E6%98%BE%E8%BF%99%E5%B0%B1%E6%98%AF%E4%B8%80%E4%B8%AA%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F-%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F%E4%B8%8D%E4%BA%86%E8%A7%A3%E7%9A%84%E5%8F%AF%E4%BB%A5%E7%9C%8B%E6%88%91%E7%9A%84%E8%BF%99%E7%AF%87%E6%96%87%E7%AB%A0-%EF%BC%8C%E5%90%8C%E7%90%86postProcessXml-root-%E4%B9%9F%E4%B8%80%E6%A0%B7%EF%BC%8C%E5%B0%B1%E6%98%AF%E5%9C%A8Bean%E5%AE%9A%E4%B9%89%E5%88%9B%E5%BB%BA%E5%89%8D%E5%90%8E%E6%8F%90%E4%BE%9B%E6%89%A9%E5%B1%95%E7%82%B9%E3%80%82"><span class="toc-text">再看preProcessXml(root)，点进去一看是空实现，并且是protected的，那么很明显这就是一个模板方法模式(模板方法模式不了解的可以看我的这篇文章)，同理postProcessXml(root)也一样，就是在Bean定义创建前后提供扩展点。</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%B0%E6%AD%A4%E4%B8%BA%E6%AD%A2%EF%BC%8CConfigurableListableBeanFactory-beanFactory-x3D-obtainFreshBeanFactory-%E7%BB%93%E6%9D%9F"><span class="toc-text">到此为止，ConfigurableListableBeanFactory beanFactory &#x3D; obtainFreshBeanFactory();结束</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8B%E9%9D%A2%E6%88%91%E4%BB%AC%E6%9D%A5%E7%9C%8BfinishBeanFactoryInitialization-beanFactory"><span class="toc-text">下面我们来看finishBeanFactoryInitialization(beanFactory)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%A8%E4%B8%8A%E9%9D%A2%E7%9A%84%E6%96%B9%E6%B3%95%E4%B8%AD%E6%9C%89%E4%B8%AAbean%E7%9A%84%E5%AE%9E%E4%BE%8B%E5%8C%96%E8%BF%87%E7%A8%8B%E6%88%91%E4%BB%AC%E5%BF%85%E9%A1%BB%E7%9F%A5%E9%81%93"><span class="toc-text">在上面的方法中有个bean的实例化过程我们必须知道</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E5%A2%9EObjectFactory%E5%88%B0%E7%AC%AC%E4%B8%89%E7%BA%A7%E7%BC%93%E5%AD%98"><span class="toc-text">新增ObjectFactory到第三级缓存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B1%9E%E6%80%A7%E5%A1%AB%E5%85%85%EF%BC%9ApopulateBean"><span class="toc-text">属性填充：populateBean</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#factorybean%E5%92%8Cbeanfactory"><span class="toc-text">factorybean和beanfactory</span></a></li></ol></li></ol>
+    
+<style>
+    .left-col .switch-btn,
+    .left-col .switch-area {
+        display: none;
+    }
+    .toc-level-3 i,
+    .toc-level-3 ol {
+        display: none !important;
+    }
+</style>
+</div>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>在功能上，SpringBoot的容器启动过程基本遵循了Spring的标准启动过程，但是在具体实现上，SpringBoot提供了一些特殊的机制来简化Spring容器的配置和启动。</strong></p>
 <p><strong>首先，SpringBoot自动配置了很多常用的第三方库和框架，使得在大多数情况下，开发者不需要手动配置就能够使用这些库和框架。其次，SpringBoot提供了一些基础设施和约定来简化Spring的配置，例如默认的目录结构、默认的配置文件名、默认的属性配置等，这些都能够减少开发者的配置工作。最后，SpringBoot提供了一些自定义扩展机制，例如通过@ConfigurationProperties注解来绑定配置文件属性到Java对象，通过SpringApplication类的addListeners()方法来添加自定义的启动监听器等等，这些扩展机制能够让开发者更加方便地自定义和扩展SpringBoot的功能。</strong></p>
 <p><strong>总的来说，SpringBoot并没有改变Spring的核心机制和启动过程，但是它在具体实现上提供了很多便利和简化，让开发者能够更加快速地开发和部署应用程序</strong></p>
 <p>总体分成两个阶段；</p>
@@ -482,336 +1214,194 @@ protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throw
 <p>第一种，单例在Spring容器初始化之前， 就已经创建了bean，且整个应用只有一个。</p>
 <p>第二种，多例在用到对象的时候，才创建对象，当我们在A类中需要用到B类时，通过@Autowired注解注入用到时。</p>
 
-            
-
-
-        </div>
-    </div>
-    <div id="post-footer" class="post-footer main-content-wrap">
-        
-            <div class="post-footer-tags">
-                <span class="text-color-light text-small">GETAGGT IN</span><br/>
-                
-    <a class="tag tag--primary tag--small t-none-link" href="/tags/spring%E5%8B%87%E6%94%80%E9%AB%98%E5%B3%B0/" rel="tag">spring勇攀高峰</a>
-
-            </div>
-        
-        
-            <div class="post-actions-wrap">
-    <nav>
-        <ul class="post-actions post-action-nav">
-            <li class="post-action">
-                
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/04/11/%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99/"
-                    data-tooltip="参考资料"
-                    aria-label="FRÜHER: 参考资料"
-                >
-                    
-                        <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
-                    </a>
-            </li>
-            <li class="post-action">
-                
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                    data-tooltip="章节：10"
-                    aria-label="NÄCHSTER: 章节：10"
-                >
-                    
-                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
-                        <i class="fa fa-angle-right" aria-hidden="true"></i>
-                    </a>
-            </li>
-        </ul>
-    </nav>
-    <ul class="post-actions post-action-share">
-        <li class="post-action hide-lg hide-md hide-sm">
-            <a
-                class="post-action-btn btn btn--default btn-open-shareoptions"
-                href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
-            >
-                <i class="fa fa-share-alt" aria-hidden="true"></i>
-            </a>
-        </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
-                    title="Teilen auf Facebook"
-                    aria-label="Teilen auf Facebook"
-                >
-                    <i class="fab fa-facebook" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
-                    title="Teilen auf Twitter"
-                    aria-label="Teilen auf Twitter"
-                >
-                    <i class="fab fa-twitter" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
-                    title="Teilen auf Google Plus"
-                    aria-label="Teilen auf Google Plus"
-                >
-                    <i class="fab fa-google-plus" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-        
-            
-        
-        <li class="post-action">
-            
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
-            
-                <i class="fa fa-list" aria-hidden="true"></i>
-            </a>
-        </li>
-    </ul>
-</div>
-
-
-        
-        
-            
-        
+      
+       <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 jaytp@qq.com </span>
     </div>
 </article>
 
 
-
-                <footer id="footer" class="main-content-wrap">
-    <span class="copyrights">
-        Copyrights &copy; 2024 CSEN. All Rights Reserved.
-    </span>
-</footer>
-
-            </div>
-            
-                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
-                    <div class="post-actions-wrap">
-    <nav>
-        <ul class="post-actions post-action-nav">
-            <li class="post-action">
-                
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/04/11/%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99/"
-                    data-tooltip="参考资料"
-                    aria-label="FRÜHER: 参考资料"
-                >
-                    
-                        <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
-                    </a>
-            </li>
-            <li class="post-action">
-                
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2023/04/04/%E7%AB%A0%E8%8A%82%EF%BC%9A10/"
-                    data-tooltip="章节：10"
-                    aria-label="NÄCHSTER: 章节：10"
-                >
-                    
-                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
-                        <i class="fa fa-angle-right" aria-hidden="true"></i>
-                    </a>
-            </li>
-        </ul>
-    </nav>
-    <ul class="post-actions post-action-share">
-        <li class="post-action hide-lg hide-md hide-sm">
-            <a
-                class="post-action-btn btn btn--default btn-open-shareoptions"
-                href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
-            >
-                <i class="fa fa-share-alt" aria-hidden="true"></i>
-            </a>
-        </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
-                    title="Teilen auf Facebook"
-                    aria-label="Teilen auf Facebook"
-                >
-                    <i class="fab fa-facebook" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
-                    title="Teilen auf Twitter"
-                    aria-label="Teilen auf Twitter"
-                >
-                    <i class="fab fa-twitter" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
-                    title="Teilen auf Google Plus"
-                    aria-label="Teilen auf Google Plus"
-                >
-                    <i class="fab fa-google-plus" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-        
-            
-        
-        <li class="post-action">
-            
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
-            
-                <i class="fa fa-list" aria-hidden="true"></i>
-            </a>
-        </li>
-    </ul>
-</div>
+<p>
+    <a  class="dashang" onclick="dashangToggle()">赏</a>
+</p>
 
 
-                </div>
-                
-    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
-        <i id="btn-close-shareoptions" class="fa fa-times"></i>
-        <ul class="share-options">
-            
-                
-                
-                <li class="share-option">
-                    <a
-                        class="share-option-btn"
-                        target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
-                        aria-label="Teilen auf Facebook"
-                    >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
-                    </a>
-                </li>
-            
-                
-                
-                <li class="share-option">
-                    <a
-                        class="share-option-btn"
-                        target="new"
-                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
-                        aria-label="Teilen auf Twitter"
-                    >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
-                    </a>
-                </li>
-            
-                
-                
-                <li class="share-option">
-                    <a
-                        class="share-option-btn"
-                        target="new"
-                        href="https://plus.google.com/share?url=http://example.com/2023/04/11/spring%20ioc%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"
-                        aria-label="Teilen auf Google Plus"
-                    >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
-                    </a>
-                </li>
-            
-        </ul>
+
+
+
+
+    
+
+
+
+
     </div>
+    <div class="copyright">
+        <p class="footer-entry">
+    ©2016-2020 Yelog
+</p>
+<p class="footer-entry">Built with <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/yelog/hexo-theme-3-hexo" target="_blank">3-hexo</a> theme</p>
 
+    </div>
+    <div class="full-toc">
+        <button class="full" data-title="切换全屏 快捷键 s"><span class="min "></span></button>
+<a class="" id="rocket" ></a>
 
-            
-        </div>
-        
-
-
-    
-        
-    
-
-<div id="about">
-    <div id="about-card">
-        <div id="about-btn-close">
-            <i class="fa fa-times"></i>
-        </div>
-        
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
-        
-            <h4 id="about-card-name">CSEN</h4>
-        
-            <div id="about-card-bio"><p>author.bio</p>
-</div>
-        
-        
-            <div id="about-card-job">
-                <i class="fa fa-briefcase"></i>
-                <br/>
-                <p>author.job</p>
-
-            </div>
-        
-        
-            <div id="about-card-location">
-                <i class="fa fa-map-marker-alt"></i>
-                <br/>
-                浙江温州
-            </div>
-        
     </div>
 </div>
 
+<div class="hide_box" onclick="dashangToggle()"></div>
+<div class="shang_box">
+    <a class="shang_close"  onclick="dashangToggle()">×</a>
+    <div class="shang_tit">
+        <p>喜欢就点赞,疼爱就打赏</p>
+    </div>
+    <div class="shang_payimg">
+        <div class="pay_img">
+            <img src="/img/alipay.jpg" class="alipay" title="扫码支持">
+            <img src="/img/weixin.jpg" class="weixin" title="扫码支持">
+        </div>
+    </div>
+    <div class="shang_payselect">
+        <span><label><input type="radio" name="pay" checked value="alipay">支付宝</label></span><span><label><input type="radio" name="pay" value="weixin">微信</label></span>
+    </div>
+</div>
+
+
+</body>
+<script src="/js/jquery.pjax.js?v=1.1.0" ></script>
+
+<script src="/js/script.js?v=1.1.0" ></script>
+<script>
+    var img_resize = 'default';
+    function initArticle() {
+        /*渲染对应的表格样式*/
+        
+            $("#post .pjax table").addClass("green_title");
+        
+
+        /*渲染打赏样式*/
+        
+        $("input[name=pay]").on("click", function () {
+            if($("input[name=pay]:checked").val()=="weixin"){
+                $(".shang_box .shang_payimg .pay_img").addClass("weixin_img");
+            } else {
+                $(".shang_box .shang_payimg .pay_img").removeClass("weixin_img");
+            }
+        })
+        
+
+        /*高亮代码块行号*/
+        
+
+        /*访问数量*/
+        
+        $.getScript("//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js");
+        
+
+        /*代码高亮，行号对齐*/
+        $('.pre-numbering').css('line-height',$('.has-numbering').css('line-height'));
+
         
         
-<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
-        <!--SCRIPTS-->
+    }
 
-<script src="/assets/js/script-39paoi2hupf5wmw7ojejrxpco6edftjriz5ezbtp4grymrdceksftgan2adp.min.js"></script>
+    /*打赏页面隐藏与展示*/
+    
+    function dashangToggle() {
+        $(".shang_box").fadeToggle();
+        $(".hide_box").fadeToggle();
+    }
+    
 
-<!--SCRIPTS END-->
+</script>
 
+<!--加入行号的高亮代码块样式-->
 
+<!--自定义样式设置-->
+<style>
+    
+    
+    .nav {
+        width: 542px;
+    }
+    .nav.fullscreen {
+        margin-left: -542px;
+    }
+    .nav-left {
+        width: 120px;
+    }
+    
+    
+    @media screen and (max-width: 1468px) {
+        .nav {
+            width: 492px;
+        }
+        .nav.fullscreen {
+            margin-left: -492px;
+        }
+        .nav-left {
+            width: 100px;
+        }
+    }
+    
+    
+    @media screen and (max-width: 1024px) {
+        .nav {
+            width: 492px;
+            margin-left: -492px
+        }
+        .nav.fullscreen {
+            margin-left: 0;
+        }
+    }
+    
+    @media screen and (max-width: 426px) {
+        .nav {
+            width: 100%;
+        }
+        .nav-left {
+            width: 100%;
+        }
+    }
+    
+    
+    .nav-right .title-list nav a .post-title, .nav-right .title-list #local-search-result a .post-title {
+        color: #383636;
+    }
+    
+    
+    .nav-right .title-list nav a .post-date, .nav-right .title-list #local-search-result a .post-date {
+        color: #5e5e5f;
+    }
+    
+    
+    .nav-right nav a.hover, #local-search-result a.hover{
+        background-color: #e2e0e0;
+    }
+    
+    
+
+    /*列表样式*/
+    
+
+    /* 背景图样式 */
+    
     
 
 
+    /*引用块样式*/
+    
+
+    /*文章列表背景图*/
+    
+
+    
+</style>
 
 
-    </body>
+
+
+
+
+
 </html>
