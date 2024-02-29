@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -233,7 +233,7 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
+                            href="/2023/10/10/CS:%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"
                             aria-label=": 设计模式"
                         >
                             设计模式
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-10-10T00:00:00+08:00">
 	
-		    Oct 10, 2023
+		    10 Oct 2023
     	
     </time>
     
@@ -258,7 +258,19 @@
             </div>
             
                 <div class="postShorten-content">
-                    <h1 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h1><h2 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h2><p><strong>是一种 if else 的优化方法</strong>，一个策略接口有不同的实现策略，传进来不同的参数返回不同的策略。</p>
+                    <h1 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h1><p><strong>类和类之间的关系？</strong></p>
+<blockquote>
+<p>组合、聚合、泛化</p>
+</blockquote>
+<p><strong>设计模式原则</strong></p>
+<blockquote>
+<p><font color='green'><strong>①单⼀职责原则：它规定⼀个类只有⼀个职责。</strong></font></p>
+<p><font color='green'><strong>⑤接⼝隔离原则：不同的功能定义在不同的接⼝中来实现接⼝的隔离</strong></font></p>
+<p><font color='green'><strong>②开闭原则： 对象（类、模块、函数等）对扩展开放，对修改封闭</strong></font></p>
+<p><font color='green'><strong>③⾥⽒代换原则：规定了在任意⽗类可以出现的地⽅，⼦类都⼀定可以出现</strong></font></p>
+<p><font color='green'><strong>⑥依赖倒置原则：面向接口编程</strong></font></p>
+</blockquote>
+<h2 id="策略模式"><a href="#策略模式" class="headerlink" title="策略模式"></a>策略模式</h2><p><strong>是一种 if else 的优化方法</strong>，一个策略接口有不同的实现策略，传进来不同的参数返回不同的策略。</p>
 <p>但是原始的策略模式，他如果遇到参数是可变的，那他依旧会尽力if else的阶段，那就意义不大。所以我们的</p>
 <p>优化方法就是+map（原先的环境类变成map），然后通过这个参数，去map里面找就可以了，在我的项目里面也是这样的，</p>
 <p>抽奖的时候根据抽奖算法的id是1还是2，直接去map里面get就可以；生成订单id的时候用雪花还是美团哪一种方法，直接去map里面找</p>
@@ -298,9 +310,10 @@
 <p>该类负责创建自己的对象，保证只有单个对象被创建。</p>
 <p>单例模式分两类，<font color='blue'><u><em><strong>饿汉式和懒汉式。饿汉式就是类加载的时候就会创建，其实类加载有个准备和初始化过程，静态变量和静态代码块，里就可以创建，懒汉式是用到了才创建</strong></em></u></font>。<font color='red'><u><em><strong>Bean是饿汉式</strong></em></u></font>。</p>
 <p><strong>volatile懒汉式单例使用的场景？</strong></p>
-<p>线程安全的单例场景，<font color='blue'><u><em><strong>线程池，数据库连接池</strong></em></u></font></p>
+<p>线程安全的单例场景，<font color='blue'><u><em><strong>数据库连接池</strong></em></u></font></p>
 <p><strong>Bean默认是单例还是多例，怎么设置多例？</strong>（单例，scope设置成prototype）</p>
-<p>懒汉式里面的<font color='red'><u><em><strong>双重检查锁</strong></em></u></font>JVM在实例化对象的时候会进行优化和指令重排序操作。<strong>指令重排序导致空指针问题</strong></p>
+<p><font color='red'><u><em><strong>为什么要用双重检查锁？</strong></em></u></font></p>
+<p><font color='green'><strong>懒汉式里面的双重检查锁JVM在实例化对象的时候会进行优化和指令重排序操作。指令重排序导致空指针问题</strong></font></p>
 </blockquote>
 <h2 id="装饰器模式"><a href="#装饰器模式" class="headerlink" title="装饰器模式"></a>装饰器模式</h2><blockquote>
 <p><font color='red'><u><em><strong>装饰器模式其实就是在原本类的基础上包装一个装饰器类，这个类在执行源类的行为的前后再加入一些新的逻辑。</strong></em></u></font></p>
@@ -334,11 +347,11 @@
                     
                         <p>
                             <a
-                                href="/2023/10/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/#post-footer"
+                                href="/2023/10/10/CS:%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -352,7 +365,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -381,7 +394,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -233,7 +233,7 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/11/08/JUC/"
+                            href="/2023/11/08/CS:JUC/"
                             aria-label=": JUC"
                         >
                             JUC
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-11-08T00:00:00+08:00">
 	
-		    Nov 08, 2023
+		    08 Nov 2023
     	
     </time>
     
@@ -267,7 +267,7 @@
 <p><strong>乐观锁：</strong></p>
 <blockquote>
 <p><font color='red'><u><em><strong>认为共享资源每次被访问的时候不会被修改</strong></em></u></font>，只是在修改的时候去验证数据有没有被其它线程修改了。</p>
-<p>比如<font color='blue'><u><em><strong>CAS</strong></em></u></font>算法</p>
+<p><font color='green'><strong>悲观锁的实现有Synchronized、Reentrantlock 数据库的锁。悲观锁常见的就是CAS算法</strong></font></p>
 <p>是将指定内存地址A的内容与所给的旧值B相比，如果相等，则将其内容替换为指令中提供的新值C；如果不相等，循环执行（称为自旋锁），直到当前值与更新前的值一致为止，才执行更新。</p>
 <p>jdk提供的CAS方案是unsafe类的cas的本地方法，这个本地方法会调cmpxchg方法，<strong>它是在汇编层级，会禁止变量两侧的指令优化，然后使用cmpxchg指令比较并更新变量值(原子性)，如果是多核则加一个lock锁定(缓存锁、MESI)</strong></p>
 <p>硬件层间不能保证有序和内存可见，只能保证原子，但是加了LOCK就可以保证有序可见了</p>
@@ -276,6 +276,9 @@
 <p><font color='red'><u><em><strong>如果一直循环会浪费cpu资源</strong></em></u></font></p>
 <p><font color='red'><u>ABA<strong>的解决方法就是在变量前面加上版本号</strong></u></font></p>
 </blockquote>
+<p><font color='blue'><u><strong><em>内存可见性：</em>一个线程修改了共享变量的值,其他线程能够立即得知这个修改</strong>**</u></font></p>
+<p><font color='blue'><u><em><strong>有序性指的是：程序执行的顺序按照代码的先后顺序执行。</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>原子性是指：在一次或者多次操作时，要么所有操作都被执行，要么所有操作都不执行。</strong></em></u></font></p>
 <h3 id="1、volatile"><a href="#1、volatile" class="headerlink" title="1、volatile"></a>1、volatile</h3><blockquote>
 <p><font color='blue'><u><em><strong>volatile具备可见性、有序性但是不具备原子性。他的内存语义是，当写一个volatile变量，jmm会把该线程对应的本地内存中共享变量刷新到主内存,读一个volatile变量，jmm会把该线程对应的本地内存置为无效，然后从主内存里面读，他的实现依赖于一个lock指令，然后我们讲一下怎么用到这个lock。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>我们知道单线程下，由于asifserial的存在，指令执行结果是具备顺序一致性。但是在多线程环境下，重排序会导致各个线程看到的全局执行顺序不一致。</strong></em></u></font></p>
@@ -322,7 +325,7 @@
 </blockquote>
 <p>修改、独占、共享、无效</p>
 <p>缓存一致性原则：</p>
-<p>S to M，Shared的状态下，某个CPU发起了对该缓存行的原子性 read-modify-write 操作，但需要发出 Invalidate 消息，并等待一系列的 Invalidate Acknowledge 反馈后才能对缓存行修改；</p>
+<p>S to M，Shared的状态下，某个CPU发起了对该缓存行的原子性 read-modify-write 操作，但需要发出 Invalid 消息，并等待一系列的 Invalidate Acknowledge 反馈后才能对缓存行修改；</p>
 <p><img src="/../images/Java%E5%B9%B6%E5%8F%91/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAQWxhbjA1MTc=,size_20,color_FFFFFF,t_70,g_se,x_16.png" alt="在这里插入图片描述"></p>
 <hr>
 <p>为什么不保证原子性：</p>
@@ -340,7 +343,7 @@
 <p>当第二个操作是volatile写时，不管第一个操作是什么，都不能重排序。这个规则确保volatile写之前的操作不会被编译器重排序到volatile写之后。</p>
 <p>当第一个操作是volatile读时，不管第二个操作是什么，都不能重排序。这个规则确保volatile读之后的操作不会被编译器重排序到volatile读之前。</p>
 <p>当第一个操作是volatile写，第二个操作是volatile读时，不能重排序。</p>
-<h3 id="2、Synchronized"><a href="#2、Synchronized" class="headerlink" title="2、Synchronized"></a>2、Synchronized</h3><p><font color='red'><u><em><strong>它是一种互斥锁，他的实现原理是 通过基于进入和退出Monitor对象来控制同步。有三种使用方法：普通方法（锁是类实例对象）、静态方法（锁是当前类的Class对象）、方法块（括号里的对象）。方法和代码块具体实现是不一样的，一个是monitorenter和monitorexit；一个是ACC_SYNCHRONIZED。</strong></em></u></font></p>
+<h3 id="2、Synchronized"><a href="#2、Synchronized" class="headerlink" title="2、Synchronized"></a>2、Synchronized</h3><p><font color='red'><u><em><strong>它是一种互斥锁。有三种使用方法：普通方法（锁是类实例对象）、静态方法（锁是当前类的Class对象）、方法块（括号里的对象）。方法和代码块具体实现是不一样的，一个是monitorenter和monitorexit；一个是ACC_SYNCHRONIZED。</strong></em></u></font></p>
 <blockquote>
 <p>方法级的同步是隐式，JVM可以从方法表里面检查方法的 ACC_SYNCHRONIZED 访问标志是否被设置，如果设置了，执行线程将先持有monitor， 然后再执行方法，方法完成释放monitor。</p>
 <p>代码块的同步是利用monitorenter和monitorexit这两个字节码指令。它们分别位于同步代码块的开始和结束位置。当jvm执行到monitorenter指令时，当前线程试图获取monitor对象的所有权，如果未加锁或者已经被当前线程所持有，就把锁的计数器+1；当执行monitorexit指令时，锁计数器-1；当锁计数器为0时，该锁就被释放了。如果获取monitor对象失败，该线程则会进入阻塞状态，直到其他线程释放锁。</p>
@@ -380,9 +383,11 @@
 <p>释放锁的时候，JMM把该线程对应的本地内存中的共享变量刷新到主内存，加锁的时候把该线程对应的本地内存置为无效。</p>
 <p><strong>锁内存语义的实现</strong></p>
 <p>编译器<strong>不会对volatile读与其后的任意内存操作重排序</strong>，<strong>不会对volatile写与其前的任意操作重排序</strong>。CAS同时具有volatile读和写的内存语义，编译器<strong>不会对CAS前和后的任意内存操作重排序</strong>，其是通过底层处理器缓存锁定实现原子性的。</p>
-<h4 id="0、synchronized和lock有什么区别"><a href="#0、synchronized和lock有什么区别" class="headerlink" title="0、synchronized和lock有什么区别"></a>0、synchronized和lock有什么区别</h4><p>语法层面：synchronized是c++实现。Lock是一个接口，java语言实现的。用法上，synchronized是关键字，自动加锁解锁。lock接口需要你先new出一个lock，然后手动的加锁解锁。</p>
-<p>功能层面：lock相比synchronized更加灵活。多了很多功能，公平锁、可打断、可超时</p>
-<p>性能方面：在竞争激烈时，Lock能提供更好的性能。</p>
+<h4 id="0、synchronized和lock有什么区别"><a href="#0、synchronized和lock有什么区别" class="headerlink" title="0、synchronized和lock有什么区别"></a>0、synchronized和lock有什么区别</h4><blockquote>
+<p><font color='green'><strong>语法层面：synchronized是c++实现。Lock是一个接口，java语言实现的。用法上，synchronized是关键字，自动加锁解锁。</strong></font><font color='green'><strong>lock接口需要你先new出一个lock，然后手动的加锁解锁。</strong></font></p>
+<p><font color='green'><strong>功能层面：lock相比synchronized更加灵活。多了很多功能，公平锁、可打断、可超时</strong></font></p>
+<p><font color='green'><strong>性能方面：竞争不激烈，差不多。在竞争激烈时，Lock能提供更好的性能。</strong></font></p>
+</blockquote>
 <h4 id="1、AQS"><a href="#1、AQS" class="headerlink" title="1、AQS"></a>1、AQS</h4><blockquote>
 <p>本质是一个抽象类，用来构造锁或其他同步组件的基础框架。</p>
 <p>AQS有3个比较关键的东西，<font color='red'><u><em><strong>一个是volatile的state变量，一个是同步队列。一个owner</strong></em></u></font></p>
@@ -404,21 +409,21 @@
 <p><font color='red'><u><em><strong>Sync有公平锁 和非公平锁，公平锁和非公平锁区别: 非公平锁在tryacquire的时候，里面有一个步骤是获取同步状态，如果这个同步状态是0的话，说明现在没人拿，我可以去直接去拿，公平锁这里会多一个判断hasQueuedPredecessors，会先看看自己是不是排队的第一个，如果不是的话，我就不抢占state了。如果state等于当前线程，说明当前线程已经持有锁的，触发可重入功能。如果没拿到就那就把这个线程和等待状态等信息狗造成一个节点加入同步队列，并且阻塞。</strong></em></u></font></p>
 <p><font color='green'><u><em><strong>加入的时候怎么加入的？</strong></em></u></font></p>
 <p><font color='blue'><u><em><strong>新的节点的Pre指向尾结点，然后用cas的方式让尾结点指向新节点，最后尾结点更新。</strong></em></u></font></p>
-<h2 id="Condition"><a href="#Condition" class="headerlink" title="Condition"></a>Condition</h2><p><code>Condition</code>提供了与<code>Object#wait</code>和<code>Object#notify</code>相同的功能，一般和lock搭配使用。他其实是一个条件队列。await的时候会释放锁，signal会回到AQS的同步队列。</p>
+<h2 id="Condition"><a href="#Condition" class="headerlink" title="Condition"></a>Condition</h2><p><font color='green'><strong><code>Condition</code>提供了与<code>Object#wait</code>和<code>Object#notify</code>相同的功能，一般和lock搭配使用。他其实是一个条件队列。await的时候会释放锁，signal会回到AQS的同步队列。</strong></font></p>
 <p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/629921197">https://zhuanlan.zhihu.com/p/629921197</a></p>
 </blockquote>
-<h4 id="4、死锁"><a href="#4、死锁" class="headerlink" title="4、死锁"></a>4、死锁</h4><blockquote>
+<h4 id="4、死锁"><a href="#4、死锁" class="headerlink" title="4、死锁"></a>4、死锁</h4><p>多个进程互相请求对方已经持有的资源。</p>
+<blockquote>
 <p>互斥条件：</p>
-<p>请求和保持，并且不可被剥夺。</p>
+<p>请求和保持，不可剥夺。</p>
 <p>循环等待：</p>
 </blockquote>
-<p>两个线程，互相请求对方已经持有的资源。</p>
 <p>死锁的检测：</p>
 <ul>
 <li>可以依赖JPS和JSTACK。用jps拿到java进程的id，然后jstack分析堆栈信息。</li>
 <li>也可以用可视化工具virtualVM</li>
+<li></li>
 </ul>
-<hr>
 <h3 id="4、原子操作的实现原理"><a href="#4、原子操作的实现原理" class="headerlink" title="4、原子操作的实现原理"></a>4、原子操作的实现原理</h3><h4 id="1、处理器如何实现原子操作？"><a href="#1、处理器如何实现原子操作？" class="headerlink" title="1、处理器如何实现原子操作？"></a>1、处理器如何实现原子操作？</h4><p>总线锁：使用LOCK 信号，其他请求都被阻塞，独占共享内存</p>
 <p>缓存锁：所谓缓存锁定是指内存被缓存在处理器的缓存中，当他执行锁操作写回内存的时候，而是修改内部的内存地址，并允许他缓存一致性保证操作原子性。</p>
 <h4 id="2、Java怎么实现原子操作"><a href="#2、Java怎么实现原子操作" class="headerlink" title="2、Java怎么实现原子操作"></a>2、Java怎么实现原子操作</h4><p>锁–JVM实现锁的方式其实都用到了循环CAS</p>
@@ -468,14 +473,26 @@
 <p>不是，如果在某种情况下，栈帧跳出后，对threadlocal没有引用了，变量名立即回收了，按理来说threadlocal也要回收，是强引用的话，还有一个key的强引用，key是在entry里面，entry在map里面，map又是属于线程的，所以等同于和Thread生命周期绑定了。只有线程结束的时候才可以释放，如果线程生命周期比较短的话，那线程销毁的时候value也会收回。如果线程周期比较长的话，那么内存泄露的问题就会比较严重。其实设计者也考虑到到key被收到时导致内存泄漏问题，在调用ThreadLocal中set、remove、rehash时会扫描key为null的entry，并将value置为null，避免内存泄漏	</p>
 </blockquote>
 <blockquote>
-<p>强引用(Strongly Reference)<br>指代码中普遍存在的赋值行为，如：Object o &#x3D; new Object()，只要强引用关系还在，对象就永远不会被回收。<br>软引用(Soft Reference)<br>还有用处，但是非必须存活的对象，JVM会在内存溢出前对其进行回收，例如：缓存。<br>弱引用(Weak Reference)<br>非必须存活的对象，引用关系比软引用还弱，不管内存是否够用，下次GC一定回收。<br>虚引用(Phantom Reference)<br>也称“幽灵引用”、“幻影引用”，最弱的引用关系，完全不影响对象的回收，等同于没有引用，虚引用的唯一的目的是对象被回收时会收到一个系统通知。</p>
+<p><font color='green'><strong>强引用(Strongly Reference)</strong></font><br>指代码中普遍存在的赋值行为，如：Object o &#x3D; new Object()，只要强引用关系还在，对象就永远不会被回收。<br><font color='green'><strong>软引用(Soft Reference)</strong></font><br>还有用处，但是非必须存活的对象，JVM会在内存溢出前对其进行回收，例如：缓存。<br><font color='green'><strong>弱引用(Weak Reference)</strong></font><br>非必须存活的对象，引用关系比软引用还弱，不管内存是否够用，下次GC一定回收。<br><font color='green'><strong>虚引用(Phantom Reference)</strong></font><br>也称“幽灵引用”、“幻影引用”，最弱的引用关系，完全不影响对象的回收，等同于没有引用，虚引用的唯一的目的是对象被回收时会收到一个系统通知。</p>
 </blockquote>
 <hr>
 <h1 id="4、线程池"><a href="#4、线程池" class="headerlink" title="4、线程池"></a>4、线程池</h1><p><strong>怎么创建线程</strong></p>
-<p>继承Thread、实现runnbale接口，实现callable接口，还有线程池（也是项目中的创建方法）</p>
+<blockquote>
+<p><font color='green'><strong>继承Thread、实现runnbale接口，实现callable接口，还有线程池（也是项目中的创建方法）</strong></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>核心参数</strong></em></u></font></p>
+<blockquote>
+<p>corePoolSize</p>
+<p>maximumPoolSize</p>
+<p>keepAliveTime：多余线程的存活时间</p>
+<p>unit</p>
+<p>workQueue</p>
+<p>handler</p>
+<p>threadFactory</p>
+</blockquote>
 <p><font color='red'><u><em><strong>线程池创建线程</strong></em></u></font>有两种方式：</p>
 <blockquote>
-<p><strong>方式一：通过<code>ThreadPoolExecutor</code>构造方法来创建（推荐）。</strong></p>
+<p><strong>方式一：通过<code>ThreadPoolExecutor</code>构造方法来创建（推荐）。xx</strong></p>
 <p><strong>方式二： <code>Executors的工厂方法：比如Executors.newCachedThreadPool()</code>（不推荐）。</strong></p>
 <p>两种方法都在concurrent包下面。</p>
 <p>为什么不推荐？我觉得就是Executors提供的创建的几个线程池都有点局限性，都有不足的地方。</p>
@@ -541,7 +558,7 @@
 <p><img src="/../images/JUC/image-20240113135657239.png" alt="image-20240113135657239"></p>
 <p><strong>wait和sleep有什么不同</strong></p>
 <blockquote>
-<p>首先是锁特性，wait会释放锁，但是sleep不会释放锁。wait没有时间参数的时候要等待notify唤醒，但是sleep就是时间到期就恢复。</p>
+<p><font color='green'><strong>首先是锁特性，wait会释放锁，但是sleep不会释放锁。wait没有时间参数的时候要等待notify唤醒，但是sleep就是时间到期就恢复。</strong></font></p>
 </blockquote>
 <p><font color='red'><u><em><strong>线程池就是管理线程的资源池。当有任务要处理时，直接从线程池中获取线程来处理，处理完之后线程并不会立即被销毁，而是等待下一个任务。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>处理流程：</strong></em></u></font></p>
@@ -608,11 +625,11 @@
                     
                         <p>
                             <a
-                                href="/2023/11/08/JUC/#post-footer"
+                                href="/2023/11/08/CS:JUC/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -626,7 +643,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -655,7 +672,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

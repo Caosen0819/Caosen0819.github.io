@@ -11,16 +11,16 @@
     
     
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"订单超时自动取消功能如何设计？\n\n首先，这个订单肯定已经是产生了的。\n一种方法就是：定时任务+轮训，但是如果订单很多的情况下，就合适了。\n时间轮算法：受到内存限制，可能会OOM，甚至说浪费空间。\nredis过期事件：\n延迟消息mq，设置一个时间，等到这个时间到了我们去检查用户是否支付\n最好还是用消息队列mq\n\n在 2G 大小的文件中，找出高频top100的单词\n\n关于这个问题，我说一下我的回答思路 1. 把 2G 的文件进行分割成大小为 512KB 小文件，总共得到2048 个小文件，避免一次性读入整个文件造成内存不足。 2. 定义一个长度为 2048 的 hash 表数组，用来统计每个小文件中单词出现的频率。3. 使用多线程并行遍历 2048 个小文件，针对每个单词进行 hash 取模运算分别存储到长度为 2048 的 hash 表数组中 inthash&#x3D;Math.abs(word.hashCode() %hashTableSize); hashTables[hash].merge(word, 1, Integer::sum); 4. 接着再遍历这 2048 个 hash 表，把频率前 100 的单词存入小顶堆中5. 最后，小顶堆中最终得到的 100 个单词，就是 top 100 了。这种解决方案的核心思想是将大文件分割为多个小文件，然后采用分治和堆的算法，来解决这个问题。\n\n","dateCreated":"2023-04-04T00:00:00+08:00","dateModified":"2024-02-05T15:50:26+08:00","datePublished":"2023-04-04T00:00:00+08:00","description":"","headline":"待定","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/","keywords":"场景题"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg"},"articleBody":"订单超时自动取消功能如何设计？\n\n首先，这个订单肯定已经是产生了的。\n一种方法就是：定时任务+轮训，但是如果订单很多的情况下，就合适了。\n时间轮算法：受到内存限制，可能会OOM，甚至说浪费空间。\nredis过期事件：\n延迟消息mq，设置一个时间，等到这个时间到了我们去检查用户是否支付\n最好还是用消息队列mq\n\n在 2G 大小的文件中，找出高频top100的单词\n\n关于这个问题，我说一下我的回答思路 1. 把 2G 的文件进行分割成大小为 512KB 小文件，总共得到2048 个小文件，避免一次性读入整个文件造成内存不足。 2. 定义一个长度为 2048 的 hash 表数组，用来统计每个小文件中单词出现的频率。3. 使用多线程并行遍历 2048 个小文件，针对每个单词进行 hash 取模运算分别存储到长度为 2048 的 hash 表数组中 inthash&#x3D;Math.abs(word.hashCode() %hashTableSize); hashTables[hash].merge(word, 1, Integer::sum); 4. 接着再遍历这 2048 个 hash 表，把频率前 100 的单词存入小顶堆中5. 最后，小顶堆中最终得到的 100 个单词，就是 top 100 了。这种解决方案的核心思想是将大文件分割为多个小文件，然后采用分治和堆的算法，来解决这个问题。\n\n设目前有一千万个字符串,请你统计最热门的10个查询要求使用的内存不能超过1G。\n\n1、可先%1000将ip分到1000个小文件中去，并保证一种ip只出现在一个文件中，再对每个小文件中的ip进行hashmap计数，用最小堆处理每个小文件的top10，最后扫描小文件的以得到最后的结。\n\n40亿个非负整数中找到没出现的数\n\n布隆过滤器\n\n40亿个非负整数中找到出现两次的数\n\n两个布隆过滤器，出现1次01，出现两次10，出现三次11，出现0次00.\n\n求中位数\n\n桶排序\n1.假设整数为有符号的32位数据，其取值范围是[-2^31, 2^31-1]，将范围等份划分10000段，即thread_1[],thread_2[]…thread_10000[]。\n　　2.将数据分为10组依次读入。首先装载第一个1G个数，遍历这些数，看它们落入thread_1[]至thread_10000[]的哪个区间，落入的对应区间统计计数增1；然后装载第二个1亿个数，重复比较与计数。\n　　3.数据全部装载一次之后，从thread_1[]的计数开始累加，直至计数累加到全部数据的一半（假设为N&#x2F;2），那么第N&#x2F;2个元素所在的区间thread_i[]就包含了中位数。\n　　4.假设中位数区间的范围是[a, b]，且前面所有区间的数据计数共有m个，再次按照每组1G个元素遍历全部数据，对于处在thread_i[]区间的每个元素都进行计数。\n　　5.当thread_i[]区间每个元素的计数累加之和加上m第一次超过N&#x2F;2时，该计数处的元素就是中位数。\n　　这种方法需要两次遍历全部数据，效率较高。\n\n","dateCreated":"2023-04-04T00:00:00+08:00","dateModified":"2024-02-24T23:14:36+08:00","datePublished":"2023-04-04T00:00:00+08:00","description":"","headline":"待定","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"},"publisher":{"@type":"Organization","name":"CSEN","sameAs":["https://github.com/Caosen0819"],"image":"head.jpg","logo":{"@type":"ImageObject","url":"head.jpg"}},"url":"http://example.com/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/","keywords":"场景题"}</script>
     <meta name="description" content="订单超时自动取消功能如何设计？  首先，这个订单肯定已经是产生了的。 一种方法就是：定时任务+轮训，但是如果订单很多的情况下，就合适了。 时间轮算法：受到内存限制，可能会OOM，甚至说浪费空间。 redis过期事件： 延迟消息mq，设置一个时间，等到这个时间到了我们去检查用户是否支付 最好还是用消息队列mq  在 2G 大小的文件中，找出高频top100的单词  关于这个问题，我说一下我的回答思路">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="待定">
-<meta property="og:url" content="http://example.com/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/index.html">
+<meta property="og:url" content="http://example.com/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/index.html">
 <meta property="og:site_name" content="森">
 <meta property="og:description" content="订单超时自动取消功能如何设计？  首先，这个订单肯定已经是产生了的。 一种方法就是：定时任务+轮训，但是如果订单很多的情况下，就合适了。 时间轮算法：受到内存限制，可能会OOM，甚至说浪费空间。 redis过期事件： 延迟消息mq，设置一个时间，等到这个时间到了我们去检查用户是否支付 最好还是用消息队列mq  在 2G 大小的文件中，找出高频top100的单词  关于这个问题，我说一下我的回答思路">
 <meta property="og:locale" content="zh_CH">
 <meta property="article:published_time" content="2023-04-03T16:00:00.000Z">
-<meta property="article:modified_time" content="2024-02-05T07:50:26.040Z">
+<meta property="article:modified_time" content="2024-02-24T15:14:36.538Z">
 <meta property="article:author" content="CSEN">
 <meta property="article:tag" content="场景题">
 <meta name="twitter:card" content="summary">
@@ -75,11 +75,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -98,9 +98,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -240,7 +240,7 @@
         <div class="post-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -271,6 +271,28 @@
 <blockquote>
 <p>关于这个问题，我说一下我的回答思路 1. 把 2G 的文件进行分割成大小为 512KB 小文件，总共得到2048 个小文件，避免一次性读入整个文件造成内存不足。 2. 定义一个长度为 2048 的 hash 表数组，用来统计每个小文件中单词出现的频率。3. 使用多线程并行遍历 2048 个小文件，针对每个单词进行 hash 取模运算分别存储到长度为 2048 的 hash 表数组中 inthash&#x3D;Math.abs(word.hashCode() %hashTableSize); hashTables[hash].merge(word, 1, Integer::sum); 4. 接着再遍历这 2048 个 hash 表，把频率前 100 的单词存入小顶堆中5. 最后，小顶堆中最终得到的 100 个单词，就是 top 100 了。这种解决方案的核心思想是将大文件分割为多个小文件，然后采用分治和堆的算法，来解决这个问题。</p>
 </blockquote>
+<p><strong>设目前有一千万个字符串,请你统计最热门的10个查询</strong><br>要求使用的内存不能超过1G。</p>
+<blockquote>
+<p>1、可先%1000将ip分到1000个小文件中去，并保证一种ip只出现在一个文件中，再对每个小文件中的ip进行hashmap计数，用最小堆处理每个小文件的top10，最后扫描小文件的以得到最后的结。</p>
+</blockquote>
+<p><strong>40亿个非负整数中找到没出现的数</strong></p>
+<blockquote>
+<p>布隆过滤器</p>
+</blockquote>
+<p><strong>40亿个非负整数中找到出现两次的数</strong></p>
+<blockquote>
+<p>两个布隆过滤器，出现1次01，出现两次10，出现三次11，出现0次00.</p>
+</blockquote>
+<p><strong>求中位数</strong></p>
+<blockquote>
+<p><strong>桶排序</strong></p>
+<p>1.假设整数为有符号的32位数据，其取值范围是[-2^31, 2^31-1]，将范围等份划分10000段，即thread_1[],thread_2[]…thread_10000[]。</p>
+<p>　　2.将数据分为10组依次读入。首先装载第一个1G个数，遍历这些数，看它们落入thread_1[]至thread_10000[]的哪个区间，落入的对应区间统计计数增1；然后装载第二个1亿个数，重复比较与计数。</p>
+<p>　　3.数据全部装载一次之后，从thread_1[]的计数开始累加，直至计数累加到全部数据的一半（假设为N&#x2F;2），那么第N&#x2F;2个元素所在的区间thread_i[]就包含了中位数。</p>
+<p>　　4.假设中位数区间的范围是[a, b]，且前面所有区间的数据计数共有m个，再次按照每组1G个元素遍历全部数据，对于处在thread_i[]区间的每个元素都进行计数。</p>
+<p>　　5.当thread_i[]区间每个元素的计数累加之和加上m第一次超过N&#x2F;2时，该计数处的元素就是中位数。</p>
+<p>　　这种方法需要两次遍历全部数据，效率较高。</p>
+</blockquote>
 
             
 
@@ -280,7 +302,7 @@
     <div id="post-footer" class="post-footer main-content-wrap">
         
             <div class="post-footer-tags">
-                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                <span class="text-color-light text-small">GETAGGT IN</span><br/>
                 
     <a class="tag tag--primary tag--small t-none-link" href="/tags/%E5%9C%BA%E6%99%AF%E9%A2%98/" rel="tag">场景题</a>
 
@@ -297,11 +319,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/04/New%20page/"
                     data-tooltip="待定"
-                    aria-label="PREVIOUS: 待定"
+                    aria-label="FRÜHER: 待定"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -311,10 +333,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A11-13/"
                     data-tooltip="章节：11-13"
-                    aria-label="NEXT: 章节：11-13"
+                    aria-label="NÄCHSTER: 章节：11-13"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -325,7 +347,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -336,9 +358,9 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -349,9 +371,9 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -362,9 +384,9 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -375,7 +397,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -412,11 +434,11 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/04/New%20page/"
                     data-tooltip="待定"
-                    aria-label="PREVIOUS: 待定"
+                    aria-label="FRÜHER: 待定"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                        <span class="hide-xs hide-sm text-small icon-ml">FRÜHER</span>
                     </a>
             </li>
             <li class="post-action">
@@ -426,10 +448,10 @@
                     class="post-action-btn btn btn--default tooltip--top"
                     href="/2023/04/03/%E7%AB%A0%E8%8A%82%EF%BC%9A11-13/"
                     data-tooltip="章节：11-13"
-                    aria-label="NEXT: 章节：11-13"
+                    aria-label="NÄCHSTER: 章节：11-13"
                 >
                     
-                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <span class="hide-xs hide-sm text-small icon-mr">NÄCHSTER</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
             </li>
@@ -440,7 +462,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -451,9 +473,9 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/"
-                    title="Share on Facebook"
-                    aria-label="Share on Facebook"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"
+                    title="Teilen auf Facebook"
+                    aria-label="Teilen auf Facebook"
                 >
                     <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
@@ -464,9 +486,9 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/"
-                    title="Share on Twitter"
-                    aria-label="Share on Twitter"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"
+                    title="Teilen auf Twitter"
+                    aria-label="Teilen auf Twitter"
                 >
                     <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
@@ -477,9 +499,9 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/"
-                    title="Share on Google+"
-                    aria-label="Share on Google+"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"
+                    title="Teilen auf Google Plus"
+                    aria-label="Teilen auf Google Plus"
                 >
                     <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
@@ -490,7 +512,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -511,10 +533,10 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/"
-                        aria-label="Share on Facebook"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"
+                        aria-label="Teilen auf Facebook"
                     >
-                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Teilen auf Facebook</span>
                     </a>
                 </li>
             
@@ -524,10 +546,10 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/"
-                        aria-label="Share on Twitter"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"
+                        aria-label="Teilen auf Twitter"
                     >
-                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Teilen auf Twitter</span>
                     </a>
                 </li>
             
@@ -537,10 +559,10 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://example.com/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/"
-                        aria-label="Share on Google+"
+                        href="https://plus.google.com/share?url=http://example.com/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"
+                        aria-label="Teilen auf Google Plus"
                     >
-                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Teilen auf Google Plus</span>
                     </a>
                 </li>
             
@@ -563,7 +585,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

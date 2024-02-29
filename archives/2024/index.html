@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archives: 2024 - 森</title>
+    <title>Archiv: 2024 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -233,7 +233,7 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2024/02/02/MySQL45-1/"
+                            href="/2024/02/02/CS:MySQL45-1/"
                             aria-label=": MySQL45"
                         >
                             MySQL45
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2024-02-02T21:29:04+08:00">
 	
-		    Feb 02, 2024
+		    02 Feb 2024
     	
     </time>
     
@@ -287,13 +287,11 @@
 <p>这两个日志的配合是使用两阶段提交</p>
 <p><img src="/../images/MySQL45-1/image-20230805142953314.png"></p>
 <blockquote>
-<p>可以发现将redo log的写入分成了两个阶段，一个是prepare 一个commit</p>
-<p>在两阶段提交的情况下，是怎么实现崩溃恢复的呢？<br>首先比较重要的一点是，在写入redo log时，会顺便记录XID，即当前事务id。在写入binlog时，也会写入XID。</p>
-<p>如果在写入redo log之前崩溃，那么此时redo log与binlog中都没有，是一致的情况，崩溃也无所谓。</p>
-<p>如果在写入redo log prepare阶段后立马崩溃，之后会在崩恢复时，由于redo log没有被标记为commit。于是拿着redo log中的XID去binlog中查找，此时肯定是找不到的，那么执行回滚操作。</p>
-<p>如果在写入binlog后立马崩溃，在恢复时，由redo log中的XID可以找到对应的binlog，这个时候直接提交即可。</p>
-<p>总的来说，在崩溃恢复后，只要redo log不是处于commit阶段，那么就拿着redo log中的XID去binlog中寻找，找得到就提交，否则就回滚。</p>
-<p>在这样的机制下，两阶段提交能在崩溃恢复时，能够对提交中断的事务进行补偿，来确保redo log与binlog的数据一致性。</p>
+<p><font color='green'><strong>三个时机，4个状态</strong></font></p>
+<p><font color='green'><strong>1、如果在prepare状态前崩溃，那其实是一致的情况，redolog和binlog里面都没有。</strong></font></p>
+<p><font color='green'><strong>2、如果在第一次提交和binlog提交中间崩溃，我们拿到redolog XID去binlog找，没找到，回滚就可以</strong></font></p>
+<p><font color='green'><strong>3、如果在binlog和第二次提交中间崩溃，那我们拿XID去binlog找，是可以找到的，就不需要回滚。</strong></font></p>
+<p><font color='green'><strong>4、第二次提交之后崩溃，那这个是最好的了，因为redolog和binlog里面都有</strong></font></p>
 </blockquote>
 <h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a><strong>索引</strong></h2><p><img src="/../images/MySQL45-1/image-20240109120737217.png" alt="image-20240109120737217"></p>
 <p>执行流程：(<font color='red'><u><em><strong>所以回表不是只回表一次，而是多次</strong></em></u></font>)</p>
@@ -334,7 +332,7 @@
 <p><font color='red'><u><em><strong>全表扫描会不会把数据库内存打爆</strong></em></u></font></p>
 <blockquote>
 <p>不会</p>
-<p>因为mysql是边读边发，他有一个net_buffer，16k大小，不会server 端保存完整的结果集，如果接收不及时，就堵住MySQL的查询过程，但是绝对不会打爆内存，而且innodb有lru这种内存淘汰策略。</p>
+<p>因为mysql是边读边发，他有一个net_buffer，16k大小，不会在server 端保存完整的结果集，如果接收不及时，就堵住MySQL的查询过程，但是绝对不会打爆内存，而且innodb有lru这种内存淘汰策略。</p>
 </blockquote>
 <p><font color='red'><u><em><strong>能不能用join，怎么用</strong></em></u></font></p>
 <blockquote>
@@ -375,11 +373,11 @@
                     
                         <p>
                             <a
-                                href="/2024/02/02/MySQL45-1/#post-footer"
+                                href="/2024/02/02/CS:MySQL45-1/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -393,7 +391,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -423,7 +421,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

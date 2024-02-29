@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -242,7 +242,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -291,7 +291,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -320,7 +320,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -348,7 +348,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -367,7 +367,7 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/"
+                            href="/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/"
                             aria-label=": 待定"
                         >
                             待定
@@ -377,7 +377,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-04T00:00:00+08:00">
 	
-		    Apr 04, 2023
+		    04 Apr 2023
     	
     </time>
     
@@ -405,6 +405,28 @@
 <blockquote>
 <p>关于这个问题，我说一下我的回答思路 1. 把 2G 的文件进行分割成大小为 512KB 小文件，总共得到2048 个小文件，避免一次性读入整个文件造成内存不足。 2. 定义一个长度为 2048 的 hash 表数组，用来统计每个小文件中单词出现的频率。3. 使用多线程并行遍历 2048 个小文件，针对每个单词进行 hash 取模运算分别存储到长度为 2048 的 hash 表数组中 inthash&#x3D;Math.abs(word.hashCode() %hashTableSize); hashTables[hash].merge(word, 1, Integer::sum); 4. 接着再遍历这 2048 个 hash 表，把频率前 100 的单词存入小顶堆中5. 最后，小顶堆中最终得到的 100 个单词，就是 top 100 了。这种解决方案的核心思想是将大文件分割为多个小文件，然后采用分治和堆的算法，来解决这个问题。</p>
 </blockquote>
+<p><strong>设目前有一千万个字符串,请你统计最热门的10个查询</strong><br>要求使用的内存不能超过1G。</p>
+<blockquote>
+<p>1、可先%1000将ip分到1000个小文件中去，并保证一种ip只出现在一个文件中，再对每个小文件中的ip进行hashmap计数，用最小堆处理每个小文件的top10，最后扫描小文件的以得到最后的结。</p>
+</blockquote>
+<p><strong>40亿个非负整数中找到没出现的数</strong></p>
+<blockquote>
+<p>布隆过滤器</p>
+</blockquote>
+<p><strong>40亿个非负整数中找到出现两次的数</strong></p>
+<blockquote>
+<p>两个布隆过滤器，出现1次01，出现两次10，出现三次11，出现0次00.</p>
+</blockquote>
+<p><strong>求中位数</strong></p>
+<blockquote>
+<p><strong>桶排序</strong></p>
+<p>1.假设整数为有符号的32位数据，其取值范围是[-2^31, 2^31-1]，将范围等份划分10000段，即thread_1[],thread_2[]…thread_10000[]。</p>
+<p>　　2.将数据分为10组依次读入。首先装载第一个1G个数，遍历这些数，看它们落入thread_1[]至thread_10000[]的哪个区间，落入的对应区间统计计数增1；然后装载第二个1亿个数，重复比较与计数。</p>
+<p>　　3.数据全部装载一次之后，从thread_1[]的计数开始累加，直至计数累加到全部数据的一半（假设为N&#x2F;2），那么第N&#x2F;2个元素所在的区间thread_i[]就包含了中位数。</p>
+<p>　　4.假设中位数区间的范围是[a, b]，且前面所有区间的数据计数共有m个，再次按照每组1G个元素遍历全部数据，对于处在thread_i[]区间的每个元素都进行计数。</p>
+<p>　　5.当thread_i[]区间每个元素的计数累加之和加上m第一次超过N&#x2F;2时，该计数处的元素就是中位数。</p>
+<p>　　这种方法需要两次遍历全部数据，效率较高。</p>
+</blockquote>
 
                     
                         
@@ -414,11 +436,11 @@
                     
                         <p>
                             <a
-                                href="/2023/04/04/%E5%9C%BA%E6%99%AF%E9%A2%98/#post-footer"
+                                href="/2023/04/04/CS:%E5%9C%BA%E6%99%AF%E9%A2%98/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -447,7 +469,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-03T00:00:00+08:00">
 	
-		    Apr 03, 2023
+		    03 Apr 2023
     	
     </time>
     
@@ -483,7 +505,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -512,7 +534,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-04-03T00:00:00+08:00">
 	
-		    Apr 03, 2023
+		    03 Apr 2023
     	
     </time>
     
@@ -587,7 +609,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -616,7 +638,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-23T13:03:43+08:00">
 	
-		    Oct 23, 2022
+		    23 Oct 2022
     	
     </time>
     
@@ -661,7 +683,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -690,7 +712,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-20T14:43:00+08:00">
 	
-		    Oct 20, 2022
+		    20 Oct 2022
     	
     </time>
     
@@ -777,7 +799,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -806,7 +828,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T21:25:08+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -857,7 +879,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -886,7 +908,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T21:25:08+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -932,7 +954,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -961,7 +983,7 @@
                 <div class="postShorten-meta">
     <time datetime="2022-10-04T21:25:08+08:00">
 	
-		    Oct 04, 2022
+		    04 Oct 2022
     	
     </time>
     
@@ -1012,7 +1034,7 @@
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -1029,10 +1051,10 @@
             <a
                 class="btn btn--default btn--small"
                 href="/page/2/"
-                aria-label="NEWER POSTS"
+                aria-label="NEUERE BEITRÄGE"
             >
               <i class="fa fa-angle-left text-base icon-mr"></i>
-              <span>NEWER POSTS</span>
+              <span>NEUERE BEITRÄGE</span>
             </a>
           </li>
         
@@ -1041,14 +1063,14 @@
             <a
                 class="btn btn--default btn--small"
                 href="/page/4/"
-                aria-label="OLDER POSTS"
+                aria-label="ÄLTERE BEITRÄGE"
             >
-              <span>OLDER POSTS</span>
+              <span>ÄLTERE BEITRÄGE</span>
               <i class="fa fa-angle-right text-base icon-ml"></i>
             </a>
           </li>
         
-        <li class="pagination-number">page 3 of 5</li>
+        <li class="pagination-number">Seite 3 von 5</li>
     </ul>
 </div>
 
@@ -1077,7 +1099,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

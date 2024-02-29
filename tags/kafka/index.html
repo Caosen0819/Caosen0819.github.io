@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -233,7 +233,7 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/07/08/Kafka/"
+                            href="/2023/07/08/CS:Kafka/"
                             aria-label=": Kafka知识"
                         >
                             Kafka知识
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-07-08T00:00:00+08:00">
 	
-		    Jul 08, 2023
+		    08 Jul 2023
     	
     </time>
     
@@ -259,11 +259,23 @@
             
                 <div class="postShorten-content">
                     <p>常见面试问题：</p>
-<p><strong>为什么用Kafka？</strong></p>
-<p>1、性能强，2、兼容性好</p>
+<p><font color='red'><u><em><strong>怎么配置</strong></em></u></font></p>
+<blockquote>
+<p><font color='red'><u><em><strong>比如你的秒杀商品有1000件，处理一次购买请求的时间是500ms，那么总共就需要500s的时间。这时，你部署10个队列处理程序，那么秒杀请求的处理时间就是50s，也就是说用户需要等待50s才可以看到秒杀的结果，这是可以接受的。这时会并发10个请求到达数据库，并不会对数据库造成很大的压力。</strong></em></u></font></p>
+</blockquote>
+<h2 id="使用场景和作用"><a href="#使用场景和作用" class="headerlink" title="使用场景和作用"></a>使用场景和作用</h2><blockquote>
+<h2 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h2><p><font color='green'><strong>1、日志收集</strong></font></p>
+<p><font color='green'><strong>2、消息系统</strong></font></p>
+<p><font color='green'><strong>3、用户活动追踪</strong></font></p>
+<p><font color='green'><strong>4、运营指标监控</strong></font></p>
+<h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p><font color='green'><strong>1、削峰解耦，假设A系统每秒就处理1000个请求，那A去Kafka里面慢慢自己拉取就可以了，不会一股脑全部打到A系统上</strong></font></p>
+<p><font color='green'><strong>2、高性能，有4点</strong></font></p>
+<p><font color='green'><strong>3、高可用，持久化，两点，一个broker一个副本机制</strong></font></p>
+<p><font color='green'><strong>4、可扩展，加机器</strong></font></p>
+</blockquote>
 <h2 id="Kafka高性能的设计"><a href="#Kafka高性能的设计" class="headerlink" title="Kafka高性能的设计"></a><strong>Kafka高性能的设计</strong></h2><p><font color='red'><u><em><strong>1）分区设计，可以实现并行操作。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>2）磁盘顺序写（减少磁盘寻址时间）</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>3）MMF+页缓存</strong></em></u></font> 即使kafka是顺序写（），这个本身比较快，但是即使这样，速度也追不上内存。所以Kafka不是实时写入磁盘，而是先把数据写到页缓存里面，满足一定条件在刷回磁盘。它的工作原理是MMF，直接利用操作系统的页缓存来实现磁盘文件到物理内存的直接映射，完成映射之后你对物理内存的操作会被同步到硬盘上（操作系统在适当的时候）。</p>
+<p><font color='red'><u><em><strong>3）MMF+页缓存</strong></em></u></font> 即使kafka是顺序写，这个本身比较快，但是即使这样，速度也追不上内存。所以Kafka不是实时写入磁盘，而是先把数据写到页缓存里面，满足一定条件在刷回磁盘。它的工作原理是MMF，直接利用操作系统的页缓存来实现磁盘文件到物理内存的直接映射，完成映射之后你对物理内存的操作会被同步到硬盘上（操作系统在适当的时候）。</p>
 <p><font color='red'><u><em><strong>4）零拷贝</strong></em></u></font></p>
 <p>传统的io，先读取、再发送，实际经过 4 次 copy。</p>
 <p>分别是：</p>
@@ -280,6 +292,11 @@
 </ul>
 <p><strong>DMA（直接存储器访问）用来提供在外设和存储器之间或者存储器和存储器之间的高速数据传输，他本质是一个硬件技术，就是比如你要把外设A的数据传到内存B，你直接给A和B之间加一条数据通路，然后给几个配件就可以实现，传输操作交给DMAC控制器（类似CPU）</strong></p>
 <p><img src="/../images/Kafka/image-20231116011032880.png" alt="image-20231116011032880"></p>
+<p><font color='red'><u><em><strong>用户态和内核态的内存拷贝开销有什么区别</strong></em></u></font></p>
+<blockquote>
+<p><font color='green'><strong>在用户态是个初级管理员，权限不高，只能通过系统调用进行内存拷贝，那就涉及到用户态和内核态的切换。</strong></font></p>
+<p><font color='green'><strong>在内核态下高级管理员，进程具有直接访问物理内存的权限，可以直接进行内存拷贝操作，无需通过系统调用。这</strong></font></p>
+</blockquote>
 <h2 id="Kafka的高可用了解过吗"><a href="#Kafka的高可用了解过吗" class="headerlink" title="Kafka的高可用了解过吗"></a>Kafka的高可用了解过吗</h2><ul>
 <li><p>集群：首先kafka集群由多个broker组成，一个broker宕机，其余的broker依旧提供服务。</p>
 </li>
@@ -314,28 +331,35 @@
 </ul>
 <h2 id="消息保证消息不丢失？可靠性"><a href="#消息保证消息不丢失？可靠性" class="headerlink" title="消息保证消息不丢失？可靠性"></a>消息保证消息不丢失？可靠性</h2><blockquote>
 <p>分成三个方面分析：</p>
-<ul>
-<li>消息生产者发送丢失：</li>
-</ul>
+<p><font color='red'><u><em><strong>生产者发送丢失：</strong></em></u></font></p>
 <blockquote>
-<p>异步发送，发送失败使用回调进行记录或者重发 </p>
-<p>重试机制</p>
-</blockquote>
-<p>broker存储丢失：</p>
-<blockquote>
-<p>依赖一个ACK确认机制</p>
+<p><font color='red'><u><em><strong>他是有一个main线程会把消息发到消息累加器里面，然后sender线程把消息从消息累加器发送到broker。</strong></em></u></font></p>
+<p><font color='green'><strong>1、重试机制</strong></font></p>
+<p><font color='green'>**2、注册回调函数处理异步发送结果，如果发送失败进行记录或者重发 **</font></p>
+<p><font color='green'><strong>3、ACK确认机制</strong></font></p>
 <p>0：发了就不管了，<font color='green'><u><em><strong>这意味着消息可能会在发送之后丢失，而生产者将无法知道它是否成功到达服务器</strong></em></u></font></p>
 <p>1：需要leader成功接收，<font color='green'><u><em><strong>leader同步Follower之前宕机，那消息可能就丢失</strong></em></u></font></p>
 <p>-1：所有ISR的follower都成功接收才可以</p>
 </blockquote>
-<p>消费者消费丢失：</p>
+<p><font color='red'><u><em><strong>broker存储丢失：</strong></em></u></font></p>
 <blockquote>
-<p>取消自动提交（自动提交5s一次，会导致重复消费和消息丢失），改为手动。然后有三种方式：同步、异步、同步+异步组合提交</p>
+<p><font color='green'><strong>replication.factor &gt;&#x3D; 3</strong></font></p>
+<p><font color='green'><strong>min.insync.replicas：Kafka <a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=ISR&spm=1001.2101.3001.7020">ISR</a> 列表中最小同步副本数</strong></font></p>
+<p><font color='green'><strong>unclean.leader.election.enable&#x3D;false：非ISR的不能精选leader</strong></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>消费者消费丢失：</strong></em></u></font></p>
+<blockquote>
+<ul>
+<li><font color='green'><strong>设置enable.auto.commit 为 false</strong></font></li>
+<li><font color='green'><strong>commitSync() 和 commitAsync() 组合提交 try异步，final同步</strong></font></li>
+</ul>
 </blockquote>
 </blockquote>
-<h2 id="重复消费问题怎么解决？"><a href="#重复消费问题怎么解决？" class="headerlink" title="重复消费问题怎么解决？"></a>重复消费问题怎么解决？</h2><p>重复消费的话也分生产者和消费者。</p>
-<p>生产者：生产者自带的重试机制，单分区内是可以用<font color='green'><u><em><strong>幂等性</strong></em></u></font>解决的。<font color='red'><u><em><strong>（enable.idempotence&#x3D;true）</strong></em></u></font></p>
-<p>消费者：消费者重复消费是因为自动提交，首先最好关闭自动提交，然后开启<font color='green'><u><em><strong>手动提交</strong></em></u></font>。用同步+异步的组合方式。最好我们给了一个保底的方案，就是防重字段。</p>
+<h2 id="重复消费问题怎么解决？"><a href="#重复消费问题怎么解决？" class="headerlink" title="重复消费问题怎么解决？"></a>重复消费问题怎么解决？</h2><blockquote>
+<p><font color='green'><strong>重复消费的话也分生产者和消费者。</strong></font></p>
+<p><font color='green'><strong>生产者：两种重试机制</strong></font>，单分区内是可以用<font color='green'><u><em><strong>幂等性</strong></em></u></font>解决的。<font color='red'><u><em><strong>（enable.idempotence&#x3D;true）</strong></em></u></font></p>
+<p><font color='green'><strong>消费者：消费者重复消费是因为自动提交，</strong></font>首先最好关闭自动提交，然后开启<font color='green'><u><em><strong>手动提交</strong></em></u></font>。用同步+异步的组合方式。最好我们给了一个保底的方案，就是防重字段。</p>
+</blockquote>
 <p><font color='green'><u><em><strong>Kafka并发数和消费者的实例数有关，和批的大小无关</strong></em></u></font></p>
 <h2 id="怎么保证顺序性-？"><a href="#怎么保证顺序性-？" class="headerlink" title="怎么保证顺序性 ？"></a>怎么保证顺序性 ？</h2><p>一个topic的数据会通过那个分区分配器分发到某个分区，如果会发到多个分区，我们是不能保证顺序性的，但是我们可以用幂等性保证在一个分区内是顺序的。因为生产者发送消息给broker的时候会携带PID和sequence number，一个是生产者的id，一个是消息的序列号。我们靠这个可以保证顺序性。所以我们尽可能的要把消息发到一个分区里面。那这个就要配合分区器来使用，如果你指定了分区号或者指定key，那就代表指定了某个分区，这样就能实现顺序性。如果你用没有指定，他就会用随机粘性分区策略，那就不能保证顺序性。</p>
 <blockquote>
@@ -366,8 +390,11 @@
 <p>​		按照时间，当消息保存的时间超过指定的时间（默认七天），就会触发清理</p>
 <p>​		按照文件大小：当topic所有 分区的数据总和达到了默认的阈值（1G），就开始删除最久的消息	</p>
 <p><font color='blue'><u>**日志压缩(compact) **</u></font>:针对每个消息的key进行整合，对于有相同key的不同value值，只保留最后一个版本。</p>
-<h4 id="数据积压-（-消费者如何提高吞吐量）"><a href="#数据积压-（-消费者如何提高吞吐量）" class="headerlink" title="数据积压 （ 消费者如何提高吞吐量）"></a>数据积压 （ 消费者如何提高吞吐量）</h4><p><font color='blue'><u><em><strong>上游可以增加分区数量和调整batchsize和lingerms</strong></em></u></font></p>
-<p><font color='blue'><u><em><strong>下游可以增加消费者数量和调大消费者每次拉取的消息大小</strong></em></u></font></p>
+<h2 id="消息堆积-（-消费者如何提高吞吐量）"><a href="#消息堆积-（-消费者如何提高吞吐量）" class="headerlink" title="消息堆积 （ 消费者如何提高吞吐量）"></a>消息堆积 （ 消费者如何提高吞吐量）</h2><blockquote>
+<p><font color='green'><strong>上游可以增加分区数量和调整batchsize和lingerms</strong></font></p>
+<p><font color='green'><strong>下游可以增加消费者数量和调大消费者每次拉取的消息大小</strong></font></p>
+<p><font color='green'><strong>数据倾斜问题，那就调整一下消息分区的策略，使其平均的散发每一个分区</strong></font></p>
+</blockquote>
 <h2 id="Kafka选举机制："><a href="#Kafka选举机制：" class="headerlink" title="Kafka选举机制："></a>Kafka选举机制：</h2><p><font color='blue'><u><em><strong>broker（控制器）选leader</strong></em></u></font></p>
 <blockquote>
 <p>集群中由很多的broker选出一个leader，其他事follower。负责主题创建删除，管理broker，分区重分配，分区leader选举等等</p>
@@ -383,10 +410,14 @@
 <p><img src="/../images/Kafka/e5c14b9c17123faf3eefa58a22ab0668-20230928225949575.png" alt="image-20220902201352868"></p>
 </blockquote>
 <p><font color='blue'><u><em><strong>消费者选Leader</strong></em></u></font></p>
-<p>先用groupid%50 得到一个主题分区（consumer_offset），这个分区所属的节点的消费者协调器就作为这个消费者组的老大，每个消费者向这个协调器发送joinGroup请求，具体的选举方法是，取出HashMap里面的第一个，就是消费者组的信息是放在一个hashmap里面的，我么选的时候是直接拿出第一个就好。所以比较偏随机。</p>
-<h2 id="Kafka分区机制"><a href="#Kafka分区机制" class="headerlink" title="Kafka分区机制"></a>Kafka分区机制</h2><p>分为生产者分区和消费者分区。还有一种副本分区机制，那个先不说。</p>
-<p>生产者分区就是依赖于main线程里面的消息分区器，他有一个默认的分区器DefaultPartitioner，支持4种分区策略 1) 指定分区； 2）指定key，计算hash得分区； 3）指定随机粘性分区以前是轮训；（4）还可以自定义分区器（见代码）（下图））</p>
-<p>消费者分区就是谁去消费谁的问题，支持三种策略：RoundRobin、Range、sticky粘性分区</p>
+<blockquote>
+<p><font color='green'><strong>先用groupid%50 得到一个主题分区（consumer_offset），这个分区所属的节点的消费者协调器就作为这个消费者组的老大，每个消费者向这个协调器发送joinGroup请求，具体的选举方法是，取出HashMap里面的第一个，就是消费者组的信息是放在一个hashmap里面的，我么选的时候是直接拿出第一个就好。所以比较偏随机。</strong></font></p>
+</blockquote>
+<h2 id="Kafka分区机制"><a href="#Kafka分区机制" class="headerlink" title="Kafka分区机制"></a><font color='red'><u><em><strong>Kafka分区机制</strong></em></u></font></h2><blockquote>
+<p>分为<font color='green'><strong>生产者分区和消费者分区</strong></font>。还有一种副本分区机制，那个先不说。</p>
+<p>1、生产者分区就是依赖于main线程里面的消息分区器，他有一个默认的分区器DefaultPartitioner，支持4种分区策略 1) 指定分区； 2）指定key，计算hash得分区； 3）指定随机粘性分区以前是轮训；（4）还可以自定义分区器（见代码）（下图））</p>
+<p>2、消费者分区就是谁去消费谁的问题，支持三种策略：RoundRobin、Range、sticky粘性分区</p>
+</blockquote>
 <h1 id="1、定义"><a href="#1、定义" class="headerlink" title="1、定义"></a>1、定义</h1><p>分布式的基于发布订阅模式的消息队列</p>
 <p>主要应用场景包括：<strong>缓存消峰</strong>、<strong>解耦</strong>和<strong>异步通信。</strong></p>
 <p>消息队列有两种模式：</p>
@@ -463,11 +494,11 @@
                     
                         <p>
                             <a
-                                href="/2023/07/08/Kafka/#post-footer"
+                                href="/2023/07/08/CS:Kafka/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -481,7 +512,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -510,7 +541,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         

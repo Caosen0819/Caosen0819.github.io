@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="森">
-    <title>Archives: 2023/8 - 森</title>
+    <title>Archiv: 2023/8 - 森</title>
     <meta name="author" content="CSEN">
     
     
@@ -70,11 +70,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="Öffne den Link: /#about"
             >
         
         
-            <img class="header-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img class="header-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
         </a>
     
@@ -93,9 +93,9 @@
             <div class="sidebar-profile">
                 <a
                     href="/#about"
-                    aria-label="Read more about the author"
+                    aria-label="Lesen Sie mehr über den Autor"
                 >
-                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+                    <img class="sidebar-profile-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
                 </a>
                 <h4 class="sidebar-profile-name">CSEN</h4>
                 
@@ -233,7 +233,7 @@
                     
                         <a
                             class="link-unstyled"
-                            href="/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
+                            href="/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"
                             aria-label=": Java基础知识"
                         >
                             Java基础知识
@@ -243,7 +243,7 @@
                 <div class="postShorten-meta">
     <time datetime="2023-08-07T00:00:00+08:00">
 	
-		    Aug 07, 2023
+		    07 Aug 2023
     	
     </time>
     
@@ -262,16 +262,17 @@
 <blockquote>
 <p><font color='red'><u>*** Java的反射机制是在运行状态中，对于任意一个类，都能够获得这个类的所有属性和方法。***</u></font></p>
 <p> 获得Class对象的三种方式：</p>
-<p>(1)使用**Class.*forName***方法(“类的全路径名”)；</p>
-<p>(2)使用需要反射的类名调用<em><strong>class</strong></em>方法；</p>
-<p>(3)使用需要反射的类的对象调用<em><strong>getClass</strong></em>方法</p>
+<p><font color='green'><strong>(1)使用Class.forName方法(“类的全路径名”)；</strong></font></p>
+<p><font color='green'><strong>(2)使用需要反射的类名调用class方法；</strong></font></p>
+<p><font color='green'><strong>(3)使用需要反射的类的对象调用getClass方法</strong></font></p>
 <p>缺点：</p>
-<p>耗时</p>
+<p><font color='green'><strong>耗时</strong></font></p>
 </blockquote>
-<p><strong>Exception</strong></p>
+<p><font color='red'><u><em><strong>Exception</strong></em></u></font></p>
 <blockquote>
-<p>检查异常：编译的时候就出问题</p>
-<p>非检查：运行的时候出问题</p>
+<p><font color='green'><strong>检查异常：编译的时候就出问题</strong></font></p>
+<p><font color='green'><strong>非检查：运行的时候出问题</strong></font></p>
+<p>Throwable为基类，Error和Exception继承Throwable。Error和RuntimeException及其子类称为未检查异常（unchecked），其它异常称为已检查异常（checked）。</p>
 </blockquote>
 <blockquote>
 <p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20240214002243390.png" alt="image-20240214002243390"></p>
@@ -295,13 +296,13 @@
 </blockquote>
 <p><strong>深拷贝和浅拷贝</strong></p>
 <blockquote>
-<p>浅拷贝：基本类型拷贝成员变量，引用类型拷贝引用地址</p>
-<p>深拷贝：基本类型拷贝成员变量，引用类型是创建新的对象保存成员变量</p>
+<p><font color='green'><strong>浅拷贝：基本类型拷贝成员变量，引用类型拷贝引用地址</strong></font></p>
+<p><font color='green'><strong>深拷贝：基本类型拷贝成员变量，引用类型是创建新的对象保存成员变量</strong></font></p>
 </blockquote>
 <p><strong>字符型常量和字符串常量的区别</strong></p>
 <blockquote>
-<p>1.形式上: 单引号，双引号<br>2.含义上: 字符常量相当于一个整形值( ASCII 值),可以参加表达式运算；字符串常量代表一个地址值(该字符串在内存中存放位置，相当于对象)</p>
-<p>3.占内存大小：字符常量只占2个字节；字符串常量占若干个字节(至少一个字符结束标志) (注意: char 在Java中占两个字节)</p>
+<p>1.形式上: <font color='green'><strong>单引号，双引号</strong></font><br>2.含义上:<font color='green'><strong>字符常量相当于一个整形值( ASCII 值)</strong></font>,可以参加表达式运算；<font color='green'><strong>字符串常量代表一个地址值</strong></font>(该字符串在内存中存放位置，相当于对象)</p>
+<p>3.占内存大小：<font color='green'><strong>字符常量只占2个字节；字符串常量占若干个字节2N</strong></font></p>
 </blockquote>
 <p><strong>自动装箱和自动拆箱</strong></p>
 <blockquote>
@@ -311,7 +312,7 @@
 <blockquote>
 <p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20240213231737281.png" alt="image-20240213231737281"></p>
 </blockquote>
-<p><strong>创建几个对象</strong>？</p>
+<p><font color='red'><u><em><strong>创建几个对象？</strong></em></u></font></p>
 <blockquote>
 <p>1、String a&#x3D;”123”;</p>
 <p><em>创建了1个对象</em></p>
@@ -349,7 +350,7 @@
 <blockquote>
 <p><font color='red'><u><em><strong>Arraylist的底层数据结构是object[]数组，构造函数分有参无参，如果是无参就是空数组，如果是有参，就用你定义的那个初始大小。如果参数是容器，那就是把容器转成数组copy给object。关键方法就是add方法，需要保证容量够用才能添加元素，所以会在添加之前进行一个ensurecapacity的过程。他会先计算mincapacity的值，他会拿mincapacity去和现在的数组长度比较，如果大了说明要扩容，扩容的过程是先×1.5看看够不够，够的话就1.5，不够就用新的这个mincapacity。</strong></em></u></font>如果minCapacity大于最大容量，则新容量则为<code>Integer.MAX_VALUE</code>，否则，新容量大小则为 MAX_ARRAY_SIZE 即为 <code>Integer.MAX_VALUE - 8</code></p>
 <blockquote>
-<p><font color='blue'><u><em><strong>对于插入</strong></em></u></font>：如果不需要扩容，其实无论是头插指定位置插入都是O(n)，尾插是O(1)。如果需要扩容，就得再做一次扩容，O(n)，然后在插入，就是刚才讲的时间复杂度。</p>
+<p><font color='blue'><u><em><strong>对于插入</strong></em></u></font>：如果不需要扩容，<font color='green'><strong>头插和指定位置插入都是O(n)，尾插是O(1)</strong></font>。如果需要扩容，就得再做一次扩容，O(n)，然后在插入，就是刚才讲的时间复杂度。</p>
 <p><font color='blue'><u><em><strong>对于删除</strong></em></u></font>：头删和指定位置删除是O(n)，尾部删除是O(1)</p>
 </blockquote>
 </blockquote>
@@ -377,7 +378,6 @@
 <p><T>&lt;?&gt;</p>
 <p><T>主要用于类或方法上，对这个类或者方法里面的泛型全是一样的。</p>
 <?>一般用在变量上，有界通配符，对类型做一定的限制。
-
 </blockquote>
 <h2 id="hashmap和hashset"><a href="#hashmap和hashset" class="headerlink" title="hashmap和hashset"></a><font color='red'><u><em><strong>hashmap和hashset</strong></em></u></font></h2><blockquote>
 <p>hashset还是比较适合去重和集合运算</p>
@@ -393,7 +393,7 @@
 </blockquote>
 <h2 id="ArrayDeque-与-LinkedList-的区别"><a href="#ArrayDeque-与-LinkedList-的区别" class="headerlink" title="ArrayDeque 与 LinkedList 的区别"></a>ArrayDeque 与 LinkedList 的区别</h2><blockquote>
 <p><code>ArrayDeque</code> 和 <code>LinkedList</code> 都实现了 <code>Deque</code> 接口，两者都具有队列的功能</p>
-<p><code>ArrayDeque</code> 是基于可变长的数组和双指针来实现，而 <code>LinkedList</code> 则通过链表来实现。</p>
+<p><code>ArrayDeque</code> 是<font color='green'><strong>基于可变长的数组和双指针来实现</strong></font>，而 <code>LinkedList</code> 则通过链表来实现。</p>
 <p><code>ArrayDeque</code> 插入时可能存在扩容过程, 不过均摊后的插入操作依然为 O(1)。虽然 <code>LinkedList</code> 不需要扩容，但是每次插入数据时均需要申请新的堆空间，均摊性能相比更慢。</p>
 </blockquote>
 </blockquote>
@@ -401,7 +401,7 @@
 <blockquote>
 <h2 id="HashMap-的底层实现"><a href="#HashMap-的底层实现" class="headerlink" title="HashMap 的底层实现"></a>HashMap 的底层实现</h2><p>JDK1.8 之前 <code>HashMap</code> 底层是 <strong>数组和链表</strong>。1.8之后是数组+链表+红黑树</p>
 <p>构造函数是懒加载，没有初始化数据，就是把负载因子赋为0.75。</p>
-<p>put的时候，先判断数组是否为空，如果为空，就初始化为16大小。通过 key 的 <code>hashcode</code> 经过扰动函数（右移16位再异或），然后通过 <code>  hash &amp; (n - 1)</code> 判断当前元素存放的位置（这里的 n 指的是数组的长度），如果定位到的数组位置没有元素 就直接插入。如果有数据，就判断key是不是相同，相同就覆盖，不相同就判断是不是红黑树，如果是就调用putTree，如果是链表就遍历链表，看看key有没有，有就覆盖，没有就在尾部插入新的节点，然后判断长度是否大于8，大于8就去尝试转红黑树，插入结束后，最后要判断一下是否需要扩容，</p>
+<p><font color='green'><strong>put的时候，先判断数组是否为空，如果为空，就初始化为16大小。通过 key 的 <code>hashcode</code> 经过扰动函数（右移16位再异或），然后通过 <code>  hash &amp; (n - 1)</code> 判断当前元素存放的位置（这里的 n 指的是数组的长度），如果定位到的数组位置没有元素 就直接插入。如果有数据，就判断key是不是相同，相同就覆盖，不相同就判断是不是红黑树，如果是就调用putTree，如果是链表就遍历链表，看看key有没有，有就覆盖，没有就在尾部插入新的节点，然后判断长度是否大于8，大于8就去尝试转红黑树，插入结束后，最后要判断一下是否需要扩容。</strong></font></p>
 </blockquote>
 <blockquote>
 <h2 id="hashmap扩容过程"><a href="#hashmap扩容过程" class="headerlink" title="hashmap扩容过程"></a>hashmap扩容过程</h2><p>扩容简单来说就是做了两件事。1：创建一个新数组，原来的两倍大。2：遍历旧数组每个槽<br>如果槽位中是一个普通节点，则将节点放在新数组中，所在新数组中的下标计算方式为：e.hash &amp; (newCap - 1);<br>如果槽位中是一个树节点，则进行红黑树的迁移操作，新数组中下标计算方式同普通节点；<br>如果槽位中是一个链表节点，则将链表拆为高位链表和低位链表，就是拿hash值和旧容量做与操作，等于0就放入放入新数组的旧数组的下标位置和，不等于0会放到（旧数组下标 + 旧数组容量）下标位置；<br>最后返回新数组。</p>
@@ -429,15 +429,15 @@
 <h2 id="hashmap的key规范"><a href="#hashmap的key规范" class="headerlink" title="hashmap的key规范"></a>hashmap的key规范</h2><p>用自定义类作为key，必须<font color='red'><u><em><strong>重写equals()和hashCode()方法。</strong></em></u></font></p>
 </blockquote>
 <h1 id="线程安全容器"><a href="#线程安全容器" class="headerlink" title="线程安全容器"></a><font color='red'><u><em><strong>线程安全容器</strong></em></u></font></h1><blockquote>
-<h2 id="1、ConcurrentHashMap"><a href="#1、ConcurrentHashMap" class="headerlink" title="1、ConcurrentHashMap"></a>1、<strong>ConcurrentHashMap</strong></h2><p><font color='red'><u><em><strong><code>ConcurrentHashMap</code>是线程安全的，而是通过原子操作和局部加锁的方法保证了多线程的线程安全。1.8以前是用16个<code>Segment</code> 分段锁加的Reentranlock。1.8以后现在采用数组+链表+红黑树的形式。添加元素的时候按照代码的流程先判断是不是初始化、节点为空就cas添加，如果正在扩容，就帮助扩容；如果冲突就加synchronized后再插入。</strong></em></u></font></p>
+<h2 id="1、ConcurrentHashMap"><a href="#1、ConcurrentHashMap" class="headerlink" title="1、ConcurrentHashMap"></a>1、<strong>ConcurrentHashMap</strong></h2><p><font color='red'><u><em><strong><code>ConcurrentHashMap</code>1.8的底层数据结构采用数组+链表+红黑树的形式。是线程安全的，而是通过CAS+Synchronized的方法保证了多线程的线程安全。1.8以前是用16个<code>Segment</code> 分段锁加的Reentranlock。添加元素的时候，1，先判断key和value是不是空，如果空就抛异常。2，然后hashcode扰动函数模运算得到下标索引。3、先判断是不是初始化。4、节点为空就cas添加。5、如果正在扩容，就帮助扩容；6、如果冲突就加synchronized后再插入。7、看看能不能转成红黑树</strong></em></u></font></p>
 <p>Java 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。</p>
-<p>1.7 size（）返回各个segment的size和，如果写入频繁，就加锁，全局锁</p>
+<p><font color='green'><strong>1.7 size（）返回各个segment的size和，如果写入频繁，就加锁，全局锁</strong></font></p>
 <p>1.8</p>
 <h2 id="2、CopyOnWriteArrayList（读多写少）"><a href="#2、CopyOnWriteArrayList（读多写少）" class="headerlink" title="2、CopyOnWriteArrayList（读多写少）"></a>2、CopyOnWriteArrayList（读多写少）</h2><p><font color='red'><u><em><strong>原理：读的时候不加锁，对数组进行改变的时候，通过锁 + 数组拷贝 + volatile 关键字保证了线程安全；</strong></em></u></font></p>
 <ul>
-<li><font color='red'><u><em><strong>加锁</strong></em></u></font>；</li>
+<li><font color='red'><u><em><strong>加锁</strong></em></u></font>；<font color='blue'><u><em><strong>ReentrantLock</strong></em></u></font></li>
 <li><font color='red'><u><em><strong>从原数组中拷贝出新数组</strong></em></u></font>；</li>
-<li><font color='red'><u><em><strong>在新数组上进行操作，并把新数组赋值给数组容器</strong></em></u></font>；</li>
+<li><font color='red'><u><em><strong>在新数组上进行操作，并把新数组赋值回去</strong></em></u></font>；</li>
 <li><font color='red'><u><em><strong>解锁</strong></em></u></font></li>
 </ul>
 <h2 id="3、BlockingQueue"><a href="#3、BlockingQueue" class="headerlink" title="3、BlockingQueue"></a>3、BlockingQueue</h2><p><code>BlockingQueue</code> （阻塞队列）是一个接口，<font color='red'><u><em><strong>继承自 <code>Queue</code>。<code>没有元素时一直阻塞，直到有元素；还支持如果队列已满，一直等到队列可以放入新元素时再放入。</code></strong></em></u></font></p>
@@ -467,7 +467,7 @@
 <p>他有个类DelayedWorkQueue，见上面。还有一个**<code>ScheduledFutureTask</code>**</p>
 <p><font color='red'><u><em><strong>ScheduledThreadPoolExecutor相比Threadpoolexcutor，具备延时执行任务和可周期性执行任务的特性</strong></em></u></font></p>
 </blockquote>
-<p><font color='red'><u><em><strong>创建线程的方式</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>创建线程池的方式</strong></em></u></font></p>
 <p><strong>方式一：通过<code>ThreadPoolExecutor</code>构造方法来创建（推荐）。</strong></p>
 <p><strong>方式二： <code>Executors的工厂方法：比如Executors.newCachedThreadPool()</code>（不推荐）。</strong></p>
 <p>两种方法都在concurrent包下面。</p>
@@ -483,39 +483,165 @@
 <p>Comparator 除了可以通过创建自定义比较器外，还可以通过<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%8C%BF%E5%90%8D%E7%B1%BB&spm=1001.2101.3001.7020">匿名类</a>的方式，更快速、便捷的完成自定义比较器的功能，具体的代码实现如下：</p>
 <p><font color='red'><u><em><strong>Comparable 必须由自定义类内部实现排序方法，而 Comparator 是外部定义并实现排序的</strong></em></u></font></p>
 </blockquote>
-<h1 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a>Linux</h1><p><font color='green'><u><em><strong>Linux常用命令</strong></em></u></font>：<font color='blue'><u><em><strong>cat, pwd, ls、TOP，mpstat，chattr，lsattr</strong></em></u></font></p>
-<p><font color='green'><u><em><strong>怎么排查项目故障</strong></em></u></font>：</p>
+<h1 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a>Linux</h1><p><font color='red'><u><em><strong>Linux常用命令</strong></em></u></font>：<font color='blue'><u><em><strong>cat, pwd, ls、TOP，mpstat，chattr，lsattr</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>查日志的命令</strong></em></u></font>：cat tail head</p>
+<p><font color='red'><u><em><strong>怎么排查项目故障</strong></em></u></font>：</p>
 <blockquote>
-<p><font color='red'><u><em><strong>可以用top先看看是cpu还是内存的问题，cpu的话，可以拿到进程id，然后ps H -eo pid,tid,%cpu | grep进程id查看线程，最后jstack查看堆栈信息。内存泄漏的话就jmap -dump一个内存快照，然后加载到visualVM里面。或者jstat看看各个分区的情况和gc的压力</strong></em></u></font></p>
-<p>标高的原因：死锁？死循环？频繁fullgc？一些复杂计算、</p>
+<p><font color='green'><strong>可以用top先看看是cpu还是内存的问题，cpu的话，可以拿到进程id，然后ps H -eo pid,tid,%cpu | grep进程id查看线程，最后jstack查看堆栈信息。内存泄漏的话就jmap -dump一个内存快照，然后加载到visualVMEclipse Memory Analyzer里面。或者jstat看看各个分区的情况和gc的压力。还有那个HeapDumpOnMemoryError这个JVM的配置</strong></font></p>
+</blockquote>
+<p>标高的原因：</p>
+<blockquote>
+<p>死锁？死循环？频繁fullgc？一些复杂计算</p>
 </blockquote>
 <p><strong>查看机器的负载情况linux</strong></p>
 <blockquote>
 <p>Top htop mpstat vmstat</p>
 </blockquote>
-<h1 id="Spirng"><a href="#Spirng" class="headerlink" title="Spirng"></a>Spirng</h1><blockquote>
+<h1 id="Spirng"><a href="#Spirng" class="headerlink" title="Spirng"></a>Spirng</h1><p><font color='red'><u><em><strong>springboot和spring</strong></em></u></font></p>
+<blockquote>
+<p><font color='green'><strong>SpringBoot是Spring框架的扩展，是一个在spring基础上进行简化配置和开发流程的web整合的轻量级框架</strong></font></p>
+<p>@SpringBootApplication</p>
+<p>@EnableAutoConfiguration</p>
+<p>@ComponentScan</p>
+</blockquote>
+<p><font color='red'><u><em><strong>@Transcational</strong></em></u></font></p>
+<blockquote>
+<p><font color='green'><strong>用了@Transactional 时，Spring 会创建一个代理对象来包装该方法，并在方法执行前和后添加代码，以启动和提交&#x2F;回滚事务</strong></font></p>
+<p><font color='green'><strong>他可以用于<code>接口</code>、<code>类</code>、<code>类方法</code>。把注解放到类上，那所有的public方法都配置了相同的事务配置信息，作用于方法，那方法的事务会覆盖类的事务配置信息</strong></font>。</p>
+<p><font color='red'><u><em><strong>使用Transcantional需要注意的点</strong></em></u></font></p>
+<blockquote>
+<p><font color='red'><u><em><strong>1、@Transactional 只能应用到 public 方法才有效</strong></em></u></font></p>
+<blockquote>
+<p><font color='green'><strong>这是因为在使用 Spring AOP 代理时，Spring 会调用一个叫做 computeTransactionAttribute 方法去获取 @Transactional 注解的事务配置信息，这个方法里面会判断你是不是为public，如果是才能往下走，</strong></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>2、异常类型不匹配：</strong></em></u></font></p>
+<p><font color='green'><strong><code>@Transactional</code> 默认只在运行时异常（RuntimeException）发生时才回滚，对已检查异常（Checked Exception）不回滚。</strong></font></p>
+<p><font color='red'><u><em><strong>3、自调用失效：</strong></em></u></font></p>
+<p><font color='green'><strong>当一个标记为 <code>@Transactional</code> 的方法内部调用另一个 <code>@Transactional</code> 方法时，内部方法的事务设置可能不会生效。</strong></font></p>
+<p><font color='red'><u><em><strong>4、多线程</strong></em></u></font></p>
+<blockquote>
+<p><font color='green'><strong>我们说同一个事务，是指同一个数据库连接，你多线程获取到的数据库连接不是一个，所以是不同的事务。</strong></font></p>
+</blockquote>
+</blockquote>
+<p><font color='red'><u><em><strong>Spring事务基于Spring AOP，Spring AOP底层用的动态代理，动态代理有两种方式：</strong></em></u></font></p>
+<blockquote>
+<p>基于接口代理(JDK代理)</p>
+<ul>
+<li>基于接口代理，凡是类的方法非public修饰，或者用了static关键字修饰，那这些方法都不能被Spring AOP增强</li>
+</ul>
+<p>基于CGLib代理(子类代理)</p>
+<ul>
+<li>基于子类代理，凡是类的方法使用了private、static、final修饰，那这些方法都不能被Spring AOP增强 由于是继承关系，无法代理final的类和方法(无法继承)，或是private的方法(对子类不可见)。</li>
+</ul>
+</blockquote>
+<p>————————————————</p>
+<p>这个注解有几个核心的字段，</p>
+<p><font color='green'><strong>事务的隔离级别</strong></font></p>
+<p><code>isolation</code> ：事务的隔离级别，默认值为 <code>Isolation.DEFAULT</code>。</p>
+<table>
+<thead>
+<tr>
+<th>Isolation.DEFAULT：使用底层数据库默认的隔离级别。</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Isolation.READ_UNCOMMITTED</td>
+</tr>
+<tr>
+<td>Isolation.READ_COMMITTED</td>
+</tr>
+<tr>
+<td>Isolation.REPEATABLE_READ</td>
+</tr>
+<tr>
+<td>Isolation.SERIALIZABLE</td>
+</tr>
+</tbody></table>
+<p><font color='green'><strong>传播机制</strong></font></p>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th><code>Propagation.REQUIRED</code>：如果当前存在事务，则加入该事务，如果当前不存在事务，则创建一个新的事务。**(** 也就是说如果A方法和B方法都添加了注解，在默认传播模式下，A方法内部调用B方法，会把两个方法的事务合并为一个事务 <strong>）</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Propagation.SUPPORTS</code>：如果当前存在事务，则加入该事务；如果当前不存在事务，则以非事务的方式继续运行</td>
+</tr>
+<tr>
+<td><code>Propagation.MANDATORY</code>：如果当前存在事务，则加入该事务；如果当前不存在事务，则抛出异常。</td>
+</tr>
+<tr>
+<td><code>Propagation.REQUIRES_NEW</code>：重新创建一个新的事务，如果当前存在事务，暂停当前的事务。**(** 当类A中的 a 方法用默认<code>Propagation.REQUIRED</code>模式，类B中的 b方法加上采用 <code>Propagation.REQUIRES_NEW</code>模式，然后在 a 方法中调用 b方法操作数据库，然而 a方法抛出异常后，b方法并没有进行回滚，因为<code>Propagation.REQUIRES_NEW</code>会暂停 a方法的事务 <strong>)</strong></td>
+</tr>
+<tr>
+<td><code>Propagation.NOT_SUPPORTED</code>：以非事务的方式运行，如果当前存在事务，暂停当前的事务。</td>
+</tr>
+<tr>
+<td><code>Propagation.NEVER</code>：以非事务的方式运行，如果当前存在事务，则抛出异常。</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p><font color='green'><strong>是否为只读</strong></font></p>
+<blockquote>
+<p>默认情况下是false，如果你的事务确实只有查询的需求，那就可以这里设置为true；</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p><font color='red'><u><em><strong>常用的注解？</strong></em></u></font></p>
+<p><a target="_blank" rel="noopener" href="https://nageoffer.com/pages/7563ce/#%E9%97%AE%E9%A2%98%E8%AF%A6%E8%A7%A3">https://nageoffer.com/pages/7563ce/#%E9%97%AE%E9%A2%98%E8%AF%A6%E8%A7%A3</a></p>
+<blockquote>
+<p><font color='red'><u><em><strong>spring常用的注解</strong></em></u></font></p>
+<p>@Component(“foo”) &#x2F;&#x2F; 声明一个 Foo 类型的 Bean，其 beanName 为 “foo”<br>@Named(“a”) &#x2F;&#x2F; &#x3D;&#x3D; @Component(“a”)<br>@ManagedBean &#x2F;&#x2F; &#x3D;&#x3D; @Component<br>@Configuration &#x2F;&#x2F; 声明一个配置类，其本身也视为一个 Bean<br>@Bean &#x2F;&#x2F;注解用于注解在工厂方法上，标明该方法返回的对象需要作为一个 Bean 交由 Spring 管理。<br>@Lazy 懒加载：延迟单例 Bean 的加载时机，在不被其他非懒加载 Bean 依赖的情况下，不在 AbstractApplicationContext.refresh 执行过程中随其他单例 Bean 提前实例化，而是等到被从 Spring 容器获取时再初始化</p>
+<p>@PostConstruct &#x2F;&#x2F;被 @PostConstruct 注解的方法会在 Bean 初始化后调用</p>
+<hr>
+<p><font color='red'><u><em><strong>Spring Web常用的注解</strong></em></u></font></p>
+<p>1、@Controller &amp; @Service &amp; @Repository<br>2、@RequestMapping：<br>@Controller<br>@RequestMapping(“&#x2F;example”) &#x2F;&#x2F; 当放在类上时，等同于定义公共路径前缀<br> @RequestMapping(<br>        path &#x3D; {“&#x2F;method1”, “&#x2F;method”}, &#x2F;&#x2F; 支持同时映射多个路径<br>        method &#x3D; RequestMethod.GET<br>    )<br> public String method1() {<br>     &#x2F;&#x2F; 处理 &#x2F;example&#x2F;method1 或 &#x2F;example&#x2F;method 的 get 请求<br>     return “view1”;<br> }<br>@RequestParam、@PathVariable、@RequestBody不同<br><a target="_blank" rel="noopener" href="http://localhost:8080/find/1/china/2?id=100&amp;name=zhangSan%E3%80%82%E5%88%99">http://localhost:8080/find/1/china/2?id=100&amp;name=zhangSan。则</a> @RequestParam 可以用来获取 “?” 后面的 id、name 参数，而 @PathVariable 则是获取 url 中的参数，如里面的 “1”、”china”、”2”</p>
+</blockquote>
+<blockquote>
+<ol start="3">
+<li>@ResponseBody<br> 直接放回JSON数据，不需要渲染<br> 7.@ControllerAdvice官方提供的仅针对控制器的切面注解<br> 依赖注入的注解<br> 1、@Autowired @Qualifier 等同与@Inject @Named<br> 2、@Resource<br> 3、@Value 注解可以使用 ${} 语法注入配置文件的某些配置，也可以使用 #{} 语法注入 Spring 容器中的 Bean</li>
+</ol>
+<hr>
+<p><font color='red'><u><em><strong>Spring上下文注解</strong></em></u></font></p>
+<ol>
+<li>@ComponentScan</li>
+</ol>
+</blockquote>
 <p><font color='red'><u><em><strong>AOP是什么？</strong></em></u></font></p>
 <p><font color='green'><u><em><strong>aop是面向切面编程， 把一些和业务无关的公共的代码抽出来自己弄成一个模块。然后在不改变原有的逻辑情况下动态的切入到类的指定方法、指定位置上，这个就是aop 底层是动态代理JDK和CGLIB</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>有没有用过AOP</strong></em></u></font></p>
 <p><font color='green'><u><em><strong>有的，我之前在一个分库分表的组件项目里面用到过，就是分库分表要切换数据源，我就是用aop切面去计算出落到哪个库哪个表里面，切入点是一个注解。</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>aop的实现方式</strong></em></u></font></p>
 <blockquote>
-<p>1、Spring API实现AOP，</p>
-<p>2、自定义切面类，</p>
-<p>3、通过注解实现AOP，Aspect</p>
+<p><font color='green'><strong>1、Spring API实现AOP，</strong></font></p>
+</blockquote>
+<blockquote>
+<p><font color='green'><strong>2、自定义切面类，用xml配置</strong></font></p>
+</blockquote>
+<blockquote>
+<p><font color='green'><strong>3、通过注解实现AOP，Aspect</strong></font></p>
 </blockquote>
 <p><font color='red'><u><em><strong>aop失效的原因和解决方法</strong></em></u></font></p>
 <blockquote>
-<p><font color='green'><u><em><strong>cglib， 在bean中用this来调用被AOP注解标注的方法，this下注解是不生效的。假设A和B，B被aop增强了，此时A调用的是当前类中的方法，而不是其子类加强后的方法，所以会失效</strong></em></u></font></p>
+<p><font color='green'><strong>cglib， 在bean中用this来调用被AOP注解标注的方法，this下注解是不生效的。一个类中有两个方法A和B，B被aop增强了，此时A调用的是当前类中的方法，而不是其子类加强后的方法，所以会失效</strong></font></p>
 </blockquote>
 <blockquote>
 <p>解决方法：</p>
+</blockquote>
+<blockquote>
 <p>1、直接把this换成<strong>Autowared</strong>修饰的bean</p>
+</blockquote>
+<blockquote>
 <p>2、<strong>Spring上下文获取增强后的实例引用</strong></p>
+</blockquote>
+<p><font color='red'><u><em><strong>aop用那种动态代理</strong></em></u></font></p>
+<blockquote>
+<p><font color='green'><strong>能用 JDK 做动态代理就用 JDK，不能用 JDK 做动态代理就用 Cglib，即首选 JDK 做动态代理。</strong></font></p>
 </blockquote>
 <p><font color='red'><u><em><strong>IOC</strong></em></u></font></p>
 <blockquote>
-<p><font color='red'><u><em><strong>控制反转的意思，以前我们创建的时候new，但是这种方法很麻烦，且很难处理对象直接的依赖关系。他是把对象创建和对象之间的调用过程，交给spring进行管理。</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>控制反转的意思，以前我们创建的时候new，但是这种方法很麻烦，且很难处理对象直接的依赖关系。他是把对象创建和对象之间的调用过程，交给spring进行管理。</strong></em></u></font></p>
 </blockquote>
 <blockquote>
 <p><font color='green'><u><em><strong>Spring有几种容器</strong></em></u></font></p>
@@ -529,15 +655,42 @@
 <li><strong>AnnotationConfigApplicationContext</strong>: AnnotationConfigApplicationContext是通过Java类配置来管理Bean的容器，不需要XML配置文件，而是通过注解来完成Bean的定义和依赖注入。</li>
 </ol>
 </blockquote>
+<p><font color='red'><u>**BeanFactory和FactoryBean，ApplicationContext的区别？ **</u></font></p>
+<blockquote>
+<p><font color='green'><strong>答：①BeanFactory是⼀个Factory接⼝，是⽤来管理bean的IOC容器或对象⼯⼚。 ②FactoryBean是⼀个Bean接⼝，是⼀个可以⽣产或者装饰对象的⼯⼚Bean，可以通过 实现该接⼝⾃定义的实例化Bean的逻辑。③ApplicationConext是BeanFactory的⼦接 ⼝，扩展了其功能，ApplicationContext是⽴即加载</strong></font></p>
+</blockquote>
+<p><font color='red'><u><em><strong>创建Bean的方式</strong></em></u></font></p>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42764468/article/details/103286994#1bean_8">1.使用默认的构造函数创建bean对象</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42764468/article/details/103286994#2bean_25">2.通过静态工厂方法创建bean</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42764468/article/details/103286994#3bean_90">3.通过实例工厂方法创建bean</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42764468/article/details/103286994#4FactoryBean_141">4.实现FactoryBean接口</a></li>
+</ul>
+</blockquote>
 <p><font color='red'><u><em><strong>Bean的生命周期？</strong></em></u></font></p>
 <blockquote>
 <p>1 通过<strong>XML</strong>、注解和配置类等方式加载<strong>Spring Bean</strong></p>
+</blockquote>
+<blockquote>
 <p>2、用<strong>BeanDefinitionReader</strong>把Bean解析成BeanDefinition结构，放到beanDefinitionMap，扫描这个</p>
+</blockquote>
+<blockquote>
 <p>4、从Bean定义里面拿BeanClass的构造函数，通过反射创建Bean，这里构造函数的选用，一般先选有autowire修饰和无参构造函数。</p>
+</blockquote>
+<blockquote>
 <p>5、依赖注入</p>
+</blockquote>
+<blockquote>
 <p>6、处理三个Aware接口，</p>
+</blockquote>
+<blockquote>
 <p>7、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em></p>
+</blockquote>
+<blockquote>
 <p>8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）</p>
+</blockquote>
+<blockquote>
 <p>9、<em><strong>BeanPostProcessor：自定义的逻辑</strong></em> aop核心底层动态代理</p>
 </blockquote>
 <p><font color='green'><u><em><strong>Bean的循环依赖？</strong></em></u></font></p>
@@ -553,17 +706,21 @@
 <p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231222001434059.png" alt="image-20231222001434059"></p>
 <p><font color='red'><u><em><strong>依赖注入有哪些方法</strong></em></u></font></p>
 <blockquote>
-<p>1、构造器</p>
-<p>2、setter</p>
-<p>3、字段注解</p>
+<p><font color='green'><strong>1、构造器</strong></font></p>
 </blockquote>
-<p><font color='red'><u><em><strong>创建Bean的方式</strong></em></u></font></p>
 <blockquote>
+<p><font color='green'><strong>2、setter</strong></font></p>
+</blockquote>
+<blockquote>
+<p><font color='green'><strong>3、字段注解</strong></font></p>
+</blockquote>
+<p>@Transactional 这个注解仅仅是一些（和事务相关的）元数据，在运行时被事务基础设施读取消 费，并使用这些元数据来配置bean的事务行为。 大致来说具有两方面功能，一是表明该方法要参 与事务，二是配置相关属性来定制事务的参与方式和运行行为 声明式事务主要是得益于Spring AOP。使用一个事务拦截器，在方法调用的前后&#x2F;周围进行事务性 增强（advice），来驱动事务完成。 @Transactional注解既可以标注在类上，也可以标注在方法上。当在类上时，默认应用到类里的所 有方法。如果此时方法上也标注了，则方法上的优先级高。 另外注意方法一定要是public的。</p>
+<p><font color='red'><u><em><strong>可以直接调用bean.init的进行初始化吗？</strong></em></u></font></p>
+<blockquote>
+<p><font color='green'><strong>最好不要，如果你在new之后直接调用init方法，那会出现一种情况，假设这个bean里面有个Car类，然后我做初始化setName结果人家刚刚实例化，就会报空指针异常。</strong></font></p>
 <ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42764468/article/details/103286994#1bean_8">1.使用默认的构造函数创建bean对象</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42764468/article/details/103286994#2bean_25">2.通过静态工厂方法创建bean</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42764468/article/details/103286994#3bean_90">3.通过实例工厂方法创建bean</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42764468/article/details/103286994#4FactoryBean_141">4.实现FactoryBean接口</a></li>
+<li><font color='green'><strong><code>private Car car;</code> 这行代码在栈内存中为 <code>car</code> 引用变量分配空间。这个空间只是用来存储引用的</strong></font></li>
+<li><font color='green'><strong><code>car = new Car();</code> 这行代码在堆内存中为 <code>Car</code> 对象分配空间，并将堆内存中的对象地址赋值给 <code>car</code> 引用变量。</strong></font></li>
 </ul>
 </blockquote>
 <p><font color='red'><u><em><strong>Springboot启动流程</strong></em></u></font></p>
@@ -572,8 +729,14 @@
 </blockquote>
 <blockquote>
 <p>1、服务构建就是构造springapplication，包括确认web服务器、加载spring.factories下的所有初始化类监听器，找到主导方法。</p>
+</blockquote>
+<blockquote>
 <p>2、然后调用run方法进入环境准备，通过配置类、和配置文件构造出一个environment，用于后面的容器创建。</p>
+</blockquote>
+<blockquote>
 <p>3、容器创建的话，其实就是创建一个BeanFactory，然后加载bean信息，通过beanDefinitionReader把bean信息读成BeanDefinition并且把他放到beanDefinitionMap里面</p>
+</blockquote>
+<blockquote>
 <p>4、填充容器。就是我们的refresh（）方法，一个12步，但是可以分成四块，预处理，后置处理器，国际化分派器，实例化剩下的所有bean。</p>
 </blockquote>
 <p><font color='red'><u><em><strong>容器初始化流程</strong></em></u></font></p>
@@ -600,11 +763,35 @@
 <blockquote>
 <blockquote>
 <p>1、初始化Spring容器，创建一个DefaultListableBeanFactory</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
 <p>2、将配置类的BeanDefinition注册到容器。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
 <p>3、Refresh，Refresh又分12步。这12步，可以分成几块。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
 <p>第一块：预处理，包括刷新的预处理，然后获取我们刚刚创建的BeanFactory再做预处理。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
 <p>第二块：后置处理器，执行BeanFactory的后置处理器，然后在容器里面注册一个Bean的后置处理器。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
 <p>第三块：就是一些国际化，事件分派器的东西。</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
 <p>第四块：非常重要了，finishBeanFactoryInitailization，<strong>初始化所有剩下的单实例bean</strong>，bean的生命周期也从这里开始。</p>
 </blockquote>
 </blockquote>
@@ -678,7 +865,7 @@
 <p>git merge是保留历史的提交，然后new一个新的提交记录</p>
 <p>rebase是一般在非公共分支上rebase，然后合并到main分支，原来的那个分支会被清除。</p>
 </blockquote>
-<p><strong>setNX有什么缺陷？</strong></p>
+<p><strong>setNX有什么缺陷？</strong>redison锁过期的问题</p>
 <blockquote>
 <p>有单点风险</p>
 <p>可能会导致同一把锁被多人使用</p>
@@ -686,10 +873,10 @@
 </blockquote>
 <h3 id="操作系统"><a href="#操作系统" class="headerlink" title="操作系统"></a>操作系统</h3><p><strong>1、进程和线程的区别</strong></p>
 <blockquote>
-<p>1、进程是资源分配和调度的单位，把磁盘的代码加载到内存，分配数据空间。</p>
-<p>2、线程是进程的一个实体，独立运行和独立调度的基本单位，cpu上面真正运行的其实是线程</p>
-<p>3、一个进程可以拥有多个线程。</p>
-<p>4、线程的切换消耗要比进程小。共享代码区、数据区，堆区</p>
+<p><font color='green'><strong>1、进程是资源分配和调度的单位，把磁盘的代码加载到内存，分配数据空间。</strong></font></p>
+<p><font color='green'><strong>2、线程是进程的一个实体，cpu运行和独立调度的基本单位，cpu上面真正运行的其实是线程</strong></font></p>
+<p><font color='green'><strong>3、一个进程可以拥有多个线程。</strong></font></p>
+<p><font color='green'><strong>4、线程的切换消耗要比进程小。共享代码区、数据区，堆区</strong></font></p>
 </blockquote>
 <p><strong>2、死锁</strong></p>
 <blockquote>
@@ -715,11 +902,11 @@
                     
                         <p>
                             <a
-                                href="/2023/08/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/#post-footer"
+                                href="/2023/08/07/CS:Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/#post-footer"
                                 class="postShorten-excerpt_link link"
                                 aria-label=""
                             >
-                                Comment and share
+                                Kommentieren und teilen
                             </a>
                         </p>
                     
@@ -733,7 +920,7 @@
     <ul class="pagination">
         
         
-        <li class="pagination-number">page 1 of 1</li>
+        <li class="pagination-number">Seite 1 von 1</li>
     </ul>
 </div>
 
@@ -763,7 +950,7 @@
             <i class="fa fa-times"></i>
         </div>
         
-            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Author&#39;s picture"/>
+            <img id="about-card-picture" src="/assets/images/head.jpg" alt="Bild des Autors"/>
         
             <h4 id="about-card-name">CSEN</h4>
         
