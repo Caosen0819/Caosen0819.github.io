@@ -151,7 +151,7 @@
     <li>
         <div class="all active" data-rel="All">All
             
-                <small>(36)</small>
+                <small>(37)</small>
             
         </div>
     </li>
@@ -208,7 +208,7 @@
         <div data-rel="Java">
             
             Java
-            <small>(26)</small>
+            <small>(27)</small>
         </div>
         
     </li>
@@ -251,8 +251,8 @@
         
     </div>
 </div>
-<input type="hidden" id="yelog_site_posts_number" value="36">
-<input type="hidden" id="yelog_site_word_count" value="126.8k">
+<input type="hidden" id="yelog_site_posts_number" value="37">
+<input type="hidden" id="yelog_site_word_count" value="128.9k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -329,6 +329,10 @@
         
             <li class="article-tag-list-item">
                 <i class="iconfont icon-tag"></i><a>DBRouter-starter</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Java</a>
             </li>
         
             <li class="article-tag-list-item">
@@ -460,6 +464,15 @@
            data-tag="Mysql"
            data-author="" >
             <span class="post-title" title="八股-MySQL45">八股-MySQL45</span>
+            <span class="post-date" title="2024-02-02 21:29:04">2024/02/02</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2024/02/02/%E5%85%AB%E8%82%A1-%E9%9D%A2%E8%AF%95%E9%97%AE%E9%A2%98/"
+           data-tag="Java"
+           data-author="" >
+            <span class="post-title" title="八股-面试范围">八股-面试范围</span>
             <span class="post-date" title="2024-02-02 21:29:04">2024/02/02</span>
         </a>
         
@@ -751,12 +764,12 @@
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='Updated At: 2024-07-07 20:14:17'>2023-04-04 00:00</time>
+            Created At : <time class="date" title='Updated At: 2024-07-27 14:59:48'>2023-04-04 00:00</time>
         
     </div>
     <div class="article-meta">
         
-        <span>Count:838</span>
+        <span>Count:911</span>
         
         
         <span id="busuanzi_container_page_pv">
@@ -775,7 +788,7 @@
     
     <div class="toc-ref">
     
-        
+        <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#Roaring-BitMap"><span class="toc-text">Roaring BitMap</span></a></li></ol>
     
 <style>
     .left-col .switch-btn,
@@ -791,13 +804,20 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p><strong>订单超时自动取消功能如何设计？</strong></p>
+        <p><strong>分布式锁的实现方式</strong></p>
+<p>1、数据库锁表</p>
+<p>2、redis</p>
+<p>3、zookeeper</p>
+<h4 id="Roaring-BitMap"><a href="#Roaring-BitMap" class="headerlink" title="Roaring BitMap"></a>Roaring BitMap</h4><p><font color='red'><u><em><strong>为什么单表2000w</strong></em></u></font></p>
+<p>一页16k，非叶子结点存主键和指针，16*1024字节&#x2F;（主键+指针）&#x3D;1000个</p>
+<p>两层，1000*1000。&#x3D;100w</p>
+<p>100w*每个叶子结点，16 * 100w &#x3D; 1.6kw</p>
+<p><strong>订单超时自动取消功能如何设计？</strong></p>
 <blockquote>
 <p>首先，这个订单肯定已经是产生了的。</p>
-<p>一种方法就是：定时任务+轮训，但是如果订单很多的情况下，就合适了。</p>
-<p>时间轮算法：受到内存限制，可能会OOM，甚至说浪费空间。</p>
-<p>redis过期事件：</p>
-<p>延迟消息mq，设置一个时间，等到这个时间到了我们去检查用户是否支付</p>
+<p><font color='red'><u><em><strong>一种方法就是：定时任务+轮训，但是如果订单很多的情况下，就不合适了。</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>时间轮算法：可能60个槽、可能365个槽。槽不够用要么加槽，要么分层（分+秒）</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>延迟消息mq，设置一个时间，等到这个时间到了我们去检查用户是否支付</strong></em></u></font></p>
 <p>最好还是用消息队列mq</p>
 </blockquote>
 <p><strong>在 2G 大小的文件中，找出高频top100的单词</strong></p>

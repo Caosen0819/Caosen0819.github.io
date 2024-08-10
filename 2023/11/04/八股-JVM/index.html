@@ -151,7 +151,7 @@
     <li>
         <div class="all active" data-rel="All">All
             
-                <small>(36)</small>
+                <small>(37)</small>
             
         </div>
     </li>
@@ -208,7 +208,7 @@
         <div data-rel="Java">
             
             Java
-            <small>(26)</small>
+            <small>(27)</small>
         </div>
         
     </li>
@@ -251,8 +251,8 @@
         
     </div>
 </div>
-<input type="hidden" id="yelog_site_posts_number" value="36">
-<input type="hidden" id="yelog_site_word_count" value="126.8k">
+<input type="hidden" id="yelog_site_posts_number" value="37">
+<input type="hidden" id="yelog_site_word_count" value="128.9k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -329,6 +329,10 @@
         
             <li class="article-tag-list-item">
                 <i class="iconfont icon-tag"></i><a>DBRouter-starter</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Java</a>
             </li>
         
             <li class="article-tag-list-item">
@@ -460,6 +464,15 @@
            data-tag="Mysql"
            data-author="" >
             <span class="post-title" title="八股-MySQL45">八股-MySQL45</span>
+            <span class="post-date" title="2024-02-02 21:29:04">2024/02/02</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2024/02/02/%E5%85%AB%E8%82%A1-%E9%9D%A2%E8%AF%95%E9%97%AE%E9%A2%98/"
+           data-tag="Java"
+           data-author="" >
+            <span class="post-title" title="八股-面试范围">八股-面试范围</span>
             <span class="post-date" title="2024-02-02 21:29:04">2024/02/02</span>
         </a>
         
@@ -751,12 +764,12 @@
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='Updated At: 2024-07-14 21:06:56'>2023-11-04 00:00</time>
+            Created At : <time class="date" title='Updated At: 2024-07-28 01:33:41'>2023-11-04 00:00</time>
         
     </div>
     <div class="article-meta">
         
-        <span>Count:7.3k</span>
+        <span>Count:7.5k</span>
         
         
         <span id="busuanzi_container_page_pv">
@@ -819,9 +832,12 @@
 </blockquote>
 <p>5、方法区</p>
 <blockquote>
-<p>存储被虚拟机加载的类信息、静态常量。</p>
+<p>存储被虚拟机加载的类信息。</p>
 <p><font color='red'><u><em><strong>运行时常量池：</strong></em></u></font></p>
 <p>Class文件除了类的版本字段方法接口描述外，还有一个常量池，用于存放编译期间生成的字面量和符号引用，而当类加载到内存中后，jvm把符号引用换成直接引用，将class常量池中的内容存放到运行时常量池中。</p>
+<p><font color='red'><u><em><strong>符号引用就是：接口、类、字段、方法简单名称和描述符【解析那里】</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>直接引用：直接指向目标的指针、偏移量、句柄</strong></em></u></font></p>
+<p>例如，<code>test()</code>这个符号引用在运行时就会被转变为<code>test()</code>方法具体代码在内存中的地址，主要通过对象头里的类型指针去转换直接引用。Person preson &#x3D; new Person（）。类型指针就是从person找到Person.class</p>
 </blockquote>
 <p><img src="/../images/JVM/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjg0MDA1,size_16,color_FFFFFF,t_70.png" alt="img"></p>
 <p><strong>对象的创建</strong></p>
@@ -875,7 +891,11 @@
 <li><p>属性表：太复杂了</p>
 </li>
 </ul>
-<h1 id="4、类加载机制"><a href="#4、类加载机制" class="headerlink" title="4、类加载机制"></a>4、类加载机制</h1><p>类加载分成三个阶段，<font color='blue'><u><em><strong>加载、连接、初始化</strong></em></u></font>。连接可以分成，验证、准备、解析</p>
+<h1 id="4、类加载机制"><a href="#4、类加载机制" class="headerlink" title="4、类加载机制"></a>4、类加载机制</h1><p><font color='red'><u><em><strong>类加载什么时候加载类</strong></em></u></font></p>
+<blockquote>
+<p><font color='red'><u><em><strong>类加载其实是有点延迟加载的，除了一些基础的类以外，其他的类都是用到的时候才加载，比如你要创建类实例，或者使用静态方法的时候就会加载</strong></em></u></font></p>
+</blockquote>
+<p>类加载分成三个阶段，<font color='blue'><u><em><strong>加载、连接、初始化</strong></em></u></font>。连接可以分成，验证、准备、解析</p>
 <h2 id="1、加载"><a href="#1、加载" class="headerlink" title="1、加载"></a>1、加载</h2><p>加载是类加载过程的第一步，主要完成下面 3 件事情：</p>
 <ol>
 <li>通过全类名获取定义此类的二进制字节流</li>
@@ -1121,9 +1141,10 @@
 </ul>
 </li>
 </ul>
-<h2 id="JVM调优参数"><a href="#JVM调优参数" class="headerlink" title="JVM调优参数"></a>JVM调优参数</h2><p>jar包启动的时候java和 -jar直接可以去配置jvm的参数</p>
+<h2 id="JVM调优参数"><a href="#JVM调优参数" class="headerlink" title="JVM调优参数"></a>JVM调优参数</h2><p><font color='red'><u><em><strong>堆内存默认设置为操作系统的一半，初识堆大小和最大堆大小建议一样</strong></em></u></font></p>
+<p>jar包启动的时候java和 -jar直接可以去配置jvm的参数</p>
 <h2 id="JVM调优的参数有哪些？"><a href="#JVM调优的参数有哪些？" class="headerlink" title="JVM调优的参数有哪些？"></a>JVM调优的参数有哪些？</h2><blockquote>
-<p><font color='green'><u><em><strong>内存管理：JVM-Xms（初始堆大小，默认1&#x2F;64物理内存），-Xmx（最大堆内存，默认1&#x2F;4），新生代晋级老年代的阈值（MaxTenuringThreshold，默认15），新生代大小（Xmn），永久代大小（PermSize），线程栈大小（Xss），垃圾回收器（UseParallelGC，UseConcMarkSweepGC），内存OOM导出快照（HeapDumpOnOutOfMemoryError），新生代和老年代的比例（newRadio），eden区和幸存者区的大小比例（SurvivorRatio），（）</strong></em></u></font></p>
+<p><font color='green'><u><em><strong>内存管理：JVM-Xms，-Xmx，新生代晋级老年代的阈值（MaxTenuringThreshold，默认15），新生代大小（Xmn），永久代大小（PermSize），线程栈大小（Xss），垃圾回收器（UseParallelGC，UseConcMarkSweepGC），内存OOM导出快照（HeapDumpOnOutOfMemoryError），新生代和老年代的比例（newRadio），eden区和幸存者区的大小比例（SurvivorRatio），（）</strong></em></u></font></p>
 <p>CMSFullGCsBeforeCompaction：进行过几<strong>次Full GC（标记清除）之后进行一次标记整理算法</strong></p>
 <p>CMSInitialtingOccupancyfraction 什么时候触发cms 默认92 or 68</p>
 <p>CMSScavengeBeforeRemark：默认不开启 ,开启之后是每次CMS之前都要有一次young gc</p>
@@ -1153,7 +1174,7 @@
 <p><font color='green'><u><em><strong>3、元空间不够用</strong></em></u></font></p>
 <p><font color='green'><strong>4、空间分配担保失败</strong></font></p>
 <blockquote>
-<p><font color='green'><strong>当准备出发young gc时，进行空间分配担保，老年代最大连续空间小于年轻代所有对象总空间。如果handlepromotionfailure，如果是false直接full gc，如果是true，那继续判断老年代最大连续空间小于历代晋升的平均。</strong></font></p>
+<p><font color='green'><strong>当准备出发young gc时，进行空间分配担保，老年代最大连续空间小于年轻代所有对象总空间。如果handlepromotionfailure是false直接full gc，如果是true，那继续判断老年代最大连续空间小于历代晋升的平均。</strong></font></p>
 </blockquote>
 </blockquote>
 <h2 id="Java内存泄漏排查"><a href="#Java内存泄漏排查" class="headerlink" title="Java内存泄漏排查"></a>Java内存泄漏排查</h2><blockquote>

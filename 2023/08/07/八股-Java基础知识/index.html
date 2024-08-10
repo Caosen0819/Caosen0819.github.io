@@ -151,7 +151,7 @@
     <li>
         <div class="all active" data-rel="All">All
             
-                <small>(36)</small>
+                <small>(37)</small>
             
         </div>
     </li>
@@ -208,7 +208,7 @@
         <div data-rel="Java">
             
             Java
-            <small>(26)</small>
+            <small>(27)</small>
         </div>
         
     </li>
@@ -251,8 +251,8 @@
         
     </div>
 </div>
-<input type="hidden" id="yelog_site_posts_number" value="36">
-<input type="hidden" id="yelog_site_word_count" value="126.8k">
+<input type="hidden" id="yelog_site_posts_number" value="37">
+<input type="hidden" id="yelog_site_word_count" value="128.9k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -329,6 +329,10 @@
         
             <li class="article-tag-list-item">
                 <i class="iconfont icon-tag"></i><a>DBRouter-starter</a>
+            </li>
+        
+            <li class="article-tag-list-item">
+                <i class="iconfont icon-tag"></i><a>Java</a>
             </li>
         
             <li class="article-tag-list-item">
@@ -460,6 +464,15 @@
            data-tag="Mysql"
            data-author="" >
             <span class="post-title" title="八股-MySQL45">八股-MySQL45</span>
+            <span class="post-date" title="2024-02-02 21:29:04">2024/02/02</span>
+        </a>
+        
+        
+        <a  class="All Java "
+           href="/2024/02/02/%E5%85%AB%E8%82%A1-%E9%9D%A2%E8%AF%95%E9%97%AE%E9%A2%98/"
+           data-tag="Java"
+           data-author="" >
+            <span class="post-title" title="八股-面试范围">八股-面试范围</span>
             <span class="post-date" title="2024-02-02 21:29:04">2024/02/02</span>
         </a>
         
@@ -751,12 +764,12 @@
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='Updated At: 2024-07-14 16:34:19'>2023-08-07 00:00</time>
+            Created At : <time class="date" title='Updated At: 2024-08-08 00:57:12'>2023-08-07 00:00</time>
         
     </div>
     <div class="article-meta">
         
-        <span>Count:10.9k</span>
+        <span>Count:11k</span>
         
         
         <span id="busuanzi_container_page_pv">
@@ -791,12 +804,16 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p><strong>本地缓存和分布式缓存</strong></p>
+        <p><strong>jre和jdk</strong></p>
+<blockquote>
+<p>jre是java运行时环境，jdk是java development kit</p>
+</blockquote>
+<p><strong>本地缓存和分布式缓存</strong></p>
 <blockquote>
 <p><font color='green'><strong>本地缓存就是存储在单个应用程序的内存里面，Map和ConcurrentHashMap这些都是缓存，或者caffeine框架。优点就是速度快容易管理。缺点就是数据不能共享同步，不好持久化</strong></font></p>
 <p><font color='green'><strong>分布式缓存就是支持多个应用程序共享数据，比如redis。优点就是可扩展性强，加机器，高可用，可持久化。缺点就是需要额外资源，还需要考虑数据一致性</strong></font></p>
 </blockquote>
-<p>多级缓存</p>
+<p><strong>多级缓存</strong></p>
 <blockquote>
 <p><font color='green'><strong>在做多级缓存的方案中，会先查询本地缓存，如果本地缓存查不到，再查询分布式缓存。并旦在分<br>布式缓存中查询到之后保存到本地缓存中一份。</strong></font></p>
 <p><font color='red'><u><em><strong>多级缓存数据一致性？版本号机制</strong></em></u></font></p>
@@ -823,7 +840,7 @@
 </blockquote>
 <p><font color='red'><u><em><strong>Error和Exception</strong></em></u></font></p>
 <blockquote>
-<p><font color='green'>*<strong>Throwable为基类，Error和Exception继承Throwable。Error是程序员解决不了比如OOM，SOF。Exception分为未检查异常和检查异常。检查异常：编译的时候就出问题非检查：运行的时候出问题，非检查异常像是空指针，类型转换都是。检查异常比如文件没找到异常</strong></font></p>
+<p><font color='green'>*<strong>Throwable为基类，Error和Exception继承Throwable。Error是程序员解决不了比如OOM，SOF。Exception分为未检查异常和检查异常。检查异常：编译的时候就出问题。非检查：运行的时候出问题。—-非检查异常像是空指针，类型转换都是。检查异常比如文件没找到异常，SqlException</strong></font></p>
 </blockquote>
 <blockquote>
 <p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20240214002243390.png" alt="image-20240214002243390"></p>
@@ -838,7 +855,8 @@
 <p><strong>String StringBuffer 和 StringBuilder 的区别是什么？String 为什么是不可变的？</strong></p>
 <blockquote>
 <p><font color='green'><strong>String是字符串常量，因为定义的char数组是final的。而StringBuffer和StringBuilder是字符串变量。由String创建的字符内容是不可改变的，而由StringBuffer和StringBuidler创建的字符内容是可以改变的。</strong></font></p>
-<p><font color='green'><strong>StringBuffer是线程安全的，而StringBuilder是非线程安全的</strong></font></p>
+<p><font color='green'><strong>StringBuffer是线程安全的【所有方法都是synchronized】，而StringBuilder是非线程安全的</strong></font></p>
+<p>append方法。append会先去判断一下现在的容量够不够用，不够就扩容，够用就插入</p>
 </blockquote>
 <p><strong>equals与&#x3D;&#x3D;的区别</strong></p>
 <blockquote>
@@ -847,7 +865,6 @@
 </blockquote>
 <p><strong>深拷贝和浅拷贝</strong></p>
 <blockquote>
-<p><font color='green'><strong>如果变量本身就是基本数据类型，其实没有浅拷贝和深拷贝的问题，都是如果变量是引用类型，就得分一下浅拷贝和深拷贝了</strong></font></p>
 <p><font color='green'><strong>浅拷贝：基本类型的成员变量拷贝值，引用类型成员变量拷贝引用地址</strong></font></p>
 <p><font color='green'><strong>深拷贝：基本类型的成员变量拷贝值，引用类型是创建新的对象保存成员变量</strong></font></p>
 <p><font color='red'><u><em><strong>通过实现clone方法实现浅拷贝和深拷贝</strong></em></u></font></p>
@@ -944,11 +961,6 @@
 <p><font color='blue'><u><em><strong>如何实现数组和arraylist之间的转换</strong></em></u></font></p>
 <p>List.toarray  (修改原先list，array不受影响)</p>
 <p>Arrays.aslist （受影响）</p>
-<blockquote>
-<p><T>&lt;?&gt;</p>
-<p><T>主要用于类或方法上，对这个类或者方法里面的泛型全是一样的。</p>
-<?>一般用在变量上，有界通配符，对类型做一定的限制。
-</blockquote>
 <h2 id="hashmap和hashset"><a href="#hashmap和hashset" class="headerlink" title="hashmap和hashset"></a><font color='red'><u><em><strong>hashmap和hashset</strong></em></u></font></h2><blockquote>
 <p>hashset还是比较适合去重和集合运算</p>
 <p>hashmap比较适合键值对这类数据</p>
@@ -963,7 +975,7 @@
 </blockquote>
 </blockquote>
 <h1 id="HashMap"><a href="#HashMap" class="headerlink" title="HashMap"></a>HashMap</h1><p>hashmap最关键的是他的<font color='blue'><u><em><strong>底层数据结构、put 扩容 和 线程安全方面的知识。</strong></em></u></font></p>
-<p><font color='red'><u><em><strong>为什么用红黑树</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>HASHMAP为什么用红黑树</strong></em></u></font></p>
 <blockquote>
 <p><font color='green'><strong>普通二叉树会形成链表；</strong></font></p>
 <p><font color='green'><strong>平衡二叉树插入的时候会左旋右旋保持绝对平衡</strong></font></p>
@@ -973,6 +985,9 @@
 <h2 id="HashMap-的底层实现"><a href="#HashMap-的底层实现" class="headerlink" title="HashMap 的底层实现"></a>HashMap 的底层实现</h2><p>JDK1.8 之前 <code>HashMap</code> 底层是 <strong>数组和链表</strong>。1.8之后是数组+链表+红黑树</p>
 <p>构造函数是懒加载，没有初始化数据，就是把负载因子赋为0.75。</p>
 <p><font color='green'><strong>put的时候，先判断数组是否为空，如果为空，就初始化为16大小。通过 key 的 <code>hashcode</code> 经过扰动函数（右移16位再异或），然后通过 <code>  hash &amp; (n - 1)</code> 判断当前元素存放的位置（这里的 n 指的是数组的长度），如果定位到的数组位置没有元素 就直接插入。如果有数据，就判断key是不是相同，相同就覆盖，不相同就判断是不是红黑树，如果是就调用putTree，如果是链表就遍历链表，看看key有没有，有就覆盖，没有就在尾部插入新的节点，然后判断长度是否大于8，大于8就去尝试转红黑树，插入结束后，最后要判断一下是否需要扩容。</strong></font></p>
+<p>为什么阈值时8</p>
+<p>哈希碰撞的时候8次的时候几乎已经是非常低的概率了，那时候就转红黑树</p>
+<p>一开始不转？内存问题吧</p>
 </blockquote>
 <blockquote>
 <h2 id="hashmap扩容过程"><a href="#hashmap扩容过程" class="headerlink" title="hashmap扩容过程"></a>hashmap扩容过程</h2><p>扩容简单来说就是做了两件事。1：创建一个新数组，原来的两倍大。2：遍历旧数组每个槽<br>如果槽位中是一个普通节点，则将节点放在新数组中，所在新数组中的下标计算方式为：e.hash &amp; (newCap - 1);<br>如果槽位中是一个树节点，则进行红黑树的迁移操作，新数组中下标计算方式同普通节点；<br>如果槽位中是一个链表节点，则将链表拆为高位链表和低位链表，就是拿hash值和旧容量做与操作，等于0就放入放入新数组的旧数组的下标位置和，不等于0会放到（旧数组下标 + 旧数组容量）下标位置；<br>最后返回新数组。</p>
@@ -1002,13 +1017,11 @@
 <blockquote>
 <p><font color='green'><strong>两个对象相同的话，他们的HashCode一定相等；</strong></font></p>
 <p><font color='green'><strong>两个对象HashCode相等，equals不一定是同一个对象；</strong></font></p>
-</blockquote>
-<blockquote>
-<p>简单来说就是为了避免多余元素的序列化，用 transient  标记了 elementData 字段避免使用默认的序列化方式，定义了  writeObject 和 readObject 实现了自定义的序列化方式。</p>
+<p>hashcode和equals?<br>HashCode()是Obiects的方法，返回的是散列码，默认放的是内存地址,int值<br>equals比较的是两个内存地址是否相同，当然可以重写<br>如果equals要重写，那hashcode也要重写?<br>为什么还需要重写 hashCode方法呢?这是因为在使用散列数据结构时，比如哈希表，我们希望相等的对象具有相等的哈希码。如果两个相等的对象具有不同的哈希码，那么它们将被存储在哈希表的不同位置，导致无法正确查找这些对象。</p>
 </blockquote>
 </blockquote>
 <h1 id="线程安全容器"><a href="#线程安全容器" class="headerlink" title="线程安全容器"></a><font color='red'><u><em><strong>线程安全容器</strong></em></u></font></h1><blockquote>
-<h2 id="1、ConcurrentHashMap"><a href="#1、ConcurrentHashMap" class="headerlink" title="1、ConcurrentHashMap"></a>1、<strong>ConcurrentHashMap</strong></h2><p><font color='red'><u><em><strong><code>ConcurrentHashMap</code>1.8的底层数据结构采用数组+链表+红黑树的形式。是线程安全的，而是通过CAS+Synchronized的方法保证了多线程的线程安全。1.8以前是用16个<code>Segment</code> 分段锁加的Reentranlock。添加元素的时候，1，先判断key和value是不是空，如果空就抛异常。2，然后hashcode扰动函数模运算得到下标索引。3、先判断是不是初始化。4、节点为空就cas添加。5、如果正在扩容，就帮助扩容；6、如果冲突就加synchronized后再插入。7、看看能不能转成红黑树</strong></em></u></font></p>
+<h2 id="1、ConcurrentHashMap"><a href="#1、ConcurrentHashMap" class="headerlink" title="1、ConcurrentHashMap"></a>1、<strong>ConcurrentHashMap</strong></h2><p><font color='red'><u><em><strong><code>ConcurrentHashMap</code>1.8的底层数据结构采用数组+链表+红黑树的形式。是线程安全的，而是通过CAS+Synchronized的方法保证了多线程的线程安全。1.8以前是用16个<code>Segment</code> 分段锁加hashentry数组+Reentranlock。1.8添加元素的时候，1，先判断key和value是不是空，如果空就抛异常。2，然后hashcode扰动函数模运算得到下标索引。3、先判断是不是初始化。4、节点为空就cas添加。5、如果正在扩容，就帮助扩容；6、如果冲突就加synchronized后再插入。7、看看能不能转成红黑树</strong></em></u></font></p>
 <p>Java 8 在链表长度超过一定阈值（8）时将链表（寻址时间复杂度为 O(N)）转换为红黑树（寻址时间复杂度为 O(log(N))）。</p>
 <p><font color='green'><strong>1.7 size（）返回各个segment的size和，如果写入频繁，就加锁，全局锁</strong></font></p>
 <p>1.8</p>
@@ -1077,7 +1090,7 @@
 <p><font color='red'><u><em><strong>查日志的命令</strong></em></u></font>：cat tail head</p>
 <p><font color='red'><u><em><strong>怎么排查项目故障</strong></em></u></font>：</p>
 <blockquote>
-<p><font color='green'><strong>可以用top先看看是cpu还是内存的问题，cpu的话，可以拿到pid，然后ps H -eo pid,tid,%cpu | grep进程id 或者top -H -p pid，查看线程情况，拿到线程id，最后jstack查看堆栈信息。内存泄漏的话就jmap -dump一个内存快照，然后加载到visualVMEclipse Memory Analyzer里面。或者jstat看看各个分区的情况和gc的压力。还有那个HeapDumpOnMemoryError这个JVM的配置</strong></font></p>
+<p><font color='green'><strong>可以用top先看看是cpu还是内存的问题，cpu的话，可以拿到pid，然后ps -eo pid,%cpu | grep进程id 或者top -H -p pid，查看线程情况，拿到线程id，最后jstack查看堆栈信息。内存泄漏的话就jmap -dump一个内存快照，然后加载到visualVMEclipse Memory Analyzer里面。或者jstat -gcutil pid看看各个分区的情况和gc的压力。还有那个HeapDumpOnMemoryError这个JVM的配置</strong></font></p>
 </blockquote>
 <p>标高的原因：</p>
 <blockquote>
@@ -1089,12 +1102,12 @@
 </blockquote>
 <h1 id="Spirng"><a href="#Spirng" class="headerlink" title="Spirng"></a>Spirng</h1><p><font color='red'><u><em><strong>springboot和spring</strong></em></u></font></p>
 <blockquote>
-<p><font color='green'><strong>SpringBoot 是一个在spring基础上进行简化 配置和开发流程的web整合的轻量级框架</strong></font></p>
+<p><font color='green'><strong>SpringBoot 是一个在spring基础上，简化了 配置和开发流程的web整合的轻量级框架</strong></font></p>
 <p>@SpringBootApplication</p>
 <p>@EnableAutoConfiguration</p>
 <p>@ComponentScan</p>
 </blockquote>
-<p><font color='red'><u><em><strong>starter</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>怎么加一个starter</strong></em></u></font></p>
 <blockquote>
 <p><font color='green'><strong>1、springboot依赖。2、contiguration 3、spring.factories</strong></font></p>
 </blockquote>
@@ -1109,22 +1122,22 @@
 <p><font color='green'><strong>Spring 会调用一个叫做 computeTransactionAttribute 方法去获取 @Transactional 注解的事务配置信息，这个方法里面会判断你是不是为public，如果是才能往下走，</strong></font></p>
 <p><font color='green'><strong>还有一个层面，aop底层是两种代理方式吗，如果是基于接口，那你就得是public，因为接口的性质。如果你是基于类的，那我们cglib的原理是重写父类的方法，你如果是private，那都对子类不可见，那更不要说其他的了</strong></font></p>
 </blockquote>
+<p><font color='red'><u><em><strong>5、final、static（不可重写）</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>2、异常类型不匹配：或者异常被吃掉了</strong></em></u></font></p>
 <p><font color='green'><strong><code>@Transactional</code> 默认只在运行时异常（RuntimeException）发生时才回滚，对检查异常（Checked Exception）不回滚。</strong></font></p>
 <p><font color='red'><u><em><strong>3、自调用失效this：</strong></em></u></font></p>
 <p><font color='green'><strong>当一个标记为 <code>@Transactional</code> 的方法内部调用另一个 <code>@Transactional</code> 方法时，内部方法的事务设置可能不会生效。</strong></font></p>
 <p><font color='red'><u><em><strong>4、多线程，</strong></em></u></font></p>
 <blockquote>
-<p><font color='green'>**我们说同一个事务，是指同一个数据库连接。继承AbstractRoutingDataSource，重写determineTargetDataSource。这个方法是核心，你会调用determineCurrentLookupKey，他就用来决定切换到哪一个数据源	**</font></p>
-</blockquote>
-<p><font color='red'><u><em><strong>5、final、static</strong></em></u></font></p>
-</blockquote>
 <p><font color='red'><u><em><strong>@transactional在多线程情况下是无法生效的，因为transactional的事务管理器是基于threadlocal‘，threadlocal是本来就是用来解决多线程线程安全的，她是线程隔离的。</strong></em></u></font></p>
+</blockquote>
+</blockquote>
+<p><font color='green'>**我们说同一个事务，是指同一个数据库连接。继承AbstractRoutingDataSource，重写determineTargetDataSource。这个方法是核心，你会调用determineCurrentLookupKey，他就用来决定切换到哪一个数据源	**</font></p>
 <p><font color='red'><u><em><strong>Spring事务基于Spring AOP，Spring AOP底层用的动态代理，动态代理有两种方式：</strong></em></u></font></p>
 <blockquote>
 <p>基于接口代理(JDK代理)</p>
 <ul>
-<li>基于接口代理，凡是类的方法非public修饰，或者用了static关键字修饰，那这些方法都不能被Spring AOP增强</li>
+<li>基于接口代理，凡是类的方法<strong>非public</strong>修饰，或者用了<strong>static、finanl</strong>关键字修饰（不能重写），</li>
 </ul>
 <p>基于CGLib代理(子类代理)</p>
 <ul>
@@ -1187,6 +1200,7 @@
 <blockquote>
 <p><font color='red'><u><em><strong>常用的注解？</strong></em></u></font></p>
 <p><a target="_blank" rel="noopener" href="https://nageoffer.com/pages/7563ce/#%E9%97%AE%E9%A2%98%E8%AF%A6%E8%A7%A3">https://nageoffer.com/pages/7563ce/#%E9%97%AE%E9%A2%98%E8%AF%A6%E8%A7%A3</a></p>
+<p><font color='red'><u><em><strong>注解是什么作用?</strong></em></u></font><br>注解其实就是一些标记，有了标记之后，我们就可以在解析的时候得到这个标记，然后做一些特别的处理，这就是注解的作用，注解就是标记，可以给编译器用，也可以写入class，可以通过反射得到。</p>
 <blockquote>
 <p><font color='red'><u><em><strong>spring常用的注解</strong></em></u></font></p>
 </blockquote>
@@ -1236,7 +1250,9 @@
 </blockquote>
 <p><font color='red'><u><em><strong>aop失效的原因和解决方法</strong></em></u></font></p>
 <blockquote>
-<p><font color='green'><strong>关键是就是自己内部调用的问题：CGLib代理生成一个子类，重写了父类的非final非private的方法,  jdk代理是基于接口的，代理对象是接口的实现类。但是无论是那种方法，由于没有修改父类的字节码, 所以, 在父类方法中, 仍然会调用父类自己的添加事务的方法，一个类中有，两个方法A和B，B被aop增强了，此时A调用父类中的方法。</strong></font></p>
+<p>失效原因联系动态代理失效的原因</p>
+</blockquote>
+<blockquote>
 <p><font color='red'><u><em><strong>失效原因：1、自调用。2、final。3、static</strong></em></u></font></p>
 </blockquote>
 <blockquote>
@@ -1244,7 +1260,7 @@
 </blockquote>
 <p><font color='red'><u><em><strong>aop用那种动态代理</strong></em></u></font></p>
 <blockquote>
-<p><font color='green'><strong>能用 JDK 做动态代理就用 JDK，不能用 JDK 做动态代理就用 Cglib，即首选 JDK 做动态代理。</strong></font></p>
+<p>如果被代理对象实现了接口，那么SpringAOP会优先使用<em>JDK动态代理</em>；否则，它会使用<em>CGLIB代理</em></p>
 </blockquote>
 <p><font color='red'><u><em><strong>IOC</strong></em></u></font></p>
 <blockquote>
@@ -1268,25 +1284,31 @@
 </blockquote>
 <p><font color='red'><u><em><strong>Bean的生命周期？</strong></em></u></font></p>
 <blockquote>
-<p>1 、扫描各种注解 @Compoent、@Service、@Configuration加载<strong>Spring Bean</strong></p>
+<p>—实例化</p>
 </blockquote>
 <blockquote>
-<p>2、用<strong>BeanDefinitionReader</strong>把Bean解析成BeanDefinition结构，放到beanDefinitionMap，扫描这个</p>
+<p>1 、扫描各种注解 @Compoent、@Service、@Configuration加载<strong>Bean信息</strong></p>
 </blockquote>
 <blockquote>
-<p>3、从BeanDefinition里面拿BeanClass的构造函数，通过反射创建Bean，这里构造函数的选用，一般先选有autowire修饰和无参构造函数。</p>
+<p>2、用<strong>BeanDefinitionReader</strong>把Bean解析成BeanDefinition（类名、方法名、等等）结构，放到beanDefinitionMap，扫描这个</p>
 </blockquote>
 <blockquote>
-<p>4、依赖注入</p>
+<p>3、从BeanDefinition里面拿Bean.Class的构造函数，通过反射创建Bean，这里构造函数的选用，一般先选有autowire修饰和无参构造函数。</p>
 </blockquote>
 <blockquote>
-<p>6、处理三个Aware接口，</p>
+<p>初始化—–</p>
 </blockquote>
 <blockquote>
-<p>7、<em><strong>BeanPostProcessor：自定义的逻辑后置处理</strong></em></p>
+<p>4、populate方法，先设置一些必要的属性（公有，私有，注入方式），依赖注入</p>
 </blockquote>
 <blockquote>
-<p>8、 调用初始化Bean（InitializingBean和init-method，Bean的初始化才算完成）</p>
+<p>5、检查有没有实现aware结尾接口，有的话会调一个方法做处理，比如setclassname</p>
+</blockquote>
+<blockquote>
+<p>7、<em><strong>BeanPostProcessor：前置处理器，你可以自定义</strong></em></p>
+</blockquote>
+<blockquote>
+<p>8、 初始化操作，（先是@PostConstruct，afterpropertiesSet（InitializingBean接口的作用），init-method（自己指定的方法，spring是xml配置，boot可以注解））</p>
 </blockquote>
 <blockquote>
 <p>9、<em><strong>BeanPostProcessor：自定义的逻辑后置处理</strong></em> aop核心底层动态代理</p>
@@ -1300,27 +1322,25 @@
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42764468/article/details/103286994#4FactoryBean_141">4.实现FactoryBean接口</a></li>
 </ul>
 </blockquote>
-<p><font color='red'><u><em><strong>Autowire和Resourse</strong></em></u></font></p>
-<p>Autowire默认按类型，如果想要实现按名字注入，主要配置@Primary 或者@Qualifier</p>
-<p>Resource默认按名字然后类型。</p>
-<blockquote>
-<p><font color='blue'><u><em><strong>spring推荐setter和构造器，但是我们用字段注入比较简单，idea明确不推荐Autowire，我觉得原因是和框架的强耦合。</strong></em></u></font></p>
-</blockquote>
 <p><font color='red'><u><em><strong>依赖注入Bean的方式</strong></em></u></font></p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/supercrazy008/article/details/132125887">https://blog.csdn.net/supercrazy008/article/details/132125887</a></p>
 </blockquote>
 <blockquote>
 <p><font color='green'><strong>1、构造器，在对象实例化最开始将依赖对象注入到依赖项中</strong></font></p>
+</blockquote>
+<blockquote>
 <p><font color='green'><strong>2、setter，基于 Setter 的 依赖注入是通过容器在调用无参构造函数或无参静态工厂方法来实例化您的 bean 后调用您的 bean 上的 setter 方法来完成的。</strong></font></p>
+</blockquote>
+<blockquote>
 <p><font color='green'><strong>3、字段注入，bean变量上的注解进行依赖注入，本质上是通过反射直接注入到字段中</strong></font></p>
 </blockquote>
 <p><font color='red'><u><em><strong>为什么依赖注入不适合用字段注入？</strong></em></u></font></p>
 <blockquote>
-<blockquote>
 <p><font color='green'><strong>1、会导致循环依赖</strong></font></p>
-<p><font color='green'><strong>2、无法为静态变量和final修饰的进行注入，原因是变量必须在类实例化进行初始化</strong></font></p>
 </blockquote>
+<blockquote>
+<p><font color='green'><strong>2、无法为静态变量和final修饰的进行注入，原因是final变量必须在类实例化进行初始化</strong></font></p>
 </blockquote>
 <p><font color='red'><u><em><strong>Bean的循环依赖？</strong></em></u></font></p>
 <blockquote>
@@ -1340,7 +1360,7 @@
 <blockquote>
 <p><strong>所以如果没有AOP的话确实可以两级缓存就可以解决循环依赖的问题，如果加上AOP，两级缓存是无法解决的。如果对象被AOP代理了，我每次从三级缓存中拿到singleFactory对象，执行getObject()方法会产生新的代理对象，所以还要借助另外一个缓存来保存产生的代理对象</strong></p>
 </blockquote>
-<p><img src="/../images/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/image-20231222001434059.png" alt="image-20231222001434059"></p>
+<p>![<img src="/../images/%E5%85%AB%E8%82%A1-Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/b892927da91c1058a04184035a05e02a.png" alt="在这里插入图片"></p>
 <p><font color='red'><u><em><strong>可以直接调用bean.init的进行初始化吗？</strong></em></u></font></p>
 <blockquote>
 <p><font color='green'><strong>最好不要，如果你在new之后直接调用init方法，那会出现一种情况，假设这个bean里面有个Car类，然后我做初始化setName结果人家刚刚实例化，就会报空指针异常。</strong></font></p>
@@ -1351,6 +1371,9 @@
 <li><font color='green'><strong><code>car = new Car();</code> 这行代码在堆内存中为 <code>Car</code> 对象分配空间，并将堆内存中的对象地址赋值给 <code>car</code> 引用变量。</strong></font></li>
 </ul>
 </blockquote>
+<p><font color='red'><u><em><strong>Autowire和Resourse</strong></em></u></font></p>
+<p>Autowire默认按类型，如果想要实现按名字注入，主要配置@Primary 或者@Qualifier</p>
+<p>Resource默认按名字然后类型。<font color='blue'><u><em><strong>spring推荐setter和构造器，但是我们用字段注入比较简单，idea明确不推荐Autowire，我觉得原因是和框架的强耦合。</strong></em></u></font></p>
 <blockquote>
 <p><font color='red'><u><em><strong>Springboot启动流程</strong></em></u></font></p>
 </blockquote>
@@ -1403,32 +1426,26 @@
 <p><font color='red'><u><em><strong>Spring用到的设计模式</strong></em></u></font></p>
 <blockquote>
 <p>单例模式：这个在创建Bean的时候用到，创建单例Bean的时候会先去缓存里面找，如果找不到，在触发createBean方法。</p>
-</blockquote>
-<blockquote>
 <p>工厂模式：spring的ioc容器就是哥工厂</p>
-</blockquote>
-<blockquote>
 <p>代理模式：就是aop。jdk和cglib</p>
-</blockquote>
-<blockquote>
 <p>模版模式：jdbcTemplate，还有编程式事务</p>
 </blockquote>
 <p><font color='red'><u><em><strong>Springboot自动装配？</strong></em></u></font></p>
 <blockquote>
-<p><font color='blue'><u><em><strong>springboot的自动装配是依赖于springbootapplication这个注解，这个注解是一个复合注解，真正实现自动装配的是一个enableautoConfiguration这个注解。 我们引入的starter里面会有@Configuration配置类，然后这个配置类的路径放在spirng.factories下，我们用springfactoryloader找到配置类，最后我们spring会通过ImportSelector接口去实现动态的加载，@ConditionalOnBean和@ConditionalOnMissingBean 定义的条件进行选择加载。</strong></em></u></font></p>
+<p>springboot的自动配置是指根据类路径下的jar包、类，为jar包里面的类进行自动配置，简单的说就是会根据classpath下的类，自动的给你生成bean，加载到ioc容器中</p>
+<p><font color='blue'><u><em><strong>springboot的自动装配是依赖于springbootapplication这个注解，这个注解是一个复合注解，真正实现自动装配的是一个enableautoConfiguration这个注解，这个注解里面import了一个selector。 我们引入的starter里面会有@Configuration配置类，然后这个配置类的路径放在spirng.factories下，selector用springfactoryloader找到配置类，最后我们spring会通过ImportSelector接口去实现动态的加载bean，加载过程中会依赖于一些注解，@ConditionalOnBean和@ConditionalOnMissingBean 定义的条件进行选择加载。</strong></em></u></font></p>
 </blockquote>
-<p><strong>Bean是线程安全的吗？</strong></p>
+<p><font color='red'><u><em><strong>Bean是线程安全的吗？</strong></em></u></font></p>
 <blockquote>
-<p>默认单例，但是不是线程安全。因为Bean内部的成员变量是共享可修改的。多例是线程安全的</p>
+<p>默认单例，但是不是线程安全。因为Bean内部的成员变量是共享可修改的，所以不是线程安全的。多例是线程安全的</p>
 </blockquote>
 <p><font color='red'><u><em><strong>Spring MVC的工作流程如下：</strong></em></u></font></p>
+<p><img src="/../images/%E5%85%AB%E8%82%A1-Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/9e7bc8a9246e6e95c4468a138f5a5403.jpg" alt="在这里插入图片描述"></p>
 <blockquote>
 <ol>
 <li><font color='green'><strong>用户发送请求至前端控制器DispatcherServlet</strong></font></li>
-<li><font color='green'><strong>前端控制器收到请求调用处理器映射器</strong></font></li>
-<li><font color='green'><strong>处理器映射器根据请求url找到具体的处理器，然后封装成处理器执行链返回给DispatcherServlet</strong></font><font color='green'><strong>HandlerExecutionChain(包括处理器对象和处理器拦截器)一并返回给DispatcherServlet。</strong></font></li>
-<li><font color='green'><strong>DispatcherServlet根据处理器Handler找到能调用该处理器的处理器适配器HandlerAdapter执行HandlerAdapter处理一系列的操作，如：参数封装，数据格式转换，数据验证等操作</strong></font></li>
-<li><font color='green'><strong>调用具体的处理器Handler(Controller，也叫页面控制器)。</strong></font></li>
+<li><font color='green'><strong>前端控制器收到请求调用处理器映射器，处理器映射器根据请求url找到具体的处理器，然后吧处理器和处理器拦截器封装成执行链返回给DispatcherServlet</strong></font></li>
+<li><font color='green'><strong>DispatcherServlet根据处理器Handler，找到对应的处理器适配器HandlerAdapter执行handle方法，就调用对应的controller</strong></font></li>
 <li><font color='green'><strong>方法如果添加了ResponseBody就转为json直接返回了，都则可能还要视图解析，渲染一下。</strong></font></li>
 </ol>
 </blockquote>
@@ -1438,13 +1455,11 @@
 <blockquote>
 <p><font color='green'><strong>1、顺序传参</strong></font></p>
 <blockquote>
-<blockquote>
 </blockquote>
 <p><font color='green'><strong>2、map传参</strong></font></p>
 <blockquote>
 </blockquote>
 <p><font color='green'><strong>3、用mybatis的注解，Param</strong></font></p>
-</blockquote>
 </blockquote>
 <p><font color='blue'><u><em><strong>MyBatis中${} 和 #{} 有什么区别</strong></em></u></font></p>
 <blockquote>
@@ -1457,15 +1472,10 @@
 <p>rebase是一般在非公共分支上rebase，然后合并到main分支，原来的那个分支会被清除。</p>
 </blockquote>
 <p><strong>setNX有什么缺陷？</strong>redison锁过期的问题</p>
-<blockquote>
-<p>有单点风险</p>
-<p>可能会导致同一把锁被多人使用</p>
-<p>redlock</p>
-</blockquote>
 <h3 id="操作系统"><a href="#操作系统" class="headerlink" title="操作系统"></a>操作系统</h3><p><strong>1、进程和线程的区别</strong></p>
 <blockquote>
 <p><font color='green'><strong>1、进程是操作系统资源分配的基本单位，把磁盘的代码加载到内存，分配数据空间。</strong></font></p>
-<p><font color='green'><strong>2、线程是任务调度的一个单位，进程的一个实体，cpu运行和独立调度的基本单位，cpu上面真正运行的其实是线程</strong></font></p>
+<p><font color='green'><strong>2、线程是任务调度的基本单位，进程的一个实体，cpu运行和独立调度的基本单位，cpu上面真正运行的其实是线程</strong></font></p>
 <p><font color='green'><strong>3、一个进程可以拥有多个线程。</strong></font></p>
 <p><font color='green'><strong>4、线程的切换消耗要比进程小。共享代码区、数据区，堆区</strong></font></p>
 </blockquote>
