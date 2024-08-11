@@ -252,7 +252,7 @@
     </div>
 </div>
 <input type="hidden" id="yelog_site_posts_number" value="37">
-<input type="hidden" id="yelog_site_word_count" value="128.9k">
+<input type="hidden" id="yelog_site_word_count" value="136.7k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -764,7 +764,7 @@
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='Updated At: 2024-08-08 01:15:18'>2023-11-08 00:00</time>
+            Created At : <time class="date" title='Updated At: 2024-08-11 10:32:56'>2023-11-08 00:00</time>
         
     </div>
     <div class="article-meta">
@@ -1114,7 +1114,7 @@
 <p>b+树的所有记录结点都是按照键值的大小顺序存放到同一层的叶子结点，他们之间通过叶子结点指针进行连接，中间的都是searchkey</p>
 </blockquote>
 <p><font color='red'><u><em><strong>为什么不用跳表？</strong></em></u></font></p>
-<p><font color='green'><strong>b+树一个节点是一个page，每个节点16k，这样能放很多的索引，他的层高比较低，查询次数少，就减少了磁盘io的操作。跳表式链表结构，一个数据一个基点，这样层数会比较高，io性能就比较低。举个例子，b+树三层就可以存储2kw的数据，二跳表大概是2的24次方，这个差距还是很大的。</strong></font></p>
+<p><font color='green'><strong>b+树一个节点是一个page，每个节点16k，这样能放很多的索引，他的层高比较低，查询次数少，就减少了磁盘io的操作。跳表式链表结构，一个数据一个基点，这样层数会比较高，io性能就比较低。举个例子，b+树三层就可以存储2kw的数据，存储2kw&#x3D;2^24的数据需要24层，这个差距还是很大的。</strong></font></p>
 <h3 id="1、操作"><a href="#1、操作" class="headerlink" title="1、操作"></a>1、操作</h3><h4 id="1、插入"><a href="#1、插入" class="headerlink" title="1、插入"></a>1、插入</h4><p><img src="/../images/mysql-Technology/image-20231005201534270.png" alt="image-20231005201534270"></p>
 <h4 id="2、旋转"><a href="#2、旋转" class="headerlink" title="2、旋转"></a>2、旋转</h4><p>旋转发生在leaf page已经满了，但是左右兄弟还没有满，这时候会把记录平移到兄弟结点上面，左兄弟优先</p>
 <h4 id="3、删除"><a href="#3、删除" class="headerlink" title="3、删除"></a>3、删除</h4><p><img src="/../images/mysql-Technology/image-20231005202324173.png" alt="image-20231005202324173"></p>
