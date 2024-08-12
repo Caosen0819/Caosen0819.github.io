@@ -252,7 +252,7 @@
     </div>
 </div>
 <input type="hidden" id="yelog_site_posts_number" value="37">
-<input type="hidden" id="yelog_site_word_count" value="136.7k">
+<input type="hidden" id="yelog_site_word_count" value="136.6k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -764,12 +764,12 @@
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='Updated At: 2024-07-28 01:33:41'>2023-11-04 00:00</time>
+            Created At : <time class="date" title='Updated At: 2024-08-12 12:29:15'>2023-11-04 00:00</time>
         
     </div>
     <div class="article-meta">
         
-        <span>Count:7.5k</span>
+        <span>Count:7.7k</span>
         
         
         <span id="busuanzi_container_page_pv">
@@ -1090,6 +1090,8 @@
 <p>G1的SATB算法为什么比CMS的增量标记算法快（原因之一）：</p>
 <p>① CMS的重新标记需要重新扫描所有gc root，包括年轻代</p>
 <p>② G1：在开始标记的时候生成一个快照图，标记存活对象。所有被改变引用关系的对象都标记，至于它是不是真的存活。留给下一次gc扫描</p>
+<p><strong>为什么 G1 采用 SATB，CMS 使用增量更新?</strong></p>
+<p>因为SATB相对增量更新效率会高(当然SATB可能造成更多的浮动垃圾)，因为不需要在重新标记阶段再次深度扫描被删除引用对象，而CMS对增量更新的根对象会做深度扫描，G1因为很多对象都位于不同的region，CMS就一块老年代区域，重新深度扫描对象的话G1的代价会比CMS高，所以G1选择SATB不深度扫描对象，只是简单标记，等到下一轮GC再深度扫描。</p>
 <h3 id="三色标记"><a href="#三色标记" class="headerlink" title="三色标记"></a>三色标记</h3><p><img src="/../images/CS:JVM/image-20240706205403817.png" alt="image-20240706205403817"></p>
 <p><font color='red'><u><em><strong>浮动垃圾(多标)：将原本应该被清除的对象，误标记为存活对象。后果是垃圾回收不彻底，不过影响不大，可以在下个周期被回收；</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>对象消失(漏标)：将原本应该存活的对象，误标记为需要清理的对象。后果很严重，影响程序运行，是不可容忍的。</strong></em></u></font></p>

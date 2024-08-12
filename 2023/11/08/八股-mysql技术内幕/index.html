@@ -252,7 +252,7 @@
     </div>
 </div>
 <input type="hidden" id="yelog_site_posts_number" value="37">
-<input type="hidden" id="yelog_site_word_count" value="136.7k">
+<input type="hidden" id="yelog_site_word_count" value="136.6k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -764,7 +764,7 @@
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='Updated At: 2024-08-11 10:32:56'>2023-11-08 00:00</time>
+            Created At : <time class="date" title='Updated At: 2024-08-12 16:25:42'>2023-11-08 00:00</time>
         
     </div>
     <div class="article-meta">
@@ -813,9 +813,9 @@
 </blockquote>
 <p><font color='red'><u><em><strong>Q1：MySQL主要有哪些存储引擎，分别适合哪些应⽤场景？</strong></em></u></font></p>
 <blockquote>
-<p>①MyISAM，是5.5版本之前的默认存储引擎，⽀持表级锁，不⽀持事务和外 键，</p>
+<p>①MyISAM，是5.5版本之前的默认存储引擎，⽀持表级锁，不⽀持事务和外 键，适用于读多写少的应用场景，</p>
 <p>②InnoDB，MySQL⽬前的默认存储引擎，⽀持⾏级锁、事务和外键，</p>
-<p>③Memory，所有的数据都保存在内存中，访问速度快</p>
+<p>③Memory，所有的数据都保存在内存中，访问速度快，适用于访问速度快的小数据集</p>
 </blockquote>
 <p>首先来了解一下InnoDB的体系架构：</p>
 <h1 id="体系架构"><a href="#体系架构" class="headerlink" title="体系架构"></a>体系架构</h1><p><img src="/../images/mysql-Technology/image-20231004235405057.png" alt="image-20231004235405057"></p>
@@ -921,7 +921,7 @@
 <h2 id="2、日志文件"><a href="#2、日志文件" class="headerlink" title="2、日志文件"></a>2、日志文件</h2><p>日志文件有错误日志、慢查询日志、查询日志、二进制日志，我们着重可以讲一下二进制日志</p>
 <h5 id="提问？如何定位慢查询？"><a href="#提问？如何定位慢查询？" class="headerlink" title="提问？如何定位慢查询？"></a><font color='red'><u><em><strong>提问？如何定位慢查询？</strong></em></u></font></h5><blockquote>
 <p><font color='green'><strong>1、可以用普罗米修斯、skywalking这些工具</strong></font></p>
-<p><font color='green'><strong>2、或者开启慢查询日志。set global slow_query_1o9&#x3D;1；</strong></font></p>
+<p><font color='green'><strong>2、或者开启慢查询日志。set global slow_query_1og&#x3D;1；</strong></font></p>
 </blockquote>
 <h6 id="接着问？执行很慢？怎么分析？"><a href="#接着问？执行很慢？怎么分析？" class="headerlink" title="接着问？执行很慢？怎么分析？"></a><font color='red'><u><em><strong>接着问？执行很慢？怎么分析？</strong></em></u></font></h6><blockquote>
 <p><font color='red'><u><em><strong>表结构的优化：分库分表、读写分离</strong></em></u></font></p>
