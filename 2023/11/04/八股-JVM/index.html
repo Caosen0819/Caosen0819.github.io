@@ -252,7 +252,7 @@
     </div>
 </div>
 <input type="hidden" id="yelog_site_posts_number" value="37">
-<input type="hidden" id="yelog_site_word_count" value="136.6k">
+<input type="hidden" id="yelog_site_word_count" value="137.2k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -764,12 +764,12 @@
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='Updated At: 2024-08-12 12:29:15'>2023-11-04 00:00</time>
+            Created At : <time class="date" title='Updated At: 2024-08-26 12:44:53'>2023-11-04 00:00</time>
         
     </div>
     <div class="article-meta">
         
-        <span>Count:7.7k</span>
+        <span>Count:7.8k</span>
         
         
         <span id="busuanzi_container_page_pv">
@@ -842,9 +842,16 @@
 <p><img src="/../images/JVM/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjg0MDA1,size_16,color_FFFFFF,t_70.png" alt="img"></p>
 <p><strong>对象的创建</strong></p>
 <blockquote>
-<p><font color='green'><strong>1、当遇到new，先去检查在常量池找到类的符号引用，检查是不是已经类加载、解析、初始化。</strong></font></p>
-<p><font color='green'><strong>2、如果没有，就先执行类加载。</strong></font></p>
-<p>3、然后分配内存，内存的大小在类加载的时候就确认了。具体分配用“指针碰撞”还是“空闲列表”就看用那种垃圾收集器。为了保证不出现并发问题：有两种方案。<font color='red'><u><em><strong>1）CAS+失败重试。2）给线程自己预先分配本地线程分配缓冲。（TLAB）</strong></em></u></font></p>
+<p>1、首先根据全类名去常量池拿符号引用，判断这个类是否加载解析初始化过然后分配内存，	</p>
+<p>2、JIT逃逸分析优化分配到栈，</p>
+<p>3、看下有没有开启TLAB，有的话先分配到TLAB开启分配，</p>
+<p>4、其余的分配到堆中，如果很大，直接老年代，</p>
+<p>5、其余分配到新声代，</p>
+<p>根据堆连续与否，指针碰撞和空闲列表分配，</p>
+<p>如果是标记整理、标记复制就指针碰撞，如果是标记清除就空闲列表。</p>
+<p>这个过程中并发问题使用CAS+重试，一个是TLAB。<br>把内存空间初始化为零值<br>hashCode 分代年龄设置对象头 关联class mark word:设置锁标志调用构造方法返回引用</p>
+<p>调用构造方法，初始化</p>
+<p>返回引用</p>
 </blockquote>
 <p><strong>对象的内存布局</strong></p>
 <blockquote>
@@ -935,6 +942,7 @@
 <p>解决方案：线程上下文类加载器。	线程上下文类加载器的原理是将一个类加载器保存在线程私有数据里，跟线程绑定，然后在需要的时候取出来使用。这个类加载器通常是由应用程序或者容器（如 Tomcat）设置的。类加载冲突问题</p>
 </blockquote>
 <p>3、OSGI实现模块化热部署，把类加载从双亲委派变成更加复杂的网状结构。</p>
+<p><font color='red'><u><em><strong>打破双亲委派机制能重写string吗？</strong></em></u></font>不能破坏java核心包的类，破坏双亲委派机制是重写findclassloadclass，但是依旧会调用defineClass，这个方法将二进制转换成class文件，里面规定了java.开头的不给操作。</p>
 <h2 id="模块化"><a href="#模块化" class="headerlink" title="模块化"></a>模块化</h2><p><strong>什么是JDK9模块化系统</strong></p>
 <ul>
 <li>是一种新的组织方式，将Java SE分成多个模块，每个模块都有自己的API和实现</li>
@@ -1159,12 +1167,17 @@
 <p>内存：</p>
 <blockquote>
 <p> <font color='green'><strong>1、可以获得内存的快照dump（jmap -dump或者启动的时候就加上参数-XX：heapdumpOnOutOfMemeryERROR）</strong></font></p>
-<p><font color='green'><strong>2、visualVM去加载， memory analyzer</strong></font></p>
+<p> jmap -dump:format&#x3D;b,file&#x3D;&lt;文件名&gt; &lt;进程号&gt;</p>
+<p> <font color='green'><strong>2、visualVM去加载， memory analyzer</strong></font></p>
 </blockquote>
 <p>Cpu：</p>
 <blockquote>
 <p><font color='green'><strong>然后就排查CPU消耗，用top找到进程pid，用top -H和jps找到线程id，找到占比高的用jstack看看堆栈情况</strong></font></p>
 </blockquote>
+</blockquote>
+<p>YounG GC</p>
+<blockquote>
+<p>eden区满了</p>
 </blockquote>
 <h2 id="FULL-GC的原因"><a href="#FULL-GC的原因" class="headerlink" title="FULL GC的原因"></a>FULL GC的原因</h2><blockquote>
 <p><font color='green'><u><em><strong>1、System.gc方法调用</strong></em></u></font></p>

@@ -252,7 +252,7 @@
     </div>
 </div>
 <input type="hidden" id="yelog_site_posts_number" value="37">
-<input type="hidden" id="yelog_site_word_count" value="136.6k">
+<input type="hidden" id="yelog_site_word_count" value="137.2k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -764,7 +764,7 @@
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='Updated At: 2024-07-07 20:16:51'>2023-07-08 00:00</time>
+            Created At : <time class="date" title='Updated At: 2024-08-13 15:13:52'>2023-07-08 00:00</time>
         
     </div>
     <div class="article-meta">
@@ -842,6 +842,7 @@
 <li>开启 tcp_syncookies；不用建立半连接</li>
 <li>减少 SYN+ACK 重传次数</li>
 </ul>
+<p><img src="/../images/%E5%85%AB%E8%82%A1-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/TCP%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B.drawio.png" alt="TCP 三次握手"></p>
 <h3 id="8、TCP四次挥手"><a href="#8、TCP四次挥手" class="headerlink" title="8、TCP四次挥手"></a>8、TCP四次挥手</h3><p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A02/image-20230803130523828.png" alt="image-20230803130523828"></p>
 <blockquote>
 <p>msl是报文最大生存时间，ip头有一个ttl字段，这个字段代表可以经历的最大路由数</p>
@@ -852,6 +853,7 @@
 <p>1<font color='red'><u><em><strong>、也是为了防止接收历史连接中的第三次挥手</strong></em></u></font>。这个时间<strong>足以让两个方向上的数据包都被丢弃，使得原来连接的数据包在网络中都自然消失。</strong></p>
 <p>2、也就是说，TIME-WAIT 作用是<strong>等待足够的时间以确保最后的 ACK 能让被动关闭方接收，从而帮助其正常关闭。</strong></p>
 </blockquote>
+<p><img src="/../images/%E5%85%AB%E8%82%A1-%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C2/TCP%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B.drawio-20240813151348407.png" alt="TCP 三次握手"></p>
 <blockquote>
 <p><font color='red'><u><em><strong>为什么4次？</strong></em></u></font></p>
 <p>服务端可能还有数据要发给客户端，所以需要先处理自己的最后流程，然后给客户端发送一个fin报文，也就是说，第二次握手和第三次握手大概率是不同步的。</p>

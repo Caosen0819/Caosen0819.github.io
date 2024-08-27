@@ -252,7 +252,7 @@
     </div>
 </div>
 <input type="hidden" id="yelog_site_posts_number" value="37">
-<input type="hidden" id="yelog_site_word_count" value="136.6k">
+<input type="hidden" id="yelog_site_word_count" value="137.2k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -764,7 +764,7 @@
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='Updated At: 2024-08-11 17:10:50'>2023-07-08 00:00</time>
+            Created At : <time class="date" title='Updated At: 2024-08-26 12:41:07'>2023-07-08 00:00</time>
         
     </div>
     <div class="article-meta">
@@ -820,9 +820,9 @@
 <p>TCP</p>
 <h1 id="TCP和UDP的不同"><a href="#TCP和UDP的不同" class="headerlink" title="TCP和UDP的不同"></a>TCP和UDP的不同</h1><blockquote>
 <p>那tcp和udp的差距是，tcp相比udp多了很多为了可靠连接所增加的特性，比如三次握手、四次挥手、拥塞控制，超时重传，就是为了数据能可靠的传到对方。udp他不用建立连接，不保证可靠交付，所以效率高。</p>
+<p>报文头也不一样：udp是源端口目的端口，长度校验和。tcp多了很多东西，源端口目的端口，序列号确认号，状态位，首部长度，校验和等等。</p>
 <p>除此之外，还有一个很大的不同就是tcp是会分片的，但是udp是不会分片。在这里我们还要知道的一点是在网络层，也就是ip协议中还是会分片的，大小是MTU。但是对于tcp来说因为你要是在ip层才分片，我为了保证可靠，我假设12345 丢了一个2，那我就要12345全部重新发，这样不好，所以我们就在tcp层也分片，大小是MSS。而udp不用可靠，所以他不用分片。</p>
 </blockquote>
-<p>报文头也不一样：udp是源端口目的端口，长度校验和。tcp多了很多东西，源端口目的端口，序列号确认号，状态位，首部长度，校验和等等。</p>
 <p>但是过程中究竟是请求-应答模式还是什么模式，那就是后面的不同版本做出的更新。</p>
 <p>但是他并不是不能做到可靠传输，因为udp只是传输层，我们还可以在应用层做出一定的限制来保证传输是可靠的，比如quic协议，当然这是困难的。</p>
 <h1 id="那我们这里用输入网址到显示，来串联一下整体的流程："><a href="#那我们这里用输入网址到显示，来串联一下整体的流程：" class="headerlink" title="那我们这里用输入网址到显示，来串联一下整体的流程："></a>那我们这里用输入网址到显示，来串联一下整体的流程：</h1><p>首先是解析URL，得到三个信息，一个协议、一个域名、一个路径。</p>
@@ -833,7 +833,7 @@
 <p>本地 DNS 收到顶级域名服务器的地址后，发起请求问“老二， 你能告诉我 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 的 IP 地址吗？”</p>
 <p>顶级域名服务器说：“我给你负责 <a target="_blank" rel="noopener" href="http://www.xx.com/">www.xx.com</a> 区域的权威域名服务器的地址，你去问它应该能问到”。</p>
 <p>本地 DNS 于是转向问权威 DNS 服务器：“老三，<a href="http://www.xx.com对应的IP是啥呀？”">www.xx.com对应的IP是啥呀？”</a> server.com 的权威 DNS 服务器，它是域名解析结果的原出处。为啥叫权威呢？就是我的域名我做主。</p>
-<p>权威 DNS 服务器查询后将对应的 IP 地址 X.X.X.X 告诉本地 DNS，本地域名服务器返回给我们。这时候我们要先建立连接，进行三次握手，然后数据传输。通过调用 Socket 库，来委托协议栈工作。首当其冲肯定是TCP，其实就是加一个tcp报文头部（源端口、目的端口之的），然后由IP模块把数据封装成网络包，就是加一个IP头（源IP、目的IP）这时候你就知道了起点和终点。但是还不知道路径怎么规划，这个就需要ARP协议。具体就是先查ARP缓存，没有的话发一个ARP广播。网卡会把数字信号转为电信号，通过网线发送出去。中间会通过交换机（）、路由器，总之就是做FCS校验后，查询<strong>路由表</strong>找到转发的目标，然后重新加一个mac头（同样是ARP），发出去</p>
+<p>权威 DNS 服务器查询后将对应的 IP 地址 X.X.X.X 告诉本地 DNS，本地域名服务器返回给我们。这时候我们要先建立连接，进行三次握手，然后数据传输。先加一个tcp报文头部（源端口、目的端口之的），然后由IP模块把数据封装成网络包，就是加一个IP头（源IP、目的IP）这时候你就知道了起点和终点。但是还不知道路径怎么规划，这个就需要ARP协议。具体就是先查ARP缓存，没有的话发一个ARP广播。一找，可能没找到，那就把网关的mac地址作为目的mac地址，然后发送要走网卡，这时候要包装贞分节符和fcs校验，网卡会把数字信号转为电信号，通过网线发送出去。假设发发发到路由器，那么路由器会去掉mac投和帧分界符，首先校验下mac地址，如果不是自己的丢了，如果是，那就基于ip地址，用arp协议找mac地址。</p>
 <h4 id="1、解析url"><a href="#1、解析url" class="headerlink" title="1、解析url"></a>1、解析url</h4><p><font color='red'><u><em><strong>解析之后得到三个信息，一个协议，一个是web服务器域名，一个是请求文件的路径（可选）。这时候客户端生产自己的HTTP请求报文</strong></em></u></font></p>
 <p>格式如下，方法get，url没有默认index什么的，版本HTTP1.1，字段名就很多，然后是数据，这个数据也是后面一直包装的根数据。</p>
 <p><img src="/../images/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A01/image-20230728193306158.png" alt="image-20230728193306158">	</p>
@@ -1069,7 +1069,6 @@
 <p>所以关键就是对于证书的认证</p>
 <h3 id="HTTP1-1-gt-HTTP-2-gt-HTTP3"><a href="#HTTP1-1-gt-HTTP-2-gt-HTTP3" class="headerlink" title="HTTP1.1  -&gt; HTTP 2 -&gt; HTTP3"></a>HTTP1.1  -&gt; HTTP 2 -&gt; HTTP3</h3><p><font color='red'><u><em><strong>HTTP1.1在HTTP1.0的基础上增了长连接和管道，解决了发送方的对头阻塞</strong></em></u></font></p>
 <p>缺点：header是没有压缩的，只压缩了body部分，接收方会有对头阻塞，服务端智能被动响应</p>
-<p><font color='red'><u><em><strong>HTTP2在是基于HTTPS的，所以安全性肯定有保障</strong></em></u></font></p>
 <p><strong>1、头部压缩</strong></p>
 <p>HTTP2会压缩头部，会帮你压缩消除重复的部分，用的是HPACK算法</p>
 <p><font color='red'><u><em><strong>这就是HPACK算法，HPACK包括三个部分（静态字典、动态字典、huffman编码），字段名会被静态表或者动态表的index代替，huffman编码则是去压缩Value的值。</strong></em></u></font></p>
@@ -1079,13 +1078,13 @@
 <p><strong>动态表</strong></p>
 <p>重复的字段会被放到动态表里面，编码什么的和静态表一样</p>
 </blockquote>
-<p><strong>2、二进制格式</strong></p>
+<p><strong>2、二进制分帧</strong></p>
 <p>HTTP2不像是HTTP1是纯文本的报文，而是全部改成了二进制，头部和数据题都是二进制，统称帧</p>
 <p><strong>3、并发传输，引入了流的机制</strong></p>
 <p>一条tcp连接有多个流，每个流可以包含一个或者多个message，这个message就是请求或者响应，message里面有一个或者多个frame帧，不同的HTTP请求有独一无二的帧，所以可以乱序发送，后面会按照streamid组装，<strong>同一 Stream 内部的帧必须是严格有序的</strong></p>
 <p><font color='red'><u><em><strong>HTTP3，把tcp换成了udp，但是为了可靠，推出了QUIC</strong></em></u></font></p>
 <blockquote>
-<p>1、接住了流、没有对头阻塞</p>
+<p>1、没有对头阻塞</p>
 <blockquote>
 <p>但是各个流之间是相互独立的，一个流阻塞了，另外的流不会阻塞，这样就保证了没有对头阻塞</p>
 </blockquote>

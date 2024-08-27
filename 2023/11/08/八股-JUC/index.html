@@ -252,7 +252,7 @@
     </div>
 </div>
 <input type="hidden" id="yelog_site_posts_number" value="37">
-<input type="hidden" id="yelog_site_word_count" value="136.6k">
+<input type="hidden" id="yelog_site_word_count" value="137.2k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -764,12 +764,12 @@
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='Updated At: 2024-08-08 01:03:52'>2023-11-08 00:00</time>
+            Created At : <time class="date" title='Updated At: 2024-08-27 16:42:36'>2023-11-08 00:00</time>
         
     </div>
     <div class="article-meta">
         
-        <span>Count:7.8k</span>
+        <span>Count:7.9k</span>
         
         
         <span id="busuanzi_container_page_pv">
@@ -806,6 +806,7 @@
       
         <p>多线程一定比单线程快吗？<font color='red'><u><em><strong>不一定，因为还有线程上下文切换的消耗</strong></em></u></font></p>
 <p>那如何减少上下文切换？<font color='red'><u><em><strong>无锁并发、CAS</strong></em></u></font></p>
+<p>线程间如何通信？</p>
 <h1 id="1、并发机制的底层原理"><a href="#1、并发机制的底层原理" class="headerlink" title="1、并发机制的底层原理"></a>1、并发机制的底层原理</h1><p><font color='blue'><u><em><strong>内存可见性：一个线程修改了共享变量的值,其他线程能够立即得知这个修改</strong></em></u></font></p>
 <p><font color='blue'><u><em><strong>有序性指的是：程序执行的顺序按照代码的先后顺序执行。</strong></em></u></font></p>
 <p><font color='blue'><u><em><strong>原子性是指：在一个操作多个步骤时，要么所有操作都被执行，要么所有操作都不执行。</strong></em></u></font></p>
@@ -818,7 +819,7 @@
 <p><font color='red'><u><em><strong>认为共享资源每次被访问的时候不会被修改</strong></em></u></font>，只是在修改的时候去验证数据有没有被其它线程修改了。<font color='green'><strong>悲观锁常见的就是CAS算法</strong></font></p>
 </blockquote>
 <h3 id="0、CAS"><a href="#0、CAS" class="headerlink" title="0、CAS"></a>0、CAS</h3><blockquote>
-<p>【<font color='red'><u><em><strong>cas实际在操作系统层面是加锁的</strong></em></u></font>】</p>
+<p><font color='red'><u><em><strong>cas实际在操作系统层面是加锁的</strong></em></u></font></p>
 <p><font color='blue'><strong>CAS是将指定内存地址A的内容与所给的旧值B相比，如果相等，则将其内容替换为指令中提供的新值C；如果不相等，进入自旋（称为自旋锁），直到当前值与更新前的值一致为止，或者达到最大次数。</strong></font></p>
 <p><font color='blue'><strong>jdk提供的CAS方案是unsafe类的cas的本地方法，这个本地方法会调cmpxchg方法，它是在汇编层级，会禁止变量两侧的指令优化，然后使用cmpxchg指令比较并更新变量值(原子性)，这个指令是硬件上的的数据，保证CAS的原子性。锁总线，如果是多核则加一个lock锁定(缓存锁、MESI)</strong></font></p>
 <p><font color='green'><strong>硬件层间不能保证有序和内存可见，只能保证原子，但是加了LOCK就可以保证有序可见了</strong></font></p>
@@ -1064,7 +1065,8 @@
 <p><font color='green'><strong>强引用(Strongly Reference)</strong></font><br>指代码中普遍存在的赋值行为，如：Object o &#x3D; new Object()，只要强引用关系还在，对象就永远不会被回收。<br><font color='green'><strong>软引用(Soft Reference)</strong></font><br>还有用处，但是非必须存活的对象，JVM会在内存溢出前对其进行回收，例如：<font color='red'><u><em><strong>缓存</strong></em></u></font>。<br><font color='green'><strong>弱引用(Weak Reference)</strong></font><br>非必须存活的对象，引用关系比软引用还弱，不管内存是否够用，下次GC一定回收。<br><font color='green'><strong>虚引用(Phantom Reference)</strong></font><br>也称“幽灵引用”、，最弱的引用关系，完全不影响对象的回收，等同于没有引用，虚引用的唯一的目的是对象被回收时会收到一个系统通知。</p>
 </blockquote>
 <hr>
-<h1 id="4、线程池和线程"><a href="#4、线程池和线程" class="headerlink" title="4、线程池和线程"></a>4、线程池和线程</h1><p><strong>线程安全的方案</strong></p>
+<h1 id="4、线程池和线程"><a href="#4、线程池和线程" class="headerlink" title="4、线程池和线程"></a>4、线程池和线程</h1><p><font color='red'><u><em><strong>JUC线程池参数，时间和时间单位哪里用，拒绝策略如果是主线程处理的话，我给你2个核心线程，5个最大线程，等待队列10，拒绝策略主线程执行，此时来了20个请求处理，会发生什么</strong></em></u></font></p>
+<p><strong>线程安全的方案</strong></p>
 <blockquote>
 <p>1、锁</p>
 <p>2、cas</p>
@@ -1111,8 +1113,14 @@
 <p><font color='red'><u><em><strong>线程池的类型</strong></em></u></font></p>
 <blockquote>
 <p>FixedThreadPool，没有救济的线程，只有核心线程。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue</p>
+</blockquote>
+<blockquote>
 <p>SingleThreadExecutor，核心线程和最大线程就1个。阻塞队列是LinkedBlockingQueue，默认大小是Integer的MaxValue</p>
+</blockquote>
+<blockquote>
 <p>CachedThreadPool：这个是没有核心线程数，全都是救济线程。阻塞队列是SynchronousQueue</p>
+</blockquote>
+<blockquote>
 <p>ScheduledThreadPool：这个是定时执行任务，阻塞队列是DelayedWorkQueue</p>
 </blockquote>
 <p><font color='red'><u><em><strong>核心参数</strong></em></u></font></p>
@@ -1122,7 +1130,7 @@
 <p>keepAliveTime：多余线程的存活时间</p>
 <p>unit</p>
 <p>workQueue</p>
-<p>handler 拒绝策略</p>
+<p>handler 拒绝策略<font color='red'><u><em><strong>（可以自定义，继承RejectedExecutionHandler）</strong></em></u></font></p>
 <p>threadFactory 线程工厂</p>
 </blockquote>
 </blockquote>

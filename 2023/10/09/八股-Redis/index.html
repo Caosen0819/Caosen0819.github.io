@@ -252,7 +252,7 @@
     </div>
 </div>
 <input type="hidden" id="yelog_site_posts_number" value="37">
-<input type="hidden" id="yelog_site_word_count" value="136.6k">
+<input type="hidden" id="yelog_site_word_count" value="137.2k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -764,12 +764,12 @@
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='Updated At: 2024-08-12 23:34:35'>2023-10-09 00:00</time>
+            Created At : <time class="date" title='Updated At: 2024-08-26 00:42:03'>2023-10-09 00:00</time>
         
     </div>
     <div class="article-meta">
         
-        <span>Count:6.5k</span>
+        <span>Count:6.6k</span>
         
         
         <span id="busuanzi_container_page_pv">
@@ -837,6 +837,11 @@
 <blockquote>
 <p><font color='green'><strong>实现简单，平衡树的插入删除可能发生子树的调整，跳表的插入删除只需要修改相邻节点的指针</strong></font></p>
 </blockquote>
+<p><font color='red'><strong>为什么用跳表不用B+？</strong></font></p>
+<blockquote>
+<p>内存小</p>
+<p>实现简单，插入简单</p>
+</blockquote>
 <p><font color='blue'><u><em><strong>跳表的空间复杂度是 O(n)，时间logn</strong></em></u></font></p>
 </blockquote>
 <p>​	</p>
@@ -870,7 +875,7 @@
 <p><font color='blue'><u><em><strong>多线程读写socket</strong></em></u></font></p>
 <h2 id="6、讲一下io多路复用"><a href="#6、讲一下io多路复用" class="headerlink" title="6、讲一下io多路复用"></a>6、讲一下io多路复用</h2><p>io多路复用是基于NIO的，他的思路就是一个线程去监听多个线程，那个socket准备好了，我就去读哪一个，bio是同步阻塞，一个线程处理一个请求。</p>
 <p><font color='red'><u><em><strong>io多路复用有多种实现，select、poll、epoll。我们Redis他在初始化的过程中回去注册一个epoll对象，这个就是id多路复用的实现</strong></em></u></font></p>
-<p><font color='blue'><u><em><strong>select和poll要扫描所有的socket，包括就绪和没有就绪。而且select的文件描述符默认最大是1024，而poll对她进行了升级，引入了链表，所以监听的socket可以是无限的，需要自己去遍历，是哪个发了可读通知。epoll是（ epoll_wait()）直接告诉你是哪个socket就绪。</strong></em></u></font></p>
+<p><font color='blue'><u><em><strong>select和poll要扫描所有的socket，包括就绪和没有就绪。而且select的文件描述符默认最大是1024，而poll对她进行了升级，引入了链表，所以监听的socket可以是无限的，需要自己去遍历，是哪个发了可读通知。epoll底层是一颗红黑树和就绪链表，在执行epoll_ctl的add操作时，不仅将文件描述符放到红黑树上，而且也注册了回调函数，内核在检测到某文件描述符可读&#x2F;可写时会调用回调函数，该回调函数将文件描述符放在就绪链表中。</strong></em></u></font></p>
 <h2 id="4、采用单线程原因"><a href="#4、采用单线程原因" class="headerlink" title="4、采用单线程原因"></a>4、采用单线程原因</h2><ul>
 <li>使用单线程模型是 Redis 的开发和维护更简单</li>
 <li>即使使用单线程模型也并发的处理多客户端的请求，主要使用的是多路复用IO</li>
@@ -1082,6 +1087,7 @@
 <p>布隆过滤器的主要原理是使用一组哈希函数，将元素映射成一位数组里。当要检查一个元素是否在集合中时，将该元素进行哈希处理，然后查看哈希值对应的位数组的值是否为1。如果哈希值对应的位数组的值都为1，那么这个元素可能在集合中，否则这个元素肯定不在集合中。</p>
 <p><font color='red'><u><em><strong>3.2、怎么实现布隆过滤器</strong></em></u></font></p>
 <p><font color='green'><strong>guava和redisson，一个是本地缓存一个是分布式缓存，一般来说我们都认为本地缓存比较珍贵，所以可以用分布式缓存</strong></font></p>
+<p><font color='blue'><u><em><strong>redisson有一个布隆过滤器的升级版</strong></em></u></font></p>
 <p>4、<font color='green'><u><em><strong>布谷鸟过滤器</strong></em></u></font></p>
 <p>它是一种鸠占鹊巢的过滤器，默认的布谷鸟过滤器用两个hash函数得到两个下标，如果都为空，插入一个，如果有一个空，那就插入空的位置，如果都不为空，那就随机踢出一个元素，再为这个元素重新hash做插入。</p>
 <p><font color='red'><u><em><strong>循环挤兑</strong></em></u></font>怎么办？</p>

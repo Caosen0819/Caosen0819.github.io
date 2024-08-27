@@ -252,7 +252,7 @@
     </div>
 </div>
 <input type="hidden" id="yelog_site_posts_number" value="37">
-<input type="hidden" id="yelog_site_word_count" value="136.6k">
+<input type="hidden" id="yelog_site_word_count" value="137.2k">
 <div style="display: none">
     <span id="busuanzi_value_site_uv"></span>
     <span id="busuanzi_value_site_pv"></span>
@@ -764,7 +764,7 @@
     </div>
     <div class="article-meta">
         
-            Created At : <time class="date" title='Updated At: 2024-08-12 16:25:42'>2023-11-08 00:00</time>
+            Created At : <time class="date" title='Updated At: 2024-08-25 23:07:58'>2023-11-08 00:00</time>
         
     </div>
     <div class="article-meta">
@@ -819,6 +819,7 @@
 </blockquote>
 <p>首先来了解一下InnoDB的体系架构：</p>
 <h1 id="体系架构"><a href="#体系架构" class="headerlink" title="体系架构"></a>体系架构</h1><p><img src="/../images/mysql-Technology/image-20231004235405057.png" alt="image-20231004235405057"></p>
+<p><font color='blue'><u><em><strong>讲一下innodb引擎</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>我觉的用一句话概括，就是由很多内存块组成的内存池维护一系列后台线程，然后这些后台线程去负责最重要的工作。主要是内存和后台线程。</strong></em></u></font></p>
 <h2 id="1、后台线程"><a href="#1、后台线程" class="headerlink" title="1、后台线程"></a>1、后台线程</h2><blockquote>
 <p>主要有：</p>
@@ -1099,7 +1100,8 @@
 <p><strong>超大分页优化</strong></p>
 <blockquote>
 <p><font color='red'><u>**子查询+ 覆盖索引 + where 语句 **</u></font></p>
-<p>先通过覆盖索引得到id，然后对id排序，那这个id和原来的表做关联查询</p>
+<p>先通过覆</p>
+<p>盖索引得到id，然后对id排序，那这个id和原来的表做关联查询</p>
 </blockquote>
 <p>innodb最常见的索引就是：</p>
 <p><font color='red'><u><em><strong>b+树索引 （b+树只能找到数据行所在的页，然后把页读到内存里面，进行查找）</strong></em></u></font></p>
@@ -1169,7 +1171,7 @@
 <p>假设满足C1&#x3D;’XXX’条件的数据行为100000条，而满足C1&#x3D;’XXX’ AND C3&#x3D;’XXX’的数据行为100条，则：</p>
 <p>1、回表100000次，给server层传100000条数据</p>
 <p>2、回表100次，Innodb存储引擎层向MySQL Server层传递100行数据。</p>
-<h4 id="6、索引合并"><a href="#6、索引合并" class="headerlink" title="6、索引合并"></a>6、索引合并</h4><p>•Using intersect：使用交集算法，当查询条件使用AND连接时，系统可能会使用多个索引分<br>别检素每个条件，然后找出所有索引结果的交集。<br>•Using union：使用井集算法，当查询条件使用OR连接时，每个条件可能利用不同的索引。<br>系统会分别查找每个索引，然后合并结果。<br>•Using sort union：使用排序联合算法，在需要对结果进行排序的查询中，如果不同的排序<br>条件各自有索引，系统可以先分别检泰每个索引，然后合并并排序这些结果。</p>
+<h4 id="6、索引合并"><a href="#6、索引合并" class="headerlink" title="6、索引合并"></a>6、索引合并</h4><p>•Using intersect：使用交集算法，当查询条件使用AND连接时，<font color='red'><u><em><strong>系统可能会使用多个索引分<br>别检素每个条件，然后找出所有索引结果的交集。</strong></em></u></font><br>•Using union：使用井集算法，当查询条件使用OR连接时，每个条件可能利用不同的索引。<br>系统会分别查找每个索引，然后合并结果。<br>•Using sort union：使用排序联合算法，在需要对结果进行排序的查询中，如果不同的排序<br>条件各自有索引，系统可以先分别检泰每个索引，然后合并并排序这些结果。</p>
 </blockquote>
 <h3 id="5、自适应哈希索引"><a href="#5、自适应哈希索引" class="headerlink" title="5、自适应哈希索引"></a>5、自适应哈希索引</h3><p>InnoDB中的哈希用的字典进行查找，冲突用链表解决，哈希函数用除法散列</p>
 <p>自适应哈希索引就是用的这种方法。</p>
@@ -1225,6 +1227,7 @@
 <p>MDL 不需要显示调用，那它是在什么时候释放的?</p>
 </blockquote>
 <p>MDL 是在事务提交后才会释放，这意味着<strong>事务执行期间，MDL 是一直持有的</strong>。</p>
+<p>字节、滴滴、</p>
 <h4 id="3、意向锁"><a href="#3、意向锁" class="headerlink" title="3、意向锁"></a>3、意向锁</h4><blockquote>
 <p><font color='red'><u><strong>我觉得意向锁主要还是解决行锁和表锁之间的冲突问题</strong></u></font></p>
 <ul>
@@ -1240,7 +1243,7 @@
 <p><font color='red'><u><em><strong>主键设置成自增之后，会自动给主键赋递增的值，5.7保存在内存里面，但是8.0以后保存在redo log里面</strong></em></u></font></p>
 <p>然后这里有两种方式。一种是，AUTO-INC 锁<strong>，</strong>不是一个事务提交后才释放，而是在<font color='red'><u><em><strong>执行完插入语句后就会立即释放。</strong></em></u></font></p>
 <p>后面提供了一种轻量级锁，<font color='red'><u><em><strong>申请完就释放</strong></em></u></font>，但是伴随着两个问题：1、自增主键不是连续的。2、主库和从库不一致。</p>
-<p><font color='red'><u><em><strong>自增逐渐不连续的原因：唯一键的冲突、事务回滚、批量插入</strong></em></u></font></p>
+<p><font color='red'><u><em><strong>自增逐渐不连续的原因：唯一键的冲突、事务回滚、批量插入、删除</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>主库存库不一致的原因：批量插入</strong></em></u></font></p>
 <p>所以后面InnoDB 存储引擎提供了一种<strong>轻量级的锁</strong>，并且提供了一个参数，叫innodb autoinc lock mode</p>
 <ul>
@@ -1266,8 +1269,6 @@
 </blockquote>
 <h3 id="3、行锁【事务提交回滚的时候释放】"><a href="#3、行锁【事务提交回滚的时候释放】" class="headerlink" title="3、行锁【事务提交回滚的时候释放】"></a>3、行锁【事务提交回滚的时候释放】</h3><blockquote>
 <p><strong>MySQL 的行锁是在引擎层由各个引擎自己实现的。</strong></p>
-</blockquote>
-<blockquote>
 <p><font color='red'><u><em><strong>InnoDB有三种行锁的算法：Record Lock：记录锁、Gap Lock：间隙锁，锁定一个范围，但不包括记录本身，Next-Key Lock（临建锁）：Record Lock + Gap Lock 左开右闭</strong></em></u></font></p>
 <p><font color='red'><u><em><strong>InnoDB就是用Next-Key去解决幻读问题（同一事务下，连续执行两次相同的sql语句，两次得到的数据数量不是一样的）间隙锁在可重复读才生效</strong></em></u></font></p>
 <p>加锁规则里面，包含了两个“原则”、两个“优化”和一个“bug”。 </p>
@@ -1278,10 +1279,6 @@
 <li><font color='green'>**优化 2：索引上的等值查询，向右遍历时且最后一个值不满足等值条件的时候，nextkey lock 退化为间隙锁。 **</font></li>
 <li>一个 bug：唯一索引上的范围查询会访问到不满足条件的第一个值为止。</li>
 </ol>
-</blockquote>
-<blockquote>
-<blockquote>
-</blockquote>
 </blockquote>
 <blockquote>
 <p><strong>两阶段锁协议</strong>：</p>
